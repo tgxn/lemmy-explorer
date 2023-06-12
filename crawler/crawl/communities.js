@@ -24,45 +24,43 @@ export function createCommunityCrawlJob(baseUrl) {
   });
 }
 
+async function pageCommList(instanceBase, pageNumber) {
+  const communityList = await axios.get(
+    "https://" + instanceBase + "/api/v3/community/list",
+    {
+      params: {
+        type_: "Local",
+        page: pageNumber,
+        limit: 50,
+      },
+    }
+  );
+  const communities = communityList.data.communities;
+
+  let list = [];
+
+  list.push(...communities);
+
+  if (communities.length == 50) {
+    const pagenew = await pageCommList(instanceBase, pageNumber + 1);
+
+    list.push(...pagenew);
+  }
+
+  return list;
+}
+
 // insert base jobs and start workers
 export async function runCommunityCrawl() {
   communityQueue.process(async (job) => {
     try {
       console.log(`Processing communityQueue ${job.id}`, job.data);
-
       const instanceBaseUrl = job.data.baseUrl;
-
-      async function pageCommList(instanceBase, pageNumber) {
-        const communityList = await axios.get(
-          "https://" + instanceBaseUrl + "/api/v3/community/list",
-          {
-            params: {
-              type_: "Local",
-              page: pageNumber,
-              limit: 50,
-            },
-          }
-        );
-        const communities = communityList.data.communities;
-
-        let list = [];
-
-        list.push(...communities);
-
-        if (communities.length == 50) {
-          const pagenew = await pageCommList(instanceBase, pageNumber + 1);
-
-          list.push(...pagenew);
-        }
-
-        return list;
-      }
 
       const communityList = await pageCommList(instanceBaseUrl, 1);
 
+      // store communities
       for (var community of communityList) {
-        //   console.log(community);
-
         await putCommunityData(instanceBaseUrl, community);
       }
 

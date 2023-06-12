@@ -309,9 +309,28 @@ const fedditUrls = [
 ];
 
 function start() {
-  // createInstanceCrawlJob("vlemmy.net");
-  for (var baseUrl of fedditUrls) {
-    createInstanceCrawlJob(baseUrl);
+  var args = process.argv.slice(2);
+
+  console.log("args", args);
+
+  if (args.length > 0) {
+    if (args.indexOf("--init") > -1) {
+      console.log("init workers with starter fed list");
+      // createInstanceCrawlJob("vlemmy.net");
+      for (var baseUrl of fedditUrls) {
+        createInstanceCrawlJob(baseUrl);
+      }
+    }
+
+    if (args[0] == "-q" && args[1] == "instance") {
+      console.log("run instance crawl processor");
+      runInstanceCrawl();
+      return;
+    } else if (args[0] == "-q" && args[1] == "community") {
+      console.log("run community crawl processor");
+      runCommunityCrawl();
+      return;
+    }
   }
 
   runInstanceCrawl();

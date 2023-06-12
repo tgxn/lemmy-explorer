@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "pm2 start ecosystem.config.cjs",
+    "logs": "pm2 logs",
+    "stop": "pm2 stop ecosystem.config.cjs",
+    "delete": "pm2 delete ecosystem.config.cjs",
+    "start:dev": "node index.js",
+    "q:instance": "node index.js -q instance",
+    "q:community": "node index.js -q community",
     "out": "node output.js"
   },
   "type": "module",
@@ -13,6 +19,7 @@
   "dependencies": {
     "axios": "^1.4.0",
     "bee-queue": "^1.5.0",
+    "pm2": "^5.3.0",
     "redis": "^4.6.7"
   }
 }
