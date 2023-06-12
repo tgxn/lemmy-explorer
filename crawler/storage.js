@@ -11,7 +11,17 @@ async function connectIfNeeded() {
   }
 }
 
-// function to put data
+// data that we scan on other fediverse servers
+export async function storeUnknownInstance(baseUrl, data) {
+  await connectIfNeeded();
+  return await putRedis(`fediverse:${baseUrl}`, JSON.stringify(data));
+}
+
+export async function storeOtherError(baseUrl, data) {
+  await connectIfNeeded();
+  return await putRedis(`error:${baseUrl}`, JSON.stringify(data));
+}
+
 export async function putInstanceData(baseUrl, value) {
   await connectIfNeeded();
   return await putRedis(`instance:${baseUrl}`, JSON.stringify(value));

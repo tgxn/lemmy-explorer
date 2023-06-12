@@ -25,7 +25,7 @@ async function start() {
   const instances = await listInstanceData();
   console.log("Instances", instances.length);
 
-  const storeData = instances.map((instanceString) => {
+  let storeData = instances.map((instanceString) => {
     const instance = JSON.parse(instanceString);
     return {
       url: instance.siteData.site.actor_id,
@@ -40,6 +40,11 @@ async function start() {
     };
   });
 
+  // filter blank
+  storeData = storeData.filter(
+    (instance) => instance.url !== "" || instance.name !== ""
+  );
+
   await writeJsonFile(
     "../frontend/public/instances.json",
     JSON.stringify(storeData)
@@ -48,7 +53,7 @@ async function start() {
   const communities = await listCommunityData();
   console.log("Communities", communities.length);
 
-  const storeCommunityData = communities.map((communityString) => {
+  let storeCommunityData = communities.map((communityString) => {
     const community = JSON.parse(communityString);
     return {
       url: community.community.actor_id,
@@ -62,12 +67,18 @@ async function start() {
     };
   });
 
+  // filter blank
+  storeCommunityData = storeCommunityData.filter(
+    (instance) =>
+      instance.url !== "" || instance.name !== "" || instance.title !== ""
+  );
+
   await writeJsonFile(
     "../frontend/public/communities.json",
     JSON.stringify(storeCommunityData)
   );
 
-  return true;
+  process.exit(0);
 }
 
 start();

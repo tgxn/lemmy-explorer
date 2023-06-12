@@ -13,6 +13,7 @@ import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
 import CardHeader from "@mui/material/CardHeader";
 import CardCover from "@mui/joy/CardCover";
+import Tooltip from "@mui/joy/Tooltip";
 
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
@@ -107,7 +108,7 @@ function InstanceCard({ instance }) {
             $2,900
           </Typography> */}
         </div>
-        <Button
+        {/* <Button
           variant="solid"
           size="sm"
           color="primary"
@@ -118,7 +119,7 @@ function InstanceCard({ instance }) {
           }}
         >
           Visit
-        </Button>
+        </Button> */}
       </CardContent>
       <CardOverflow
         variant="soft"
@@ -130,53 +131,62 @@ function InstanceCard({ instance }) {
         <CardContent
           orientation="horizontal"
           sx={{
-            justifyContent: "space-between",
+            justifyContent: "space-around",
           }}
         >
-          <Typography
-            level="body3"
-            fontWeight="md"
-            textColor="text.secondary"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 0.5,
-            }}
-          >
-            <PersonIcon />
-            {formatNumber(instance.usage.users.total)}
-          </Typography>
+          <Tooltip title="Total Users" variant="soft">
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 0.5,
+              }}
+            >
+              <PersonIcon />
+              {formatNumber(instance.usage.users.total)}
+            </Typography>
+          </Tooltip>
           <Divider orientation="vertical" />
-          <Typography
-            level="body3"
-            fontWeight="md"
-            textColor="text.secondary"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 0.5,
-            }}
-          >
-            <MessageIcon />
-            {formatNumber(instance.usage.localPosts)}
-          </Typography>
+          <Tooltip title="Posts" variant="soft">
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 0.5,
+              }}
+            >
+              <MessageIcon />
+              {formatNumber(instance.usage.localPosts)}
+            </Typography>
+          </Tooltip>
           <Divider orientation="vertical" />
-          <Typography
-            level="body3"
-            fontWeight="md"
-            textColor="text.secondary"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 0.5,
-            }}
-          >
-            <ForumIcon />
-            {formatNumber(instance.usage.localComments)}
-          </Typography>
+          <Tooltip title="Comments" variant="soft">
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 0.5,
+              }}
+            >
+              <ForumIcon />
+              {formatNumber(instance.usage.localComments)}
+            </Typography>
+          </Tooltip>
           {/* <Divider orientation="vertical" />
           <Typography level="body3" fontWeight="md" textColor="text.secondary">
             {instance.date}

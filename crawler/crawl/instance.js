@@ -3,6 +3,8 @@ import Queue from "bee-queue";
 
 import {
   putInstanceData,
+  storeUnknownInstance,
+  storeOtherError,
   putCommunityData,
   getInstanceData,
   getCommunityData,
@@ -46,6 +48,7 @@ async function crawlInstance(instanceBaseUrl) {
 
   if (software.name != "lemmy" && software.name != "lemmybb") {
     console.log("not a lemmy instance", software);
+    await storeUnknownInstance(instanceBaseUrl, software);
     return null;
   }
 
@@ -99,13 +102,18 @@ export function createInstanceCrawlJob(baseUrl) {
       console.log(
         `Users: ${users.total} Posts: ${localPosts} Comments: ${localComments}`
       );
-      console.log();
 
       createCommunityCrawlJob(job.data.baseUrl);
 
-      if (result.siteData.federated.linked.length > 0) {
+      if (result.siteData?.federated?.linked.length > 0) {
+        console.log(
+          "Crawling federated instances for",
+          baseUrl,
+          result.siteData.federated.linked.length
+        );
         crawlFederatedInstances(baseUrl, result.siteData.federated);
       }
+      console.log();
     }
   });
 }
@@ -114,6 +122,7 @@ function crawlFederatedInstances(baseUrl, { linked, allowed, blocked }) {
   console.log("Crawling federated instances for", baseUrl);
 
   for (var instance of linked) {
+    console.log("Crawling federated instance", instance);
     createInstanceCrawlJob(instance);
   }
 }
@@ -129,6 +138,7 @@ export async function runInstanceCrawl() {
         return instanceData;
       }
     } catch (e) {
+      await storeOtherError(job.data.baseUrl, e);
       console.log(
         `Error crawling ${job.data.baseUrl}. ${e.message}`
         // e.isAxiosError ? e.response : ""

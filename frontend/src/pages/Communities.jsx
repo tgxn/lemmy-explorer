@@ -41,6 +41,7 @@ import Pagination from "../components/Pagination";
 export default function Communities() {
   const [orderBy, setOrderBy] = React.useState("subscribers");
   const [showNsfw, setShowNsfw] = React.useState(false);
+  const [hideNoBanner, setHideNoBanner] = React.useState(true);
 
   const [pageLimit, setPagelimit] = React.useState(100);
   const [page, setPage] = React.useState(0);
@@ -87,10 +88,17 @@ export default function Communities() {
   if (filterText) {
     communties = communties.filter((community) => {
       return (
-        community.name.toLowerCase().includes(filterText.toLowerCase()) ||
-        community.title.toLowerCase().includes(filterText.toLowerCase()) ||
-        community.description.toLowerCase().includes(filterText.toLowerCase())
+        (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
+        (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
+        (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
       );
+    });
+  }
+
+  // hide no banner
+  if (hideNoBanner) {
+    communties = communties.filter((community) => {
+      return community.banner != null;
     });
   }
 
@@ -147,6 +155,13 @@ export default function Communities() {
             onChange={(event) => setShowNsfw(event.target.checked)}
           />
         </Box>
+        <Box sx={{ display: "flex", gap: 3 }}>
+          <Checkbox
+            label="Hide No Banner"
+            checked={hideNoBanner}
+            onChange={(event) => setHideNoBanner(event.target.checked)}
+          />
+        </Box>
         <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
           <Pagination
             page={page}
@@ -163,9 +178,7 @@ export default function Communities() {
 
         <Grid container spacing={2}>
           {communties.map((community) => (
-            <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
-              <CommunityCard community={community} />
-            </Grid>
+            <CommunityCard community={community} />
           ))}
         </Grid>
       </Box>
