@@ -1,0 +1,4 @@
+node_modules/
+cdk.out/
+config.json
+*.context.json

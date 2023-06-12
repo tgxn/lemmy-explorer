@@ -8,7 +8,11 @@ const common = require("./webpack.common.js");
 module.exports = merge(common, {
   mode: "production",
   devtool: false,
-  plugins: [new webpack.EnvironmentPlugin(["NODE_ENV"])],
+  plugins: [
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: "production",
+    }),
+  ],
   optimization: {
     minimize: true,
     minimizer: [
