@@ -12,12 +12,12 @@ import config from "../config.json";
 const app = new cdk.App();
 
 const certStack = new CertStack(app, `LemmyExplorer-Cert-${config.environment}`, {
-  env: { region: "us-east-1" },
+  env: { region: "us-east-1", account: config.account },
   crossRegionReferences: true,
 });
 
 const frontendStack = new FrontendStack(app, `LemmyExplorer-Frontend-${config.environment}`, {
-  env: { region: "ap-southeast-2" },
+  env: { region: "ap-southeast-2", account: config.account },
   cert: certStack.cert,
   crossRegionReferences: true,
 });

@@ -35,31 +35,13 @@ import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import SortIcon from "@mui/icons-material/Sort";
 
 import InstanceCard from "../components/InstanceCard";
-
-function Pagination({ page, setPage, count, limit }) {
-  const handleChange = (event, value) => {
-    setPage(value - 1);
-  };
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        mt: 2,
-      }}
-    >
-      <Chip>One Page</Chip>
-      {/* <Chip slotProps={{ action: { component: "a", href: "" } }}>Anchor chip</Chip>
-      <Chip slotProps={{ action: { component: "a", href: "" } }}>Anchor chip</Chip> */}
-    </Box>
-  );
-}
+import Pagination from "../components/Pagination";
 
 export default function Instances() {
   const [orderBy, setOrderBy] = React.useState("users");
   const [showOpenOnly, setShowOpenOnly] = React.useState(false);
 
-  const [pagelimit, setPagelimit] = React.useState(100);
+  const [pageLimit, setPagelimit] = React.useState(100);
   const [page, setPage] = React.useState(0);
 
   const [filterText, setFilterText] = React.useState("");
@@ -106,14 +88,12 @@ export default function Instances() {
     });
   }
 
+  // pagination
+  const all_instances = instances;
+  instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
+
   return (
-    <Container
-      maxWidth="xl"
-      sx={{
-        overflow: "auto",
-        height: "100%",
-      }}
-    >
+    <Container maxWidth={false} sx={{}}>
       <Box
         component="header"
         sx={{
@@ -162,7 +142,12 @@ export default function Instances() {
           />
         </Box>
         <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
-          <Pagination />
+          <Pagination
+            page={page}
+            count={all_instances.length}
+            setPage={(value) => setPage(value)}
+            limit={pageLimit}
+          />
         </Box>
       </Box>
 

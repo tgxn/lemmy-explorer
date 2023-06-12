@@ -14,6 +14,7 @@ import GlobalStyles from "@mui/joy/GlobalStyles";
 import CssBaseline from "@mui/joy/CssBaseline";
 
 import Box from "@mui/joy/Box";
+import Container from "@mui/joy/Container";
 
 const queryClient = new QueryClient();
 
@@ -38,20 +39,36 @@ export default function App() {
         }}
       />
       <QueryClientProvider client={queryClient}>
-        <Box sx={{ height: "100%", overflow: "hidden" }}>
+        <Container
+          maxWidth={false}
+          disableGutters={true}
+          sx={{
+            height: "100%",
+            width: "100%",
+            position: "absolute",
+            bottom: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            display: "block",
+            overflow: "hidden",
+          }}
+        >
           <BrowserRouter>
             <Header />
-            <Routes>
-              <Route
-                index
-                //   path="/instances"
-                element={<Instances />}
-              />
-              <Route path="/communities" element={<Communities />} />
-              {/* <Route path="*" element={<NoMatch />} /> */}
-            </Routes>
+            <Box sx={{ overflow: "auto", height: "100%" }}>
+              <Routes>
+                <Route
+                  index
+                  //   path="/instances"
+                  element={<Instances />}
+                />
+                <Route path="/communities" element={<Communities />} />
+                {/* <Route path="*" element={<NoMatch />} /> */}
+              </Routes>
+            </Box>
           </BrowserRouter>
-        </Box>
+        </Container>
       </QueryClientProvider>
     </CssVarsProvider>
   );

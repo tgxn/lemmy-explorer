@@ -18,7 +18,15 @@ import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+
 function InstanceCard({ instance }) {
+  const [loadedBanner, setLoadedBanner] = React.useState(false);
+  const [loadedIcon, setLoadedIcon] = React.useState(false);
+
+  const [iconError, setIconError] = React.useState(false);
+  const [bannerError, setBannerError] = React.useState(false);
+
   function formatNumber(num) {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
@@ -30,11 +38,45 @@ function InstanceCard({ instance }) {
   }
   return (
     <Card variant="outlined">
-      <CardHeader
+      {/* <CardHeader
         sx={{ p: 0 }}
         avatar={<Avatar alt={instance.name} src={instance.icon} />}
         title={instance.name}
-      />
+      /> */}
+      <CardContent orientation="horizontal">
+        <Avatar
+          alt={instance.name}
+          src={instance.icon}
+          sx={{
+            display: "flex",
+            flex: "0 0 auto",
+            marginRight: 1,
+          }}
+        />
+        <div>
+          <Typography
+            level="body3"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "16px",
+            }}
+          >
+            {instance.name}
+          </Typography>
+          <Typography level="body3">{instance.url && instance.url.split("/")[2]}</Typography>
+        </div>
+        <IconButton
+          sx={{
+            marginLeft: "auto",
+          }}
+          color="neutral"
+          onClick={() => {
+            window.open(instance.url, "_blank");
+          }}
+        >
+          <OpenInNewIcon fontSize={"small"} />
+        </IconButton>
+      </CardContent>
 
       <CardOverflow>
         <AspectRatio
@@ -44,7 +86,18 @@ function InstanceCard({ instance }) {
           minHeight="120px"
           maxHeight="200px"
         >
-          <img src={instance.banner} srcSet={instance.banner} loading="lazy" alt="" />
+          <img
+            src={instance.banner}
+            srcSet={instance.banner}
+            loading="lazy"
+            // alt={imageData.title}
+            height={"100%"}
+            // width={"100%"}
+            style={{ display: loadedBanner ? "flex" : "none" }}
+            onLoad={() => setLoadedBanner(true)}
+            onError={() => setBannerError(true)}
+            className={loadedBanner ? "loaded" : ""}
+          />
         </AspectRatio>
       </CardOverflow>
       <CardContent orientation="horizontal">

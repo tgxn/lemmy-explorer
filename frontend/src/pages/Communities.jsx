@@ -36,30 +36,13 @@ import SortIcon from "@mui/icons-material/Sort";
 
 import CommunityCard from "../components/CommunityCard";
 
-function Pagination({ page, setPage, count, limit }) {
-  const handleChange = (event, value) => {
-    setPage(value - 1);
-  };
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        mt: 2,
-      }}
-    >
-      <Chip>One Page</Chip>
-      {/* <Chip slotProps={{ action: { component: "a", href: "" } }}>Anchor chip</Chip>
-      <Chip slotProps={{ action: { component: "a", href: "" } }}>Anchor chip</Chip> */}
-    </Box>
-  );
-}
+import Pagination from "../components/Pagination";
 
 export default function Communities() {
   const [orderBy, setOrderBy] = React.useState("subscribers");
   const [showNsfw, setShowNsfw] = React.useState(false);
 
-  const [pagelimit, setPagelimit] = React.useState(100);
+  const [pageLimit, setPagelimit] = React.useState(100);
   const [page, setPage] = React.useState(0);
 
   const [filterText, setFilterText] = React.useState("");
@@ -111,17 +94,12 @@ export default function Communities() {
     });
   }
 
-  // first 1000 only HARDCODE
-  communties = communties.slice(0, 50);
+  // pagination
+  const all_communties = communties;
+  communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
   return (
-    <Container
-      maxWidth="xl"
-      sx={{
-        overflow: "auto",
-        height: "100%",
-      }}
-    >
+    <Container maxWidth={false} sx={{}}>
       <Box
         component="header"
         sx={{
@@ -170,7 +148,12 @@ export default function Communities() {
           />
         </Box>
         <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
-          <Pagination />
+          <Pagination
+            page={page}
+            count={all_communties.length}
+            setPage={(value) => setPage(value)}
+            limit={pageLimit}
+          />
         </Box>
       </Box>
 

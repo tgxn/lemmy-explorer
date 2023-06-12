@@ -11,6 +11,8 @@ import { useColorScheme } from "@mui/joy/styles";
 
 import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
+import Tooltip from "@mui/joy/Tooltip";
+
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 
@@ -26,23 +28,26 @@ function ColorSchemeToggle({ onClick, ...props }) {
     return <IconButton size="sm" variant="plain" color="neutral" disabled />;
   }
   return (
-    <IconButton
-      id="toggle-mode"
-      size="sm"
-      variant="plain"
-      color="neutral"
-      {...props}
-      onClick={(event) => {
-        if (mode === "light") {
-          setMode("dark");
-        } else {
-          setMode("light");
-        }
-        onClick?.(event);
-      }}
-    >
-      {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
-    </IconButton>
+    <Tooltip title="Toggle Color Scheme" variant="soft">
+      <IconButton
+        id="toggle-mode"
+        size="sm"
+        variant="outlined"
+        color="neutral"
+        sx={{ mr: 2, p: 1 }}
+        {...props}
+        onClick={(event) => {
+          if (mode === "light") {
+            setMode("dark");
+          } else {
+            setMode("light");
+          }
+          onClick?.(event);
+        }}
+      >
+        {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
+      </IconButton>
+    </Tooltip>
   );
 }
 
@@ -64,7 +69,7 @@ export default function TabsVariants() {
     <Box
       component="header"
       sx={{
-        p: 3,
+        p: 2,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -115,17 +120,20 @@ export default function TabsVariants() {
       </Tabs>
       <Box sx={{ flexGrow: 1 }} />
       <ColorSchemeToggle />
-      <IconButton
-        size="sm"
-        variant="plain"
-        color="neutral"
-        // link to https://github.com/tgxn/lemmy-explorer
-        onClick={() => {
-          window.open("https://github.com/tgxn/lemmy-explorer", "_blank");
-        }}
-      >
-        <GitHubIcon />
-      </IconButton>
+      <Tooltip title="View Code on GitHub" variant="soft">
+        <IconButton
+          size="sm"
+          variant="outlined"
+          color="neutral"
+          sx={{ p: 1 }}
+          // link to https://github.com/tgxn/lemmy-explorer
+          onClick={() => {
+            window.open("https://github.com/tgxn/lemmy-explorer", "_blank");
+          }}
+        >
+          <GitHubIcon />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 }

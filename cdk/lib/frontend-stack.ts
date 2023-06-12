@@ -5,6 +5,7 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as route53 from "aws-cdk-lib/aws-route53";
+import * as targets from "aws-cdk-lib/aws-route53-targets";
 
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
@@ -127,12 +128,18 @@ export class FrontendStack extends Stack {
       ],
     });
 
-    // create route53 cname
-    const cname = new route53.CnameRecord(this, "SiteAliasRecord", {
+    new route53.AaaaRecord(this, "Alias", {
       zone: route53.HostedZone.fromLookup(this, "Zone", { domainName: config.base_zone }),
       recordName: config.domain,
-      domainName: distribution.distributionDomainName,
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     });
+
+    // create route53 cname alias
+    // const cname = new route53.CnameRecord(this, "SiteAliasRecord", {
+    //   zone: route53.HostedZone.fromLookup(this, "Zone", { domainName: config.base_zone }),
+    //   recordName: config.domain,
+    //   domainName: distribution.distributionDomainName,
+    // });
 
     new CfnOutput(this, "DistributionId", {
       value: distribution.distributionId,

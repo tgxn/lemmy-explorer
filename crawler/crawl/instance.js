@@ -12,7 +12,10 @@ import {
 
 import { createCommunityCrawlJob, runCommunityCrawl } from "./communities.js";
 
-const instanceQueue = new Queue("instances");
+const options = {
+  removeOnSuccess: true,
+};
+const instanceQueue = new Queue("instances", options);
 
 /**
  * Crawls Linked Lemmy Instance Stats
@@ -100,18 +103,15 @@ export function createInstanceCrawlJob(baseUrl) {
 
       createCommunityCrawlJob(job.data.baseUrl);
 
-      crawlFederatedInstances(result);
+      if (result.siteData.federated.linked.length > 0) {
+        crawlFederatedInstances(baseUrl, result.siteData.federated);
+      }
     }
   });
 }
 
-function crawlFederatedInstances(instanceData) {
-  const { linked, allowed, blocked } = instanceData.siteData.federated;
-
-  console.log(
-    "Crawling federated instances for",
-    instanceData.siteData.site.actor_id
-  );
+function crawlFederatedInstances(baseUrl, { linked, allowed, blocked }) {
+  console.log("Crawling federated instances for", baseUrl);
 
   for (var instance of linked) {
     createInstanceCrawlJob(instance);
