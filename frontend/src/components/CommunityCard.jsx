@@ -1,29 +1,25 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 
 import Avatar from "@mui/joy/Avatar";
-
-import AspectRatio from "@mui/joy/AspectRatio";
-import Button from "@mui/joy/Button";
+import Link from "@mui/joy/Link";
+import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
-import CardHeader from "@mui/material/CardHeader";
-import CardCover from "@mui/joy/CardCover";
 import Grid from "@mui/joy/Grid";
 import Tooltip from "@mui/joy/Tooltip";
 
-import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
-
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+
+import { ContentSkeleton, ContentError } from "./Display";
+import CopyLink from "./CopyLink";
 
 function CommunityCard({ community, hideNoBanner }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
@@ -45,29 +41,70 @@ function CommunityCard({ community, hideNoBanner }) {
   return (
     <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
       <Card variant="outlined">
-        <CardContent orientation="horizontal">
+        <CardContent
+          orientation="horizontal"
+          sx={{
+            overflow: "hidden",
+          }}
+        >
           <Avatar
             alt={community.title}
             src={community.icon}
             sx={{
               display: "flex",
               flex: "0 0 auto",
-              marginRight: 1,
+              // marginRight: 0,
             }}
           />
-          <div>
+          <Box
+            sx={{
+              flexShrink: 1,
+            }}
+          >
             <Typography
               level="body3"
               sx={{
                 fontWeight: "bold",
                 fontSize: "16px",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
               }}
             >
-              {community.title}
+              <Link
+                level="body1"
+                variant="plain"
+                color="neutral"
+                href={community.url}
+                target="_blank"
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   window.open(community.url, "_blank");
+                //   // navigator.clipboard.writeText(copyText);
+                //   // setCopied(true);
+                // }}
+              >
+                {/* <ContentCopyIcon
+                  fontSize="small"
+                  sx={{
+                    mr: 0.5,
+                  }}
+                /> */}
+                {community.title}
+                <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+              </Link>
             </Typography>
-            <Typography level="body3">on {community.url && community.url.split("/")[2]}</Typography>
-          </div>
-          <IconButton
+            <Typography level="body3">
+              <CopyLink
+                copyText={`!${community.name}@${community.url && community.url.split("/")[2]}`}
+                linkProps={{
+                  variant: "plain",
+                  color: "neutral",
+                }}
+              />
+            </Typography>
+          </Box>
+          {/* <IconButton
             sx={{
               marginLeft: "auto",
             }}
@@ -77,38 +114,46 @@ function CommunityCard({ community, hideNoBanner }) {
             }}
           >
             <OpenInNewIcon fontSize={"small"} />
-          </IconButton>
+          </IconButton> */}
         </CardContent>
 
-        <CardOverflow>
-          <AspectRatio
-            sx={{
-              borderRadius: 0,
+        <CardOverflow
+          sx={{
+            p: 0,
+            minHeight: "120px",
+            maxHeight: "200px",
+            overflow: "hidden",
+            borderRadius: 0,
+          }}
+        >
+          {!community.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
+          {community.banner && bannerError && <ContentError />}
+          {community.banner && !bannerError && !loadedBanner && <ContentSkeleton />}
+          <img
+            src={community.banner}
+            srcSet={community.banner}
+            loading="lazy"
+            width={"100%"}
+            style={{
+              display: loadedBanner ? "flex" : "none",
             }}
-            minHeight="120px"
-            maxHeight="200px"
-          >
-            <img
-              src={community.banner}
-              srcSet={community.banner}
-              loading="lazy"
-              // alt={imageData.title}
-              height={"100%"}
-              // width={"100%"}
-              style={{ display: loadedBanner ? "flex" : "none" }}
-              onLoad={() => setLoadedBanner(true)}
-              onError={() => setBannerError(true)}
-              className={loadedBanner ? "loaded" : ""}
-            />
-          </AspectRatio>
+            onLoad={() => {
+              setLoadedBanner(true);
+              setBannerError(false);
+            }}
+            onError={() => setBannerError(true)}
+          />
         </CardOverflow>
         <CardContent orientation="horizontal">
-          <div>
-            <Typography level="body3">{community.desc ? community.desc.substring(0, 200) : ""}</Typography>
-            {/* <Typography fontSize="lg" fontWeight="lg">
-            $2,900
-          </Typography> */}
-          </div>
+          <Typography
+            level="body3"
+            sx={{
+              maxHeight: "90px",
+              overflow: "hidden",
+            }}
+          >
+            {community.desc ? community.desc.substring(0, 200) : ""}
+          </Typography>
         </CardContent>
         <CardOverflow
           variant="soft"

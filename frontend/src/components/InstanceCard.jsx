@@ -3,23 +3,24 @@ import React from "react";
 
 import Avatar from "@mui/joy/Avatar";
 
-import AspectRatio from "@mui/joy/AspectRatio";
-import Button from "@mui/joy/Button";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
-import CardHeader from "@mui/material/CardHeader";
+import Box from "@mui/material/Box";
 import CardCover from "@mui/joy/CardCover";
 import Tooltip from "@mui/joy/Tooltip";
+import Link from "@mui/joy/Link";
 
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
-
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+
+import { ContentSkeleton, ContentError } from "./Display";
+import CopyLink from "./CopyLink";
 
 function InstanceCard({ instance }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
@@ -39,11 +40,6 @@ function InstanceCard({ instance }) {
   }
   return (
     <Card variant="outlined">
-      {/* <CardHeader
-        sx={{ p: 0 }}
-        avatar={<Avatar alt={instance.name} src={instance.icon} />}
-        title={instance.name}
-      /> */}
       <CardContent orientation="horizontal">
         <Avatar
           alt={instance.name}
@@ -54,18 +50,61 @@ function InstanceCard({ instance }) {
             marginRight: 1,
           }}
         />
-        <div>
+        <Box
+          sx={{
+            flexShrink: 1,
+          }}
+        >
           <Typography
             level="body3"
             sx={{
               fontWeight: "bold",
               fontSize: "16px",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
             }}
           >
-            {instance.name}
+            <Link
+              level="body1"
+              variant="plain"
+              color="neutral"
+              href={instance.url}
+              target="_blank"
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   window.open(instance.url, "_blank");
+              //   // navigator.clipboard.writeText(copyText);
+              //   // setCopied(true);
+              // }}
+            >
+              {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+            </Link>
           </Typography>
-          <Typography level="body3">{instance.url && instance.url.split("/")[2]}</Typography>
-        </div>
+          <Typography level="body3">
+            <CopyLink
+              copyText={instance.url.split("/")[2]}
+              linkProps={{
+                variant: "plain",
+                color: "neutral",
+              }}
+            />
+            {/* <Tooltip title="Click to Copy" variant="soft" placement="top">
+              <Link
+                level="body3"
+                variant="plain"
+                color="neutral"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigator.clipboard.writeText(instance.url.split("/")[2]);
+                }}
+              >
+                {instance.url && instance.url.split("/")[2]}
+              </Link>
+            </Tooltip> */}
+          </Typography>
+        </Box>
+        {/* </div>
         <IconButton
           sx={{
             marginLeft: "auto",
@@ -76,30 +115,35 @@ function InstanceCard({ instance }) {
           }}
         >
           <OpenInNewIcon fontSize={"small"} />
-        </IconButton>
+        </IconButton> */}
       </CardContent>
 
-      <CardOverflow>
-        <AspectRatio
-          sx={{
-            borderRadius: 0,
+      <CardOverflow
+        sx={{
+          p: 0,
+          minHeight: "120px",
+          maxHeight: "200px",
+          overflow: "hidden",
+          borderRadius: 0,
+        }}
+      >
+        {!instance.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
+        {instance.banner && bannerError && <ContentError />}
+        {instance.banner && !bannerError && !loadedBanner && <ContentSkeleton />}
+        <img
+          src={instance.banner}
+          srcSet={instance.banner}
+          loading="lazy"
+          width={"100%"}
+          style={{
+            display: loadedBanner ? "flex" : "none",
           }}
-          minHeight="120px"
-          maxHeight="200px"
-        >
-          <img
-            src={instance.banner}
-            srcSet={instance.banner}
-            loading="lazy"
-            // alt={imageData.title}
-            height={"100%"}
-            // width={"100%"}
-            style={{ display: loadedBanner ? "flex" : "none" }}
-            onLoad={() => setLoadedBanner(true)}
-            onError={() => setBannerError(true)}
-            className={loadedBanner ? "loaded" : ""}
-          />
-        </AspectRatio>
+          onLoad={() => {
+            setLoadedBanner(true);
+            setBannerError(false);
+          }}
+          onError={() => setBannerError(true)}
+        />
       </CardOverflow>
       <CardContent orientation="horizontal">
         <div>

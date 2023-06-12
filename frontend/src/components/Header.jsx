@@ -71,12 +71,16 @@ export default function TabsVariants() {
       sx={{
         p: 2,
         display: "flex",
+        height: "80px",
         alignItems: "center",
         justifyContent: "space-between",
       }}
     >
       <Typography
         fontWeight="lg"
+        sx={{
+          ml: 2,
+        }}
         startDecorator={
           <Box
             component="div"

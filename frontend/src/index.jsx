@@ -56,7 +56,7 @@ export default function App() {
         >
           <BrowserRouter>
             <Header />
-            <Box sx={{ overflow: "auto", height: "100%" }}>
+            <Box sx={{ overflow: "auto", height: "calc(100% - 80px)" }}>
               <Routes>
                 <Route
                   index
@@ -64,6 +64,7 @@ export default function App() {
                   element={<Instances />}
                 />
                 <Route path="/communities" element={<Communities />} />
+                <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
                 {/* <Route path="*" element={<NoMatch />} /> */}
               </Routes>
             </Box>
