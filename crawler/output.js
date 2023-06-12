@@ -48,7 +48,24 @@ async function start() {
   const communities = await listCommunityData();
   console.log("Communities", communities.length);
 
-  await writeJsonFile("../frontend/public/communities.json", communities);
+  const storeCommunityData = communities.map((communityString) => {
+    const community = JSON.parse(communityString);
+    return {
+      url: community.community.actor_id,
+      name: community.community.name,
+      title: community.community.title,
+      desc: community.community.description,
+      icon: community.community.icon,
+      banner: community.community.banner,
+      nsfw: community.community.nsfw,
+      counts: community.counts,
+    };
+  });
+
+  await writeJsonFile(
+    "../frontend/public/communities.json",
+    JSON.stringify(storeCommunityData)
+  );
 
   return true;
 }

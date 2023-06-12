@@ -7,20 +7,13 @@ import {
 
 // let baseUrl = "https://lemmy.tgxn.net";
 
-const siteUrls = [
-  "lemmy.tgxn.net",
-  "lemmy.ml",
-  "ds9.lemmy.ml",
-  "enterprise.lemmy.ml",
-  "voyager.lemmy.ml",
-  "test.lemmy.ml",
-];
+const siteUrls = ["lemmy.tgxn.net", "lemmy.ml", "vlemmy.net"];
 
 function start() {
-  createInstanceCrawlJob("vlemmy.net");
-  //   for (var baseUrl of siteUrls) {
-  //     createInstanceCrawlJob(baseUrl);
-  //   }
+  // createInstanceCrawlJob("vlemmy.net");
+  for (var baseUrl of siteUrls) {
+    createInstanceCrawlJob(baseUrl);
+  }
 
   runInstanceCrawl();
   runCommunityCrawl();

@@ -1,22 +1,20 @@
-import * as React from "react";
+import React from "react";
+
 import Box from "@mui/joy/Box";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
 import Tab from "@mui/joy/Tab";
 
-import { CssVarsProvider, useColorScheme } from "@mui/joy/styles";
-import GlobalStyles from "@mui/joy/GlobalStyles";
-import CssBaseline from "@mui/joy/CssBaseline";
-import Button from "@mui/joy/Button";
-import Checkbox from "@mui/joy/Checkbox";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel, { formLabelClasses } from "@mui/joy/FormLabel";
-import IconButton, { IconButtonProps } from "@mui/joy/IconButton";
-import Link from "@mui/joy/Link";
-import Input from "@mui/joy/Input";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import { useColorScheme } from "@mui/joy/styles";
+
+import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
+
+import GitHubIcon from "@mui/icons-material/GitHub";
 
 function ColorSchemeToggle({ onClick, ...props }) {
   const { mode, setMode } = useColorScheme();
@@ -50,6 +48,18 @@ function ColorSchemeToggle({ onClick, ...props }) {
 
 export default function TabsVariants() {
   const [index, setIndex] = React.useState(0);
+
+  const navigate = useNavigate();
+
+  const location = useLocation();
+  console.log("location", location);
+
+  React.useEffect(() => {
+    if (location.pathname === "/communities") {
+      setIndex(1);
+    }
+  }, [location]);
+
   return (
     <Box
       component="header"
@@ -64,11 +74,12 @@ export default function TabsVariants() {
         fontWeight="lg"
         startDecorator={
           <Box
-            component="span"
+            component="div"
             sx={{
-              width: 24,
-              height: 24,
-              background: `url("/icons/Lemmy_Logo.svg") no-repeat center center`,
+              width: 28,
+              height: 28,
+              background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+              backgroundSize: "contain",
               //   borderRadius: "50%",
               //   boxShadow: (theme) => theme.shadow.md,
               //   "--joy-shadowChannel": (theme) => theme.vars.palette.primary.mainChannel,
@@ -78,10 +89,19 @@ export default function TabsVariants() {
       >
         Lemmy Explorer
       </Typography>
+      <Box sx={{ flexGrow: 1 }} />
       <Tabs
         aria-label="Soft tabs"
         value={index}
-        onChange={(event, value) => setIndex(value)}
+        onChange={(event, value) => {
+          setIndex(value);
+          if (value === 0) {
+            navigate("/");
+          }
+          if (value === 1) {
+            navigate("/communities");
+          }
+        }}
         sx={{ borderRadius: "lg" }}
       >
         <TabList variant="soft">
@@ -93,27 +113,19 @@ export default function TabsVariants() {
           </Tab>
         </TabList>
       </Tabs>
+      <Box sx={{ flexGrow: 1 }} />
       <ColorSchemeToggle />
+      <IconButton
+        size="sm"
+        variant="plain"
+        color="neutral"
+        // link to https://github.com/tgxn/lemmy-explorer
+        onClick={() => {
+          window.open("https://github.com/tgxn/lemmy-explorer", "_blank");
+        }}
+      >
+        <GitHubIcon />
+      </IconButton>
     </Box>
-
-    // <Box sx={{ display: "flex", gap: 2, flexDirection: "column", flexAlign: "center", width: "500px" }}>
-    //   Lemmy Explorer
-    //   <Tabs
-    //     aria-label="Soft tabs"
-    //     value={index}
-    //     onChange={(event, value) => setIndex(value)}
-    //     sx={{ borderRadius: "lg" }}
-    //   >
-    //     <TabList variant="soft">
-    //       <Tab variant={index === 0 ? "solid" : "plain"} color={index === 0 ? "primary" : "neutral"}>
-    //         Instances
-    //       </Tab>
-    //       <Tab variant={index === 1 ? "solid" : "plain"} color={index === 1 ? "primary" : "neutral"}>
-    //         Communities
-    //       </Tab>
-    //     </TabList>
-    //   </Tabs>
-    //   <ColorSchemeToggle />
-    // </Box>
   );
 }

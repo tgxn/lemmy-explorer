@@ -20,5 +20,6 @@ Data is retrieved using TanStack Query.
 
 ## Thanks
 
+https://github.com/LemmyNet/lemmy-stats-crawler
 https://browse.feddit.de/
 

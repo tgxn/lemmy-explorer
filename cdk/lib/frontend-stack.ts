@@ -3,6 +3,9 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as route53 from "aws-cdk-lib/aws-route53";
+
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { NagSuppressions } from "cdk-nag";
@@ -39,8 +42,12 @@ import { AuthLambdas, CloudFrontAuth } from "@henrist/cdk-cloudfront-auth";
 
 import config from "../config.json";
 
+type FrontendStackProps = StackProps & {
+  cert: acm.Certificate;
+};
+
 export class FrontendStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: FrontendStackProps) {
     super(scope, id, props);
 
     // CloudFront Origin Access Identity
@@ -95,6 +102,10 @@ export class FrontendStack extends Stack {
         compress: true,
       },
 
+      // domain name config
+      domainNames: [config.domain],
+      certificate: props.cert,
+
       defaultRootObject: "index.html",
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
       geoRestriction: cloudfront.GeoRestriction.allowlist("AU", "NZ", "TH"),
@@ -114,6 +125,13 @@ export class FrontendStack extends Stack {
           ttl: Duration.seconds(0),
         },
       ],
+    });
+
+    // create route53 cname
+    const cname = new route53.CnameRecord(this, "SiteAliasRecord", {
+      zone: route53.HostedZone.fromLookup(this, "Zone", { domainName: config.base_zone }),
+      recordName: config.domain,
+      domainName: distribution.distributionDomainName,
     });
 
     new CfnOutput(this, "DistributionId", {
