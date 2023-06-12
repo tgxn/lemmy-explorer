@@ -10,7 +10,10 @@ import {
   listCommunityData,
 } from "../storage.js";
 
-const communityQueue = new Queue("community");
+const options = {
+  removeOnSuccess: true,
+};
+const communityQueue = new Queue("community", options);
 
 export function createCommunityCrawlJob(baseUrl) {
   const job = communityQueue.createJob({ baseUrl });

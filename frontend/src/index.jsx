@@ -1,40 +1,26 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
-import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import axios from "axios";
 
-import { CssVarsProvider, useColorScheme } from "@mui/joy/styles";
+import ReactDOM from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import { Routes, Route, Navigate } from "react-router-dom";
+
+import { BrowserRouter } from "react-router-dom";
+
+import { CssVarsProvider } from "@mui/joy/styles";
 
 import GlobalStyles from "@mui/joy/GlobalStyles";
 import CssBaseline from "@mui/joy/CssBaseline";
 
-import Container from "@mui/joy/Container";
-// import Typography from "@mui/material/Typography";
 import Box from "@mui/joy/Box";
-// import Link from "@mui/material/Link";
-import Avatar from "@mui/joy/Avatar";
-import List from "@mui/joy/List";
-import ListItem from "@mui/joy/ListItem";
-import Typography from "@mui/joy/Typography";
-import ListItemContent from "@mui/joy/ListItemContent";
-import ListItemDecorator from "@mui/joy/ListItemDecorator";
+import Container from "@mui/joy/Container";
 
-import Sheet from "@mui/joy/Sheet";
-import Grid from "@mui/joy/Grid";
-import Card from "@mui/joy/Card";
-
-import AspectRatio from "@mui/joy/AspectRatio";
-import Button from "@mui/joy/Button";
-import CardContent from "@mui/joy/CardContent";
-import IconButton from "@mui/joy/IconButton";
-import Divider from "@mui/joy/Divider";
-import CardOverflow from "@mui/joy/CardOverflow";
 const queryClient = new QueryClient();
 
 import Header from "./components/Header";
 import Instances from "./pages/Instances";
+import Communities from "./pages/Communities";
 
 import customTheme from "./theme";
 
@@ -53,9 +39,37 @@ export default function App() {
         }}
       />
       <QueryClientProvider client={queryClient}>
-        <Header />
-        <Instances />
-      </QueryClientProvider>{" "}
+        <Container
+          maxWidth={false}
+          disableGutters={true}
+          sx={{
+            height: "100%",
+            width: "100%",
+            position: "absolute",
+            bottom: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            display: "block",
+            overflow: "hidden",
+          }}
+        >
+          <BrowserRouter>
+            <Header />
+            <Box sx={{ overflow: "auto", height: "100%" }}>
+              <Routes>
+                <Route
+                  index
+                  //   path="/instances"
+                  element={<Instances />}
+                />
+                <Route path="/communities" element={<Communities />} />
+                {/* <Route path="*" element={<NoMatch />} /> */}
+              </Routes>
+            </Box>
+          </BrowserRouter>
+        </Container>
+      </QueryClientProvider>
     </CssVarsProvider>
   );
 }

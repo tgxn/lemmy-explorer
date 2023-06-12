@@ -34,12 +34,14 @@ import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 
 import SortIcon from "@mui/icons-material/Sort";
 
-import InstanceCard from "../components/InstanceCard";
+import CommunityCard from "../components/CommunityCard";
+
 import Pagination from "../components/Pagination";
 
-export default function Instances() {
-  const [orderBy, setOrderBy] = React.useState("users");
-  const [showOpenOnly, setShowOpenOnly] = React.useState(false);
+export default function Communities() {
+  const [orderBy, setOrderBy] = React.useState("subscribers");
+  const [showNsfw, setShowNsfw] = React.useState(false);
+  const [hideNoBanner, setHideNoBanner] = React.useState(true);
 
   const [pageLimit, setPagelimit] = React.useState(100);
   const [page, setPage] = React.useState(0);
@@ -47,9 +49,9 @@ export default function Instances() {
   const [filterText, setFilterText] = React.useState("");
 
   const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["instanceData"],
+    queryKey: ["communitiesData"],
     queryFn: () =>
-      axios.get("/instances.json").then((res) => {
+      axios.get("/communities.json").then((res) => {
         return res.data;
       }),
     // dont update
@@ -64,33 +66,45 @@ export default function Instances() {
 
   // process data
 
-  let instances = data;
-  if (showOpenOnly) {
-    instances = instances.filter((instance) => instance.open);
+  let communties = data;
+  console.log(communties);
+
+  if (!showNsfw) {
+    communties = communties.filter((community) => {
+      return !community.nsfw;
+    });
   }
 
-  if (orderBy === "users") {
-    instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
+  if (orderBy === "subscribers") {
+    communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
   } else if (orderBy === "active") {
-    instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
+    communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
   } else if (orderBy === "posts") {
-    instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
+    communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
   } else if (orderBy === "comments") {
-    instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
+    communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
   }
 
   if (filterText) {
-    instances = instances.filter((instance) => {
-      if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
-      if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
-      if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
-      return false;
+    communties = communties.filter((community) => {
+      return (
+        (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
+        (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
+        (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
+      );
+    });
+  }
+
+  // hide no banner
+  if (hideNoBanner) {
+    communties = communties.filter((community) => {
+      return community.banner != null;
     });
   }
 
   // pagination
-  const all_instances = instances;
-  instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
+  const all_communties = communties;
+  communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -105,7 +119,7 @@ export default function Instances() {
         }}
       >
         <Input
-          placeholder="Filter Instances"
+          placeholder="Filter Communities"
           value={filterText}
           onChange={(event) => setFilterText(event.target.value)}
         />
@@ -128,7 +142,7 @@ export default function Instances() {
               },
             }}
           >
-            <Option value="users">Users</Option>
+            <Option value="subscribers">Subscribers</Option>
             <Option value="active">Active Users</Option>
             <Option value="posts">Posts</Option>
             <Option value="comments">Comments</Option>
@@ -136,15 +150,22 @@ export default function Instances() {
         </Typography>
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
-            label="Open Only"
-            checked={showOpenOnly}
-            onChange={(event) => setShowOpenOnly(event.target.checked)}
+            label="Show NSFW"
+            checked={showNsfw}
+            onChange={(event) => setShowNsfw(event.target.checked)}
+          />
+        </Box>
+        <Box sx={{ display: "flex", gap: 3 }}>
+          <Checkbox
+            label="Hide No Banner"
+            checked={hideNoBanner}
+            onChange={(event) => setHideNoBanner(event.target.checked)}
           />
         </Box>
         <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
           <Pagination
             page={page}
-            count={all_instances.length}
+            count={all_communties.length}
             setPage={(value) => setPage(value)}
             limit={pageLimit}
           />
@@ -156,10 +177,8 @@ export default function Instances() {
         <div>{isFetching ? "Updating..." : ""}</div>
 
         <Grid container spacing={2}>
-          {instances.map((instance) => (
-            <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
-              <InstanceCard instance={instance} />
-            </Grid>
+          {communties.map((community) => (
+            <CommunityCard community={community} />
           ))}
         </Grid>
       </Box>
