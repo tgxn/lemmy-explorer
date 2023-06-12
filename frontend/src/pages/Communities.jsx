@@ -36,57 +36,64 @@ export default function Communities() {
       axios.get("/communities.json").then((res) => {
         return res.data;
       }),
-    // dont update
-    // refetchInterval: 1000,
-    // refetchIntervalInBackground: true,
     refetchOnWindowFocus: false,
-    // refetchOnMount: true,
   });
+
+  const [totalFiltered, setTotalFiltered] = React.useState(0);
+  const [communitiesData, setCommunitiesData] = React.useState([]);
+
+  React.useEffect(() => {
+    // process data
+
+    if (!data) return;
+
+    let communties = data;
+    console.log(communties);
+
+    if (!showNsfw) {
+      communties = communties.filter((community) => {
+        return !community.nsfw;
+      });
+    }
+
+    if (orderBy === "subscribers") {
+      communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
+    } else if (orderBy === "active") {
+      communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
+    } else if (orderBy === "posts") {
+      communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
+    } else if (orderBy === "comments") {
+      communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
+    }
+
+    if (filterText) {
+      communties = communties.filter((community) => {
+        return (
+          (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
+          (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
+          (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
+        );
+      });
+    }
+
+    // hide no banner
+    if (hideNoBanner) {
+      communties = communties.filter((community) => {
+        return community.banner != null;
+      });
+    }
+
+    // pagination
+    // const all_communties = communties;
+    setTotalFiltered(communties.length);
+
+    communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
+
+    setCommunitiesData(communties);
+  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
 
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
-
-  // process data
-
-  let communties = data;
-  console.log(communties);
-
-  if (!showNsfw) {
-    communties = communties.filter((community) => {
-      return !community.nsfw;
-    });
-  }
-
-  if (orderBy === "subscribers") {
-    communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
-  } else if (orderBy === "active") {
-    communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
-  } else if (orderBy === "posts") {
-    communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
-  } else if (orderBy === "comments") {
-    communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
-  }
-
-  if (filterText) {
-    communties = communties.filter((community) => {
-      return (
-        (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
-        (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
-        (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
-      );
-    });
-  }
-
-  // hide no banner
-  if (hideNoBanner) {
-    communties = communties.filter((community) => {
-      return community.banner != null;
-    });
-  }
-
-  // pagination
-  const all_communties = communties;
-  communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -147,7 +154,7 @@ export default function Communities() {
         <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
           <Pagination
             page={page}
-            count={all_communties.length}
+            count={totalFiltered}
             setPage={(value) => setPage(value)}
             limit={pageLimit}
           />
@@ -159,7 +166,7 @@ export default function Communities() {
         <div>{isFetching ? "Updating..." : ""}</div>
 
         <Grid container spacing={2}>
-          {communties.map((community) => (
+          {communitiesData.map((community) => (
             <CommunityCard community={community} />
           ))}
         </Grid>

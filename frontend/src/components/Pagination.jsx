@@ -35,7 +35,7 @@ export default function Pagination({ setPage, page, count, limit }) {
         }}
         color="neutral"
       >
-        {page * limit} - {page * limit + limit} / {count}
+        {page * limit} - {page * limit + limit < count ? page * limit + limit : count} / {count}
       </Chip>
       {page != 0 && (
         <Chip

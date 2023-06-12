@@ -52,45 +52,51 @@ export default function Instances() {
       axios.get("/instances.json").then((res) => {
         return res.data;
       }),
-    // dont update
-    // refetchInterval: 1000,
-    // refetchIntervalInBackground: true,
     refetchOnWindowFocus: false,
-    // refetchOnMount: true,
   });
+
+  const [totalFiltered, setTotalFiltered] = React.useState(0);
+  const [instancesData, setInstancesData] = React.useState([]);
+
+  React.useEffect(() => {
+    // process data
+
+    if (!data) return;
+
+    // process data
+
+    let instances = data;
+    if (showOpenOnly) {
+      instances = instances.filter((instance) => instance.open);
+    }
+
+    if (orderBy === "users") {
+      instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
+    } else if (orderBy === "active") {
+      instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
+    } else if (orderBy === "posts") {
+      instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
+    } else if (orderBy === "comments") {
+      instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
+    }
+
+    if (filterText) {
+      instances = instances.filter((instance) => {
+        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
+        return false;
+      });
+    }
+
+    // pagination
+    setTotalFiltered(instances.length);
+    instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
+    setInstancesData(instances);
+  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit]);
 
   if (isLoading) return "Loading...";
   if (error) return "An error has occurred: " + error.message;
-
-  // process data
-
-  let instances = data;
-  if (showOpenOnly) {
-    instances = instances.filter((instance) => instance.open);
-  }
-
-  if (orderBy === "users") {
-    instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
-  } else if (orderBy === "active") {
-    instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
-  } else if (orderBy === "posts") {
-    instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
-  } else if (orderBy === "comments") {
-    instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
-  }
-
-  if (filterText) {
-    instances = instances.filter((instance) => {
-      if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
-      if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
-      if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
-      return false;
-    });
-  }
-
-  // pagination
-  const all_instances = instances;
-  instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -144,7 +150,7 @@ export default function Instances() {
         <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
           <Pagination
             page={page}
-            count={all_instances.length}
+            count={totalFiltered}
             setPage={(value) => setPage(value)}
             limit={pageLimit}
           />
@@ -156,10 +162,8 @@ export default function Instances() {
         <div>{isFetching ? "Updating..." : ""}</div>
 
         <Grid container spacing={2}>
-          {instances.map((instance) => (
-            <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
-              <InstanceCard instance={instance} />
-            </Grid>
+          {instancesData.map((instance) => (
+            <InstanceCard instance={instance} />
           ))}
         </Grid>
       </Box>

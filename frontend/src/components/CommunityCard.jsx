@@ -5,7 +5,6 @@ import Link from "@mui/joy/Link";
 import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
-import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
@@ -71,25 +70,7 @@ function CommunityCard({ community, hideNoBanner }) {
                 textOverflow: "ellipsis",
               }}
             >
-              <Link
-                level="body1"
-                variant="plain"
-                color="neutral"
-                href={community.url}
-                target="_blank"
-                // onClick={(e) => {
-                //   e.preventDefault();
-                //   window.open(community.url, "_blank");
-                //   // navigator.clipboard.writeText(copyText);
-                //   // setCopied(true);
-                // }}
-              >
-                {/* <ContentCopyIcon
-                  fontSize="small"
-                  sx={{
-                    mr: 0.5,
-                  }}
-                /> */}
+              <Link level="body1" variant="plain" color="neutral" href={community.url} target="_blank">
                 {community.title}
                 <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
               </Link>
@@ -104,17 +85,6 @@ function CommunityCard({ community, hideNoBanner }) {
               />
             </Typography>
           </Box>
-          {/* <IconButton
-            sx={{
-              marginLeft: "auto",
-            }}
-            color="neutral"
-            onClick={() => {
-              window.open(community.url, "_blank");
-            }}
-          >
-            <OpenInNewIcon fontSize={"small"} />
-          </IconButton> */}
         </CardContent>
 
         <CardOverflow
@@ -239,10 +209,6 @@ function CommunityCard({ community, hideNoBanner }) {
                 {formatNumber(community.counts.users_active_week)}
               </Typography>
             </Tooltip>
-            {/* <Divider orientation="vertical" />
-          <Typography level="body3" fontWeight="md" textColor="text.secondary">
-            {instance.date}
-          </Typography> */}
           </CardContent>
         </CardOverflow>
       </Card>
