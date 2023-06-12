@@ -8,9 +8,9 @@ on:
 jobs:
   aws_cdk:
     runs-on: ubuntu-latest
-     defaults:
-      run:
-        working-directory: ./cdk
+    #  defaults:
+    #   run:
+    #     working-directory: ./cdk
 
     steps:
 
