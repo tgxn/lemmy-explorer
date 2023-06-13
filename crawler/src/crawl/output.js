@@ -2,6 +2,7 @@
 // it conencts to redis and pulls lists of all the data we have stored
 
 import { open } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 
 import {
   listInstanceData,
@@ -142,6 +143,34 @@ export default class CrawlOutput {
     await this.writeJsonFile(
       "../frontend/public/fediverse.json",
       JSON.stringify(returnStats)
+    );
+
+    const packageJson = JSON.parse(
+      await readFile(new URL("../../package.json", import.meta.url))
+    );
+
+    const metaData = {
+      instances: storeData.length,
+      communities: storeCommunityData.length,
+      fediverse: returnStats.length,
+      time: Date.now(),
+      package: packageJson.name,
+      version: packageJson.version,
+    };
+    await this.writeJsonFile(
+      "../frontend/public/meta.json",
+      JSON.stringify(metaData)
+    );
+
+    // generate overview metrics and stats
+    const metrics = {
+      instances: storeData.length,
+      communities: storeCommunityData.length,
+    };
+
+    await this.writeJsonFile(
+      "../frontend/public/overview.json",
+      JSON.stringify(metrics)
     );
 
     process.exit(0);

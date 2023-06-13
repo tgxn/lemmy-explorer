@@ -3,7 +3,6 @@ import React from "react";
 import axios from "axios";
 
 import { useQuery } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
@@ -161,7 +160,6 @@ export default function Communities() {
         </Box>
       </Box>
 
-      <ReactQueryDevtools initialIsOpen={false} />
       <Box sx={{ my: 4 }}>
         <div>{isFetching ? "Updating..." : ""}</div>
 
