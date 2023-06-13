@@ -19,15 +19,18 @@ import SortIcon from "@mui/icons-material/Sort";
 import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
 
-export default function Communities() {
-  const [orderBy, setOrderBy] = React.useState("subscribers");
-  const [showNsfw, setShowNsfw] = React.useState(false);
-  const [hideNoBanner, setHideNoBanner] = React.useState(true);
+import useStorage from "../hooks/useStorage";
 
-  const [pageLimit, setPagelimit] = React.useState(100);
+export default function Communities() {
+  const [orderBy, setOrderBy] = useStorage("community.orderBy", "subscribers");
+  const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
+
+  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideNoBanner", true);
+
+  const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
   const [page, setPage] = React.useState(0);
 
-  const [filterText, setFilterText] = React.useState("");
+  const [filterText, setFilterText] = useStorage("community.filterText", "");
 
   const { isLoading, error, data, isFetching } = useQuery({
     queryKey: ["communitiesData"],
