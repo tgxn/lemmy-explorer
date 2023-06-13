@@ -1,5 +1,12 @@
 import React from "react";
 
+import axios from "axios";
+
+import Moment from "react-moment";
+
+import { useQuery } from "@tanstack/react-query";
+
+import Badge from "@mui/joy/Badge";
 import Box from "@mui/joy/Box";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
@@ -54,12 +61,25 @@ function ColorSchemeToggle({ onClick, ...props }) {
 export default function TabsVariants() {
   const [index, setIndex] = React.useState(0);
 
+  const { isLoading, error, data, isFetching } = useQuery({
+    queryKey: ["metaData"],
+    queryFn: () =>
+      axios.get("/meta.json").then((res) => {
+        console.log(res.data);
+        return res.data;
+      }),
+    refetchOnWindowFocus: false,
+  });
+
   const navigate = useNavigate();
 
   const location = useLocation();
   console.log("location", location);
 
   React.useEffect(() => {
+    // if (location.pathname === "/instances") {
+    //   setIndex(1);
+    // }
     if (location.pathname === "/communities") {
       setIndex(1);
     }
@@ -76,22 +96,29 @@ export default function TabsVariants() {
         justifyContent: "space-between",
       }}
     >
-      <Typography
-        fontWeight="lg"
+      <Box
+        component="div"
         sx={{
+          width: 30,
+          height: 30,
+          // dont change item size on flex
+          flexShrink: 0,
+          pr: 2,
           ml: 2,
+          mr: 2,
+          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          backgroundSize: "contain",
         }}
-        startDecorator={
-          <Box
-            component="div"
-            sx={{
-              width: 28,
-              height: 28,
-              background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-              backgroundSize: "contain",
-            }}
-          />
-        }
+      />
+      <Typography
+        sx={{
+          // ml: 1,
+          fontSize: "19px",
+          display: { xs: "none", sm: "block" },
+        }}
+        // startDecorator={
+
+        // }
       >
         Lemmy Explorer
       </Typography>
@@ -100,10 +127,15 @@ export default function TabsVariants() {
         aria-label="Soft tabs"
         value={index}
         onChange={(event, value) => {
+          console.log("value", value);
           setIndex(value);
+
           if (value === 0) {
             navigate("/");
           }
+          // if (value === 1) {
+          //   navigate("/instances");
+          // }
           if (value === 1) {
             navigate("/communities");
           }
@@ -111,15 +143,62 @@ export default function TabsVariants() {
         sx={{ borderRadius: "lg" }}
       >
         <TabList variant="soft">
-          <Tab variant={index === 0 ? "solid" : "plain"} color={index === 0 ? "primary" : "neutral"}>
-            Instances
-          </Tab>
-          <Tab variant={index === 1 ? "solid" : "plain"} color={index === 1 ? "primary" : "neutral"}>
-            Communities
-          </Tab>
+          {/* <Tab variant={index === 0 ? "solid" : "plain"} color={index === 0 ? "primary" : "neutral"}>
+            Overview
+          </Tab> */}
+
+          <Badge
+            badgeContent={!isLoading && data.instances}
+            max={999}
+            color="info"
+            variant={index === 0 ? "soft" : "solid"}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <Tab variant={index === 0 ? "solid" : "plain"} color={index === 0 ? "info" : "neutral"}>
+              Instances
+            </Tab>
+          </Badge>
+
+          <Badge
+            badgeContent={!isLoading && data.communities}
+            max={9999}
+            variant={index === 1 ? "soft" : "solid"}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <Tab variant={index === 1 ? "solid" : "plain"} color={index === 1 ? "primary" : "neutral"}>
+              Communities
+            </Tab>
+          </Badge>
         </TabList>
       </Tabs>
       <Box sx={{ flexGrow: 1 }} />
+
+      <Box sx={{}}>
+        {!isLoading && (
+          <Tooltip title="All data was retrieved within 24 hours of this time" variant="soft">
+            <Typography
+              variant="caption"
+              sx={{
+                display: { xs: "none", sm: "block" },
+
+                cursor: "help",
+                textDecoration: "underline dotted",
+                mr: 2,
+                fontStyle: "italic",
+              }}
+            >
+              updated <Moment fromNow>{data.time}</Moment>
+            </Typography>
+          </Tooltip>
+        )}
+      </Box>
+
       <ColorSchemeToggle />
       <Tooltip title="View Code on GitHub" variant="soft">
         <IconButton

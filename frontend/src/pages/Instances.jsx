@@ -37,14 +37,16 @@ import SortIcon from "@mui/icons-material/Sort";
 import InstanceCard from "../components/InstanceCard";
 import Pagination from "../components/Pagination";
 
-export default function Instances() {
-  const [orderBy, setOrderBy] = React.useState("users");
-  const [showOpenOnly, setShowOpenOnly] = React.useState(false);
+import useStorage from "../hooks/useStorage";
 
-  const [pageLimit, setPagelimit] = React.useState(100);
+export default function Instances() {
+  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "users");
+  const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
+
+  const [pageLimit, setPagelimit] = useStorage("instance.pageLimit", 100);
   const [page, setPage] = React.useState(0);
 
-  const [filterText, setFilterText] = React.useState("");
+  const [filterText, setFilterText] = useStorage("instance.filterText", "");
 
   const { isLoading, error, data, isFetching } = useQuery({
     queryKey: ["instanceData"],

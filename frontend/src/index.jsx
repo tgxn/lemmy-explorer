@@ -3,6 +3,7 @@ import React from "react";
 
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -19,6 +20,8 @@ import Container from "@mui/joy/Container";
 const queryClient = new QueryClient();
 
 import Header from "./components/Header";
+
+import Overview from "./pages/Overview";
 import Instances from "./pages/Instances";
 import Communities from "./pages/Communities";
 
@@ -29,6 +32,7 @@ export default function App() {
     <CssVarsProvider defaultMode="dark" disableTransitionOnChange theme={customTheme}>
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools initialIsOpen={false} />
         <Container
           maxWidth={false}
           disableGutters={true}
@@ -48,9 +52,14 @@ export default function App() {
             <Header />
             <Box sx={{ overflow: "auto", height: "calc(100% - 80px)" }}>
               <Routes>
-                <Route
+                {/* <Route
                   index
                   //   path="/instances"
+                  element={<Overview />}
+                /> */}
+                <Route
+                  index
+                  // path="/instances"
                   element={<Instances />}
                 />
                 <Route path="/communities" element={<Communities />} />
