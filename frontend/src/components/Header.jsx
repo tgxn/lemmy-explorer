@@ -97,16 +97,16 @@ export default function TabsVariants() {
       }}
     >
       <Typography
-        fontWeight="lg"
         sx={{
           ml: 2,
+          fontSize: "19px",
         }}
         startDecorator={
           <Box
             component="div"
             sx={{
-              width: 28,
-              height: 28,
+              width: 30,
+              height: 30,
               background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
               backgroundSize: "contain",
             }}
