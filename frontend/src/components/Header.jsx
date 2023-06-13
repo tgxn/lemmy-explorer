@@ -96,22 +96,29 @@ export default function TabsVariants() {
         justifyContent: "space-between",
       }}
     >
+      <Box
+        component="div"
+        sx={{
+          width: 30,
+          height: 30,
+          // dont change item size on flex
+          flexShrink: 0,
+          pr: 2,
+          ml: 2,
+          mr: 2,
+          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          backgroundSize: "contain",
+        }}
+      />
       <Typography
         sx={{
-          ml: 2,
+          // ml: 1,
           fontSize: "19px",
+          display: { xs: "none", sm: "block" },
         }}
-        startDecorator={
-          <Box
-            component="div"
-            sx={{
-              width: 30,
-              height: 30,
-              background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-              backgroundSize: "contain",
-            }}
-          />
-        }
+        // startDecorator={
+
+        // }
       >
         Lemmy Explorer
       </Typography>
@@ -178,6 +185,8 @@ export default function TabsVariants() {
             <Typography
               variant="caption"
               sx={{
+                display: { xs: "none", sm: "block" },
+
                 cursor: "help",
                 textDecoration: "underline dotted",
                 mr: 2,

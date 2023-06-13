@@ -103,54 +103,68 @@ export default function Communities() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          //wrap items
+          flexWrap: "wrap",
           gap: 1,
         }}
       >
         <Input
           placeholder="Filter Communities"
           value={filterText}
+          sx={{
+            width: { xs: "100%", sm: 240 },
+            flexShrink: 0,
+          }}
           onChange={(event) => setFilterText(event.target.value)}
         />
-        <Typography fontWeight="lg">
-          <Select
-            placeholder="Order By"
-            startDecorator={<SortIcon />}
-            indicator={<KeyboardArrowDown />}
-            value={orderBy}
-            onChange={(event, newValue) => {
-              setOrderBy(newValue);
-            }}
-            sx={{
-              width: 240,
-              [`& .${selectClasses.indicator}`]: {
-                transition: "0.2s",
-                [`&.${selectClasses.expanded}`]: {
-                  transform: "rotate(-180deg)",
-                },
+
+        <Select
+          placeholder="Order By"
+          startDecorator={<SortIcon />}
+          indicator={<KeyboardArrowDown />}
+          value={orderBy}
+          onChange={(event, newValue) => {
+            setOrderBy(newValue);
+          }}
+          sx={{
+            minWidth: 120,
+            width: { xs: "100%", sm: 240 },
+            flexShrink: 0,
+            [`& .${selectClasses.indicator}`]: {
+              transition: "0.2s",
+              [`&.${selectClasses.expanded}`]: {
+                transform: "rotate(-180deg)",
               },
-            }}
-          >
-            <Option value="subscribers">Subscribers</Option>
-            <Option value="active">Active Users</Option>
-            <Option value="posts">Posts</Option>
-            <Option value="comments">Comments</Option>
-          </Select>
-        </Typography>
+            },
+          }}
+        >
+          <Option value="subscribers">Subscribers</Option>
+          <Option value="active">Active Users</Option>
+          <Option value="posts">Posts</Option>
+          <Option value="comments">Comments</Option>
+        </Select>
+
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
             label="Show NSFW"
             checked={showNsfw}
             onChange={(event) => setShowNsfw(event.target.checked)}
           />
-        </Box>
-        <Box sx={{ display: "flex", gap: 3 }}>
+
           <Checkbox
             label="Hide No Banner"
             checked={hideNoBanner}
             onChange={(event) => setHideNoBanner(event.target.checked)}
           />
         </Box>
-        <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexGrow: 1,
+            justifyContent: { xs: "center", sm: "flex-end" },
+            alignItems: "center",
+          }}
+        >
           <Pagination
             page={page}
             count={totalFiltered}
