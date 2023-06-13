@@ -21,5 +21,16 @@ Data is retrieved using TanStack Query.
 ## Thanks
 
 https://github.com/LemmyNet/lemmy-stats-crawler
-https://browse.feddit.de/
 
+
+## Similar Sites
+
+https://browse.feddit.de/
+https://join-lemmy.org/instances
+https://github.com/maltfield/awesome-lemmy-instances
+https://lemmymap.feddit.de/
+
+## Lemmy Stats Pages
+https://lemmy.fediverse.observer/dailystats
+https://the-federation.info/platform/73
+https://fedidb.org/
