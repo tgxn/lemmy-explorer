@@ -11,7 +11,6 @@ import Input from "@mui/joy/Input";
 import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Typography from "@mui/joy/Typography";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";

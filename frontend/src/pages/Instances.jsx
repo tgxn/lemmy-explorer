@@ -2,36 +2,19 @@ import React from "react";
 
 import axios from "axios";
 
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useQuery } from "@tanstack/react-query";
 
 import Container from "@mui/joy/Container";
 
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
-import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
-
-// import Pagination from "@mui/material/Pagination";
 import Input from "@mui/joy/Input";
-import Autocomplete from "@mui/joy/Autocomplete";
-
 import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab from "@mui/joy/Tab";
-
-import Chip from "@mui/joy/Chip";
-import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
-
-import { useColorScheme } from "@mui/joy/styles";
-
-import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 
+import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 
 import InstanceCard from "../components/InstanceCard";
@@ -159,7 +142,6 @@ export default function Instances() {
         </Box>
       </Box>
 
-      <ReactQueryDevtools initialIsOpen={false} />
       <Box sx={{ my: 4 }}>
         <div>{isFetching ? "Updating..." : ""}</div>
 
