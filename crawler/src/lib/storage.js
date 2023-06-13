@@ -1,8 +1,9 @@
 import redis from "redis";
 
+import { REDIS_URL } from "./const.js";
+
 const client = redis.createClient({
-  host: "localhost",
-  port: 6379,
+  url: REDIS_URL,
 });
 
 async function connectIfNeeded() {
@@ -11,27 +12,18 @@ async function connectIfNeeded() {
   }
 }
 
-// data that we scan on other fediverse servers
 export async function storeFediverseInstance(baseUrl, data) {
   await connectIfNeeded();
   return await putRedis(`fediverse:${baseUrl}`, JSON.stringify(data));
 }
-
-export async function listFediverseData() {
+export async function storeError(type, baseUrl, data) {
   await connectIfNeeded();
-  return await listRedisWithKeys(`fediverse:*`);
+  return await putRedis(`error:${type}:${baseUrl}`, JSON.stringify(data));
 }
-
-export async function storeOtherError(baseUrl, data) {
-  await connectIfNeeded();
-  return await putRedis(`error:${baseUrl}`, JSON.stringify(data));
-}
-
 export async function putInstanceData(baseUrl, value) {
   await connectIfNeeded();
   return await putRedis(`instance:${baseUrl}`, JSON.stringify(value));
 }
-
 export async function putCommunityData(baseUrl, data) {
   await connectIfNeeded();
   return await putRedis(
@@ -40,24 +32,33 @@ export async function putCommunityData(baseUrl, data) {
   );
 }
 
+export async function getInstanceError(key) {
+  await connectIfNeeded();
+  const jsonData = await getRedis(`error:instance:${key}`);
+  return JSON.parse(jsonData);
+}
 export async function getInstanceData(key) {
   await connectIfNeeded();
-  return await getRedis(`instance:${key}`);
+  const jsonData = await getRedis(`instance:${key}`);
+  return JSON.parse(jsonData);
 }
-
 export async function getCommunityData(key) {
   await connectIfNeeded();
-  return await getRedis(`community:${key}`);
+  const jsonData = await getRedis(`community:${key}`);
+  return JSON.parse(jsonData);
 }
 
 export async function listInstanceData() {
   await connectIfNeeded();
   return await listRedis(`instance:*`);
 }
-
 export async function listCommunityData() {
   await connectIfNeeded();
   return await listRedis(`community:*`);
+}
+export async function listFediverseData() {
+  await connectIfNeeded();
+  return await listRedisWithKeys(`fediverse:*`);
 }
 
 async function putRedis(key, value) {
