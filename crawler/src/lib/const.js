@@ -1,16 +1,28 @@
 export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
+// timeout for the instance and community crawlers
 export const CRAWL_TIMEOUT = {
-  INSTANCE: 30 * 1000, // 30 seconds in ms
-  COMMUNITY: 60 * 1000, // 60 seconds in ms
+  INSTANCE: 120 * 1000, // 2 minutes in ms
+  COMMUNITY: 120 * 1000, // 2 minutes in ms
 };
 
+// how many times to retry a failed job
 export const CRAWL_RETRY = {
   INSTANCE: 2,
   COMMUNITY: 2,
 };
 
+// the minimum amount of time (in ms) between crawling the same instance
 export const MIN_RECRAWL_MS = 5 * 60 * 1000; // 5 minutes in ms
+
+// look for old records to re-crawl
+export const RECRAWL_AGED_MS = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+// how often should the cron run with --cron
+export const AGED_CRON = "*/5 * * * *"; // every 5 minutes
+
+// the maximum age (in ms) for output items to be included in the json dumps
+export const OUTPUT_MAX_AGE_MS = 10 * 60 * 60 * 1000; // 24 hours in ms
 
 export const FEDDIT_URLS = [
   "0xdd.org.ru",

@@ -1,9 +1,12 @@
+import cron from "node-cron";
+
 import CrawlInstance from "./crawl/instance.js";
 import CrawlCommunity from "./crawl/communities.js";
 
-import CrawlOutput from "./output.js";
+import CrawlOutput from "./crawl/output.js";
+import CrawlAged from "./crawl/aged.js";
 
-import { START_URLS } from "./lib/const.js";
+import { START_URLS, AGED_CRON } from "./lib/const.js";
 
 export function start(args) {
   if (args.length > 0) {
@@ -13,6 +16,15 @@ export function start(args) {
       const output = new CrawlOutput();
       output.start();
 
+      return;
+    }
+
+    if (args.indexOf("--cron") > -1) {
+      console.log("Started Cron Task");
+      const task = cron.schedule(AGED_CRON, () => {
+        const aged = new CrawlAged();
+        aged.createJobs();
+      });
       return;
     }
 
@@ -29,16 +41,16 @@ export function start(args) {
 
     // should we initialize the workers with a starter list of lemmy's?
     if (args.indexOf("--init") > -1) {
-      console.warn("--init passed, Creating Starter Jobs");
+      console.warn("--init passed, creating seed jobs");
       const crawler = new CrawlInstance();
       for (var baseUrl of START_URLS) {
         crawler.createJob(baseUrl);
       }
       //   crawler.createJob("lemmy.tgxn.net");
     }
+  } else {
+    console.info("no args, starting all crawlers");
+    new CrawlInstance(true);
+    new CrawlCommunity(true);
   }
-
-  console.info("Starting All Crawler Workers");
-  new CrawlInstance(true);
-  new CrawlCommunity(true);
 }

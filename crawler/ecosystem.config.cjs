@@ -1,17 +1,16 @@
 module.exports = {
   apps: [
-    // {
-    //   name: "main",
-    //   script: "index.js",
-    //   watch: true,
-    //   ignore_watch: ["./", "node_modules", ".data"],
-    //   env_production: {
-    //     NODE_ENV: "production",
-    //   },
-    //   env_development: {
-    //     NODE_ENV: "development",
-    //   },
-    // },
+    {
+      name: "scheduler",
+      script: "index.js",
+      args: ["--cron"],
+      env_production: {
+        NODE_ENV: "production",
+      },
+      env_development: {
+        NODE_ENV: "development",
+      },
+    },
     {
       name: "crawl-instance",
       script: "index.js",

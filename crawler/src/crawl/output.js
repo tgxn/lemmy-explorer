@@ -7,7 +7,9 @@ import {
   listInstanceData,
   listCommunityData,
   listFediverseData,
-} from "./lib/storage.js";
+} from "../lib/storage.js";
+
+import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
 
 export default class CrawlOutput {
   constructor() {
@@ -22,10 +24,8 @@ export default class CrawlOutput {
     ///
 
     const instances = await listInstanceData();
-    console.log("Instances", instances.length);
 
-    let storeData = instances.map((instanceString) => {
-      const instance = JSON.parse(instanceString);
+    let storeData = instances.map((instance) => {
       return {
         url: instance.siteData.site.actor_id,
         name: instance.siteData.site.name,
@@ -36,13 +36,29 @@ export default class CrawlOutput {
         usage: instance.nodeData.usage,
         icon: instance.siteData.site.icon,
         banner: instance.siteData.site.banner,
+        time: instance.lastCrawled || null,
       };
+    });
+
+    // remove instances not updated in 24h
+    storeData = storeData.filter((instance) => {
+      if (!instance.time) return false;
+
+      // remove instances with age < OUTPUT_MAX_AGE_MS
+      // console.log(Date.now() - instance.time, OUTPUT_MAX_AGE_MS);
+      if (Date.now() - instance.time < OUTPUT_MAX_AGE_MS) {
+        return true;
+      }
+
+      return false;
     });
 
     // filter blank
     storeData = storeData.filter(
       (instance) => instance.url !== "" || instance.name !== ""
     );
+
+    console.log(`Instances ${instances.length} -> ${storeData.length}`);
 
     await this.writeJsonFile(
       "../frontend/public/instances.json",
@@ -54,10 +70,8 @@ export default class CrawlOutput {
     ///
 
     const communities = await listCommunityData();
-    console.log("Communities", communities.length);
 
-    let storeCommunityData = communities.map((communityString) => {
-      const community = JSON.parse(communityString);
+    let storeCommunityData = communities.map((community) => {
       return {
         url: community.community.actor_id,
         name: community.community.name,
@@ -67,13 +81,31 @@ export default class CrawlOutput {
         banner: community.community.banner,
         nsfw: community.community.nsfw,
         counts: community.counts,
+        time: community.lastCrawled,
       };
+    });
+
+    // remove communities not updated in 24h
+    storeCommunityData = storeCommunityData.filter((community) => {
+      if (!community.time) return false;
+
+      // remove communities with age < OUTPUT_MAX_AGE_MS
+      // console.log(Date.now() - community.time, OUTPUT_MAX_AGE_MS);
+      if (Date.now() - community.time < OUTPUT_MAX_AGE_MS) {
+        return true;
+      }
+
+      return false;
     });
 
     // filter blank
     storeCommunityData = storeCommunityData.filter(
-      (instance) =>
-        instance.url !== "" || instance.name !== "" || instance.title !== ""
+      (community) =>
+        community.url !== "" || community.name !== "" || community.title !== ""
+    );
+
+    console.log(
+      `Communities ${communities.length} -> ${storeCommunityData.length}`
     );
 
     await this.writeJsonFile(

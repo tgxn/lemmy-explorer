@@ -50,11 +50,13 @@ export async function getCommunityData(key) {
 
 export async function listInstanceData() {
   await connectIfNeeded();
-  return await listRedis(`instance:*`);
+  const jsonArray = await listRedis(`instance:*`);
+  return jsonArray.map((jsonData) => JSON.parse(jsonData));
 }
 export async function listCommunityData() {
   await connectIfNeeded();
-  return await listRedis(`community:*`);
+  const jsonArray = await listRedis(`community:*`);
+  return jsonArray.map((jsonData) => JSON.parse(jsonData));
 }
 export async function listFediverseData() {
   await connectIfNeeded();
