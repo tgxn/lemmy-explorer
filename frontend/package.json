@@ -1,7 +1,10 @@
 {
   "name": "lemmy-explorer-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "",
+  "author": "tgxn",
   "license": "MIT",
+  "main": "./src/index.jsx",
   "scripts": {
     "start": "webpack serve --config webpack.dev.config.js",
     "build:dev": "webpack --config webpack.dev.config.js",
@@ -10,7 +13,6 @@
     "fwrite": "prettier --write .",
     "test": "mocha --require @babel/register --require @babel/polyfill ./tests/api.mjs"
   },
-  "main": "./src/index.jsx",
   "dependencies": {
     "@babel/core": "^7.21.4",
     "@babel/preset-env": "^7.21.4",
