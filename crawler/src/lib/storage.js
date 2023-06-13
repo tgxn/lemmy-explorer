@@ -6,70 +6,74 @@ const client = redis.createClient({
   url: REDIS_URL,
 });
 
+// set
+
+export async function storeFediverseInstance(baseUrl, data) {
+  await connectIfNeeded();
+  return putRedis(`fediverse:${baseUrl}`, data);
+}
+export async function storeError(type, baseUrl, data) {
+  await connectIfNeeded();
+  return putRedis(`error:${type}:${baseUrl}`, data);
+}
+export async function putInstanceData(baseUrl, value) {
+  await connectIfNeeded();
+  return putRedis(`instance:${baseUrl}`, value);
+}
+export async function putCommunityData(baseUrl, data) {
+  await connectIfNeeded();
+  return putRedis(`community:${baseUrl}:${data.community.name}`, data);
+}
+
+// get
+
+export async function getError(type, key) {
+  await connectIfNeeded();
+  return getRedis(`error:${type}:${key}`);
+}
+export async function getInstanceData(key) {
+  await connectIfNeeded();
+  return getRedis(`instance:${key}`);
+}
+export async function getCommunityData(key) {
+  await connectIfNeeded();
+  return getRedis(`community:${key}`);
+}
+
+// list
+
+export async function listInstanceData() {
+  await connectIfNeeded();
+  return listRedis(`instance:*`);
+}
+export async function listCommunityData() {
+  await connectIfNeeded();
+  return listRedis(`community:*`);
+}
+export async function listFediverseData() {
+  await connectIfNeeded();
+  return listRedisWithKeys(`fediverse:*`);
+}
+export async function listFailureData(type) {
+  await connectIfNeeded();
+  return listRedisWithKeys(`error:${type}:*`);
+}
+
+// local
+
 async function connectIfNeeded() {
   if (!client.isOpen) {
     await client.connect();
   }
 }
 
-export async function storeFediverseInstance(baseUrl, data) {
-  await connectIfNeeded();
-  return await putRedis(`fediverse:${baseUrl}`, JSON.stringify(data));
-}
-export async function storeError(type, baseUrl, data) {
-  await connectIfNeeded();
-  return await putRedis(`error:${type}:${baseUrl}`, JSON.stringify(data));
-}
-export async function putInstanceData(baseUrl, value) {
-  await connectIfNeeded();
-  return await putRedis(`instance:${baseUrl}`, JSON.stringify(value));
-}
-export async function putCommunityData(baseUrl, data) {
-  await connectIfNeeded();
-  return await putRedis(
-    `community:${baseUrl}:${data.community.name}`,
-    JSON.stringify(data)
-  );
-}
-
-export async function getInstanceError(key) {
-  await connectIfNeeded();
-  const jsonData = await getRedis(`error:instance:${key}`);
-  return JSON.parse(jsonData);
-}
-export async function getInstanceData(key) {
-  await connectIfNeeded();
-  const jsonData = await getRedis(`instance:${key}`);
-  return JSON.parse(jsonData);
-}
-export async function getCommunityData(key) {
-  await connectIfNeeded();
-  const jsonData = await getRedis(`community:${key}`);
-  return JSON.parse(jsonData);
-}
-
-export async function listInstanceData() {
-  await connectIfNeeded();
-  const jsonArray = await listRedis(`instance:*`);
-  return jsonArray.map((jsonData) => JSON.parse(jsonData));
-}
-export async function listCommunityData() {
-  await connectIfNeeded();
-  const jsonArray = await listRedis(`community:*`);
-  return jsonArray.map((jsonData) => JSON.parse(jsonData));
-}
-export async function listFediverseData() {
-  await connectIfNeeded();
-  return await listRedisWithKeys(`fediverse:*`);
-}
-
 async function putRedis(key, value) {
-  //   console.log(`putRedis: ${key} ${value}`);
-  return client.set(key, value);
+  return client.set(key, JSON.stringify(value));
 }
 
 async function getRedis(key) {
-  return client.get(key);
+  const json = await client.get(key);
+  return JSON.parse(json);
 }
 
 async function listRedisWithKeys(key) {
@@ -78,8 +82,7 @@ async function listRedisWithKeys(key) {
   await Promise.all(
     keys.map(async (key) => {
       const keydata = await client.get(key);
-      object[key] = keydata;
-      // return client.get(key);
+      object[key] = JSON.parse(keydata);
     })
   );
   return object;
@@ -88,8 +91,9 @@ async function listRedisWithKeys(key) {
 async function listRedis(key) {
   const keys = await client.keys(key);
   return Promise.all(
-    keys.map((key) => {
-      return client.get(key);
+    keys.map(async (key) => {
+      const json = await client.get(key);
+      return JSON.parse(json);
     })
   );
 }

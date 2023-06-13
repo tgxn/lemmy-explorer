@@ -11,6 +11,8 @@ import {
   CRAWLER_ATTRIB_URL,
 } from "../lib/const.js";
 
+import { CrawlError } from "../lib/error.js";
+
 export default class CrawlCommunity {
   constructor(isWorker = false) {
     this.queue = new Queue("community", {
@@ -44,7 +46,7 @@ export default class CrawlCommunity {
         // if it's not a string
         if (typeof job.data.baseUrl !== "string") {
           console.error("baseUrl is not a string", job.data);
-          throw new Error("baseUrl is not a string");
+          throw new CrawlError("baseUrl is not a string");
         }
         // console.debug(
         //   `[Community] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
@@ -80,6 +82,7 @@ export default class CrawlCommunity {
         console.error(
           `[Community] [${job.data.baseUrl}] [${job.id}] ${error.message}`
         );
+        if (typeof error === Error) console.trace(error);
       }
       return false;
     });

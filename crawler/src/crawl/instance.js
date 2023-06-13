@@ -5,7 +5,7 @@ import {
   putInstanceData,
   storeFediverseInstance,
   storeError,
-  getInstanceError,
+  getError,
   getInstanceData,
   listInstanceData,
 } from "../lib/storage.js";
@@ -20,6 +20,8 @@ import {
   CRAWLER_ATTRIB_URL,
   AXIOS_REQUEST_TIMEOUT,
 } from "../lib/const.js";
+
+import { CrawlError, CrawlWarning } from "../lib/error.js";
 
 export default class CrawlInstance {
   constructor(isWorker) {
@@ -64,7 +66,7 @@ export default class CrawlInstance {
     }
 
     // check for recent error
-    const lastError = await getInstanceError(instanceBaseUrl);
+    const lastError = await getError("instance", instanceBaseUrl);
     if (lastError?.time) {
       // console.log("lastError", lastError.time);
 
@@ -83,7 +85,7 @@ export default class CrawlInstance {
         // if it's not a string
         if (typeof job.data.baseUrl !== "string") {
           console.error("baseUrl is not a string", job.data);
-          throw new Error("baseUrl is not a string");
+          throw new CrawlError("baseUrl is not a string");
         }
 
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
@@ -96,13 +98,13 @@ export default class CrawlInstance {
 
         // disallow * as a base url
         if (instanceBaseUrl === "*") {
-          throw new Error("cannot crawl `*`");
+          throw new CrawlError("cannot crawl `*`");
         }
 
         // check if instance has already been crawled within CRAWL_EVERY
         const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
         if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
-          throw new Error(
+          throw new CrawlWarning(
             `Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
           );
         }
@@ -129,7 +131,7 @@ export default class CrawlInstance {
           );
           return instanceData;
         } else {
-          throw new Error("No instance data returned");
+          throw new CrawlError("No instance data returned");
         }
       } catch (error) {
         const errorDetail = {
@@ -140,10 +142,22 @@ export default class CrawlInstance {
           time: new Date().getTime(),
         };
 
-        await storeError("instance", job.data.baseUrl, errorDetail);
-        console.error(
-          `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
-        );
+        if (error instanceof CrawlError || error instanceof AxiosError) {
+          await storeError("instance", job.data.baseUrl, errorDetail);
+
+          console.error(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
+          );
+        } else if (error instanceof CrawlWarning) {
+          console.warn(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Warning: ${error.message}`
+          );
+        } else {
+          console.error(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
+          );
+          console.trace(error);
+        }
       }
       return null;
     });
@@ -161,7 +175,7 @@ export default class CrawlInstance {
 
     let nodeinfoUrl;
     if (!wellKnownInfo.data.links) {
-      throw new Error("missing /.well-known/nodeinfo links");
+      throw new CrawlError("missing /.well-known/nodeinfo links");
     }
 
     for (var linkRel of wellKnownInfo.data.links) {
@@ -170,7 +184,7 @@ export default class CrawlInstance {
       }
     }
     if (!nodeinfoUrl) {
-      throw new Error("no diaspora rel in /.well-known/nodeinfo");
+      throw new CrawlError("no diaspora rel in /.well-known/nodeinfo");
     }
 
     const nodeinfo2 = await this.axios.get(nodeinfoUrl);
@@ -181,7 +195,7 @@ export default class CrawlInstance {
     await storeFediverseInstance(instanceBaseUrl, software);
 
     if (software.name != "lemmy" && software.name != "lemmybb") {
-      throw new Error(`not a lemmy instance (${software.name})`);
+      throw new CrawlError(`not a lemmy instance (${software.name})`);
     }
 
     const siteInfo = await this.axios.get(

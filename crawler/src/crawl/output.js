@@ -8,6 +8,7 @@ import {
   listInstanceData,
   listCommunityData,
   listFediverseData,
+  listFailureData,
 } from "../lib/storage.js";
 
 import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
@@ -24,10 +25,29 @@ export default class CrawlOutput {
     /// Lemmy Instances
     ///
 
+    let failureData = await listFailureData("instance");
+
+    function findFail(baseUrl) {
+      const keyName = `error:instance:${baseUrl}`;
+
+      const value =
+        failureData[Object.keys(failureData).find((k) => k === keyName)];
+
+      if (value) {
+        return value;
+      }
+
+      return null;
+    }
+
+    console.log(`Failures: ${Object.keys(failureData).length}`);
+    console.log();
+
     const instances = await listInstanceData();
 
     let storeData = instances.map((instance) => {
       return {
+        baseurl: instance.siteData.site.actor_id.split("/")[2],
         url: instance.siteData.site.actor_id,
         name: instance.siteData.site.name,
         desc: instance.siteData.site.description,
@@ -39,6 +59,18 @@ export default class CrawlOutput {
         banner: instance.siteData.site.banner,
         time: instance.lastCrawled || null,
       };
+    });
+
+    // remove those with errors that happened before time
+    storeData = storeData.filter((instance) => {
+      const fail = findFail(instance.baseurl);
+      if (fail) {
+        if (instance.time > fail.time) {
+          // console.log("filtered due to fail", fail, instance.baseurl);
+          return true;
+        }
+      }
+      return false;
     });
 
     // remove instances not updated in 24h
@@ -60,6 +92,7 @@ export default class CrawlOutput {
     );
 
     console.log(`Instances ${instances.length} -> ${storeData.length}`);
+    console.log();
 
     await this.writeJsonFile(
       "../frontend/public/instances.json",
@@ -74,6 +107,7 @@ export default class CrawlOutput {
 
     let storeCommunityData = communities.map((community) => {
       return {
+        baseurl: community.community.actor_id.split("/")[2],
         url: community.community.actor_id,
         name: community.community.name,
         title: community.community.title,
@@ -84,6 +118,18 @@ export default class CrawlOutput {
         counts: community.counts,
         time: community.lastCrawled,
       };
+    });
+
+    // remove those with errors that happened before updated time
+    storeCommunityData = storeCommunityData.filter((community) => {
+      const fail = findFail(community.baseurl);
+      if (fail) {
+        if (community.time > fail.time) {
+          // console.log("filtered due to fail", fail, instance.baseurl);
+          return true;
+        }
+      }
+      return false;
     });
 
     // remove communities not updated in 24h
@@ -108,6 +154,7 @@ export default class CrawlOutput {
     console.log(
       `Communities ${communities.length} -> ${storeCommunityData.length}`
     );
+    console.log();
 
     await this.writeJsonFile(
       "../frontend/public/communities.json",
@@ -123,12 +170,12 @@ export default class CrawlOutput {
 
     let returnStats = [];
     let storeFediverseData = Object.keys(fediverseData).forEach((fediKey) => {
-      const fediverseString = fediverseData[fediKey];
+      const fediverse = fediverseData[fediKey];
       // console.log("fediverseString", fediverseString);
       const baseUrl = fediKey.replace("fediverse:", "");
       // console.log("baseUrl", baseUrl);
 
-      const fediverse = JSON.parse(fediverseString);
+      // const fediverse = JSON.parse(fediverseString);
       // console.log("fediverse", fediverse);
       if (fediverse.name) {
         returnStats.push({
