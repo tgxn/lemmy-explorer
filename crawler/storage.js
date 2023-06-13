@@ -12,9 +12,14 @@ async function connectIfNeeded() {
 }
 
 // data that we scan on other fediverse servers
-export async function storeUnknownInstance(baseUrl, data) {
+export async function storeFediverseInstance(baseUrl, data) {
   await connectIfNeeded();
   return await putRedis(`fediverse:${baseUrl}`, JSON.stringify(data));
+}
+
+export async function listFediverseData() {
+  await connectIfNeeded();
+  return await listRedisWithKeys(`fediverse:*`);
 }
 
 export async function storeOtherError(baseUrl, data) {
@@ -62,6 +67,19 @@ async function putRedis(key, value) {
 
 async function getRedis(key) {
   return client.get(key);
+}
+
+async function listRedisWithKeys(key) {
+  const keys = await client.keys(key);
+  const object = {};
+  await Promise.all(
+    keys.map(async (key) => {
+      const keydata = await client.get(key);
+      object[key] = keydata;
+      // return client.get(key);
+    })
+  );
+  return object;
 }
 
 async function listRedis(key) {

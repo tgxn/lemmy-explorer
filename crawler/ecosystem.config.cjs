@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "main",
       script: "./index.js",
-      watch: true,
+      // watch: true,
       env_production: {
         NODE_ENV: "production",
       },
@@ -15,7 +15,7 @@ module.exports = {
       name: "crawl-instance",
       script: "./index.js",
       args: ["-q", "instance"],
-      watch: true,
+      // watch: true,
       instances: 2,
       env_production: {
         NODE_ENV: "production",
@@ -28,7 +28,7 @@ module.exports = {
       name: "crawl-community",
       script: "./index.js",
       args: ["-q", "community"],
-      watch: true,
+      // watch: true,
       instances: 2,
       env_production: {
         NODE_ENV: "production",

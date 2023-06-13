@@ -7,6 +7,7 @@ import {
   getCommunityData,
   listInstanceData,
   listCommunityData,
+  listFediverseData,
 } from "./storage.js";
 
 async function writeJsonFile(filename, data) {
@@ -21,6 +22,10 @@ async function writeJsonFile(filename, data) {
 
 async function start() {
   console.log("Generate JSON");
+
+  ///
+  /// Lemmy Instances
+  ///
 
   const instances = await listInstanceData();
   console.log("Instances", instances.length);
@@ -50,6 +55,10 @@ async function start() {
     JSON.stringify(storeData)
   );
 
+  ///
+  /// Lemmy Communities
+  ///
+
   const communities = await listCommunityData();
   console.log("Communities", communities.length);
 
@@ -76,6 +85,37 @@ async function start() {
   await writeJsonFile(
     "../frontend/public/communities.json",
     JSON.stringify(storeCommunityData)
+  );
+
+  ///
+  /// Fediverse Servers
+  ///
+
+  const fediverseData = await listFediverseData();
+  // console.log("Fediverse", fediverseData);
+
+  let returnStats = [];
+  let storeFediverseData = Object.keys(fediverseData).forEach((fediKey) => {
+    const fediverseString = fediverseData[fediKey];
+    // console.log("fediverseString", fediverseString);
+    const baseUrl = fediKey.replace("fediverse:", "");
+    // console.log("baseUrl", baseUrl);
+
+    const fediverse = JSON.parse(fediverseString);
+    // console.log("fediverse", fediverse);
+    if (fediverse.name) {
+      returnStats.push({
+        url: baseUrl,
+        software: fediverse.name,
+        version: fediverse.version,
+      });
+    }
+  });
+  console.log("Fediverse Servers", returnStats.length);
+
+  await writeJsonFile(
+    "../frontend/public/fediverse.json",
+    JSON.stringify(returnStats)
   );
 
   process.exit(0);

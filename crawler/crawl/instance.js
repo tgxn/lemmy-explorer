@@ -3,7 +3,7 @@ import Queue from "bee-queue";
 
 import {
   putInstanceData,
-  storeUnknownInstance,
+  storeFediverseInstance,
   storeOtherError,
   putCommunityData,
   getInstanceData,
@@ -46,9 +46,11 @@ async function crawlInstance(instanceBaseUrl) {
 
   const software = nodeinfo2.data.software;
 
+  // store all fediverse instance software for easy metrics
+  await storeFediverseInstance(instanceBaseUrl, software);
+
   if (software.name != "lemmy" && software.name != "lemmybb") {
     console.log("not a lemmy instance", software);
-    await storeUnknownInstance(instanceBaseUrl, software);
     return null;
   }
 
