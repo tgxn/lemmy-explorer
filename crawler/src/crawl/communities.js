@@ -3,7 +3,13 @@ import axios from "axios";
 
 import { putCommunityData, storeError } from "../lib/storage.js";
 
-import { CRAWL_TIMEOUT, CRAWL_RETRY } from "../lib/const.js";
+import {
+  CRAWL_TIMEOUT,
+  CRAWL_RETRY,
+  AXIOS_REQUEST_TIMEOUT,
+  CRAWLER_USER_AGENT,
+  CRAWLER_ATTRIB_URL,
+} from "../lib/const.js";
 
 export default class CrawlCommunity {
   constructor(isWorker = false) {
@@ -13,10 +19,10 @@ export default class CrawlCommunity {
     });
 
     this.axios = axios.create({
-      timeout: 20 * 1000, // 20 seconds in ms
+      timeout: AXIOS_REQUEST_TIMEOUT,
       headers: {
-        "User-Agent": "lemmy-explorer-crawler/1.0.0",
-        "X-Lemmy-SiteUrl": "https://lemmyverse.net",
+        "User-Agent": CRAWLER_USER_AGENT,
+        "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
       },
     });
 

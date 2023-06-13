@@ -24,6 +24,9 @@ export const AGED_CRON = "*/5 * * * *"; // every 5 minutes
 // the maximum age (in ms) for output items to be included in the json dumps
 export const OUTPUT_MAX_AGE_MS = 10 * 60 * 60 * 1000; // 24 hours in ms
 
+// for each request we make, after how much time should axios be configured to timeout
+export const AXIOS_REQUEST_TIMEOUT = 20 * 1000; // 20 seconds in ms
+
 export const FEDDIT_URLS = [
   "0xdd.org.ru",
   "1337lemmy.com",
@@ -324,3 +327,7 @@ export const FEDDIT_URLS = [
 ];
 
 export const START_URLS = ["lemmy.tgxn.net", ...FEDDIT_URLS];
+
+// used for the crawler headers when making requests
+export const CRAWLER_USER_AGENT = "lemmy-explorer-crawler/1.0.0";
+export const CRAWLER_ATTRIB_URL = "https://lemmyverse.net";
