@@ -6,7 +6,7 @@ import CrawlCommunity from "./crawl/communities.js";
 import CrawlOutput from "./crawl/output.js";
 import CrawlAged from "./crawl/aged.js";
 
-import { START_URLS, AGED_CRON } from "./lib/const.js";
+import { START_URLS, AGED_CRON_EXPRESSION } from "./lib/const.js";
 
 export function start(args) {
   if (args.length > 0) {
@@ -21,7 +21,7 @@ export function start(args) {
 
     if (args.indexOf("--cron") > -1) {
       console.log("Started Cron Task");
-      const task = cron.schedule(AGED_CRON, () => {
+      const task = cron.schedule(AGED_CRON_EXPRESSION, () => {
         const aged = new CrawlAged();
         aged.createJobs();
       });
@@ -49,7 +49,7 @@ export function start(args) {
       //   crawler.createJob("lemmy.tgxn.net");
     }
   } else {
-    console.info("no args, starting all crawlers");
+    console.info("no args, starting all crawler workers");
     new CrawlInstance(true);
     new CrawlCommunity(true);
   }

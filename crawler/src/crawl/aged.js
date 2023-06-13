@@ -79,6 +79,7 @@ export default class CrawlAged {
 
     const crawler = new CrawlInstance();
     for (const baseUrl of this.agedInstanceBaseUrls) {
+      console.log(`Aged Instance: ${baseUrl}`);
       crawler.createJob(baseUrl);
     }
   }

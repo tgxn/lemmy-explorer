@@ -41,6 +41,11 @@ export default class CrawlCommunity {
   async process() {
     this.queue.process(async (job) => {
       try {
+        // if it's not a string
+        if (typeof job.data.baseUrl !== "string") {
+          console.error("baseUrl is not a string", job.data);
+          throw new Error("baseUrl is not a string");
+        }
         // console.debug(
         //   `[Community] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
         // );

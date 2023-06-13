@@ -19,7 +19,7 @@ export const MIN_RECRAWL_MS = 5 * 60 * 1000; // 5 minutes in ms
 export const RECRAWL_AGED_MS = 24 * 60 * 60 * 1000; // 24 hours in ms
 
 // how often should the cron run with --cron
-export const AGED_CRON = "*/5 * * * *"; // every 5 minutes
+export const AGED_CRON_EXPRESSION = "*/5 * * * *"; // every 5 minutes
 
 // the maximum age (in ms) for output items to be included in the json dumps
 export const OUTPUT_MAX_AGE_MS = 10 * 60 * 60 * 1000; // 24 hours in ms

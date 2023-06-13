@@ -80,6 +80,12 @@ export default class CrawlInstance {
   async process() {
     this.queue.process(async (job) => {
       try {
+        // if it's not a string
+        if (typeof job.data.baseUrl !== "string") {
+          console.error("baseUrl is not a string", job.data);
+          throw new Error("baseUrl is not a string");
+        }
+
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
         instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces
         instanceBaseUrl = instanceBaseUrl.replace(/.*@/, ""); // remove anything before an @ if present
@@ -182,6 +188,35 @@ export default class CrawlInstance {
       "https://" + instanceBaseUrl + "/api/v3/site"
     );
 
+    /**
+     * map all languages to array of their codes
+     */
+
+    function mapLangsToCodes(allLangsArray, discussionIdsArray) {
+      const discussionLangs = [];
+
+      /// if all are selected, set flag
+      let allSelected = false;
+      if (allLangsArray.length === discussionIdsArray.length) {
+        allSelected = true;
+      }
+      if (!allSelected) {
+        discussionIdsArray.forEach((id) => {
+          const languageData = allLangsArray.find((lang) => lang.id === id);
+          discussionLangs.push(languageData.code);
+        });
+      } else {
+        discussionLangs.push("all");
+      }
+
+      return discussionLangs;
+    }
+
+    const discussionLangs = mapLangsToCodes(
+      siteInfo.data.all_languages,
+      siteInfo.data.discussion_languages
+    );
+
     //   console.log(siteInfo.data);
     const instanceData = {
       nodeData: {
@@ -198,6 +233,7 @@ export default class CrawlInstance {
         taglines: siteInfo.data.taglines,
         federated: siteInfo.data.federated_instances,
       },
+      langs: discussionLangs,
     };
 
     return instanceData;
