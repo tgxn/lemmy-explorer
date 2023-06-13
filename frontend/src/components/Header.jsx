@@ -71,12 +71,16 @@ export default function TabsVariants() {
       sx={{
         p: 2,
         display: "flex",
+        height: "80px",
         alignItems: "center",
         justifyContent: "space-between",
       }}
     >
       <Typography
         fontWeight="lg"
+        sx={{
+          ml: 2,
+        }}
         startDecorator={
           <Box
             component="div"
@@ -85,9 +89,6 @@ export default function TabsVariants() {
               height: 28,
               background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
               backgroundSize: "contain",
-              //   borderRadius: "50%",
-              //   boxShadow: (theme) => theme.shadow.md,
-              //   "--joy-shadowChannel": (theme) => theme.vars.palette.primary.mainChannel,
             }}
           />
         }
@@ -126,10 +127,9 @@ export default function TabsVariants() {
           variant="outlined"
           color="neutral"
           sx={{ p: 1 }}
-          // link to https://github.com/tgxn/lemmy-explorer
-          onClick={() => {
-            window.open("https://github.com/tgxn/lemmy-explorer", "_blank");
-          }}
+          href="https://github.com/tgxn/lemmy-explorer"
+          target="_blank"
+          component="a"
         >
           <GitHubIcon />
         </IconButton>

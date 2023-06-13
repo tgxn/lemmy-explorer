@@ -1,11 +1,18 @@
 {
   "name": "lemmy-explorer-crawler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
-  "main": "index.js",
+  "main": "./index.js",
   "scripts": {
-    "start": "node index.js",
-    "out": "node output.js"
+    "start": "pm2 start ecosystem.config.cjs",
+    "logs": "pm2 logs",
+    "stop": "pm2 stop ecosystem.config.cjs",
+    "delete": "pm2 delete ecosystem.config.cjs",
+    "start:dev": "node index.js",
+    "start:init": "node index.js --init",
+    "start:dev:instance": "node index.js -q instance",
+    "start:dev:community": "node index.js -q community",
+    "out": "node index.js --out"
   },
   "type": "module",
   "author": "",
@@ -13,6 +20,8 @@
   "dependencies": {
     "axios": "^1.4.0",
     "bee-queue": "^1.5.0",
+    "node-cron": "^3.0.2",
+    "pm2": "^5.3.0",
     "redis": "^4.6.7"
   }
 }
