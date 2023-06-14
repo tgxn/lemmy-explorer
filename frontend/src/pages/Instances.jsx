@@ -94,7 +94,6 @@ export default function Instances() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          //wrap items
           flexWrap: "wrap",
           gap: 1,
         }}
