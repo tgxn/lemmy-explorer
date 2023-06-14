@@ -47,15 +47,38 @@ export default function Communities() {
     // process data
 
     if (!data) return;
+    console.log(`Loaded ${data.length} communities`);
 
     let communties = data;
-    console.log(communties);
 
+    // hide nsfw
     if (!showNsfw) {
+      console.log(`Hiding NSFW communities`);
       communties = communties.filter((community) => {
         return !community.nsfw;
       });
     }
+
+    // filter string
+    if (filterText) {
+      console.log(`Filtering communities by ${filterText}`);
+      communties = communties.filter((community) => {
+        return (
+          (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
+          (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
+          (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
+        );
+      });
+    }
+
+    // hide no banner
+    if (hideNoBanner) {
+      console.log(`Hiding communities with no banner`);
+      communties = communties.filter((community) => {
+        return community.banner != null;
+      });
+    }
+    console.log(`Filtered ${communties.length} communities`);
 
     if (orderBy === "smart") {
       communties = communties.sort((a, b) => b.score - a.score);
@@ -68,26 +91,9 @@ export default function Communities() {
     } else if (orderBy === "comments") {
       communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
     }
-
-    if (filterText) {
-      communties = communties.filter((community) => {
-        return (
-          (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
-          (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
-          (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
-        );
-      });
-    }
-
-    // hide no banner
-    if (hideNoBanner) {
-      communties = communties.filter((community) => {
-        return community.banner != null;
-      });
-    }
+    console.log(`Sorted ${communties.length} communities`);
 
     // pagination
-    // const all_communties = communties;
     setTotalFiltered(communties.length);
 
     communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
@@ -183,8 +189,8 @@ export default function Communities() {
         <div>{isFetching ? "Updating..." : ""}</div>
 
         <Grid container spacing={2}>
-          {communitiesData.map((community) => (
-            <CommunityCard community={community} />
+          {communitiesData.map((community, index) => (
+            <CommunityCard key={index} community={community} />
           ))}
         </Grid>
       </Box>
