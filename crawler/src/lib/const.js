@@ -12,7 +12,7 @@ export const CRAWL_TIMEOUT = {
 
 // how many times to retry a failed job
 export const CRAWL_RETRY = {
-  INSTANCE: 2,
+  INSTANCE: 1,
   COMMUNITY: 2,
 };
 
