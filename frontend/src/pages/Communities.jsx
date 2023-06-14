@@ -21,7 +21,7 @@ import Pagination from "../components/Pagination";
 import useStorage from "../hooks/useStorage";
 
 export default function Communities() {
-  const [orderBy, setOrderBy] = useStorage("community.orderBy", "subscribers");
+  const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
 
   const [hideNoBanner, setHideNoBanner] = useStorage("community.hideNoBanner", true);
@@ -57,7 +57,9 @@ export default function Communities() {
       });
     }
 
-    if (orderBy === "subscribers") {
+    if (orderBy === "smart") {
+      communties = communties.sort((a, b) => b.score - a.score);
+    } else if (orderBy === "subscribers") {
       communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
     } else if (orderBy === "active") {
       communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
@@ -140,6 +142,7 @@ export default function Communities() {
             },
           }}
         >
+          <Option value="smart">Smart Sort</Option>
           <Option value="subscribers">Subscribers</Option>
           <Option value="active">Active Users</Option>
           <Option value="posts">Posts</Option>

@@ -165,8 +165,44 @@ export default class CrawlOutput {
     const communities = await listCommunityData();
 
     let storeCommunityData = communities.map((community) => {
+      let siteBaseUrl = community.community.actor_id.split("/")[2];
+
+      let score = 0;
+      // having a linked instance gives you a point for each link
+      if (linkedFederation[siteBaseUrl]) {
+        score += linkedFederation[siteBaseUrl];
+      }
+
+      // each allowed instance gives you points
+      if (allowedFederation[siteBaseUrl]) {
+        score += allowedFederation[siteBaseUrl] * 2;
+      }
+
+      // each blocked instance takes away points
+      if (blockedFederation[siteBaseUrl]) {
+        score -= blockedFederation[siteBaseUrl] * 10;
+      }
+
+      // also score based on posts and subscribers
+      if (community.counts.posts > 100 && community.counts.subscribers > 10) {
+        const postsPerSub =
+          community.counts.posts / community.counts.subscribers; // point per posts per-subscriber
+
+        // if there are less than 50 posts per-person, add double the amount
+        if (postsPerSub < 50) {
+          score += postsPerSub;
+        }
+
+        // if there's nmore than 1000 posts per-user, take score off
+        else if (postsPerSub > 1000) {
+          score -= postsPerSub / 5;
+        } else {
+          score += 50;
+        }
+      }
+
       return {
-        baseurl: community.community.actor_id.split("/")[2],
+        baseurl: siteBaseUrl,
         url: community.community.actor_id,
         name: community.community.name,
         title: community.community.title,
@@ -176,6 +212,7 @@ export default class CrawlOutput {
         nsfw: community.community.nsfw,
         counts: community.counts,
         time: community.lastCrawled || null,
+        score: score,
       };
     });
 

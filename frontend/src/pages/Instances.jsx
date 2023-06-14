@@ -23,7 +23,7 @@ import Pagination from "../components/Pagination";
 import useStorage from "../hooks/useStorage";
 
 export default function Instances() {
-  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "users");
+  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
   const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
 
   const [pageLimit, setPagelimit] = useStorage("instance.pageLimit", 100);
@@ -55,7 +55,9 @@ export default function Instances() {
       instances = instances.filter((instance) => instance.open);
     }
 
-    if (orderBy === "users") {
+    if (orderBy === "smart") {
+      instances = instances.sort((a, b) => b.score - a.score);
+    } else if (orderBy === "users") {
       instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
     } else if (orderBy === "active") {
       instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
@@ -125,6 +127,7 @@ export default function Instances() {
             },
           }}
         >
+          <Option value="smart">Smart Sort</Option>
           <Option value="users">Users</Option>
           <Option value="active">Active Users</Option>
           <Option value="posts">Posts</Option>
