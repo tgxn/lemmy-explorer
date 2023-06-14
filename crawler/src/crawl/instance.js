@@ -1,5 +1,5 @@
 import Queue from "bee-queue";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 import {
   putInstanceData,
@@ -7,6 +7,7 @@ import {
   storeError,
   getError,
   getInstanceData,
+  getFediverseData,
   listInstanceData,
 } from "../lib/storage.js";
 
@@ -27,7 +28,13 @@ export default class CrawlInstance {
   constructor(isWorker) {
     this.queue = new Queue("instance", {
       removeOnSuccess: true,
+      removeOnFailure: true,
       isWorker,
+    });
+
+    // report failures!
+    this.queue.on("failed", (job, err) => {
+      console.error(`Job ${job.id} failed with error ${err.message}`);
     });
 
     this.axios = axios.create({
@@ -45,7 +52,11 @@ export default class CrawlInstance {
 
   createJob(instanceBaseUrl) {
     const job = this.queue.createJob({ baseUrl: instanceBaseUrl });
-    job.timeout(CRAWL_TIMEOUT.INSTANCE).retries(CRAWL_RETRY.INSTANCE).save();
+    job
+      .timeout(CRAWL_TIMEOUT.INSTANCE)
+      .retries(CRAWL_RETRY.INSTANCE)
+      .setId(instanceBaseUrl) // deduplicate
+      .save();
     // job.on("succeeded", (result) => {
     //   console.log(`Completed instanceQueue ${job.id}`, instanceBaseUrl);
     //   console.log();
@@ -60,7 +71,7 @@ export default class CrawlInstance {
       // console.log("lastCrawled", existingInstance.lastCrawled);
 
       const lastCrawl = existingInstance.lastCrawled;
-      const now = new Date().getTime();
+      const now = Date.now();
 
       return now - lastCrawl;
     }
@@ -71,7 +82,7 @@ export default class CrawlInstance {
       // console.log("lastError", lastError.time);
 
       const lastErrorTime = lastError.time;
-      const now = new Date().getTime();
+      const now = Date.now();
 
       return now - lastErrorTime;
     }
@@ -87,18 +98,31 @@ export default class CrawlInstance {
           console.error("baseUrl is not a string", job.data);
           throw new CrawlError("baseUrl is not a string");
         }
+        console.debug(
+          `[Instance] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
+        );
 
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
         instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces
         instanceBaseUrl = instanceBaseUrl.replace(/.*@/, ""); // remove anything before an @ if present
 
-        // console.debug(
-        //   `[Instance] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
-        // );
-
         // disallow * as a base url
         if (instanceBaseUrl === "*") {
           throw new CrawlError("cannot crawl `*`");
+        }
+
+        // check if it's known to not be running lemmy
+        const knownFediverseServer = await getFediverseData(instanceBaseUrl);
+        if (knownFediverseServer) {
+          if (
+            knownFediverseServer.name !== "lemmy" &&
+            knownFediverseServer.name !== "lemmybb"
+          ) {
+            // console.debug("known non-lemmy server", knownFediverseServer);
+            throw new CrawlWarning(
+              `known non-lemmy server ${knownFediverseServer.name}`
+            );
+          }
         }
 
         // check if instance has already been crawled within CRAWL_EVERY
@@ -115,7 +139,7 @@ export default class CrawlInstance {
           // store/update the instance
           await putInstanceData(instanceBaseUrl, {
             ...instanceData,
-            lastCrawled: new Date().getTime(),
+            lastCrawled: Date.now(),
           });
 
           // create job to scan the instance for communities
@@ -123,7 +147,12 @@ export default class CrawlInstance {
 
           // attempt to crawl federated instances
           if (instanceData.siteData?.federated?.linked.length > 0) {
-            this.crawlFederatedInstances(instanceData.siteData.federated);
+            const countFederated = this.crawlFederatedInstances(
+              instanceData.siteData.federated
+            );
+            console.log(
+              `[Instance] [${job.data.baseUrl}] [${job.id}] Crawled ${countFederated.length} federated instances`
+            );
           }
 
           console.log(
@@ -149,8 +178,8 @@ export default class CrawlInstance {
             `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
           );
         } else if (error instanceof CrawlWarning) {
-          console.warn(
-            `[Instance] [${job.data.baseUrl}] [${job.id}] Warning: ${error.message}`
+          console.error(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Warn: ${error.message}`
           );
         } else {
           console.error(
@@ -159,7 +188,7 @@ export default class CrawlInstance {
           console.trace(error);
         }
       }
-      return null;
+      return true;
     });
   }
 
@@ -195,7 +224,7 @@ export default class CrawlInstance {
     await storeFediverseInstance(instanceBaseUrl, software);
 
     if (software.name != "lemmy" && software.name != "lemmybb") {
-      throw new CrawlError(`not a lemmy instance (${software.name})`);
+      throw new CrawlWarning(`not a lemmy instance (${software.name})`);
     }
 
     const siteInfo = await this.axios.get(
@@ -208,6 +237,9 @@ export default class CrawlInstance {
 
     function mapLangsToCodes(allLangsArray, discussionIdsArray) {
       const discussionLangs = [];
+
+      if (!allLangsArray) return [];
+      if (!discussionIdsArray) return [];
 
       /// if all are selected, set flag
       let allSelected = false;
@@ -254,9 +286,18 @@ export default class CrawlInstance {
   }
 
   // start a job for each instances in the federation lists
-  crawlFederatedInstances({ linked, allowed, blocked }) {
-    for (var instance of linked) {
+  crawlFederatedInstances(federatedData) {
+    const linked = federatedData.linked || [];
+    const allowed = federatedData.allowed || [];
+    const blocked = federatedData.blocked || [];
+
+    // pull data from all federated instances
+    let instancesDeDup = [...new Set([...linked, ...allowed, ...blocked])];
+
+    for (var instance of instancesDeDup) {
       this.createJob(instance);
     }
+
+    return instancesDeDup;
   }
 }

@@ -1,3 +1,7 @@
+function hoursToMs(hours) {
+  return hours * 60 * 60 * 1000;
+}
+
 export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 // timeout for the instance and community crawlers
@@ -13,16 +17,19 @@ export const CRAWL_RETRY = {
 };
 
 // the minimum amount of time (in ms) between crawling the same instance
-export const MIN_RECRAWL_MS = 5 * 60 * 1000; // 5 minutes in ms
+const MIN_RECRAWL_HOURS = 1;
+export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 
-// look for old records to re-crawl
-export const RECRAWL_AGED_MS = 24 * 60 * 60 * 1000; // 24 hours in ms
+// look for aged records to re-crawl
+const RECRAWL_AGED_HOURS = 12;
+export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
 
 // how often should the cron run with --cron
 export const AGED_CRON_EXPRESSION = "*/5 * * * *"; // every 5 minutes
 
 // the maximum age (in ms) for output items to be included in the json dumps
-export const OUTPUT_MAX_AGE_MS = 10 * 60 * 60 * 1000; // 24 hours in ms
+const OUTPUT_MAX_AGE_HOURS = 2;
+export const OUTPUT_MAX_AGE_MS = OUTPUT_MAX_AGE_HOURS * 60 * 60 * 1000;
 
 // for each request we make, after how much time should axios be configured to timeout
 export const AXIOS_REQUEST_TIMEOUT = 20 * 1000; // 20 seconds in ms

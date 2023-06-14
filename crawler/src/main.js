@@ -8,15 +8,15 @@ import CrawlAged from "./crawl/aged.js";
 
 import { START_URLS, AGED_CRON_EXPRESSION } from "./lib/const.js";
 
-export function start(args) {
+export async function start(args) {
   if (args.length > 0) {
     if (args.indexOf("--out") > -1) {
       console.log("Generate JSON Output");
 
       const output = new CrawlOutput();
-      output.start();
+      await output.start();
 
-      return;
+      return process.exit(0);
     }
 
     if (args.indexOf("--cron") > -1) {
@@ -25,7 +25,28 @@ export function start(args) {
         const aged = new CrawlAged();
         aged.createJobs();
       });
+
       return;
+    }
+
+    if (args.indexOf("--aged") > -1) {
+      console.log("Started Cron Task");
+      const aged = new CrawlAged();
+      aged.createJobs();
+
+      return;
+    }
+
+    if (args.indexOf("--health") > -1) {
+      const instanceCrawl = new CrawlInstance(false);
+      const counts = await instanceCrawl.queue.checkHealth();
+      console.log("Instance Worker Health:", counts);
+
+      const communityCrawl = new CrawlCommunity(false);
+      const commCounts = await communityCrawl.queue.checkHealth();
+      console.log("Community Worker Health:", commCounts);
+
+      return process.exit(0);
     }
 
     // start specific queue workers
@@ -36,6 +57,7 @@ export function start(args) {
     } else if (args[0] == "-q" && args[1] == "community") {
       console.info("Starting Community Processor");
       new CrawlCommunity(true);
+
       return;
     }
 
@@ -46,7 +68,8 @@ export function start(args) {
       for (var baseUrl of START_URLS) {
         crawler.createJob(baseUrl);
       }
-      //   crawler.createJob("lemmy.tgxn.net");
+      // crawler.createJob("lemmy.tgxn.net");
+      return;
     }
   } else {
     console.info("no args, starting all crawler workers");

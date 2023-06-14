@@ -45,9 +45,67 @@ export default class CrawlOutput {
 
     const instances = await listInstanceData();
 
+    // count instances by list
+    let linkedFederation = {};
+    let allowedFederation = {};
+    let blockedFederation = {};
+    function dedupAddItem(list, baseUrl) {
+      // only add strings
+      if (typeof baseUrl !== "string") {
+        return;
+      }
+
+      if (!list[baseUrl]) {
+        list[baseUrl] = 1;
+      } else {
+        list[baseUrl]++;
+      }
+    }
+    instances.forEach((instance) => {
+      // console.log(instance.siteData.federated);
+      if (instance.siteData.federated) {
+        const { linked, allowed, blocked } = instance.siteData.federated;
+        if (linked.length > 0) {
+          for (const baseUrl of linked) {
+            dedupAddItem(linkedFederation, baseUrl);
+          }
+        }
+        if (allowed && allowed.length > 0) {
+          for (const baseUrl of allowed) {
+            dedupAddItem(allowedFederation, baseUrl);
+          }
+        }
+        if (blocked && blocked.length > 0) {
+          for (const baseUrl of blocked) {
+            dedupAddItem(blockedFederation, baseUrl);
+          }
+        }
+      }
+    });
+
+    // console.log(`Instances: ${linkedInstanceListCount}`);
+
     let storeData = instances.map((instance) => {
+      let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
+
+      let score = 0;
+      // having a linked instance gives you a point for each link
+      if (linkedFederation[siteBaseUrl]) {
+        score += linkedFederation[siteBaseUrl];
+      }
+
+      // each allowed instance gives you points
+      if (allowedFederation[siteBaseUrl]) {
+        score += allowedFederation[siteBaseUrl] * 2;
+      }
+
+      // each blocked instance takes away points
+      if (blockedFederation[siteBaseUrl]) {
+        score -= blockedFederation[siteBaseUrl] * 10;
+      }
+
       return {
-        baseurl: instance.siteData.site.actor_id.split("/")[2],
+        baseurl: siteBaseUrl,
         url: instance.siteData.site.actor_id,
         name: instance.siteData.site.name,
         desc: instance.siteData.site.description,
@@ -58,6 +116,7 @@ export default class CrawlOutput {
         icon: instance.siteData.site.icon,
         banner: instance.siteData.site.banner,
         time: instance.lastCrawled || null,
+        score: score,
       };
     });
 
@@ -65,25 +124,25 @@ export default class CrawlOutput {
     storeData = storeData.filter((instance) => {
       const fail = findFail(instance.baseurl);
       if (fail) {
-        if (instance.time > fail.time) {
+        if (instance.time < fail.time) {
           // console.log("filtered due to fail", fail, instance.baseurl);
-          return true;
+          return false;
         }
       }
-      return false;
+      return true;
     });
 
     // remove instances not updated in 24h
     storeData = storeData.filter((instance) => {
-      if (!instance.time) return false;
+      if (!instance.time) return false; // record needs time
 
-      // remove instances with age < OUTPUT_MAX_AGE_MS
-      // console.log(Date.now() - instance.time, OUTPUT_MAX_AGE_MS);
-      if (Date.now() - instance.time < OUTPUT_MAX_AGE_MS) {
-        return true;
+      // remove communities with age more than the max
+      const recordAge = Date.now() - instance.time;
+      if (recordAge > OUTPUT_MAX_AGE_MS) {
+        return false;
       }
 
-      return false;
+      return true;
     });
 
     // filter blank
@@ -116,7 +175,7 @@ export default class CrawlOutput {
         banner: community.community.banner,
         nsfw: community.community.nsfw,
         counts: community.counts,
-        time: community.lastCrawled,
+        time: community.lastCrawled || null,
       };
     });
 
@@ -124,25 +183,25 @@ export default class CrawlOutput {
     storeCommunityData = storeCommunityData.filter((community) => {
       const fail = findFail(community.baseurl);
       if (fail) {
-        if (community.time > fail.time) {
+        if (community.time < fail.time) {
           // console.log("filtered due to fail", fail, instance.baseurl);
-          return true;
+          return false;
         }
       }
-      return false;
+      return true;
     });
 
     // remove communities not updated in 24h
     storeCommunityData = storeCommunityData.filter((community) => {
-      if (!community.time) return false;
+      if (!community.time) return false; // record needs time
 
-      // remove communities with age < OUTPUT_MAX_AGE_MS
-      // console.log(Date.now() - community.time, OUTPUT_MAX_AGE_MS);
-      if (Date.now() - community.time < OUTPUT_MAX_AGE_MS) {
-        return true;
+      // remove communities with age more than the max
+      const recordAge = Date.now() - community.time;
+      if (recordAge > OUTPUT_MAX_AGE_MS) {
+        return false;
       }
 
-      return false;
+      return true;
     });
 
     // filter blank
@@ -213,14 +272,20 @@ export default class CrawlOutput {
     const metrics = {
       instances: storeData.length,
       communities: storeCommunityData.length,
+
+      // top 10 linked, allowed, blocked domains
+      // sort by count of times seen on each list
+      linked: linkedFederation,
+      allowed: allowedFederation,
+      blocked: blockedFederation,
+
+      // federation instance software/version
     };
 
     await this.writeJsonFile(
       "../frontend/public/overview.json",
       JSON.stringify(metrics)
     );
-
-    process.exit(0);
   }
 
   async writeJsonFile(filename, data) {

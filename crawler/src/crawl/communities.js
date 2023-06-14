@@ -17,6 +17,7 @@ export default class CrawlCommunity {
   constructor(isWorker = false) {
     this.queue = new Queue("community", {
       removeOnSuccess: true,
+      removeOnFailure: true,
       isWorker,
     });
 
@@ -33,7 +34,11 @@ export default class CrawlCommunity {
 
   createJob(instanceBaseUrl) {
     const job = this.queue.createJob({ baseUrl: instanceBaseUrl });
-    job.timeout(CRAWL_TIMEOUT.COMMUNITY).retries(CRAWL_RETRY.COMMUNITY).save();
+    job
+      .timeout(CRAWL_TIMEOUT.COMMUNITY)
+      .retries(CRAWL_RETRY.COMMUNITY)
+      .setId(instanceBaseUrl) // deduplicate
+      .save();
     // job.on("succeeded", (result) => {
     //   console.log(`Completed communityQueue ${job.id}`, instanceBaseUrl);
     //   console.log();
@@ -48,9 +53,9 @@ export default class CrawlCommunity {
           console.error("baseUrl is not a string", job.data);
           throw new CrawlError("baseUrl is not a string");
         }
-        // console.debug(
-        //   `[Community] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
-        // );
+        console.debug(
+          `[Community] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
+        );
 
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
         instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces
@@ -62,7 +67,7 @@ export default class CrawlCommunity {
         for (var community of communityData) {
           await putCommunityData(instanceBaseUrl, {
             ...community,
-            lastCrawled: new Date().getTime(),
+            lastCrawled: Date.now(),
           });
         }
 
@@ -76,7 +81,7 @@ export default class CrawlCommunity {
           stack: error.stack,
           isAxiosError: error.isAxiosError,
           response: error.isAxiosError ? error.response : null,
-          time: new Date().getTime(),
+          time: Date.now(),
         };
         await storeError("community", job.data.baseUrl, errorDetail);
         console.error(

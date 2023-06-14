@@ -39,6 +39,10 @@ export async function getCommunityData(key) {
   await connectIfNeeded();
   return getRedis(`community:${key}`);
 }
+export async function getFediverseData(baseUrl) {
+  await connectIfNeeded();
+  return getRedis(`fediverse:${baseUrl}`);
+}
 
 // list
 
