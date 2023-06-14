@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-import axios from "axios";
-
 import { useNavigate } from "react-router-dom";
-
-import { useQuery } from "@tanstack/react-query";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Card from "@mui/joy/Card";
 import Container from "@mui/joy/Container";
@@ -24,14 +21,7 @@ export default function Overview() {
 
   const [filteredInstances, setFilteredInstances] = useState([]);
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["instanceData"],
-    queryFn: () =>
-      axios.get("/instances.json").then((res) => {
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
   // filter data
   useEffect(() => {

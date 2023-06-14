@@ -1,8 +1,6 @@
 import React from "react";
 
-import axios from "axios";
-
-import { useQuery } from "@tanstack/react-query";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Card from "@mui/joy/Card";
 import Container from "@mui/joy/Container";
@@ -14,17 +12,16 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
 
 export default function Overview() {
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["overviewData"],
-    queryFn: () =>
-      axios.get("/overview.json").then((res) => {
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const {
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    data: overviewData,
+  } = useQueryCache("overviewData", "/overview.json");
 
   if (isLoading) return "Loading...";
-  if (error) return "An error has occurred: " + error.message;
+  if (isError) return "An error has occurred: " + error.message;
 
   return (
     <Container maxWidth={"md"} sx={{}}>

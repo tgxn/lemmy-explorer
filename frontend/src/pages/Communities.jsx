@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-import axios from "axios";
-
-import { useQuery } from "@tanstack/react-query";
+import useStorage from "../hooks/useStorage";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
@@ -17,8 +16,7 @@ import SortIcon from "@mui/icons-material/Sort";
 
 import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
-
-import useStorage from "../hooks/useStorage";
+import { PageLoading, PageError } from "../components/Display";
 
 export default function Communities() {
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
@@ -31,22 +29,24 @@ export default function Communities() {
 
   const [filterText, setFilterText] = useStorage("community.filterText", "");
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["communitiesData"],
-    queryFn: () =>
-      axios.get("/communities.json").then((res) => {
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
+    "communitiesData",
+    "/communities.json",
+  );
 
   const [totalFiltered, setTotalFiltered] = useState(0);
   const [communitiesData, setCommunitiesData] = useState([]);
 
+  const [processingData, setProcessingData] = React.useState(true);
+
   useEffect(() => {
     // process data
 
+    setProcessingData(true);
+
+    if (isError) return;
     if (!data) return;
+
     console.log(`Loaded ${data.length} communities`);
 
     let communties = data;
@@ -99,10 +99,9 @@ export default function Communities() {
     communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
     setCommunitiesData(communties);
-  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
 
-  if (isLoading) return "Loading...";
-  if (error) return "An error has occurred: " + error.message;
+    setProcessingData(false);
+  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -186,9 +185,10 @@ export default function Communities() {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        <div>{isFetching ? "Fetching..." : ""}</div>
+        {(isLoading || processingData) && <PageLoading />}
+        {isError && <PageError error={error} />}
 
-        {!isFetching && (
+        {isSuccess && (
           <Grid container spacing={2}>
             {communitiesData.map((community, index) => (
               <CommunityCard key={index} community={community} />

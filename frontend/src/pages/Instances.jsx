@@ -1,8 +1,6 @@
 import React from "react";
 
-import axios from "axios";
-
-import { useQuery } from "@tanstack/react-query";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Container from "@mui/joy/Container";
 
@@ -19,6 +17,7 @@ import SortIcon from "@mui/icons-material/Sort";
 
 import InstanceCard from "../components/InstanceCard";
 import Pagination from "../components/Pagination";
+import { PageLoading, PageError } from "../components/Display";
 
 import useStorage from "../hooks/useStorage";
 
@@ -31,22 +30,19 @@ export default function Instances() {
 
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["instanceData"],
-    queryFn: () =>
-      axios.get("/instances.json").then((res) => {
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
   const [totalFiltered, setTotalFiltered] = React.useState(0);
   const [instancesData, setInstancesData] = React.useState([]);
 
+  const [processingData, setProcessingData] = React.useState(true);
+
   React.useEffect(() => {
     // process data
+    setProcessingData(true);
 
     if (!data) return;
+    if (error) return;
 
     // process data
 
@@ -80,10 +76,9 @@ export default function Instances() {
     setTotalFiltered(instances.length);
     instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
     setInstancesData(instances);
-  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit]);
 
-  if (isLoading) return "Loading...";
-  if (error) return "An error has occurred: " + error.message;
+    setProcessingData(false);
+  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -160,13 +155,16 @@ export default function Instances() {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        <div>{isFetching ? "Updating..." : ""}</div>
+        {(isLoading || processingData) && <PageLoading />}
+        {isError && <PageError error={error} />}
 
-        <Grid container spacing={2}>
-          {instancesData.map((instance) => (
-            <InstanceCard instance={instance} />
-          ))}
-        </Grid>
+        {isSuccess && (
+          <Grid container spacing={2}>
+            {instancesData.map((instance) => (
+              <InstanceCard instance={instance} />
+            ))}
+          </Grid>
+        )}
       </Box>
     </Container>
   );

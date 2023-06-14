@@ -4,7 +4,7 @@ import Moment from "react-moment";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useColorScheme } from "@mui/joy/styles";
-import { useQuery } from "@tanstack/react-query";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Badge from "@mui/joy/Badge";
 import Box from "@mui/joy/Box";
@@ -84,9 +84,11 @@ function ColorSchemeToggle({ onClick, variant, ...props }) {
   );
 }
 
-function RightSideMenu(props) {
+function RightSideMenu() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "/meta.json");
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -110,7 +112,6 @@ function RightSideMenu(props) {
     display: { xs: "inline-flex", md: "none" },
   };
 
-  console.log("DATA", props.data);
   return (
     <>
       <Box sx={hideWhenSmall}>
@@ -161,7 +162,7 @@ function RightSideMenu(props) {
           <ListItemDecorator>
             <HistoryIcon />
           </ListItemDecorator>
-          {!props.isLoading && (
+          {isSuccess && (
             <Box>
               <Box>Data Last Updated</Box>
 
@@ -170,7 +171,7 @@ function RightSideMenu(props) {
                   fontStyle: "italic",
                 }}
               >
-                <Moment fromNow>{props.data?.time}</Moment>
+                <Moment fromNow>{metaData.time}</Moment>
               </Box>
             </Box>
           )}
@@ -212,15 +213,7 @@ function RightSideMenu(props) {
 export default function TabsVariants() {
   const [index, setIndex] = React.useState(0);
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["metaData"],
-    queryFn: () =>
-      axios.get("/meta.json").then((res) => {
-        console.log(res.data);
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "/meta.json");
 
   const navigate = useNavigate();
 
@@ -292,7 +285,7 @@ export default function TabsVariants() {
       >
         <TabList variant="soft">
           <Badge
-            badgeContent={!isLoading && data.instances}
+            badgeContent={isSuccess && metaData.instances}
             max={999}
             color="info"
             variant={"solid"}
@@ -307,7 +300,7 @@ export default function TabsVariants() {
           </Badge>
 
           <Badge
-            badgeContent={!isLoading && data.communities}
+            badgeContent={isSuccess && metaData.communities}
             max={9999}
             variant={"solid"}
             anchorOrigin={{
@@ -323,26 +316,7 @@ export default function TabsVariants() {
       </Tabs>
       <Box sx={{ flexGrow: 1 }} />
 
-      {/* <Box sx={{}}>
-        {!isLoading && (
-          <Tooltip title="All data was retrieved within 24 hours of this time" variant="soft">
-            <Typography
-              variant="caption"
-              sx={{
-                display: { xs: "none", md: "block" },
-
-                cursor: "help",
-                textDecoration: "underline dotted",
-                mr: 2,
-                fontStyle: "italic",
-              }}
-            >
-              updated <Moment fromNow>{data.time}</Moment>
-            </Typography>
-          </Tooltip>
-        )}
-      </Box> */}
-      <RightSideMenu isLoading={isLoading} data={data} />
+      <RightSideMenu />
     </Box>
   );
 }

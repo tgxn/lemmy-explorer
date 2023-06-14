@@ -93,3 +93,49 @@ export function ContentError({ message = false, bgcolor = "#ff55551c" }) {
     </Box>
   );
 }
+
+export function PageLoading() {
+  return (
+    <Box
+      sx={(theme) => ({
+        ...theme.typography.body2,
+
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+      })}
+    >
+      <CircularProgress
+        variant={"soft"}
+        color="neutral"
+        size="lg"
+        sx={{
+          marginBottom: "5px",
+        }}
+      />
+    </Box>
+  );
+}
+
+export function PageError() {
+  return (
+    <Box
+      sx={(theme) => ({
+        ...theme.typography.body2,
+
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        fontSize: "1.5rem",
+        p: 2,
+      })}
+    >
+      We had an error trying to load this data. 😭
+      <br /> You could try reloading the page!
+    </Box>
+  );
+}

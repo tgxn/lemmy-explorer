@@ -22,10 +22,11 @@ import CopyLink from "./CopyLink";
 
 function InstanceCard({ instance }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
-  const [loadedIcon, setLoadedIcon] = React.useState(false);
-
-  const [iconError, setIconError] = React.useState(false);
   const [bannerError, setBannerError] = React.useState(false);
+
+  // const [loadedIcon, setLoadedIcon] = React.useState(false);
+
+  // const [iconError, setIconError] = React.useState(false);
 
   function formatNumber(num) {
     if (num >= 1000000) {
