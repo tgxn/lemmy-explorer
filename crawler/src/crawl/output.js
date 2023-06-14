@@ -88,6 +88,9 @@ export default class CrawlOutput {
     let storeData = instances.map((instance) => {
       let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
 
+      const incomingBlocks = blockedFederation[siteBaseUrl] || 0;
+      const outgoingBlocks = instance.siteData.federated?.blocked?.length || 0;
+
       let score = 0;
       // having a linked instance gives you a point for each link
       if (linkedFederation[siteBaseUrl]) {
@@ -109,15 +112,31 @@ export default class CrawlOutput {
         url: instance.siteData.site.actor_id,
         name: instance.siteData.site.name,
         desc: instance.siteData.site.description,
+
+        // config
+        downvotes: instance.siteData.config?.enable_downvotes,
+        nsfw: instance.siteData.config?.enable_nsfw,
+        create_admin: instance.siteData.config?.community_creation_admin_only,
+        private: instance.siteData.config?.private_instance,
+        fed: instance.siteData.config?.federation_enabled,
+
         date: instance.siteData.site.published,
         version: instance.nodeData.software.version,
         open: instance.nodeData.openRegistrations,
-        usage: instance.nodeData.usage,
+
+        usage: instance.nodeData.usage, // TO BE DEPRECATED
+        counts: instance.siteData.counts, // USE THIS INSTEAD
+
         icon: instance.siteData.site.icon,
         banner: instance.siteData.site.banner,
         time: instance.lastCrawled || null,
         langs: instance.langs,
         score: score,
+
+        blocks: {
+          incoming: incomingBlocks,
+          outgoing: outgoingBlocks,
+        },
       };
     });
 
