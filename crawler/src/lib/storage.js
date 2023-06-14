@@ -13,6 +13,7 @@ export async function storeFediverseInstance(baseUrl, data) {
   return putRedis(`fediverse:${baseUrl}`, data);
 }
 export async function storeError(type, baseUrl, data) {
+  if (!baseUrl) throw new Error("baseUrl is required");
   await connectIfNeeded();
   return putRedis(`error:${type}:${baseUrl}`, data);
 }

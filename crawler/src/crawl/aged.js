@@ -7,7 +7,7 @@ import {
   listFediverseData,
 } from "../lib/storage.js";
 
-import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
+import { RECRAWL_AGED_MS } from "../lib/const.js";
 
 export default class CrawlAged {
   constructor() {
@@ -28,7 +28,7 @@ export default class CrawlAged {
     const agedInstances = instances.filter((instance) => {
       if (!instance.lastCrawled) return true; // not set
 
-      if (Date.now() - instance.lastCrawled > OUTPUT_MAX_AGE_MS) {
+      if (Date.now() - instance.lastCrawled > RECRAWL_AGED_MS) {
         return true;
       }
 
@@ -55,7 +55,9 @@ export default class CrawlAged {
     const agedCommunities = communities.filter((community) => {
       if (!community.lastCrawled) return true;
 
-      if (Date.now() - community.lastCrawled > OUTPUT_MAX_AGE_MS) {
+      // if it was last cscanned more then RECRAWL_AGED_MS
+      const lastCrawledAgoMs = Date.now() - community.lastCrawled;
+      if (lastCrawledAgoMs > RECRAWL_AGED_MS) {
         return true;
       }
 
