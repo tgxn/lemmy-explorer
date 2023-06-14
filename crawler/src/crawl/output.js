@@ -184,27 +184,8 @@ export default class CrawlOutput {
         score -= blockedFederation[siteBaseUrl] * 10;
       }
 
-      // also score based on posts and subscribers
-      // if (community.counts.subscribers) {
+      // also score based subscribers
       score = score * community.counts.subscribers;
-      // }
-
-      // if (community.counts.posts > 100 && community.counts.subscribers > 10) {
-      //   const postsPerSub =
-      //     community.counts.posts / community.counts.subscribers; // point per posts per-subscriber
-
-      //   // if there are less than 50 posts per-person, add double the amount
-      //   if (postsPerSub < 50) {
-      //     score += postsPerSub;
-      //   }
-
-      //   // if there's nmore than 1000 posts per-user, take score off
-      //   else if (postsPerSub > 1000) {
-      //     score -= postsPerSub / 5;
-      //   } else {
-      //     score += 50;
-      //   }
-      // }
 
       return {
         baseurl: siteBaseUrl,
