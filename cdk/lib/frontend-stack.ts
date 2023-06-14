@@ -109,7 +109,7 @@ export class FrontendStack extends Stack {
 
       defaultRootObject: "index.html",
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
-      geoRestriction: cloudfront.GeoRestriction.allowlist("AU", "NZ", "TH"),
+      // geoRestriction: cloudfront.GeoRestriction.allowlist("AU", "NZ", "TH"),
 
       // error pages
       errorResponses: [

@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-import axios from "axios";
-
-import { useQuery } from "@tanstack/react-query";
+import useStorage from "../hooks/useStorage";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
@@ -11,64 +10,58 @@ import Input from "@mui/joy/Input";
 import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Typography from "@mui/joy/Typography";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 
 import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
-
-import useStorage from "../hooks/useStorage";
+import { PageLoading, PageError } from "../components/Display";
 
 export default function Communities() {
-  const [orderBy, setOrderBy] = useStorage("community.orderBy", "subscribers");
+  const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
 
-  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideNoBanner", true);
+  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
 
   const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
-  const [page, setPage] = React.useState(0);
+  const [page, setPage] = useState(0);
 
   const [filterText, setFilterText] = useStorage("community.filterText", "");
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["communitiesData"],
-    queryFn: () =>
-      axios.get("/communities.json").then((res) => {
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
+    "communitiesData",
+    "/communities.json",
+  );
 
-  const [totalFiltered, setTotalFiltered] = React.useState(0);
-  const [communitiesData, setCommunitiesData] = React.useState([]);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const [communitiesData, setCommunitiesData] = useState([]);
 
-  React.useEffect(() => {
+  const [processingData, setProcessingData] = React.useState(true);
+
+  useEffect(() => {
     // process data
 
+    setProcessingData(true);
+
+    if (isError) return;
     if (!data) return;
 
-    let communties = data;
-    console.log(communties);
+    console.log(`Loaded ${data.length} communities`);
 
+    let communties = data;
+
+    // hide nsfw
     if (!showNsfw) {
+      console.log(`Hiding NSFW communities`);
       communties = communties.filter((community) => {
         return !community.nsfw;
       });
     }
 
-    if (orderBy === "subscribers") {
-      communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
-    } else if (orderBy === "active") {
-      communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
-    } else if (orderBy === "posts") {
-      communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
-    } else if (orderBy === "comments") {
-      communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
-    }
-
+    // filter string
     if (filterText) {
+      console.log(`Filtering communities by ${filterText}`);
       communties = communties.filter((community) => {
         return (
           (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
@@ -80,22 +73,35 @@ export default function Communities() {
 
     // hide no banner
     if (hideNoBanner) {
+      console.log(`Hiding communities with no banner`);
       communties = communties.filter((community) => {
         return community.banner != null;
       });
     }
+    console.log(`Filtered ${communties.length} communities`);
+
+    if (orderBy === "smart") {
+      communties = communties.sort((a, b) => b.score - a.score);
+    } else if (orderBy === "subscribers") {
+      communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
+    } else if (orderBy === "active") {
+      communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
+    } else if (orderBy === "posts") {
+      communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
+    } else if (orderBy === "comments") {
+      communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
+    }
+    console.log(`Sorted ${communties.length} communities`);
 
     // pagination
-    // const all_communties = communties;
     setTotalFiltered(communties.length);
 
     communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
     setCommunitiesData(communties);
-  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
 
-  if (isLoading) return "Loading...";
-  if (error) return "An error has occurred: " + error.message;
+    setProcessingData(false);
+  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -141,6 +147,7 @@ export default function Communities() {
             },
           }}
         >
+          <Option value="smart">Smart Sort</Option>
           <Option value="subscribers">Subscribers</Option>
           <Option value="active">Active Users</Option>
           <Option value="posts">Posts</Option>
@@ -178,13 +185,16 @@ export default function Communities() {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        <div>{isFetching ? "Updating..." : ""}</div>
+        {(isLoading || processingData) && <PageLoading />}
+        {isError && <PageError error={error} />}
 
-        <Grid container spacing={2}>
-          {communitiesData.map((community) => (
-            <CommunityCard community={community} />
-          ))}
-        </Grid>
+        {isSuccess && !processingData && (
+          <Grid container spacing={2}>
+            {communitiesData.map((community, index) => (
+              <CommunityCard key={index} community={community} />
+            ))}
+          </Grid>
+        )}
       </Box>
     </Container>
   );

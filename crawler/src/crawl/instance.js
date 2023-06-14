@@ -1,12 +1,13 @@
 import Queue from "bee-queue";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 import {
   putInstanceData,
   storeFediverseInstance,
   storeError,
-  getInstanceError,
+  getError,
   getInstanceData,
+  getFediverseData,
   listInstanceData,
 } from "../lib/storage.js";
 
@@ -21,11 +22,19 @@ import {
   AXIOS_REQUEST_TIMEOUT,
 } from "../lib/const.js";
 
+import { CrawlError, CrawlWarning } from "../lib/error.js";
+
 export default class CrawlInstance {
   constructor(isWorker) {
     this.queue = new Queue("instance", {
       removeOnSuccess: true,
+      removeOnFailure: true,
       isWorker,
+    });
+
+    // report failures!
+    this.queue.on("failed", (job, err) => {
+      console.error(`Job ${job.id} failed with error ${err.message}`);
     });
 
     this.axios = axios.create({
@@ -43,7 +52,11 @@ export default class CrawlInstance {
 
   createJob(instanceBaseUrl) {
     const job = this.queue.createJob({ baseUrl: instanceBaseUrl });
-    job.timeout(CRAWL_TIMEOUT.INSTANCE).retries(CRAWL_RETRY.INSTANCE).save();
+    job
+      .timeout(CRAWL_TIMEOUT.INSTANCE)
+      .retries(CRAWL_RETRY.INSTANCE)
+      .setId(instanceBaseUrl) // deduplicate
+      .save();
     // job.on("succeeded", (result) => {
     //   console.log(`Completed instanceQueue ${job.id}`, instanceBaseUrl);
     //   console.log();
@@ -58,18 +71,18 @@ export default class CrawlInstance {
       // console.log("lastCrawled", existingInstance.lastCrawled);
 
       const lastCrawl = existingInstance.lastCrawled;
-      const now = new Date().getTime();
+      const now = Date.now();
 
       return now - lastCrawl;
     }
 
     // check for recent error
-    const lastError = await getInstanceError(instanceBaseUrl);
+    const lastError = await getError("instance", instanceBaseUrl);
     if (lastError?.time) {
       // console.log("lastError", lastError.time);
 
       const lastErrorTime = lastError.time;
-      const now = new Date().getTime();
+      const now = Date.now();
 
       return now - lastErrorTime;
     }
@@ -83,26 +96,39 @@ export default class CrawlInstance {
         // if it's not a string
         if (typeof job.data.baseUrl !== "string") {
           console.error("baseUrl is not a string", job.data);
-          throw new Error("baseUrl is not a string");
+          throw new CrawlError("baseUrl is not a string");
         }
+        console.debug(
+          `[Instance] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
+        );
 
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
         instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces
         instanceBaseUrl = instanceBaseUrl.replace(/.*@/, ""); // remove anything before an @ if present
 
-        // console.debug(
-        //   `[Instance] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
-        // );
-
         // disallow * as a base url
         if (instanceBaseUrl === "*") {
-          throw new Error("cannot crawl `*`");
+          throw new CrawlError("cannot crawl `*`");
+        }
+
+        // check if it's known to not be running lemmy
+        const knownFediverseServer = await getFediverseData(instanceBaseUrl);
+        if (knownFediverseServer) {
+          if (
+            knownFediverseServer.name !== "lemmy" &&
+            knownFediverseServer.name !== "lemmybb"
+          ) {
+            // console.debug("known non-lemmy server", knownFediverseServer);
+            throw new CrawlWarning(
+              `known non-lemmy server ${knownFediverseServer.name}`
+            );
+          }
         }
 
         // check if instance has already been crawled within CRAWL_EVERY
         const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
         if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
-          throw new Error(
+          throw new CrawlWarning(
             `Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
           );
         }
@@ -113,7 +139,7 @@ export default class CrawlInstance {
           // store/update the instance
           await putInstanceData(instanceBaseUrl, {
             ...instanceData,
-            lastCrawled: new Date().getTime(),
+            lastCrawled: Date.now(),
           });
 
           // create job to scan the instance for communities
@@ -121,7 +147,12 @@ export default class CrawlInstance {
 
           // attempt to crawl federated instances
           if (instanceData.siteData?.federated?.linked.length > 0) {
-            this.crawlFederatedInstances(instanceData.siteData.federated);
+            const countFederated = this.crawlFederatedInstances(
+              instanceData.siteData.federated
+            );
+            console.log(
+              `[Instance] [${job.data.baseUrl}] [${job.id}] Crawled ${countFederated.length} federated instances`
+            );
           }
 
           console.log(
@@ -129,7 +160,7 @@ export default class CrawlInstance {
           );
           return instanceData;
         } else {
-          throw new Error("No instance data returned");
+          throw new CrawlError("No instance data returned");
         }
       } catch (error) {
         const errorDetail = {
@@ -140,12 +171,24 @@ export default class CrawlInstance {
           time: new Date().getTime(),
         };
 
-        await storeError("instance", job.data.baseUrl, errorDetail);
-        console.error(
-          `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
-        );
+        if (error instanceof CrawlError || error instanceof AxiosError) {
+          await storeError("instance", job.data.baseUrl, errorDetail);
+
+          console.error(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
+          );
+        } else if (error instanceof CrawlWarning) {
+          console.error(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Warn: ${error.message}`
+          );
+        } else {
+          console.error(
+            `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
+          );
+          console.trace(error);
+        }
       }
-      return null;
+      return true;
     });
   }
 
@@ -161,7 +204,7 @@ export default class CrawlInstance {
 
     let nodeinfoUrl;
     if (!wellKnownInfo.data.links) {
-      throw new Error("missing /.well-known/nodeinfo links");
+      throw new CrawlError("missing /.well-known/nodeinfo links");
     }
 
     for (var linkRel of wellKnownInfo.data.links) {
@@ -170,7 +213,7 @@ export default class CrawlInstance {
       }
     }
     if (!nodeinfoUrl) {
-      throw new Error("no diaspora rel in /.well-known/nodeinfo");
+      throw new CrawlError("no diaspora rel in /.well-known/nodeinfo");
     }
 
     const nodeinfo2 = await this.axios.get(nodeinfoUrl);
@@ -181,7 +224,7 @@ export default class CrawlInstance {
     await storeFediverseInstance(instanceBaseUrl, software);
 
     if (software.name != "lemmy" && software.name != "lemmybb") {
-      throw new Error(`not a lemmy instance (${software.name})`);
+      throw new CrawlWarning(`not a lemmy instance (${software.name})`);
     }
 
     const siteInfo = await this.axios.get(
@@ -194,6 +237,9 @@ export default class CrawlInstance {
 
     function mapLangsToCodes(allLangsArray, discussionIdsArray) {
       const discussionLangs = [];
+
+      if (!allLangsArray) return [];
+      if (!discussionIdsArray) return [];
 
       /// if all are selected, set flag
       let allSelected = false;
@@ -240,9 +286,18 @@ export default class CrawlInstance {
   }
 
   // start a job for each instances in the federation lists
-  crawlFederatedInstances({ linked, allowed, blocked }) {
-    for (var instance of linked) {
+  crawlFederatedInstances(federatedData) {
+    const linked = federatedData.linked || [];
+    const allowed = federatedData.allowed || [];
+    const blocked = federatedData.blocked || [];
+
+    // pull data from all federated instances
+    let instancesDeDup = [...new Set([...linked, ...allowed, ...blocked])];
+
+    for (var instance of instancesDeDup) {
       this.createJob(instance);
     }
+
+    return instancesDeDup;
   }
 }

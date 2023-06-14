@@ -1,46 +1,28 @@
 import React from "react";
 
-import axios from "axios";
-
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import useQueryCache from "../hooks/useQueryCache";
 
 import Container from "@mui/joy/Container";
 
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
-import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
-
-// import Pagination from "@mui/material/Pagination";
 import Input from "@mui/joy/Input";
-import Autocomplete from "@mui/joy/Autocomplete";
-
 import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab from "@mui/joy/Tab";
-
-import Chip from "@mui/joy/Chip";
-import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
-
-import { useColorScheme } from "@mui/joy/styles";
-
-import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 
+import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 
 import InstanceCard from "../components/InstanceCard";
 import Pagination from "../components/Pagination";
+import { PageLoading, PageError } from "../components/Display";
 
 import useStorage from "../hooks/useStorage";
 
 export default function Instances() {
-  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "users");
+  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
   const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
 
   const [pageLimit, setPagelimit] = useStorage("instance.pageLimit", 100);
@@ -48,22 +30,19 @@ export default function Instances() {
 
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ["instanceData"],
-    queryFn: () =>
-      axios.get("/instances.json").then((res) => {
-        return res.data;
-      }),
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
   const [totalFiltered, setTotalFiltered] = React.useState(0);
   const [instancesData, setInstancesData] = React.useState([]);
 
+  const [processingData, setProcessingData] = React.useState(true);
+
   React.useEffect(() => {
     // process data
+    setProcessingData(true);
 
     if (!data) return;
+    if (error) return;
 
     // process data
 
@@ -72,7 +51,9 @@ export default function Instances() {
       instances = instances.filter((instance) => instance.open);
     }
 
-    if (orderBy === "users") {
+    if (orderBy === "smart") {
+      instances = instances.sort((a, b) => b.score - a.score);
+    } else if (orderBy === "users") {
       instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
     } else if (orderBy === "active") {
       instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
@@ -80,6 +61,21 @@ export default function Instances() {
       instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
     } else if (orderBy === "comments") {
       instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
+    } else if (orderBy === "oldest") {
+      instances = instances.sort((a, b) => {
+        // timestamps are like 2023-06-14 02:30:32
+        // we need to sort the array by the oldest uptime date
+        // if there's no date on the record, it should go to the bottom of the list
+        if (!a.uptime) return 1;
+        if (!b.uptime) return -1;
+
+        const aDate = new Date(a.uptime.date_created);
+        const bDate = new Date(b.uptime.date_created);
+
+        if (aDate < bDate) return -1;
+        if (aDate > bDate) return 1;
+        return 0;
+      });
     }
 
     if (filterText) {
@@ -95,10 +91,9 @@ export default function Instances() {
     setTotalFiltered(instances.length);
     instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
     setInstancesData(instances);
-  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit]);
 
-  if (isLoading) return "Loading...";
-  if (error) return "An error has occurred: " + error.message;
+    setProcessingData(false);
+  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -109,39 +104,48 @@ export default function Instances() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
           gap: 1,
         }}
       >
         <Input
           placeholder="Filter Instances"
           value={filterText}
+          sx={{
+            width: { xs: "100%", sm: 240 },
+            flexShrink: 0,
+          }}
           onChange={(event) => setFilterText(event.target.value)}
         />
-        <Typography fontWeight="lg">
-          <Select
-            placeholder="Order By"
-            startDecorator={<SortIcon />}
-            indicator={<KeyboardArrowDown />}
-            value={orderBy}
-            onChange={(event, newValue) => {
-              setOrderBy(newValue);
-            }}
-            sx={{
-              width: 240,
-              [`& .${selectClasses.indicator}`]: {
-                transition: "0.2s",
-                [`&.${selectClasses.expanded}`]: {
-                  transform: "rotate(-180deg)",
-                },
+
+        <Select
+          placeholder="Order By"
+          startDecorator={<SortIcon />}
+          indicator={<KeyboardArrowDown />}
+          value={orderBy}
+          onChange={(event, newValue) => {
+            setOrderBy(newValue);
+          }}
+          sx={{
+            minWidth: 120,
+            width: { xs: "100%", sm: 240 },
+            flexShrink: 0,
+            [`& .${selectClasses.indicator}`]: {
+              transition: "0.2s",
+              [`&.${selectClasses.expanded}`]: {
+                transform: "rotate(-180deg)",
               },
-            }}
-          >
-            <Option value="users">Users</Option>
-            <Option value="active">Active Users</Option>
-            <Option value="posts">Posts</Option>
-            <Option value="comments">Comments</Option>
-          </Select>
-        </Typography>
+            },
+          }}
+        >
+          <Option value="smart">Smart Sort</Option>
+          <Option value="users">Users</Option>
+          <Option value="active">Active Users</Option>
+          <Option value="posts">Posts</Option>
+          <Option value="comments">Comments</Option>
+          <Option value="oldest">Oldest</Option>
+        </Select>
+
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
             label="Open Only"
@@ -149,7 +153,14 @@ export default function Instances() {
             onChange={(event) => setShowOpenOnly(event.target.checked)}
           />
         </Box>
-        <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end", alignItems: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexGrow: 1,
+            justifyContent: { xs: "center", sm: "flex-end" },
+            alignItems: "center",
+          }}
+        >
           <Pagination
             page={page}
             count={totalFiltered}
@@ -159,15 +170,17 @@ export default function Instances() {
         </Box>
       </Box>
 
-      <ReactQueryDevtools initialIsOpen={false} />
       <Box sx={{ my: 4 }}>
-        <div>{isFetching ? "Updating..." : ""}</div>
+        {(isLoading || processingData) && <PageLoading />}
+        {isError && <PageError error={error} />}
 
-        <Grid container spacing={2}>
-          {instancesData.map((instance) => (
-            <InstanceCard instance={instance} />
-          ))}
-        </Grid>
+        {isSuccess && !processingData && (
+          <Grid container spacing={2}>
+            {instancesData.map((instance) => (
+              <InstanceCard instance={instance} />
+            ))}
+          </Grid>
+        )}
       </Box>
     </Container>
   );
