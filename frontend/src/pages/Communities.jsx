@@ -185,7 +185,7 @@ export default function Communities() {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {(isLoading || processingData) && <PageLoading />}
+        {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
         {isSuccess && !processingData && (
