@@ -34,6 +34,7 @@ export default function Overview() {
         sx={{
           display: "flex",
           justifyContent: "center",
+          pt: 2,
         }}
       >
         Lemmy Explorer

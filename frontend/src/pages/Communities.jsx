@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import axios from "axios";
 
@@ -27,7 +27,7 @@ export default function Communities() {
   const [hideNoBanner, setHideNoBanner] = useStorage("community.hideNoBanner", true);
 
   const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
-  const [page, setPage] = React.useState(0);
+  const [page, setPage] = useState(0);
 
   const [filterText, setFilterText] = useStorage("community.filterText", "");
 
@@ -40,10 +40,10 @@ export default function Communities() {
     refetchOnWindowFocus: false,
   });
 
-  const [totalFiltered, setTotalFiltered] = React.useState(0);
-  const [communitiesData, setCommunitiesData] = React.useState([]);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const [communitiesData, setCommunitiesData] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // process data
 
     if (!data) return;
@@ -186,13 +186,15 @@ export default function Communities() {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        <div>{isFetching ? "Updating..." : ""}</div>
+        <div>{isFetching ? "Fetching..." : ""}</div>
 
-        <Grid container spacing={2}>
-          {communitiesData.map((community, index) => (
-            <CommunityCard key={index} community={community} />
-          ))}
-        </Grid>
+        {!isFetching && (
+          <Grid container spacing={2}>
+            {communitiesData.map((community, index) => (
+              <CommunityCard key={index} community={community} />
+            ))}
+          </Grid>
+        )}
       </Box>
     </Container>
   );

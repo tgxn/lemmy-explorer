@@ -20,12 +20,12 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { ContentSkeleton, ContentError } from "./Display";
 import CopyLink from "./CopyLink";
 
-function CommunityCard({ community, hideNoBanner }) {
+function CommunityCard({ community }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
-  const [loadedIcon, setLoadedIcon] = React.useState(false);
-
-  const [iconError, setIconError] = React.useState(false);
   const [bannerError, setBannerError] = React.useState(false);
+
+  // const [loadedIcon, setLoadedIcon] = React.useState(false);
+  // const [iconError, setIconError] = React.useState(false);
 
   function formatNumber(num) {
     if (num >= 1000000) {
@@ -108,20 +108,22 @@ function CommunityCard({ community, hideNoBanner }) {
           {!community.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
           {community.banner && bannerError && <ContentError />}
           {community.banner && !bannerError && !loadedBanner && <ContentSkeleton />}
-          <img
-            src={community.banner}
-            srcSet={community.banner}
-            loading="lazy"
-            width={"100%"}
-            style={{
-              display: loadedBanner ? "flex" : "none",
-            }}
-            onLoad={() => {
-              setLoadedBanner(true);
-              setBannerError(false);
-            }}
-            onError={() => setBannerError(true)}
-          />
+          {community.banner && (
+            <img
+              src={community.banner}
+              srcSet={community.banner}
+              loading="lazy"
+              width={"100%"}
+              style={{
+                display: !bannerError && loadedBanner ? "flex" : "none",
+              }}
+              onLoad={() => {
+                setLoadedBanner(true);
+                setBannerError(false);
+              }}
+              onError={() => setBannerError(true)}
+            />
+          )}
         </CardOverflow>
         <CardContent orientation="horizontal">
           <Typography
