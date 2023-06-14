@@ -116,6 +116,7 @@ export default class CrawlOutput {
         icon: instance.siteData.site.icon,
         banner: instance.siteData.site.banner,
         time: instance.lastCrawled || null,
+        langs: instance.langs,
         score: score,
       };
     });
