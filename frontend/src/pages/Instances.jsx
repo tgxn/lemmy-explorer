@@ -62,7 +62,20 @@ export default function Instances() {
     } else if (orderBy === "comments") {
       instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
     } else if (orderBy === "oldest") {
-      instances = instances.sort((a, b) => b.uptime.date_created - a.uptime.date_created);
+      instances = instances.sort((a, b) => {
+        // timestamps are like 2023-06-14 02:30:32
+        // we need to sort the array by the oldest uptime date
+        // if there's no date on the record, it should go to the bottom of the list
+        if (!a.uptime) return 1;
+        if (!b.uptime) return -1;
+
+        const aDate = new Date(a.uptime.date_created);
+        const bDate = new Date(b.uptime.date_created);
+
+        if (aDate < bDate) return -1;
+        if (aDate > bDate) return 1;
+        return 0;
+      });
     }
 
     if (filterText) {
@@ -130,7 +143,7 @@ export default function Instances() {
           <Option value="active">Active Users</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
-          <Option value="oldest">Oldest (based on fediverse data)</Option>
+          <Option value="oldest">Oldest</Option>
         </Select>
 
         <Box sx={{ display: "flex", gap: 3 }}>
