@@ -24,6 +24,10 @@ export async function putCommunityData(baseUrl, data) {
   await connectIfNeeded();
   return putRedis(`community:${baseUrl}:${data.community.name}`, data);
 }
+export async function putUptimeData(data) {
+  await connectIfNeeded();
+  return putRedis(`uptime:${Date.now()}`, data);
+}
 
 // get
 
@@ -42,6 +46,14 @@ export async function getCommunityData(key) {
 export async function getFediverseData(baseUrl) {
   await connectIfNeeded();
   return getRedis(`fediverse:${baseUrl}`);
+}
+export async function getLatestUptimeData() {
+  await connectIfNeeded();
+
+  // records have uptime:timestamp key, extract the latest one
+  const keys = await client.keys(`uptime:*`);
+  const latestKey = keys.reduce((a, b) => (a > b ? a : b));
+  return getRedis(latestKey);
 }
 
 // list

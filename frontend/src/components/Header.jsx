@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import Moment from "react-moment";
 
 import { useNavigate, useLocation } from "react-router-dom";

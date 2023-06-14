@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+import Moment from "react-moment";
+
 import { useNavigate } from "react-router-dom";
 import useQueryCache from "../hooks/useQueryCache";
 
@@ -15,6 +17,8 @@ import Tooltip from "@mui/joy/Tooltip";
 
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
+import RestoreIcon from "@mui/icons-material/Restore";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 export default function Overview() {
   const navigate = useNavigate();
@@ -167,6 +171,7 @@ export default function Overview() {
                 <th>Communities</th>
                 <th>Downvotes</th>
                 <th>Blocks</th>
+                <th>Uptime %</th>
               </tr>
             </thead>
             <tbody>
@@ -215,28 +220,40 @@ export default function Overview() {
                             px: 1,
                             cursor: "default",
 
-                            display: "inline-flex",
+                            display: "inline",
                             alignItems: "center",
                             flexWrap: "wrap",
                           }}
                         >
-                          <KeyboardDoubleArrowUpIcon />
-                          {instance.blocks.outgoing}
+                          <KeyboardDoubleArrowUpIcon /> {instance.blocks.outgoing}
                         </Box>
                       </Tooltip>
-                      <Box
-                        sx={{
-                          px: 1,
-                          cursor: "default",
 
-                          display: "inline-flex",
-                          alignItems: "center",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        /
-                      </Box>
                       <Tooltip title="Instances blocking this one" variant="soft" placement="top-start">
+                        <Box
+                          sx={{
+                            // display: "inline-block",
+
+                            cursor: "default",
+
+                            display: "inline",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <KeyboardDoubleArrowDownIcon /> {instance.blocks.incoming}
+                        </Box>
+                      </Tooltip>
+                    </td>
+
+                    <td
+                      style={{
+                        cursor: "default",
+
+                        flexWrap: "nowrap",
+                      }}
+                    >
+                      <Tooltip title="First Seen" variant="soft" placement="top-start">
                         <Box
                           sx={{
                             // display: "inline-block",
@@ -248,7 +265,10 @@ export default function Overview() {
                             flexWrap: "wrap",
                           }}
                         >
-                          <KeyboardDoubleArrowDownIcon /> {instance.blocks.incoming}{" "}
+                          <RestoreIcon />
+                          <Moment fromNow>{instance.uptime?.date_created}</Moment>
+                          <TrendingUpIcon />
+                          {instance.uptime?.uptime_alltime}%
                         </Box>
                       </Tooltip>
                     </td>

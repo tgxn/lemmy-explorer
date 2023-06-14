@@ -1,5 +1,7 @@
 import React from "react";
 
+import Moment from "react-moment";
+
 import Avatar from "@mui/joy/Avatar";
 
 import Card from "@mui/joy/Card";
@@ -16,6 +18,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 import { ContentSkeleton, ContentError } from "./Display";
 import CopyLink from "./CopyLink";
@@ -135,7 +139,7 @@ function InstanceCard({ instance }) {
                   cursor: "default",
                   display: "flex",
                   alignItems: "center",
-                  flexWrap: "wrap",
+                  flexWrap: "nowrap",
                   gap: 0.5,
                 }}
               >
@@ -153,7 +157,7 @@ function InstanceCard({ instance }) {
                   cursor: "default",
                   display: "flex",
                   alignItems: "center",
-                  flexWrap: "wrap",
+                  flexWrap: "nowrap",
                   gap: 0.5,
                 }}
               >
@@ -171,12 +175,55 @@ function InstanceCard({ instance }) {
                   cursor: "default",
                   display: "flex",
                   alignItems: "center",
-                  flexWrap: "wrap",
+                  flexWrap: "nowrap",
                   gap: 0.5,
                 }}
               >
                 <ForumIcon />
                 {formatNumber(instance.usage.localComments)}
+              </Typography>
+            </Tooltip>
+            <Divider orientation="vertical" />
+
+            <Tooltip
+              title={
+                <>
+                  Uptime{" "}
+                  {instance.uptime?.uptime_alltime ? (
+                    <>
+                      (First seen <Moment fromNow>{instance.uptime?.date_created}</Moment>)
+                    </>
+                  ) : (
+                    <>(Unknown instance)</>
+                  )}
+                </>
+              }
+              variant="soft"
+            >
+              <Typography
+                level="body3"
+                fontWeight="md"
+                textColor="text.secondary"
+                sx={{
+                  cursor: "default",
+                  display: "flex",
+                  alignItems: "center",
+                  flexWrap: "nowrap",
+                  gap: 0.5,
+                }}
+              >
+                {instance.uptime?.uptime_alltime && (
+                  <>
+                    <TrendingUpIcon />
+                    {instance.uptime?.uptime_alltime}%
+                  </>
+                )}
+
+                {!instance.uptime?.uptime_alltime && (
+                  <>
+                    <ThumbDownIcon />
+                  </>
+                )}
               </Typography>
             </Tooltip>
           </CardContent>

@@ -9,6 +9,7 @@ import {
   listCommunityData,
   listFediverseData,
   listFailureData,
+  getLatestUptimeData,
 } from "../lib/storage.js";
 
 import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
@@ -21,6 +22,14 @@ export default class CrawlOutput {
   }
 
   async start() {
+    // get uptime data from crawl table
+    const uptimeData = await getLatestUptimeData();
+    function getBaseUrlUptime(baseUrl) {
+      const foundKey = uptimeData.nodes.find((k) => k.domain == baseUrl);
+      return foundKey;
+    }
+    console.log(`Uptime: ${uptimeData.nodes.length}`);
+
     ///
     /// Lemmy Instances
     ///
@@ -88,6 +97,8 @@ export default class CrawlOutput {
     let storeData = instances.map((instance) => {
       let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
 
+      const siteUptime = getBaseUrlUptime(siteBaseUrl);
+
       const incomingBlocks = blockedFederation[siteBaseUrl] || 0;
       const outgoingBlocks = instance.siteData.federated?.blocked?.length || 0;
 
@@ -129,9 +140,11 @@ export default class CrawlOutput {
 
         icon: instance.siteData.site.icon,
         banner: instance.siteData.site.banner,
-        time: instance.lastCrawled || null,
         langs: instance.langs,
+
+        time: instance.lastCrawled || null,
         score: score,
+        uptime: siteUptime,
 
         blocks: {
           incoming: incomingBlocks,

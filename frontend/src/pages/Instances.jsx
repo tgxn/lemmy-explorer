@@ -61,6 +61,8 @@ export default function Instances() {
       instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
     } else if (orderBy === "comments") {
       instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
+    } else if (orderBy === "oldest") {
+      instances = instances.sort((a, b) => b.uptime.date_created - a.uptime.date_created);
     }
 
     if (filterText) {
@@ -128,6 +130,7 @@ export default function Instances() {
           <Option value="active">Active Users</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
+          <Option value="oldest">Oldest (based on fediverse data)</Option>
         </Select>
 
         <Box sx={{ display: "flex", gap: 3 }}>
@@ -158,7 +161,7 @@ export default function Instances() {
         {(isLoading || processingData) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && (
+        {isSuccess && !processingData && (
           <Grid container spacing={2}>
             {instancesData.map((instance) => (
               <InstanceCard instance={instance} />

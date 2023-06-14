@@ -22,7 +22,7 @@ export default function Communities() {
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
 
-  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideNoBanner", true);
+  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
 
   const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
   const [page, setPage] = useState(0);
@@ -188,7 +188,7 @@ export default function Communities() {
         {(isLoading || processingData) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && (
+        {isSuccess && !processingData && (
           <Grid container spacing={2}>
             {communitiesData.map((community, index) => (
               <CommunityCard key={index} community={community} />

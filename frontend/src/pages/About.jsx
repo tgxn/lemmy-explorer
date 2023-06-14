@@ -7,6 +7,7 @@ import Container from "@mui/joy/Container";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Typography from "@mui/joy/Typography";
+import Link from "@mui/joy/Link";
 
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
@@ -86,6 +87,23 @@ export default function Overview() {
 
       <Typography level="body1" sx={{ display: "flex", p: 2, mb: 2 }}>
         All data was retrieved within 24 hours of the last updated time shown in the menu.
+      </Typography>
+
+      <Typography
+        level="body1"
+        sx={{
+          p: 2,
+          mb: 2,
+        }}
+      >
+        Some data we use comes from other sites:
+        <ul>
+          <li>
+            <Link component="a" href="https://fediverse.observer/" target="_lv_fediverse">
+              Fediverse Explorer API
+            </Link>
+          </li>
+        </ul>
       </Typography>
 
       <Typography

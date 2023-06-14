@@ -5,8 +5,13 @@ import CrawlCommunity from "./crawl/communities.js";
 
 import CrawlOutput from "./crawl/output.js";
 import CrawlAged from "./crawl/aged.js";
+import CrawlUptime from "./crawl/uptime.js";
 
-import { START_URLS, AGED_CRON_EXPRESSION } from "./lib/const.js";
+import {
+  START_URLS,
+  AGED_CRON_EXPRESSION,
+  UPTIME_CRON_EXPRESSION,
+} from "./lib/const.js";
 
 export async function start(args) {
   if (args.length > 0) {
@@ -21,19 +26,27 @@ export async function start(args) {
 
     if (args.indexOf("--cron") > -1) {
       console.log("Started Cron Task");
-      const task = cron.schedule(AGED_CRON_EXPRESSION, () => {
+      const agedTask = cron.schedule(AGED_CRON_EXPRESSION, () => {
         const aged = new CrawlAged();
         aged.createJobs();
+      });
+      const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, () => {
+        const uptime = new CrawlUptime();
+        uptime.crawl();
       });
 
       return;
     }
 
     if (args.indexOf("--aged") > -1) {
-      console.log("Started Cron Task");
       const aged = new CrawlAged();
       aged.createJobs();
+      return;
+    }
 
+    if (args.indexOf("--uptime") > -1) {
+      const uptime = new CrawlUptime();
+      uptime.crawl();
       return;
     }
 
