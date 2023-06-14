@@ -7,7 +7,7 @@ export default function useQueryCache(queryKey, filePath) {
     queryFn: () =>
       axios
         .get(filePath, {
-          timeout: 3500,
+          timeout: 15000,
         })
         .then((res) => {
           console.log(res.data);
