@@ -53,6 +53,33 @@ export default function Instances() {
       instances = instances.filter((instance) => instance.open);
     }
 
+    if (filterText) {
+      instances = instances.filter((instance) => {
+        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
+        return false;
+      });
+    }
+
+    // filter lang codes
+    if (filterLangCodes.length > 0) {
+      console.log(`Filtering instances by ${filterLangCodes}`);
+
+      // filterLangCodes is [{code: "en"}, {code: "fr"}]
+      // community.langs is ["en", "de"]
+      instances = instances.filter((instance) => {
+        const instanceLangs = instance.langs || [];
+        const onlyShowLangs = filterLangCodes.map((lang) => lang.code);
+
+        // if every of the filterLangCodes are specifically in the instanceLangCodes, return true
+        return onlyShowLangs.every((lang) => instanceLangs.includes(lang)); // could add || instanceLangs[0] == "all" to show sites that have ever language enabled
+
+        // remove non-matching
+        return false;
+      });
+    }
+
     if (orderBy === "smart") {
       instances = instances.sort((a, b) => b.score - a.score);
     } else if (orderBy === "users") {
@@ -77,28 +104,6 @@ export default function Instances() {
         if (aDate < bDate) return -1;
         if (aDate > bDate) return 1;
         return 0;
-      });
-    }
-
-    if (filterText) {
-      instances = instances.filter((instance) => {
-        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
-        return false;
-      });
-    }
-
-    // filter lang codes
-    if (filterLangCodes.length > 0) {
-      console.log(`Filtering instances by ${filterLangCodes}`);
-      instances = instances.filter((instance) => {
-        // filterLangCodes is [{code: "en"}]
-        // community.langs is ["en"]
-
-        return filterLangCodes.some((filterLangCode) => {
-          return instance.langs.includes(filterLangCode.code);
-        });
       });
     }
 
