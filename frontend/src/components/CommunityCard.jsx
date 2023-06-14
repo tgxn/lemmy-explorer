@@ -70,10 +70,19 @@ function CommunityCard({ community, hideNoBanner }) {
                 textOverflow: "ellipsis",
               }}
             >
-              <Link level="body1" variant="plain" color="neutral" href={community.url} target="_blank">
-                {community.title}
-                <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-              </Link>
+              <Tooltip title={"Visit: " + community.title} variant="soft" placement="top-start">
+                <Link
+                  level="body1"
+                  variant="plain"
+                  alt={community.title}
+                  color="neutral"
+                  href={community.url}
+                  target="_blank"
+                >
+                  {community.title}
+                  <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+                </Link>
+              </Tooltip>
             </Typography>
             <Typography level="body3">
               <CopyLink
