@@ -80,6 +80,8 @@ export default function Communities() {
     }
     console.log(`Filtered ${communties.length} communities`);
 
+    // sorting
+
     if (orderBy === "smart") {
       communties = communties.sort((a, b) => b.score - a.score);
     } else if (orderBy === "subscribers") {
@@ -95,11 +97,9 @@ export default function Communities() {
 
     // pagination
     setTotalFiltered(communties.length);
-
     communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
     setCommunitiesData(communties);
-
     setProcessingData(false);
   }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
 

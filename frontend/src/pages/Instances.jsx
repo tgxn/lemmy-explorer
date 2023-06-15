@@ -17,6 +17,7 @@ import SortIcon from "@mui/icons-material/Sort";
 
 import InstanceCard from "../components/InstanceCard";
 import Pagination from "../components/Pagination";
+import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError } from "../components/Display";
 
 import useStorage from "../hooks/useStorage";
@@ -29,6 +30,7 @@ export default function Instances() {
   const [page, setPage] = React.useState(0);
 
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
+  const [filterLangCodes, setFilterLangCodes] = useStorage("community.filterLangCodes", []);
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
@@ -49,6 +51,33 @@ export default function Instances() {
     let instances = data;
     if (showOpenOnly) {
       instances = instances.filter((instance) => instance.open);
+    }
+
+    if (filterText) {
+      instances = instances.filter((instance) => {
+        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
+        return false;
+      });
+    }
+
+    // filter lang codes
+    if (filterLangCodes.length > 0) {
+      console.log(`Filtering instances by ${filterLangCodes}`);
+
+      // filterLangCodes is [{code: "en"}, {code: "fr"}]
+      // community.langs is ["en", "de"]
+      instances = instances.filter((instance) => {
+        const instanceLangs = instance.langs || [];
+        const onlyShowLangs = filterLangCodes.map((lang) => lang.code);
+
+        // if every of the filterLangCodes are specifically in the instanceLangCodes, return true
+        return onlyShowLangs.every((lang) => instanceLangs.includes(lang)); // could add || instanceLangs[0] == "all" to show sites that have ever language enabled
+
+        // remove non-matching
+        return false;
+      });
     }
 
     if (orderBy === "smart") {
@@ -78,22 +107,13 @@ export default function Instances() {
       });
     }
 
-    if (filterText) {
-      instances = instances.filter((instance) => {
-        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
-        return false;
-      });
-    }
-
     // pagination
     setTotalFiltered(instances.length);
     instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
     setInstancesData(instances);
 
     setProcessingData(false);
-  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit]);
+  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit, filterLangCodes]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -145,6 +165,11 @@ export default function Instances() {
           <Option value="comments">Comments</Option>
           <Option value="oldest">Oldest</Option>
         </Select>
+
+        <LanguageFilter
+          languageCodes={filterLangCodes}
+          setLanguageCodes={(codes) => setFilterLangCodes(codes)}
+        />
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
