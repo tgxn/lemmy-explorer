@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import useStorage from "../hooks/useStorage";
 import useQueryCache from "../hooks/useQueryCache";
+import { useDebounce } from "@uidotdev/usehooks";
 
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
@@ -20,7 +21,24 @@ import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
 import { PageLoading, PageError } from "../components/Display";
 
+const CommunityGrid = React.memo(function (props) {
+  const { items, localURL } = props;
+
+  return (
+    <Grid container spacing={2}>
+      {items.map((community, index) => (
+        <CommunityCard key={index} community={community} localURL={localURL} />
+      ))}
+    </Grid>
+  );
+});
+
 export default function Communities() {
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
+    "communitiesData",
+    "/communities.json",
+  );
+
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
 
@@ -29,28 +47,25 @@ export default function Communities() {
   const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
   const [page, setPage] = useState(0);
 
-  const [filterText, setFilterText] = useStorage("community.filterText", "");
-
   const [useLocalURL, setUseLocalURL] = useStorage("community.useLocalURL", false);
   const [localURL, setLocalURL] = useStorage("community.localURL", "");
-
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
-    "communitiesData",
-    "/communities.json",
-  );
+  const debouncedLocalUrl = useDebounce(localURL, 500);
 
   const [totalFiltered, setTotalFiltered] = useState(0);
-  const [communitiesData, setCommunitiesData] = useState([]);
-
   const [processingData, setProcessingData] = React.useState(true);
 
-  useEffect(() => {
-    // process data
+  // debounce the filter text input
+  const [filterText, setFilterText] = useStorage("community.filterText", "");
+  const debounceFilterText = useDebounce(filterText, 500);
+
+  // this applies the filtering and sorting to the data loaded from .json
+  const communitiesData = React.useMemo(() => {
+    if (isError) return [];
+    if (!data) return [];
+
+    console.time("sort+filter");
 
     setProcessingData(true);
-
-    if (isError) return;
-    if (!data) return;
 
     console.log(`Loaded ${data.length} communities`);
 
@@ -65,13 +80,13 @@ export default function Communities() {
     }
 
     // filter string
-    if (filterText) {
-      console.log(`Filtering communities by ${filterText}`);
+    if (debounceFilterText) {
+      console.log(`Filtering communities by ${debounceFilterText}`);
       communties = communties.filter((community) => {
         return (
-          (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
-          (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
-          (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
+          (community.name && community.name.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
+          (community.title && community.title.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
+          (community.desc && community.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
         );
       });
     }
@@ -104,9 +119,17 @@ export default function Communities() {
     setTotalFiltered(communties.length);
     communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
-    setCommunitiesData(communties);
+    console.log(
+      `updating communities data with ${communties.length} communities, removed: ${
+        data.length - communties.length
+      }`,
+    );
+    // setCommunitiesData(communties);
     setProcessingData(false);
-  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit, localURL]);
+
+    console.timeEnd("sort+filter");
+    return communties;
+  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner, page, pageLimit]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -117,7 +140,6 @@ export default function Communities() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          //wrap items
           flexWrap: "wrap",
           gap: 1,
         }}
@@ -223,11 +245,7 @@ export default function Communities() {
         {isError && <PageError error={error} />}
 
         {isSuccess && !processingData && (
-          <Grid container spacing={2}>
-            {communitiesData.map((community, index) => (
-              <CommunityCard key={index} community={community} localURL={localURL} />
-            ))}
-          </Grid>
+          <CommunityGrid items={communitiesData} localURL={debouncedLocalUrl} />
         )}
       </Box>
     </Container>
