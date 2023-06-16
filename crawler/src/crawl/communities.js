@@ -33,11 +33,12 @@ export default class CrawlCommunity {
   }
 
   createJob(instanceBaseUrl) {
-    const job = this.queue.createJob({ baseUrl: instanceBaseUrl });
+    const trimmedUrl = instanceBaseUrl.trim();
+    const job = this.queue.createJob({ baseUrl: trimmedUrl });
     job
       .timeout(CRAWL_TIMEOUT.COMMUNITY)
       .retries(CRAWL_RETRY.COMMUNITY)
-      .setId(instanceBaseUrl) // deduplicate
+      .setId(trimmedUrl) // deduplicate
       .save();
     // job.on("succeeded", (result) => {
     //   console.log(`Completed communityQueue ${job.id}`, instanceBaseUrl);
@@ -60,6 +61,7 @@ export default class CrawlCommunity {
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
         instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces
         instanceBaseUrl = instanceBaseUrl.replace(/.*@/, ""); // remove anything before an @ if present
+        instanceBaseUrl = instanceBaseUrl.trim();
 
         const communityData = await this.crawlCommunity(instanceBaseUrl);
 

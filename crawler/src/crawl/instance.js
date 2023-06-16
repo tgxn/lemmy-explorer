@@ -51,11 +51,12 @@ export default class CrawlInstance {
   }
 
   createJob(instanceBaseUrl) {
-    const job = this.queue.createJob({ baseUrl: instanceBaseUrl });
+    const trimmedUrl = instanceBaseUrl.trim();
+    const job = this.queue.createJob({ baseUrl: trimmedUrl });
     job
       .timeout(CRAWL_TIMEOUT.INSTANCE)
       .retries(CRAWL_RETRY.INSTANCE)
-      .setId(instanceBaseUrl) // deduplicate
+      .setId(trimmedUrl) // deduplicate
       .save();
     // job.on("succeeded", (result) => {
     //   console.log(`Completed instanceQueue ${job.id}`, instanceBaseUrl);
@@ -105,6 +106,7 @@ export default class CrawlInstance {
         let instanceBaseUrl = job.data.baseUrl.toLowerCase();
         instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces
         instanceBaseUrl = instanceBaseUrl.replace(/.*@/, ""); // remove anything before an @ if present
+        instanceBaseUrl = instanceBaseUrl.trim();
 
         // disallow * as a base url
         if (instanceBaseUrl === "*") {
