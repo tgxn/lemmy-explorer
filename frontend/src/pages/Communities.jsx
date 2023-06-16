@@ -29,6 +29,9 @@ export default function Communities() {
 
   const [filterText, setFilterText] = useStorage("community.filterText", "");
 
+  const [useLocalURL, setUseLocalURL] = useStorage("community.useLocalURL", false);
+  const [localURL, setLocalURL] = useStorage("community.localURL", "");
+
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
     "communitiesData",
     "/communities.json",
@@ -101,7 +104,7 @@ export default function Communities() {
 
     setCommunitiesData(communties);
     setProcessingData(false);
-  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
+  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit, localURL]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -125,6 +128,17 @@ export default function Communities() {
             flexShrink: 0,
           }}
           onChange={(event) => setFilterText(event.target.value)}
+        />
+
+        <Input
+          placeholder="Your Instance URL e.g 'lemmy.tgxn.net'"
+          value={(useLocalURL ? localURL : "")}
+          sx={{
+            width: { xs: "100%", sm: 240 },
+            flexShrink: 0,
+            display: (useLocalURL ? "auto" : "None")
+          }}
+          onChange={(event) => setLocalURL(event.target.value.replace("http:", "").replace("https:", "").replace("//","").replace("/", ""))}
         />
 
         <Select
@@ -166,6 +180,12 @@ export default function Communities() {
             checked={hideNoBanner}
             onChange={(event) => setHideNoBanner(event.target.checked)}
           />
+          
+          <Checkbox
+            label="Enable Local URLs"
+            checked={useLocalURL}
+            onChange={(event) => {setUseLocalURL(event.target.checked); (event.target.checked ? "" : setLocalURL(""))}}
+          />
         </Box>
         <Box
           sx={{
@@ -191,7 +211,7 @@ export default function Communities() {
         {isSuccess && !processingData && (
           <Grid container spacing={2}>
             {communitiesData.map((community, index) => (
-              <CommunityCard key={index} community={community} />
+              <CommunityCard key={index} community={community} localURL={localURL}/>
             ))}
           </Grid>
         )}
