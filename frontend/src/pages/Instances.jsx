@@ -1,6 +1,7 @@
 import React from "react";
 
 import useQueryCache from "../hooks/useQueryCache";
+import { useDebounce } from "@uidotdev/usehooks";
 
 import Container from "@mui/joy/Container";
 
@@ -40,7 +41,10 @@ export default function Instances() {
   const [pageLimit, setPagelimit] = useStorage("instance.pageLimit", 100);
   const [page, setPage] = React.useState(0);
 
+  // debounce the filter text input
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
+  const debounceFilterText = useDebounce(filterText, 500);
+
   const [filterLangCodes, setFilterLangCodes] = useStorage("community.filterLangCodes", []);
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
@@ -49,15 +53,6 @@ export default function Instances() {
   const [instancesData, setInstancesData] = React.useState([]);
 
   const [processingData, setProcessingData] = React.useState(true);
-
-  // debounce the filter text input
-  const [debounceFilterText, setDebouncedInputValue] = React.useState(filterText);
-  React.useEffect(() => {
-    const delayInputTimeoutId = setTimeout(() => {
-      setDebouncedInputValue(filterText);
-    }, 500);
-    return () => clearTimeout(delayInputTimeoutId);
-  }, [filterText]);
 
   React.useEffect(() => {
     // process data

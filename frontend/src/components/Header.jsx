@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useColorScheme } from "@mui/joy/styles";
 import useQueryCache from "../hooks/useQueryCache";
 
+import { NumericFormat } from "react-number-format";
+
 import Badge from "@mui/joy/Badge";
 import Box from "@mui/joy/Box";
 import Tabs from "@mui/joy/Tabs";
@@ -284,7 +286,9 @@ export default function TabsVariants() {
       >
         <TabList variant="soft">
           <Badge
-            badgeContent={isSuccess && metaData.instances}
+            badgeContent={
+              isSuccess && <NumericFormat displayType="text" value={metaData.instances} allowLeadingZeros />
+            }
             max={999}
             color="info"
             variant={"solid"}
@@ -299,8 +303,17 @@ export default function TabsVariants() {
           </Badge>
 
           <Badge
-            badgeContent={isSuccess && metaData.communities}
-            max={9999}
+            badgeContent={
+              isSuccess && (
+                <NumericFormat
+                  displayType="text"
+                  value={metaData.communities}
+                  allowLeadingZeros
+                  thousandSeparator=","
+                />
+              )
+            }
+            max={99999}
             variant={"solid"}
             anchorOrigin={{
               vertical: "top",
