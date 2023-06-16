@@ -1,9 +1,9 @@
 import React from "react";
 
-import { NumericFormat } from "react-number-format";
-
 import Box from "@mui/joy/Box";
 import Chip from "@mui/joy/Chip";
+
+import { SimpleNumberFormat } from "../components/Display";
 
 export default function Pagination({ setPage, page, count, limit }) {
   const [totalPages, setTotalPages] = React.useState(0);
@@ -29,7 +29,7 @@ export default function Pagination({ setPage, page, count, limit }) {
         }}
         color="info"
       >
-        Total: <NumericFormat value={count} displayType={"text"} decimalScale={2} thousandSeparator={","} />
+        Total: <SimpleNumberFormat value={count} />
       </Chip>
 
       <Chip
