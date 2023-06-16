@@ -10,7 +10,6 @@ import Input from "@mui/joy/Input";
 import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Typography from "@mui/joy/Typography";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
@@ -21,6 +20,18 @@ import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError } from "../components/Display";
 
 import useStorage from "../hooks/useStorage";
+
+const InstanceGrid = React.memo(function (props) {
+  const { items, itemRendererProps } = props;
+
+  return (
+    <Grid container spacing={2}>
+      {items.map((instance, index) => (
+        <InstanceCard key={index} instance={instance} {...itemRendererProps} />
+      ))}
+    </Grid>
+  );
+});
 
 export default function Instances() {
   const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
@@ -211,13 +222,7 @@ export default function Instances() {
         {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && !processingData && (
-          <Grid container spacing={2}>
-            {instancesData.map((instance) => (
-              <InstanceCard instance={instance} />
-            ))}
-          </Grid>
-        )}
+        {isSuccess && !processingData && <InstanceGrid items={instancesData} />}
       </Box>
     </Container>
   );

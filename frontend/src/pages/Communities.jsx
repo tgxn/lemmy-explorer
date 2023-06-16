@@ -20,6 +20,18 @@ import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
 import { PageLoading, PageError } from "../components/Display";
 
+const CommunityGrid = React.memo(function (props) {
+  const { items, itemRendererProps } = props;
+
+  return (
+    <Grid container spacing={2}>
+      {items.map((community, index) => (
+        <CommunityCard key={index} community={community} {...itemRendererProps} />
+      ))}
+    </Grid>
+  );
+});
+
 export default function Communities() {
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
@@ -29,7 +41,7 @@ export default function Communities() {
   const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
   const [page, setPage] = useState(0);
 
-  const [filterText, setFilterText] = useStorage("community.filterText", "");
+  const [filterText, setFilterText] = useState("");
 
   const [useLocalURL, setUseLocalURL] = useStorage("community.useLocalURL", false);
   const [localURL, setLocalURL] = useStorage("community.localURL", "");
@@ -40,12 +52,12 @@ export default function Communities() {
   );
 
   const [totalFiltered, setTotalFiltered] = useState(0);
-  const [communitiesData, setCommunitiesData] = useState([]);
+  // const [communitiesData, setCommunitiesData] = useState([]);
 
   const [processingData, setProcessingData] = React.useState(true);
 
   // debounce the filter text input
-  const [debounceFilterText, setDebouncedInputValue] = React.useState(filterText);
+  const [debounceFilterText, setDebouncedInputValue] = useStorage("community.filterText", "");
   React.useEffect(() => {
     const delayInputTimeoutId = setTimeout(() => {
       setDebouncedInputValue(filterText);
@@ -53,13 +65,14 @@ export default function Communities() {
     return () => clearTimeout(delayInputTimeoutId);
   }, [filterText]);
 
-  useEffect(() => {
-    // process data
+  // this applies the filtering and sorting to the data loaded from .json
+  const communitiesData = React.useMemo(() => {
+    if (isError) return [];
+    if (!data) return [];
+
+    console.time("sort+filter");
 
     setProcessingData(true);
-
-    if (isError) return;
-    if (!data) return;
 
     console.log(`Loaded ${data.length} communities`);
 
@@ -113,9 +126,21 @@ export default function Communities() {
     setTotalFiltered(communties.length);
     communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
-    setCommunitiesData(communties);
+    console.log(
+      `updating communities data with ${communties.length} communities, removed: ${
+        data.length - communties.length
+      }`,
+    );
+    // setCommunitiesData(communties);
     setProcessingData(false);
+
+    console.timeEnd("sort+filter");
+    return communties;
   }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner, page, pageLimit]);
+
+  //   const visibleFruits = React.useMemo(() => {
+  //     return fruits.filter((f) => f.visible);
+  // }, [fruits]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -231,13 +256,7 @@ export default function Communities() {
         {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && !processingData && (
-          <Grid container spacing={2}>
-            {communitiesData.map((community, index) => (
-              <CommunityCard key={index} community={community} localURL={localURL} />
-            ))}
-          </Grid>
-        )}
+        {isSuccess && !processingData && <CommunityGrid items={communitiesData} localURL={localURL} />}
       </Box>
     </Container>
   );
