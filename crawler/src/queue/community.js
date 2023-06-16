@@ -55,17 +55,6 @@ export default class CommunityQueue {
         const crawler = new CommunityCrawler(job.data.baseUrl);
         const communityData = await crawler.crawl();
 
-        // store each community
-        for (var community of communityData) {
-          await putCommunityData(instanceBaseUrl, {
-            ...community,
-            lastCrawled: Date.now(),
-          });
-        }
-
-        logging.info(
-          `[Community] [${job.data.baseUrl}] [${job.id}] Completed OK (Found ${communityData.length} Local Communities)`
-        );
         return communityData;
       } catch (e) {
         const errorDetail = {
@@ -76,49 +65,10 @@ export default class CommunityQueue {
           time: Date.now(),
         };
         await storeError("community", job.data.baseUrl, errorDetail);
-        logging.error(
-          `[Community] [${job.data.baseUrl}] [${job.id}] ${error.message}`
-        );
-        if (typeof error === Error) logging.trace(error);
+        logging.error(`[Community] [${job.data.baseUrl}] ${error.message}`);
+        if (typeof error === Error) logging.verbose(error);
       }
       return false;
     });
-  }
-
-  async crawlCommunity(instanceBaseUrl) {
-    const communityList = await this.crawlCommunityPaginatedList(
-      instanceBaseUrl
-    );
-
-    return communityList;
-  }
-
-  async crawlCommunityPaginatedList(instanceBaseUrl, pageNumber = 1) {
-    const communityList = await this.axios.get(
-      "https://" + instanceBaseUrl + "/api/v3/community/list",
-      {
-        params: {
-          type_: "Local",
-          page: pageNumber,
-          limit: 50,
-        },
-      }
-    );
-    const communities = communityList.data.communities;
-
-    let list = [];
-
-    list.push(...communities);
-
-    if (communities.length == 50) {
-      const pagenew = await this.crawlCommunityPaginatedList(
-        instanceBaseUrl,
-        pageNumber + 1
-      );
-
-      list.push(...pagenew);
-    }
-
-    return list;
   }
 }

@@ -39,7 +39,7 @@ export default class InstanceQueue {
 
     // report failures!
     this.queue.on("failed", (job, err) => {
-      logging.error(`Job ${job.id} failed with error ${err.message}`, err);
+      logging.error(`Job ${job.id} failed with error ${err.message}`, job, err);
     });
 
     // this.axios = axios.create({
@@ -57,7 +57,14 @@ export default class InstanceQueue {
   }
 
   createJob(instanceBaseUrl) {
-    const trimmedUrl = instanceBaseUrl.trim();
+    // replace http/s with nothign
+    let trimmedUrl = instanceBaseUrl.replace(/^https?:\/\//, "").trim();
+
+    // dont create blank jobs
+    if (trimmedUrl == "") {
+      console.warn("createJob: trimmedUrl is blank", instanceBaseUrl);
+      return;
+    }
 
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
     job
@@ -136,9 +143,7 @@ export default class InstanceQueue {
           throw new CrawlError("baseUrl is not a valid domain");
         }
 
-        logging.debug(
-          `[Instance] [${job.data.baseUrl}] [${job.id}] Starting Crawl`
-        );
+        logging.debug(`[Instance] [${job.data.baseUrl}] Starting Crawl`);
 
         // check if it's known to not be running lemmy
         const knownFediverseServer = await getFediverseData(instanceBaseUrl);
@@ -157,12 +162,23 @@ export default class InstanceQueue {
         const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
         if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
           throw new CrawlWarning(
-            `Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
+            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
           );
         }
 
         const crawler = new InstanceCrawler(instanceBaseUrl);
         const instanceData = await crawler.crawl();
+
+        // start crawl jobs for federated instances
+        if (instanceData.siteData?.federated?.linked.length > 0) {
+          const countFederated = this.crawlFederatedInstanceJobs(
+            instanceData.siteData.federated
+          );
+
+          logging.info(
+            `[Instance] [${job.data.baseUrl}] Creating ${countFederated.length} federated instance jobs`
+          );
+        }
 
         // create job to scan the instance for communities once a crawl succeeds
         this.crawlCommunity.createJob(instanceBaseUrl);
@@ -173,7 +189,7 @@ export default class InstanceQueue {
           error: error.message,
           stack: error.stack,
           isAxiosError: error.isAxiosError,
-          response: error.isAxiosError ? error.response : null,
+          response: error.isAxiosError ? error.request.url : null,
           time: new Date().getTime(),
         };
 
@@ -181,17 +197,20 @@ export default class InstanceQueue {
           await storeError("instance", job.data.baseUrl, errorDetail);
 
           logging.error(
-            `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
+            `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
           );
-        } else if (error instanceof CrawlWarning) {
+        }
+
+        // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
+        else if (error instanceof CrawlWarning) {
           logging.warn(
-            `[Instance] [${job.data.baseUrl}] [${job.id}] Warn: ${error.message}`
+            `[Instance] [${job.data.baseUrl}] Warn: ${error.message}`
           );
         } else {
-          logging.error(
-            `[Instance] [${job.data.baseUrl}] [${job.id}] Error: ${error.message}`
+          logging.verbose(
+            `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
           );
-          logging.trace(error);
+          console.trace(error);
         }
       }
       return true;

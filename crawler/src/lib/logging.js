@@ -27,7 +27,10 @@ const winstonLogger = winston.createLogger({
 });
 
 const wrapper = (original) => {
-  return (message, ...args) => original(message, colorize(args[0]));
+  return (message, ...args) => {
+    const meta = args[0] ? args[0] : null;
+    return original(message, meta);
+  };
 };
 
 winstonLogger.error = wrapper(winstonLogger.error);
@@ -36,5 +39,9 @@ winstonLogger.info = wrapper(winstonLogger.info);
 winstonLogger.verbose = wrapper(winstonLogger.verbose);
 winstonLogger.debug = wrapper(winstonLogger.debug);
 winstonLogger.silly = wrapper(winstonLogger.silly);
+
+// add wrapper protoype to console.log to winstonLogger
+console.log = wrapper(winstonLogger.info);
+console.info = wrapper(winstonLogger.info);
 
 export default winstonLogger;

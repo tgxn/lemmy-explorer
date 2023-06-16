@@ -22,7 +22,7 @@ export default class CrawlAged {
   }
 
   async getAged() {
-    logging.info("Running Aged Cron Task", new Date().toLocaleString());
+    logging.info("Fetching Aged Instances", new Date().toLocaleString());
 
     const instances = await listInstanceData();
 

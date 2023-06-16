@@ -1,19 +1,14 @@
 import logging from "../lib/logging.js";
 
-import Queue from "bee-queue";
 import axios from "axios";
 
-import { putCommunityData, storeError } from "../lib/storage.js";
+import { putCommunityData } from "../lib/storage.js";
 
 import {
-  CRAWL_TIMEOUT,
-  CRAWL_RETRY,
   AXIOS_REQUEST_TIMEOUT,
   CRAWLER_USER_AGENT,
   CRAWLER_ATTRIB_URL,
 } from "../lib/const.js";
-
-import { CrawlError } from "../lib/error.js";
 
 export default class CommunityCrawler {
   constructor(crawlDomain) {
@@ -34,15 +29,17 @@ export default class CommunityCrawler {
     const communityData = await this.crawlCommunityPaginatedList();
 
     // store each community
-    for (var community of communityData) {
-      await putCommunityData(instanceBaseUrl, {
-        ...community,
-        lastCrawled: Date.now(),
-      });
+    if (communityData.length > 0) {
+      for (var community of communityData) {
+        await putCommunityData(this.crawlDomain, {
+          ...community,
+          lastCrawled: Date.now(),
+        });
+      }
     }
 
     logging.info(
-      `[Community] [${job.data.baseUrl}] Completed OK (Found ${communityData.length} Local Communities)`
+      `[Community] [${this.crawlDomain}] Completed OK (Stored ${communityData.length} Local Communities)`
     );
     return communityData;
   }

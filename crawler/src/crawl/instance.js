@@ -36,20 +36,10 @@ export default class InstanceCrawler {
         lastCrawled: Date.now(),
       });
 
-      // this.crawlCommunit
-      // attempt to crawl federated instances
-      if (instanceData.siteData?.federated?.linked.length > 0) {
-        const countFederated = this.crawlFederatedInstances(
-          instanceData.siteData.federated
-        );
-        logging.info(
-          `[Instance] [${job.data.baseUrl}] [${job.id}] Crawled ${countFederated.length} federated instances`
-        );
-      }
-
       logging.info(
-        `[Instance] [${job.data.baseUrl}] [${job.id}] Completed OK (Found "${instanceData?.siteData?.site?.name}")`
+        `[Instance] [${this.crawlDomain}] Completed OK (Found "${instanceData?.siteData?.site?.name}")`
       );
+
       return instanceData;
     }
 
@@ -149,22 +139,4 @@ export default class InstanceCrawler {
 
     return instanceData;
   }
-
-  // // start a job for each instances in the federation lists
-  // crawlFederatedInstances(federatedData) {
-  //   const linked = federatedData.linked || [];
-  //   const allowed = federatedData.allowed || [];
-  //   const blocked = federatedData.blocked || [];
-
-  //   // pull data from all federated instances
-  //   let instancesDeDup = [...new Set([...linked, ...allowed, ...blocked])];
-
-  //   for (var instance of instancesDeDup) {
-  //     if (isValidLemmyDomain(instance)) {
-  //       this.createJob(instance);
-  //     }
-  //   }
-
-  //   return instancesDeDup;
-  // }
 }

@@ -44,7 +44,7 @@ export default class CrawlOutput {
     // start crawler jobs for all of the instances this one is federated with
     instances.forEach((instance) => {
       if (!instance.siteData.federated) {
-        logging.debug("no federated data", instance.siteData.site.actor_id);
+        // logging.debug("no federated data", instance.siteData.site.actor_id);
         return;
       }
 
@@ -179,7 +179,7 @@ export default class CrawlOutput {
       const fail = findFail(instance.baseurl);
       if (fail) {
         if (instance.time < fail.time) {
-          logging.warn("filtered due to fail", fail, instance.baseurl);
+          // logging.info("filtered due to fail", instance.baseurl, fail.error);
           return false;
         }
       }

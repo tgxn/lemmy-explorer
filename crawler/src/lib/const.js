@@ -19,7 +19,7 @@ export const CRAWL_RETRY = {
 };
 
 // the minimum amount of time (in ms) between crawling the same instance
-const MIN_RECRAWL_HOURS = 0;
+const MIN_RECRAWL_HOURS = 2;
 export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 
 // look for aged records to re-crawl
