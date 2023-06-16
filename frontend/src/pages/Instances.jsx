@@ -39,6 +39,15 @@ export default function Instances() {
 
   const [processingData, setProcessingData] = React.useState(true);
 
+  // debounce the filter text input
+  const [debounceFilterText, setDebouncedInputValue] = React.useState(filterText);
+  React.useEffect(() => {
+    const delayInputTimeoutId = setTimeout(() => {
+      setDebouncedInputValue(filterText);
+    }, 500);
+    return () => clearTimeout(delayInputTimeoutId);
+  }, [filterText]);
+
   React.useEffect(() => {
     // process data
     setProcessingData(true);
@@ -53,11 +62,14 @@ export default function Instances() {
       instances = instances.filter((instance) => instance.open);
     }
 
-    if (filterText) {
+    if (debounceFilterText) {
       instances = instances.filter((instance) => {
-        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.name && instance.name.toLowerCase().includes(debounceFilterText.toLowerCase()))
+          return true;
+        if (instance.desc && instance.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
+          return true;
+        if (instance.url && instance.url.toLowerCase().includes(debounceFilterText.toLowerCase()))
+          return true;
         return false;
       });
     }
@@ -113,7 +125,7 @@ export default function Instances() {
     setInstancesData(instances);
 
     setProcessingData(false);
-  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit, filterLangCodes]);
+  }, [data, orderBy, showOpenOnly, debounceFilterText, page, pageLimit, filterLangCodes]);
 
   return (
     <Container maxWidth={false} sx={{}}>

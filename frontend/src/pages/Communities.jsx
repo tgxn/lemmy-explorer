@@ -39,6 +39,15 @@ export default function Communities() {
 
   const [processingData, setProcessingData] = React.useState(true);
 
+  // debounce the filter text input
+  const [debounceFilterText, setDebouncedInputValue] = React.useState(filterText);
+  React.useEffect(() => {
+    const delayInputTimeoutId = setTimeout(() => {
+      setDebouncedInputValue(filterText);
+    }, 500);
+    return () => clearTimeout(delayInputTimeoutId);
+  }, [filterText]);
+
   useEffect(() => {
     // process data
 
@@ -60,13 +69,13 @@ export default function Communities() {
     }
 
     // filter string
-    if (filterText) {
-      console.log(`Filtering communities by ${filterText}`);
+    if (debounceFilterText) {
+      console.log(`Filtering communities by ${debounceFilterText}`);
       communties = communties.filter((community) => {
         return (
-          (community.name && community.name.toLowerCase().includes(filterText.toLowerCase())) ||
-          (community.title && community.title.toLowerCase().includes(filterText.toLowerCase())) ||
-          (community.desc && community.desc.toLowerCase().includes(filterText.toLowerCase()))
+          (community.name && community.name.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
+          (community.title && community.title.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
+          (community.desc && community.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
         );
       });
     }
@@ -101,7 +110,7 @@ export default function Communities() {
 
     setCommunitiesData(communties);
     setProcessingData(false);
-  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
+  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner, page, pageLimit]);
 
   return (
     <Container maxWidth={false} sx={{}}>
