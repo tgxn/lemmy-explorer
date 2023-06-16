@@ -8,6 +8,7 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Typography from "@mui/joy/Typography";
 import Link from "@mui/joy/Link";
+import Divider from "@mui/joy/Divider";
 
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
@@ -37,6 +38,8 @@ export default function Overview() {
       >
         Lemmy Explorer
       </Typography>
+
+      {/* top links section */}
       <Box
         sx={{
           display: "flex",
@@ -63,101 +66,116 @@ export default function Overview() {
           Discussions on GitHub
         </Button>
       </Box>
-      <Typography
-        level="h3"
-        gutterBottom
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        About
-      </Typography>
 
-      <Typography
-        level="body1"
-        sx={{
-          display: "flex",
-          p: 2,
-          mb: 2,
-        }}
-      >
-        This is a project that aims to provide a simple way to explore Lemmy Instances and Communities.
-      </Typography>
-
-      <Typography level="body1" sx={{ display: "flex", p: 2, mb: 2 }}>
-        All data was retrieved within 24 hours of the last updated time shown in the menu.
-      </Typography>
-
-      <Typography
-        level="body1"
-        sx={{
-          p: 2,
-          mb: 2,
-        }}
-      >
-        Some data we use comes from other sites:
-        <ul>
-          <li>
-            <Link component="a" href="https://fediverse.observer/" target="_lv_fediverse">
-              Fediverse Explorer API
-            </Link>
-          </li>
-        </ul>
-      </Typography>
-
-      <Typography
-        level="h3"
-        gutterBottom
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        Crawler Info
-      </Typography>
-
+      {/* About section */}
       <Box
         sx={{
-          display: "flex",
-
-          flexDirection: "column",
-          p: 2,
-          mb: 2,
+          py: 2,
+          "& .MuiTypography-root": {
+            pb: 1,
+          },
         }}
       >
-        <Typography level="body1" sx={{ mb: 2 }}>
-          We use a web crawler to power the Lemmyverse Explorer.
-        </Typography>
-
         <Typography
-          level="body1"
+          level="h3"
+          gutterBottom
           sx={{
-            mb: 2,
+            display: "flex",
+            justifyContent: "center",
           }}
         >
-          We do not crawl or store user accounts or other PII, just publically-available statistical instance
+          About
+        </Typography>
+
+        <Typography>
+          This is a project that aims to provide a simple way to explore Lemmy Instances and Communities.
+        </Typography>
+
+        <Typography>
+          All data was retrieved within 24 hours of the last updated time shown in the menu.
+        </Typography>
+
+        <Typography>
+          Some data we use comes from other sites:
+          <ul>
+            <li>
+              <Link component="a" href="https://fediverse.observer/" target="_lv_fediverse">
+                Fediverse Explorer API
+              </Link>
+            </li>
+          </ul>
+        </Typography>
+      </Box>
+
+      <Divider />
+
+      {/* Crawler info */}
+      <Box
+        sx={{
+          py: 2,
+          "& .MuiTypography-root": {
+            pb: 1,
+          },
+        }}
+      >
+        <Typography
+          level="h3"
+          gutterBottom
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          Crawler Info
+        </Typography>
+
+        <Typography>We use a web crawler to power the Lemmyverse Explorer.</Typography>
+
+        <Typography>
+          We don't crawl or store user accounts or other PII, just publically-available statistical instance
           data.
         </Typography>
 
-        <Typography level="body1" sx={{ mb: 2 }}>
+        <Typography>
           We run a crawler across all Lemmy Fediverse servers, scanning each server no more than once every 12
           hours.
         </Typography>
 
-        <Typography
-          level="body1"
-          sx={{
-            mb: 1,
-          }}
-        >
-          We use the following headers when scraping websites:
-        </Typography>
+        <Typography>We use the following headers when scraping websites:</Typography>
 
         <Card variant="outlined" sx={{ m: 0 }}>
           <Typography component="pre">"User-Agent": "lemmy-explorer-crawler/1.0.0"</Typography>
           <Typography component="pre">"X-Lemmy-SiteUrl": "https://lemmyverse.net"</Typography>
         </Card>
+      </Box>
+
+      <Divider />
+
+      {/* Credits */}
+      <Box
+        sx={{
+          py: 2,
+          "& .MuiTypography-root": {
+            pb: 1,
+          },
+        }}
+      >
+        <Typography
+          level="h3"
+          gutterBottom
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          Credits
+        </Typography>
+
+        <Typography>
+          <ul>
+            <li>Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.</li>
+          </ul>
+        </Typography>
       </Box>
     </Container>
   );
