@@ -4,6 +4,8 @@ function hoursToMs(hours) {
 
 export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
+export const LOG_PATH = process.env.LOG_PATH || "./logs";
+
 // timeout for the instance and community crawlers
 export const CRAWL_TIMEOUT = {
   INSTANCE: 2 * 60 * 1000, // 2 minutes in ms
@@ -21,7 +23,7 @@ const MIN_RECRAWL_HOURS = 0;
 export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 
 // look for aged records to re-crawl
-const RECRAWL_AGED_HOURS = 1;
+const RECRAWL_AGED_HOURS = 6;
 export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
 
 // how often should the cron run with --cron

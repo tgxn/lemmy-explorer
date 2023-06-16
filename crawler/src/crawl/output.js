@@ -1,3 +1,4 @@
+import logging from "../lib/logging.js";
 // this file generates the .json files for the frontend /public folder
 // it conencts to redis and pulls lists of all the data we have stored
 
@@ -21,6 +22,64 @@ export default class CrawlOutput {
     this.storeFediverseData = [];
   }
 
+  getFederationLists(instances) {
+    // count instances by list
+    let linkedFederation = {};
+    let allowedFederation = {};
+    let blockedFederation = {};
+
+    function dedupAddItem(list, baseUrl) {
+      // only add strings
+      if (typeof baseUrl !== "string") {
+        return;
+      }
+
+      if (!list[baseUrl]) {
+        list[baseUrl] = 1;
+      } else {
+        list[baseUrl]++;
+      }
+    }
+
+    // start crawler jobs for all of the instances this one is federated with
+    instances.forEach((instance) => {
+      if (!instance.siteData.federated) {
+        logging.debug("no federated data", instance.siteData.site.actor_id);
+        return;
+      }
+
+      const { linked, allowed, blocked } = instance.siteData.federated;
+
+      logging.silly(
+        `federated instances: ${instance.siteData.site.actor_id}`,
+        instance.siteData.federated.linked.length
+      );
+
+      if (linked.length > 0) {
+        for (const baseUrl of linked) {
+          dedupAddItem(linkedFederation, baseUrl);
+        }
+      }
+      if (allowed && allowed.length > 0) {
+        for (const baseUrl of allowed) {
+          dedupAddItem(allowedFederation, baseUrl);
+        }
+      }
+      if (blocked && blocked.length > 0) {
+        for (const baseUrl of blocked) {
+          dedupAddItem(blockedFederation, baseUrl);
+        }
+      }
+    });
+
+    logging.info(
+      `Federation Linked: ${Object.keys(linkedFederation).length} Allowed: ${
+        Object.keys(allowedFederation).length
+      } Blocked: ${Object.keys(blockedFederation).length}`
+    );
+    return [linkedFederation, allowedFederation, blockedFederation];
+  }
+
   async start() {
     // get uptime data from crawl table
     const uptimeData = await getLatestUptimeData();
@@ -28,7 +87,7 @@ export default class CrawlOutput {
       const foundKey = uptimeData.nodes.find((k) => k.domain == baseUrl);
       return foundKey;
     }
-    console.log(`Uptime: ${uptimeData.nodes.length}`);
+    logging.info(`Uptime: ${uptimeData.nodes.length}`);
 
     ///
     /// Lemmy Instances
@@ -49,50 +108,12 @@ export default class CrawlOutput {
       return null;
     }
 
-    console.log(`Failures: ${Object.keys(failureData).length}`);
-    console.log();
+    logging.info(`Failures: ${Object.keys(failureData).length}`);
 
     const instances = await listInstanceData();
 
-    // count instances by list
-    let linkedFederation = {};
-    let allowedFederation = {};
-    let blockedFederation = {};
-    function dedupAddItem(list, baseUrl) {
-      // only add strings
-      if (typeof baseUrl !== "string") {
-        return;
-      }
-
-      if (!list[baseUrl]) {
-        list[baseUrl] = 1;
-      } else {
-        list[baseUrl]++;
-      }
-    }
-    instances.forEach((instance) => {
-      // console.log(instance.siteData.federated);
-      if (instance.siteData.federated) {
-        const { linked, allowed, blocked } = instance.siteData.federated;
-        if (linked.length > 0) {
-          for (const baseUrl of linked) {
-            dedupAddItem(linkedFederation, baseUrl);
-          }
-        }
-        if (allowed && allowed.length > 0) {
-          for (const baseUrl of allowed) {
-            dedupAddItem(allowedFederation, baseUrl);
-          }
-        }
-        if (blocked && blocked.length > 0) {
-          for (const baseUrl of blocked) {
-            dedupAddItem(blockedFederation, baseUrl);
-          }
-        }
-      }
-    });
-
-    // console.log(`Instances: ${linkedInstanceListCount}`);
+    const [linkedFederation, allowedFederation, blockedFederation] =
+      this.getFederationLists(instances);
 
     let storeData = instances.map((instance) => {
       let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
@@ -158,7 +179,7 @@ export default class CrawlOutput {
       const fail = findFail(instance.baseurl);
       if (fail) {
         if (instance.time < fail.time) {
-          // console.log("filtered due to fail", fail, instance.baseurl);
+          logging.warn("filtered due to fail", fail, instance.baseurl);
           return false;
         }
       }
@@ -183,8 +204,7 @@ export default class CrawlOutput {
       (instance) => instance.url !== "" || instance.name !== ""
     );
 
-    console.log(`Instances ${instances.length} -> ${storeData.length}`);
-    console.log();
+    logging.info(`Instances ${instances.length} -> ${storeData.length}`);
 
     await this.writeJsonFile(
       "../frontend/public/instances.json",
@@ -239,7 +259,7 @@ export default class CrawlOutput {
       const fail = findFail(community.baseurl);
       if (fail) {
         if (community.time < fail.time) {
-          // console.log("filtered due to fail", fail, instance.baseurl);
+          // logging.info("filtered due to fail", fail, instance.baseurl);
           return false;
         }
       }
@@ -265,10 +285,9 @@ export default class CrawlOutput {
         community.url !== "" || community.name !== "" || community.title !== ""
     );
 
-    console.log(
+    logging.info(
       `Communities ${communities.length} -> ${storeCommunityData.length}`
     );
-    console.log();
 
     await this.writeJsonFile(
       "../frontend/public/communities.json",
@@ -280,17 +299,17 @@ export default class CrawlOutput {
     ///
 
     const fediverseData = await listFediverseData();
-    // console.log("Fediverse", fediverseData);
+    // logging.info("Fediverse", fediverseData);
 
     let returnStats = [];
     let storeFediverseData = Object.keys(fediverseData).forEach((fediKey) => {
       const fediverse = fediverseData[fediKey];
-      // console.log("fediverseString", fediverseString);
+      // logging.info("fediverseString", fediverseString);
       const baseUrl = fediKey.replace("fediverse:", "");
-      // console.log("baseUrl", baseUrl);
+      // logging.info("baseUrl", baseUrl);
 
       // const fediverse = JSON.parse(fediverseString);
-      // console.log("fediverse", fediverse);
+      // logging.info("fediverse", fediverse);
       if (fediverse.name) {
         returnStats.push({
           url: baseUrl,
@@ -299,7 +318,7 @@ export default class CrawlOutput {
         });
       }
     });
-    console.log("Fediverse Servers", returnStats.length);
+    logging.info("Fediverse Servers", returnStats.length);
 
     await this.writeJsonFile(
       "../frontend/public/fediverse.json",

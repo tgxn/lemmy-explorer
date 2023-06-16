@@ -1,5 +1,6 @@
-import CrawlInstance from "./instance.js";
-import CrawlCommunity from "./communities.js";
+import logging from "../lib/logging.js";
+
+import InstanceQueue from "../queue/instance.js";
 
 import {
   listInstanceData,
@@ -20,8 +21,8 @@ export default class CrawlAged {
     }
   }
 
-  async createJobs() {
-    console.log("Running Aged Cron Task", new Date().toLocaleString());
+  async getAged() {
+    logging.info("Running Aged Cron Task", new Date().toLocaleString());
 
     const instances = await listInstanceData();
 
@@ -35,13 +36,13 @@ export default class CrawlAged {
       return false;
     });
 
-    console.log(
+    logging.info(
       `Instances Total: ${instances.length} Aged: ${agedInstances.length}`
     );
 
     for (const instance of agedInstances) {
       const baseUrl = instance.siteData.site.actor_id.split("/")[2];
-      // console.log(`Aged Instance: ${baseUrl}`);
+      logging.silly(`Adding Aged Instance: ${baseUrl}`);
       this.addInstance(baseUrl);
     }
 
@@ -69,17 +70,21 @@ export default class CrawlAged {
       this.addInstance(baseUrl);
     }
 
-    console.log(
+    logging.info(
       `Communities Total: ${communities.length} Aged: ${agedCommunities.length}`
     );
 
     /// CRawl Jobs
 
-    console.log(
+    logging.info(
       `Total Aged Instances To Scan: ${this.agedInstanceBaseUrls.length}`
     );
+  }
 
-    const crawler = new CrawlInstance();
+  async createJobs() {
+    await this.getAged();
+
+    const crawler = new InstanceQueue(false);
     for (const baseUrl of this.agedInstanceBaseUrls) {
       crawler.createJob(baseUrl);
     }
