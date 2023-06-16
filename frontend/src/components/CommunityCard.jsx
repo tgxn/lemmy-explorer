@@ -20,7 +20,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { ContentSkeleton, ContentError } from "./Display";
 import CopyLink from "./CopyLink";
 
-function CommunityCard({ community }) {
+function CommunityCard({ community, localURL = "" }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
   const [bannerError, setBannerError] = React.useState(false);
 
@@ -70,13 +70,23 @@ function CommunityCard({ community }) {
                 textOverflow: "ellipsis",
               }}
             >
-              <Tooltip title={"Visit: " + community.title} variant="soft" placement="top-start">
+              <Tooltip
+                title={"Visit: " + community.title + (localURL ? " inside " + localURL : "")}
+                variant="soft"
+                placement="top-start"
+              >
                 <Link
                   level="body1"
                   variant="plain"
                   alt={community.title}
                   color="neutral"
-                  href={community.url}
+                  href={
+                    localURL
+                      ? `https://${localURL}/c/${community.name}@${
+                          community.url && community.url.split("/")[2]
+                        }`
+                      : community.url
+                  }
                   target="_blank"
                 >
                   {community.title}
