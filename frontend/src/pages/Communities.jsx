@@ -13,6 +13,8 @@ import Checkbox from "@mui/joy/Checkbox";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
+import SearchIcon from "@mui/icons-material/Search";
+import HomeIcon from "@mui/icons-material/Home";
 
 import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
@@ -28,6 +30,9 @@ export default function Communities() {
   const [page, setPage] = useState(0);
 
   const [filterText, setFilterText] = useStorage("community.filterText", "");
+
+  const [useLocalURL, setUseLocalURL] = useStorage("community.useLocalURL", false);
+  const [localURL, setLocalURL] = useStorage("community.localURL", "");
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
     "communitiesData",
@@ -101,7 +106,7 @@ export default function Communities() {
 
     setCommunitiesData(communties);
     setProcessingData(false);
-  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit]);
+  }, [data, showNsfw, orderBy, filterText, hideNoBanner, page, pageLimit, localURL]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -118,6 +123,7 @@ export default function Communities() {
         }}
       >
         <Input
+          startDecorator={<SearchIcon />}
           placeholder="Filter Communities"
           value={filterText}
           sx={{
@@ -166,7 +172,35 @@ export default function Communities() {
             checked={hideNoBanner}
             onChange={(event) => setHideNoBanner(event.target.checked)}
           />
+
+          <Checkbox
+            label="Enable Local URLs"
+            checked={useLocalURL}
+            onChange={(event) => setUseLocalURL(event.target.checked)}
+          />
         </Box>
+
+        {useLocalURL && (
+          <Input
+            startDecorator={<HomeIcon />}
+            placeholder="Your Instance URL e.g 'lemmy.tgxn.net'"
+            value={localURL}
+            sx={{
+              width: { xs: "100%", sm: 300 },
+              flexShrink: 0,
+            }}
+            onChange={(event) =>
+              setLocalURL(
+                event.target.value
+                  .replace("http:", "")
+                  .replace("https:", "")
+                  .replace("//", "")
+                  .replace("/", ""),
+              )
+            }
+          />
+        )}
+
         <Box
           sx={{
             display: "flex",
@@ -191,7 +225,7 @@ export default function Communities() {
         {isSuccess && !processingData && (
           <Grid container spacing={2}>
             {communitiesData.map((community, index) => (
-              <CommunityCard key={index} community={community} />
+              <CommunityCard key={index} community={community} localURL={localURL} />
             ))}
           </Grid>
         )}
