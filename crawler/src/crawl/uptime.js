@@ -1,12 +1,14 @@
-// meant to run max 1/day and get all uptime
-import axios, { AxiosError } from "axios";
+/** Uptime Crawler
+ *
+ * Meant to run max 1/day and get all uptime from api.fediverse.observer
+ */
+import logging from "../lib/logging.js";
 
-import { putUptimeData, getLatestUptimeData } from "../lib/storage.js";
+import axios from "axios";
+
+import { putUptimeData } from "../lib/storage.js";
 
 import {
-  CRAWL_TIMEOUT,
-  CRAWL_RETRY,
-  MIN_RECRAWL_MS,
   CRAWLER_USER_AGENT,
   CRAWLER_ATTRIB_URL,
   AXIOS_REQUEST_TIMEOUT,
@@ -39,7 +41,8 @@ export default class CrawlUptime {
             }
         }`,
     });
-    console.log(instances.data);
+    logging.info(instances.data);
+
     await putUptimeData({
       timestamp: Date.now(),
       nodes: instances.data.data.nodes,

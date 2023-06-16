@@ -1,7 +1,9 @@
+import logging from "./lib/logging.js";
+
 import cron from "node-cron";
 
-import CrawlInstance from "./crawl/instance.js";
-import CrawlCommunity from "./crawl/communities.js";
+import InstanceQueue from "./queue/instance.js";
+import CommunityQueue from "./queue/community.js";
 
 import CrawlOutput from "./crawl/output.js";
 import CrawlAged from "./crawl/aged.js";
@@ -15,78 +17,89 @@ import {
 
 export async function start(args) {
   if (args.length > 0) {
-    if (args.indexOf("--out") > -1) {
-      console.log("Generate JSON Output");
+    // single-argument commands
+    if (args.length === 1) {
+      switch (args[0]) {
+        case "--help":
+          logging.info("Help");
+          break;
 
-      const output = new CrawlOutput();
-      await output.start();
+        // generate output .json files from data stored in redis
+        case "--out":
+          logging.info("Generate JSON Output");
 
-      return process.exit(0);
-    }
+          const output = new CrawlOutput();
+          await output.start();
 
-    if (args.indexOf("--cron") > -1) {
-      console.log("Started Cron Task");
-      const agedTask = cron.schedule(AGED_CRON_EXPRESSION, () => {
-        const aged = new CrawlAged();
-        aged.createJobs();
-      });
-      const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, () => {
-        const uptime = new CrawlUptime();
-        uptime.crawl();
-      });
+          return process.exit(0);
 
-      return;
-    }
+        // should we initialize the workers with a starter list of lemmy's?
+        case "--init":
+          logging.warn("--init passed, creating seed jobs");
+          const crawler = new InstanceQueue();
+          for (var baseUrl of START_URLS) {
+            crawler.createJob(baseUrl);
+          }
+          // crawler.createJob("lemmy.tgxn.net");
+          return process.exit(0);
 
-    if (args.indexOf("--aged") > -1) {
-      const aged = new CrawlAged();
-      aged.createJobs();
-      return;
-    }
+        // get redis bb queue health from redis
+        case "--health":
+          const instanceCrawl = new InstanceQueue(false);
+          const counts = await instanceCrawl.queue.checkHealth();
+          logging.info("Instance Worker Health:", counts);
 
-    if (args.indexOf("--uptime") > -1) {
-      const uptime = new CrawlUptime();
-      uptime.crawl();
-      return;
-    }
+          const communityCrawl = new CommunityQueue(false);
+          const commCounts = await communityCrawl.queue.checkHealth();
+          logging.info("Community Worker Health:", commCounts);
 
-    if (args.indexOf("--health") > -1) {
-      const instanceCrawl = new CrawlInstance(false);
-      const counts = await instanceCrawl.queue.checkHealth();
-      console.log("Instance Worker Health:", counts);
+          return process.exit(0);
 
-      const communityCrawl = new CrawlCommunity(false);
-      const commCounts = await communityCrawl.queue.checkHealth();
-      console.log("Community Worker Health:", commCounts);
+        // adds ages domain jobs immediately
+        case "--aged":
+          const aged = new CrawlAged();
+          await aged.getAged();
 
-      return process.exit(0);
+          return process.exit(0);
+
+        // crawl the fediverse uptime immediately
+        case "--uptime":
+          const uptime = new CrawlUptime();
+          await uptime.crawl();
+
+          return process.exit(0);
+
+        // starts all cron workers (aged, uptime)
+        case "--cron":
+          logging.info("Started Cron Task");
+          const agedTask = cron.schedule(AGED_CRON_EXPRESSION, () => {
+            const aged = new CrawlAged();
+            aged.createJobs();
+          });
+          const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, () => {
+            const uptime = new CrawlUptime();
+            uptime.crawl();
+          });
+          return; // dont exit the process cause they are long running
+      }
     }
 
     // start specific queue workers
-    if (args[0] == "-q" && args[1] == "instance") {
-      console.info("Starting Instance Processor");
-      new CrawlInstance(true);
-      return;
-    } else if (args[0] == "-q" && args[1] == "community") {
-      console.info("Starting Community Processor");
-      new CrawlCommunity(true);
+    else if (args.length === 2 && args[0] == "-q") {
+      if (args[1] == "instance") {
+        logging.info("Starting Instance Processor");
+        new InstanceQueue(true);
+        return;
+      } else if (args[1] == "community") {
+        logging.info("Starting Community Processor");
+        new CommunityQueue(true);
 
-      return;
-    }
-
-    // should we initialize the workers with a starter list of lemmy's?
-    if (args.indexOf("--init") > -1) {
-      console.warn("--init passed, creating seed jobs");
-      const crawler = new CrawlInstance();
-      for (var baseUrl of START_URLS) {
-        crawler.createJob(baseUrl);
+        return;
       }
-      // crawler.createJob("lemmy.tgxn.net");
-      return;
     }
   } else {
-    console.info("no args, starting all crawler workers");
-    new CrawlInstance(true);
-    new CrawlCommunity(true);
+    logging.info("no args, starting all crawler workers");
+    new InstanceQueue(true);
+    new CommunityQueue(true);
   }
 }
