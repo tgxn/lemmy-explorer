@@ -111,6 +111,11 @@ export default function Overview() {
         . Or if you're feeling adventurous, you can view suggestions on one of these external pages:
         <ul>
           <li>
+            <Link component="a" href="https://browse.toast.ooo/">
+              Toast.ooo Browse Page
+            </Link>
+          </li>
+          <li>
             <Link component="a" href="https://join-lemmy.org/instances">
               join-lemmy.org Recommended Servers
             </Link>
