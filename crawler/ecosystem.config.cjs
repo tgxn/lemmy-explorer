@@ -15,7 +15,7 @@ module.exports = {
       name: "crawl-instance",
       script: "index.js",
       args: ["-q", "instance"],
-      instances: 10,
+      instances: 4,
       env_production: {
         NODE_ENV: "production",
       },
