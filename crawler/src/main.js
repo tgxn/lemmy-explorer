@@ -58,7 +58,7 @@ export async function start(args) {
         // adds ages domain jobs immediately
         case "--aged":
           const aged = new CrawlAged();
-          await aged.getAged();
+          await aged.createJobs();
 
           return process.exit(0);
 

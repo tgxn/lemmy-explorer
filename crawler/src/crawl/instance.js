@@ -72,7 +72,9 @@ export default class InstanceCrawler {
     }
 
     const nodeinfo2 = await this.axios.get(nodeinfoUrl);
-
+    if (!nodeinfo2.data.software) {
+      throw new CrawlError("no software key in " + nodeinfoUrl);
+    }
     const software = nodeinfo2.data.software;
 
     // store all fediverse instance software for easy metrics
