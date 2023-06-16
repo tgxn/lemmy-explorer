@@ -1,14 +1,18 @@
 import React from "react";
 
-import { NumericFormat } from "react-number-format";
-
 import Box from "@mui/joy/Box";
 import Chip from "@mui/joy/Chip";
 
-export default function Pagination({ setPage, page, count, limit }) {
-  const pages = Math.ceil(count / limit);
+import { SimpleNumberFormat } from "../components/Display";
 
-  console.log(page, pages);
+export default function Pagination({ setPage, page, count, limit }) {
+  const [totalPages, setTotalPages] = React.useState(0);
+
+  React.useEffect(() => {
+    const totalPages = Math.ceil(count / limit);
+
+    setTotalPages(totalPages);
+  }, [count, limit]);
 
   return (
     <Box
@@ -25,7 +29,7 @@ export default function Pagination({ setPage, page, count, limit }) {
         }}
         color="info"
       >
-        Total: <NumericFormat value={count} displayType={"text"} decimalScale={2} thousandSeparator={","} />
+        Total: <SimpleNumberFormat value={count} />
       </Chip>
 
       <Chip
@@ -51,7 +55,7 @@ export default function Pagination({ setPage, page, count, limit }) {
         </Chip>
       )}
 
-      {/* {Array(pages).map((page, idk) => (
+      {/* {Array(totalPages).map((page, idk) => (
         <Chip
           sx={{
             borderRadius: "4px",
@@ -64,7 +68,7 @@ export default function Pagination({ setPage, page, count, limit }) {
           {idk + 1}
         </Chip>
       ))} */}
-      {page != pages - 1 && (
+      {page != totalPages - 1 && (
         <Chip
           sx={{
             borderRadius: "4px",

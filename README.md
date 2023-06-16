@@ -34,3 +34,8 @@ https://lemmymap.feddit.de/
 https://lemmy.fediverse.observer/dailystats
 https://the-federation.info/platform/73
 https://fedidb.org/
+
+# Credits
+
+Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.
+

@@ -1,6 +1,7 @@
 import React from "react";
 
 import useQueryCache from "../hooks/useQueryCache";
+import { useDebounce } from "@uidotdev/usehooks";
 
 import Container from "@mui/joy/Container";
 
@@ -10,7 +11,6 @@ import Input from "@mui/joy/Input";
 import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Typography from "@mui/joy/Typography";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
@@ -22,6 +22,18 @@ import { PageLoading, PageError } from "../components/Display";
 
 import useStorage from "../hooks/useStorage";
 
+const InstanceGrid = React.memo(function (props) {
+  const { items, itemRendererProps } = props;
+
+  return (
+    <Grid container spacing={2}>
+      {items.map((instance, index) => (
+        <InstanceCard key={index} instance={instance} {...itemRendererProps} />
+      ))}
+    </Grid>
+  );
+});
+
 export default function Instances() {
   const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
   const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
@@ -29,35 +41,37 @@ export default function Instances() {
   const [pageLimit, setPagelimit] = useStorage("instance.pageLimit", 100);
   const [page, setPage] = React.useState(0);
 
+  // debounce the filter text input
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
+  const debounceFilterText = useDebounce(filterText, 500);
+
   const [filterLangCodes, setFilterLangCodes] = useStorage("community.filterLangCodes", []);
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
-  const [totalFiltered, setTotalFiltered] = React.useState(0);
-  const [instancesData, setInstancesData] = React.useState([]);
-
   const [processingData, setProcessingData] = React.useState(true);
+  const [totalFiltered, setTotalFiltered] = React.useState(0);
 
-  React.useEffect(() => {
-    // process data
-    setProcessingData(true);
-
+  // this applies the filtering and sorting to the data loaded from .json
+  const instancesData = React.useMemo(() => {
     if (!data) return;
     if (error) return;
 
-    // process data
+    setProcessingData(true);
 
     let instances = data;
     if (showOpenOnly) {
       instances = instances.filter((instance) => instance.open);
     }
 
-    if (filterText) {
+    if (debounceFilterText) {
       instances = instances.filter((instance) => {
-        if (instance.name && instance.name.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.desc && instance.desc.toLowerCase().includes(filterText.toLowerCase())) return true;
-        if (instance.url && instance.url.toLowerCase().includes(filterText.toLowerCase())) return true;
+        if (instance.name && instance.name.toLowerCase().includes(debounceFilterText.toLowerCase()))
+          return true;
+        if (instance.desc && instance.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
+          return true;
+        if (instance.url && instance.url.toLowerCase().includes(debounceFilterText.toLowerCase()))
+          return true;
         return false;
       });
     }
@@ -110,10 +124,12 @@ export default function Instances() {
     // pagination
     setTotalFiltered(instances.length);
     instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
-    setInstancesData(instances);
+    // setInstancesData(instances);
 
     setProcessingData(false);
-  }, [data, orderBy, showOpenOnly, filterText, page, pageLimit, filterLangCodes]);
+
+    return instances;
+  }, [data, orderBy, showOpenOnly, debounceFilterText, page, pageLimit, filterLangCodes]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -199,13 +215,7 @@ export default function Instances() {
         {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && !processingData && (
-          <Grid container spacing={2}>
-            {instancesData.map((instance) => (
-              <InstanceCard instance={instance} />
-            ))}
-          </Grid>
-        )}
+        {isSuccess && !processingData && <InstanceGrid items={instancesData} />}
       </Box>
     </Container>
   );

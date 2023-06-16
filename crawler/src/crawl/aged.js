@@ -1,5 +1,6 @@
-import CrawlInstance from "./instance.js";
-import CrawlCommunity from "./communities.js";
+import logging from "../lib/logging.js";
+
+import InstanceQueue from "../queue/instance.js";
 
 import {
   listInstanceData,
@@ -7,7 +8,7 @@ import {
   listFediverseData,
 } from "../lib/storage.js";
 
-import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
+import { RECRAWL_AGED_MS } from "../lib/const.js";
 
 export default class CrawlAged {
   constructor() {
@@ -20,28 +21,28 @@ export default class CrawlAged {
     }
   }
 
-  async createJobs() {
-    console.log("Running Aged Cron Task", new Date().toLocaleString());
+  async getAged() {
+    logging.info("Fetching Aged Instances", new Date().toLocaleString());
 
     const instances = await listInstanceData();
 
     const agedInstances = instances.filter((instance) => {
       if (!instance.lastCrawled) return true; // not set
 
-      if (Date.now() - instance.lastCrawled > OUTPUT_MAX_AGE_MS) {
+      if (Date.now() - instance.lastCrawled > RECRAWL_AGED_MS) {
         return true;
       }
 
       return false;
     });
 
-    console.log(
+    logging.info(
       `Instances Total: ${instances.length} Aged: ${agedInstances.length}`
     );
 
     for (const instance of agedInstances) {
       const baseUrl = instance.siteData.site.actor_id.split("/")[2];
-      // console.log(`Aged Instance: ${baseUrl}`);
+      logging.silly(`Adding Aged Instance: ${baseUrl}`);
       this.addInstance(baseUrl);
     }
 
@@ -55,7 +56,9 @@ export default class CrawlAged {
     const agedCommunities = communities.filter((community) => {
       if (!community.lastCrawled) return true;
 
-      if (Date.now() - community.lastCrawled > OUTPUT_MAX_AGE_MS) {
+      // if it was last cscanned more then RECRAWL_AGED_MS
+      const lastCrawledAgoMs = Date.now() - community.lastCrawled;
+      if (lastCrawledAgoMs > RECRAWL_AGED_MS) {
         return true;
       }
 
@@ -67,17 +70,21 @@ export default class CrawlAged {
       this.addInstance(baseUrl);
     }
 
-    console.log(
+    logging.info(
       `Communities Total: ${communities.length} Aged: ${agedCommunities.length}`
     );
 
     /// CRawl Jobs
 
-    console.log(
+    logging.info(
       `Total Aged Instances To Scan: ${this.agedInstanceBaseUrls.length}`
     );
+  }
 
-    const crawler = new CrawlInstance();
+  async createJobs() {
+    await this.getAged();
+
+    const crawler = new InstanceQueue(false);
     for (const baseUrl of this.agedInstanceBaseUrls) {
       crawler.createJob(baseUrl);
     }

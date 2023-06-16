@@ -10,9 +10,11 @@ const client = redis.createClient({
 
 export async function storeFediverseInstance(baseUrl, data) {
   await connectIfNeeded();
-  return putRedis(`fediverse:${baseUrl}`, data);
+  const dd = { time: Date.now(), ...data };
+  return putRedis(`fediverse:${baseUrl}`, dd);
 }
 export async function storeError(type, baseUrl, data) {
+  if (!baseUrl) throw new Error("baseUrl is required");
   await connectIfNeeded();
   return putRedis(`error:${type}:${baseUrl}`, data);
 }
@@ -22,7 +24,10 @@ export async function putInstanceData(baseUrl, value) {
 }
 export async function putCommunityData(baseUrl, data) {
   await connectIfNeeded();
-  return putRedis(`community:${baseUrl}:${data.community.name}`, data);
+  return putRedis(
+    `community:${baseUrl}:${data.community.name.toLowerCase()}`,
+    data
+  );
 }
 export async function putUptimeData(data) {
   await connectIfNeeded();
