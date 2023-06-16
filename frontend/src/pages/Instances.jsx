@@ -49,19 +49,15 @@ export default function Instances() {
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
-  const [totalFiltered, setTotalFiltered] = React.useState(0);
-  const [instancesData, setInstancesData] = React.useState([]);
-
   const [processingData, setProcessingData] = React.useState(true);
+  const [totalFiltered, setTotalFiltered] = React.useState(0);
 
-  React.useEffect(() => {
-    // process data
-    setProcessingData(true);
-
+  // this applies the filtering and sorting to the data loaded from .json
+  const instancesData = React.useMemo(() => {
     if (!data) return;
     if (error) return;
 
-    // process data
+    setProcessingData(true);
 
     let instances = data;
     if (showOpenOnly) {
@@ -128,9 +124,11 @@ export default function Instances() {
     // pagination
     setTotalFiltered(instances.length);
     instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
-    setInstancesData(instances);
+    // setInstancesData(instances);
 
     setProcessingData(false);
+
+    return instances;
   }, [data, orderBy, showOpenOnly, debounceFilterText, page, pageLimit, filterLangCodes]);
 
   return (
