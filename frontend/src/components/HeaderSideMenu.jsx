@@ -149,13 +149,13 @@ export default function HeaderSideMenu() {
         onClose={handleClose}
         aria-labelledby="positioned-demo-button"
         placement="bottom-end"
-        MenuListProps={{
-          sx: {
-            "& .MuiMenuItem-root": {
-              whiteSpace: "unset",
-            },
-          },
-        }}
+        // MenuListProps={{
+        //   sx: {
+        //     "& .MuiMenuItem-root": {
+        //       whiteSpace: "unset",
+        //     },
+        //   },
+        // }}
       >
         <MenuItem disabled>
           <ListItemDecorator>

@@ -1,5 +1,7 @@
 /* global localStorage */
 
+import storage from "../lib/storage";
+
 export function setHomeInstance(baseUrl) {
   return {
     type: "setHomeInstance",
@@ -8,7 +10,7 @@ export function setHomeInstance(baseUrl) {
 }
 
 const initialState = {
-  homeBaseUrl: localStorage.getItem("instance") || false,
+  homeBaseUrl: storage.get("instance"),
 };
 
 const configReducer = (state = initialState, action = {}) => {
@@ -16,9 +18,9 @@ const configReducer = (state = initialState, action = {}) => {
     case "setHomeInstance":
       const baseUrl = action.payload.baseUrl;
       if (baseUrl == null) {
-        localStorage.removeItem("instance");
+        storage.remove("instance");
       } else {
-        localStorage.setItem("instance", action.payload.baseUrl);
+        storage.set("instance", action.payload.baseUrl);
       }
       return {
         ...state,

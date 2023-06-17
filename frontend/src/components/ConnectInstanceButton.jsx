@@ -3,6 +3,8 @@ import { connect } from "react-redux";
 
 import useQueryCache from "../hooks/useQueryCache";
 
+import { FixedSizeList, ListChildComponentProps } from "react-window";
+
 import Box from "@mui/joy/Box";
 import IconButton from "@mui/joy/IconButton";
 import Tooltip from "@mui/joy/Tooltip";
@@ -13,14 +15,21 @@ import ListDivider from "@mui/joy/ListDivider";
 import FormControl from "@mui/joy/FormControl";
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
 import AutocompleteOption from "@mui/joy/AutocompleteOption";
-import Add from "@mui/icons-material/Add";
 
+import Add from "@mui/icons-material/Add";
 import CottageIcon from "@mui/icons-material/Cottage";
 import HomeIcon from "@mui/icons-material/Home";
 
 import { setHomeInstance } from "../reducers/configReducer";
 
-const filter = createFilterOptions();
+import VirtualisedSelect from "./VirtualisedSelect";
+
+const filterOptions = createFilterOptions({
+  matchFrom: "start",
+  stringify: (option) => option.baseurl,
+  trim: true,
+  ignoreCase: true,
+});
 
 function SelectHomeAddress({ value, setValue }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
@@ -84,42 +93,35 @@ function SelectHomeAddress({ value, setValue }) {
           if (typeof option === "string") {
             return option;
           }
-          // Add "xxx" option created dynamically
-          if (option.inputValue) {
-            return option.inputValue;
-          }
+
           // Regular option
-          return option.name;
+          return option.baseurl;
         }}
         filterOptions={(options, params) => {
+          const filtered = filterOptions(options, params);
+
           const { inputValue } = params;
 
-          const filtered = options.filter((option) => {
-            if (option.name.toLowerCase().includes(inputValue.toLowerCase())) return true;
-            if (option.baseurl.toLowerCase().includes(inputValue.toLowerCase())) return true;
-            return false;
-          });
-
           // Suggest the creation of a new value
-          const isExisting = options.some((option) => inputValue === option.title);
+          const isExisting = options.some((option) => inputValue === option.baseurl);
           if (inputValue !== "" && !isExisting) {
             filtered.push({
-              inputValue,
-              title: `Add "${inputValue}"`,
+              name: `Add "${inputValue}"`,
+              baseurl: inputValue,
             });
           }
 
           return filtered;
         }}
         renderOption={(props, option) => (
-          <AutocompleteOption {...props}>
-            {option.title?.startsWith('Add "') && (
+          <AutocompleteOption key={option.baseurl} {...props}>
+            {option.name?.startsWith('Add "') && (
               <ListItemDecorator>
                 <Add />
               </ListItemDecorator>
             )}
             {typeof option == "string" && option}
-            {option.name && (
+            {option.baseurl && (
               <>
                 {option.name} ({option.baseurl})
               </>
@@ -139,9 +141,9 @@ function ConnectInstanceButton({ homeBaseUrl, dispatch }) {
 
   const currentInstance = homeBaseUrl;
 
-  const setInstanceUrl = (url) => {
-    dispatch(setHomeInstance(url));
-  };
+  // const setInstanceUrl = (url) => {
+  //   dispatch(setHomeInstance(url));
+  // };
 
   const handleClick = (event) => {
     if (isOpen) setOpen(false);
@@ -162,8 +164,8 @@ function ConnectInstanceButton({ homeBaseUrl, dispatch }) {
           sx={{ mr: 2, p: 1 }}
           onClick={handleClick}
         >
-          {!homeBaseUrl && <CottageIcon />}
-          {homeBaseUrl && <HomeIcon />}
+          {!homeBaseUrl && <HomeIcon />}
+          {homeBaseUrl && <CottageIcon />}
         </IconButton>
       </Tooltip>
       <Menu
@@ -173,13 +175,13 @@ function ConnectInstanceButton({ homeBaseUrl, dispatch }) {
         onClose={() => setOpen(false)}
         aria-labelledby="positioned-demo-button"
         placement="bottom-end"
-        MenuListProps={{
-          sx: {
-            "& .MuiMenuItem-root": {
-              whiteSpace: "unset",
-            },
-          },
-        }}
+        // MenuListProps={{
+        //   sx: {
+        //     "& .MuiMenuItem-root": {
+        //       whiteSpace: "unset",
+        //     },
+        //   },
+        // }}
       >
         <MenuItem disabled>
           <ListItemDecorator>
@@ -197,7 +199,7 @@ function ConnectInstanceButton({ homeBaseUrl, dispatch }) {
             color: "text.secondary",
           }}
         >
-          <SelectHomeAddress value={homeBaseUrl} setValue={(value) => setInstanceUrl(value)} />
+          <VirtualisedSelect />
         </Box>
       </Menu>
     </>
