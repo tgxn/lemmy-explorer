@@ -115,7 +115,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props, ref) 
   );
 });
 
-function InstanceInput({ homeBaseUrl, dispatch }) {
+function SelectHomeInstance({ homeBaseUrl, dispatch }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
   //   const [localValue, _setLocalValue] = React.useState(homeBaseUrl);
@@ -163,9 +163,14 @@ function InstanceInput({ homeBaseUrl, dispatch }) {
           // Suggest the creation of a new value
           const isExisting = options.some((option) => inputValue === option.baseurl);
           if (inputValue !== "" && !isExisting) {
+            const cleanedUrl = inputValue
+              .replace("http:", "")
+              .replace("https:", "")
+              .replace("//", "")
+              .replace("/", "");
             filtered.push({
-              name: `Add "${inputValue}"`,
-              baseurl: inputValue,
+              name: `Add "${cleanedUrl}"`,
+              baseurl: cleanedUrl,
             });
           }
 
@@ -189,4 +194,4 @@ function InstanceInput({ homeBaseUrl, dispatch }) {
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
 });
-export default connect(mapStateToProps)(InstanceInput);
+export default connect(mapStateToProps)(SelectHomeInstance);

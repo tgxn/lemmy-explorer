@@ -18,22 +18,12 @@ import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { ContentSkeleton, ContentError } from "./Display";
+import { ContentSkeleton, ContentError, TinyNumber } from "./Display";
 import CopyLink from "./CopyLink";
 
 function CommunityCard({ community, homeBaseUrl }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
   const [bannerError, setBannerError] = React.useState(false);
-
-  function formatNumber(num) {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
-    }
-    return num;
-  }
 
   return (
     <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
@@ -121,8 +111,7 @@ function CommunityCard({ community, homeBaseUrl }) {
           sx={() => ({
             background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)",
             p: 0,
-            minHeight: "120px",
-            maxHeight: "200px",
+            height: "150px",
             overflow: "hidden",
             borderRadius: 0,
           })}
@@ -185,7 +174,7 @@ function CommunityCard({ community, homeBaseUrl }) {
                 }}
               >
                 <RecordVoiceOverIcon />
-                {formatNumber(community.counts.subscribers)}
+                <TinyNumber value={community.counts.subscribers} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -203,7 +192,7 @@ function CommunityCard({ community, homeBaseUrl }) {
                 }}
               >
                 <MessageIcon />
-                {formatNumber(community.counts.posts)}
+                <TinyNumber value={community.counts.posts} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -221,7 +210,7 @@ function CommunityCard({ community, homeBaseUrl }) {
                 }}
               >
                 <ForumIcon />
-                {formatNumber(community.counts.comments)}
+                <TinyNumber value={community.counts.comments} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -239,7 +228,7 @@ function CommunityCard({ community, homeBaseUrl }) {
                 }}
               >
                 <TrendingUpIcon />
-                {formatNumber(community.counts.users_active_week)}
+                <TinyNumber value={community.counts.users_active_week} />
               </Typography>
             </Tooltip>
           </CardContent>

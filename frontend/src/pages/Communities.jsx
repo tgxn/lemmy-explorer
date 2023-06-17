@@ -47,10 +47,6 @@ export default function Communities() {
   const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
   const [page, setPage] = useState(0);
 
-  const [useLocalURL, setUseLocalURL] = useStorage("community.useLocalURL", false);
-  const [localURL, setLocalURL] = useStorage("community.localURL", "");
-  const debouncedLocalUrl = useDebounce(localURL, 500);
-
   const [totalFiltered, setTotalFiltered] = useState(0);
   const [processingData, setProcessingData] = React.useState(true);
 
@@ -194,34 +190,7 @@ export default function Communities() {
             checked={hideNoBanner}
             onChange={(event) => setHideNoBanner(event.target.checked)}
           />
-
-          <Checkbox
-            label="Enable Local URLs"
-            checked={useLocalURL}
-            onChange={(event) => setUseLocalURL(event.target.checked)}
-          />
         </Box>
-
-        {useLocalURL && (
-          <Input
-            startDecorator={<HomeIcon />}
-            placeholder="Your Instance URL e.g 'lemmy.tgxn.net'"
-            value={localURL}
-            sx={{
-              width: { xs: "100%", sm: 300 },
-              flexShrink: 0,
-            }}
-            onChange={(event) =>
-              setLocalURL(
-                event.target.value
-                  .replace("http:", "")
-                  .replace("https:", "")
-                  .replace("//", "")
-                  .replace("/", ""),
-              )
-            }
-          />
-        )}
 
         <Box
           sx={{
@@ -244,9 +213,7 @@ export default function Communities() {
         {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && !processingData && (
-          <CommunityGrid items={communitiesData} localURL={debouncedLocalUrl} />
-        )}
+        {isSuccess && !processingData && <CommunityGrid items={communitiesData} />}
       </Box>
     </Container>
   );

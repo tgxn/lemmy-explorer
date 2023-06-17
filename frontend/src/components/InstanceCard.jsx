@@ -24,7 +24,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import HomeIcon from "@mui/icons-material/Home";
 
-import { ContentSkeleton, ContentError } from "./Display";
+import { ContentSkeleton, ContentError, TinyNumber } from "./Display";
 import CopyLink from "./CopyLink";
 
 import { setHomeInstance } from "../reducers/configReducer";
@@ -35,15 +35,6 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
   const [bannerError, setBannerError] = React.useState(false);
 
-  function formatNumber(num) {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
-    }
-    return num;
-  }
   return (
     <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
       <Card
@@ -135,8 +126,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
         <CardOverflow
           sx={{
             p: 0,
-            minHeight: "120px",
-            maxHeight: "200px",
+            height: "150px",
             overflow: "hidden",
             borderRadius: 0,
           }}
@@ -161,7 +151,15 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
         </CardOverflow>
 
         <CardContent orientation="horizontal">
-          <Typography level="body3">{instance.desc}</Typography>
+          <Typography
+            level="body3"
+            sx={{
+              maxHeight: "90px",
+              overflow: "hidden",
+            }}
+          >
+            {instance.desc}
+          </Typography>
         </CardContent>
 
         <CardOverflow
@@ -191,7 +189,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
                 }}
               >
                 <PersonIcon />
-                {formatNumber(instance.usage.users.total)}
+                <TinyNumber value={instance.usage.users.total} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -209,7 +207,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
                 }}
               >
                 <MessageIcon />
-                {formatNumber(instance.usage.localPosts)}
+                <TinyNumber value={instance.usage.localPosts} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -227,7 +225,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
                 }}
               >
                 <ForumIcon />
-                {formatNumber(instance.usage.localComments)}
+                <TinyNumber value={instance.usage.localComments} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
