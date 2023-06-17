@@ -15,23 +15,24 @@ import Checkbox from "@mui/joy/Checkbox";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
-import HomeIcon from "@mui/icons-material/Home";
 
 import CommunityCard from "../components/CommunityCard";
 import Pagination from "../components/Pagination";
 import { PageLoading, PageError } from "../components/Display";
 
-const CommunityGrid = React.memo(function (props) {
-  const { items, localURL } = props;
+import CommunityGrid from "../components/CommunityGrid";
 
-  return (
-    <Grid container spacing={2}>
-      {items.map((community, index) => (
-        <CommunityCard key={index} community={community} localURL={localURL} />
-      ))}
-    </Grid>
-  );
-});
+// const CommunityGrid = React.memo(function (props) {
+//   const { items } = props;
+
+//   return (
+//     <Grid container spacing={2}>
+//       {items.map((community, index) => (
+//         <CommunityCard key={index} community={community} />
+//       ))}
+//     </Grid>
+//   );
+// });
 
 export default function Communities() {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
@@ -113,7 +114,7 @@ export default function Communities() {
 
     // pagination
     setTotalFiltered(communties.length);
-    communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
+    // communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
 
     console.log(
       `updating communities data with ${communties.length} communities, removed: ${
@@ -200,12 +201,12 @@ export default function Communities() {
             alignItems: "center",
           }}
         >
-          <Pagination
+          {/* <Pagination
             page={page}
             count={totalFiltered}
             setPage={(value) => setPage(value)}
             limit={pageLimit}
-          />
+          /> */}
         </Box>
       </Box>
 

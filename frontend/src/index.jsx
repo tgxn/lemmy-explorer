@@ -52,12 +52,16 @@ export default function App() {
               left: 0,
               right: 0,
               display: "block",
-              overflow: "hidden",
             }}
           >
             <BrowserRouter>
               <Header />
-              <Box sx={{ overflow: "auto", height: "calc(100% - 80px)" }}>
+              <Box
+                sx={{
+                  // overflow: "auto",
+                  height: "calc(100% - 80px)",
+                }}
+              >
                 <Routes>
                   {/* <Route
                   index
