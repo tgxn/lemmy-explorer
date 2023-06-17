@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 
 import Avatar from "@mui/joy/Avatar";
 import Link from "@mui/joy/Link";
@@ -17,47 +18,47 @@ import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { ContentSkeleton, ContentError } from "./Display";
+import { ContentSkeleton, ContentError, TinyNumber } from "./Display";
 import CopyLink from "./CopyLink";
 
-function CommunityCard({ community, localURL = "" }) {
+function CommunityCard({ community, homeBaseUrl }) {
   const [loadedBanner, setLoadedBanner] = React.useState(false);
   const [bannerError, setBannerError] = React.useState(false);
 
-  // const [loadedIcon, setLoadedIcon] = React.useState(false);
-  // const [iconError, setIconError] = React.useState(false);
-
-  function formatNumber(num) {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
-    }
-    return num;
-  }
-
   return (
     <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
-      <Card variant="outlined">
-        <CardContent
-          orientation="horizontal"
-          sx={{
-            overflow: "hidden",
-          }}
-        >
-          <Avatar
-            alt={community.title}
-            src={community.icon}
-            sx={{
-              display: "flex",
-              flex: "0 0 auto",
-              // marginRight: 0,
-            }}
-          />
+      <Card
+        variant="outlined"
+        sx={{
+          pt: 1,
+          "& .MuiIconButton-root": {
+            mt: 1,
+          },
+        }}
+      >
+        <CardContent orientation="horizontal" sx={{ columnGap: 0, justifyContent: "space-between" }}>
           <Box
             sx={{
-              flexShrink: 1,
+              flexShrink: 0,
+              pt: 1.5,
+              px: 0.25,
+              pr: 1,
+            }}
+          >
+            <Avatar
+              alt={community.title}
+              src={community.icon}
+              sx={{
+                display: "flex",
+              }}
+            />
+          </Box>
+
+          <Box
+            sx={{
+              p: 0.5,
+              flexGrow: 1,
+              overflow: "hidden",
             }}
           >
             <Typography
@@ -71,7 +72,7 @@ function CommunityCard({ community, localURL = "" }) {
               }}
             >
               <Tooltip
-                title={"Visit: " + community.title + (localURL ? " inside " + localURL : "")}
+                title={"Visit: " + community.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
                 variant="soft"
                 placement="top-start"
               >
@@ -81,8 +82,8 @@ function CommunityCard({ community, localURL = "" }) {
                   alt={community.title}
                   color="neutral"
                   href={
-                    localURL
-                      ? `https://${localURL}/c/${community.name}@${
+                    homeBaseUrl
+                      ? `https://${homeBaseUrl}/c/${community.name}@${
                           community.url && community.url.split("/")[2]
                         }`
                       : community.url
@@ -107,13 +108,13 @@ function CommunityCard({ community, localURL = "" }) {
         </CardContent>
 
         <CardOverflow
-          sx={{
+          sx={() => ({
+            background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)",
             p: 0,
-            minHeight: "120px",
-            maxHeight: "200px",
+            height: "150px",
             overflow: "hidden",
             borderRadius: 0,
-          }}
+          })}
         >
           {!community.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
           {community.banner && bannerError && <ContentError />}
@@ -173,7 +174,7 @@ function CommunityCard({ community, localURL = "" }) {
                 }}
               >
                 <RecordVoiceOverIcon />
-                {formatNumber(community.counts.subscribers)}
+                <TinyNumber value={community.counts.subscribers} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -191,7 +192,7 @@ function CommunityCard({ community, localURL = "" }) {
                 }}
               >
                 <MessageIcon />
-                {formatNumber(community.counts.posts)}
+                <TinyNumber value={community.counts.posts} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -209,7 +210,7 @@ function CommunityCard({ community, localURL = "" }) {
                 }}
               >
                 <ForumIcon />
-                {formatNumber(community.counts.comments)}
+                <TinyNumber value={community.counts.comments} />
               </Typography>
             </Tooltip>
             <Divider orientation="vertical" />
@@ -227,7 +228,7 @@ function CommunityCard({ community, localURL = "" }) {
                 }}
               >
                 <TrendingUpIcon />
-                {formatNumber(community.counts.users_active_week)}
+                <TinyNumber value={community.counts.users_active_week} />
               </Typography>
             </Tooltip>
           </CardContent>
@@ -237,4 +238,7 @@ function CommunityCard({ community, localURL = "" }) {
   );
 }
 
-export default CommunityCard;
+const mapStateToProps = (state) => ({
+  homeBaseUrl: state.configReducer.homeBaseUrl,
+});
+export default connect(mapStateToProps)(CommunityCard);

@@ -34,6 +34,11 @@ class Storage {
 
     return this.writeConfig();
   }
+  remove(configKey) {
+    delete this.store[configKey];
+
+    return this.writeConfig();
+  }
 }
 
 const storage = new Storage();

@@ -18,8 +18,7 @@ export function ContentSkeleton({ radius = "4px" }) {
         alignItems: "center",
         justifyContent: "center",
 
-        minHeight: "120px",
-        maxHeight: "200px",
+        height: "150px",
         textAlign: "center",
       })}
     >
@@ -50,8 +49,8 @@ export function ContentError({ message = false, bgcolor = "#ff55551c" }) {
         // color: "white",
 
         // flexGrow: 1,
-        minHeight: "120px",
-        maxHeight: "200px",
+
+        height: "150px",
         textAlign: "center",
       })}
     >
@@ -115,4 +114,18 @@ export function PageError() {
 
 export function SimpleNumberFormat({ value }) {
   return <NumericFormat displayType="text" value={value} allowLeadingZeros thousandSeparator="," />;
+}
+
+export function TinyNumber({ value }) {
+  const number = React.useMemo(() => {
+    if (value >= 1000000) {
+      return (value / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
+    }
+    if (value >= 1000) {
+      return (value / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return value;
+  }, [value]);
+
+  return <React.Fragment>{number}</React.Fragment>;
 }
