@@ -42,14 +42,6 @@ export default class InstanceQueue {
       logging.error(`Job ${job.id} failed with error ${err.message}`, job, err);
     });
 
-    // this.axios = axios.create({
-    //   timeout: AXIOS_REQUEST_TIMEOUT,
-    //   headers: {
-    //     "User-Agent": CRAWLER_USER_AGENT,
-    //     "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
-    //   },
-    // });
-
     this.crawlCommunity = new CommunityQueue();
 
     // if this is a worker thread, start the processing loop
