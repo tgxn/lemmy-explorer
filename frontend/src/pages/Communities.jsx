@@ -20,6 +20,8 @@ import { PageLoading, PageError } from "../components/Display";
 
 import { CommunityGrid } from "../components/GridView";
 
+import TriStateCheckbox from "../components/TriStateCheckbox";
+
 function Communities({ homeBaseUrl }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
     "communitiesData",
@@ -28,6 +30,9 @@ function Communities({ homeBaseUrl }) {
 
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
+
+  // new
+  const [hideNSFW, setHideNSFW] = useStorage("community.hideNSFW", true);
 
   const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
 
@@ -46,11 +51,25 @@ function Communities({ homeBaseUrl }) {
 
     let communties = [...data];
 
-    // hide nsfw
-    if (!showNsfw) {
+    // Variable "ShowNSFW" is used to drive this
+    //  Default:    Hide NSFW     false
+    if (hideNSFW == false) {
       console.log(`Hiding NSFW communities`);
       communties = communties.filter((community) => {
         return !community.nsfw;
+      });
+    }
+
+    //  One Click:  Include NSFW  null
+    else if (hideNSFW == null) {
+      console.log(`Including NSFW communities`);
+    }
+
+    //  Two Clicks: NSFW Only     true
+    else if (hideNSFW == true) {
+      console.log(`Showing NSFW communities`);
+      communties = communties.filter((community) => {
+        return community.nsfw;
       });
     }
 
@@ -100,7 +119,7 @@ function Communities({ homeBaseUrl }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner]);
+  }, [data, hideNSFW, orderBy, debounceFilterText, hideNoBanner]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -154,11 +173,7 @@ function Communities({ homeBaseUrl }) {
         </Select>
 
         <Box sx={{ display: "flex", gap: 3 }}>
-          <Checkbox
-            label="Show NSFW"
-            checked={showNsfw}
-            onChange={(event) => setShowNsfw(event.target.checked)}
-          />
+          <TriStateCheckbox checked={hideNSFW} onChange={(checked) => setHideNSFW(checked)} />
 
           <Checkbox
             label="Hide No Banner"
