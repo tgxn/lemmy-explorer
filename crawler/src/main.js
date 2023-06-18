@@ -97,6 +97,27 @@ export async function start(args) {
         return;
       }
     }
+
+    // scan one instance
+    else if (args.length === 2 && args[0] == "-i") {
+      logging.info(`Running Instance Crawl for ${args[1]}`);
+      const instanceCrawl = new InstanceQueue(true, "instance_manual");
+      await instanceCrawl.createJob(args[1], (resultData) => {
+        logging.info("Instance Crawl Complete");
+        process.exit(0);
+      });
+    }
+
+    // scan one community
+    else if (args.length === 2 && args[0] == "-c") {
+      logging.info(`Running Community Crawl for ${args[1]}`);
+      const communityCrawl = new CommunityQueue(true, "community_manual");
+      await communityCrawl.createJob(args[1], (resultData) => {
+        logging.info("Community Crawl Complete");
+
+        process.exit(0);
+      });
+    }
   } else {
     logging.info("no args, starting all crawler workers");
     new InstanceQueue(true);

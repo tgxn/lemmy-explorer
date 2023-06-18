@@ -30,8 +30,8 @@ import { CrawlError, CrawlWarning } from "../lib/error.js";
 import InstanceCrawler from "../crawl/instance.js";
 
 export default class InstanceQueue {
-  constructor(isWorker = false) {
-    this.queue = new Queue("instance", {
+  constructor(isWorker = false, queueName = "instance") {
+    this.queue = new Queue(queueName, {
       removeOnSuccess: true,
       removeOnFailure: true,
       isWorker,
@@ -48,7 +48,7 @@ export default class InstanceQueue {
     if (isWorker) this.process();
   }
 
-  async createJob(instanceBaseUrl) {
+  async createJob(instanceBaseUrl, onSuccess = null) {
     // console.log("createJob", instanceBaseUrl);
     // replace http/s with nothign
     let trimmedUrl = instanceBaseUrl.replace(/^https?:\/\//, "").trim();
@@ -67,9 +67,10 @@ export default class InstanceQueue {
       .retries(CRAWL_RETRY.INSTANCE)
       .setId(trimmedUrl) // deduplicate
       .save();
-    // job.on("succeeded", (result) => {
-    //   logging.info(`Completed instanceQueue ${job.id}`, instanceBaseUrl);
-    // });
+    job.on("succeeded", (result) => {
+      // logging.info(`Completed instanceQueue ${job.id}`, instanceBaseUrl);
+      onSuccess && onSuccess(result);
+    });
   }
 
   // start a job for each instances in the federation lists
