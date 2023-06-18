@@ -1,24 +1,7 @@
 import React, { useState, useEffect, forwardRef } from "react";
-import { connect } from "react-redux";
-
-import useStorage from "../hooks/useStorage";
-import useQueryCache from "../hooks/useQueryCache";
-import { useDebounce } from "@uidotdev/usehooks";
 
 import Tooltip from "@mui/joy/Tooltip";
-import Select, { selectClasses } from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
-import Input from "@mui/joy/Input";
-import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-
-import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
-import SortIcon from "@mui/icons-material/Sort";
-import SearchIcon from "@mui/icons-material/Search";
-
-import { PageLoading, PageError } from "../components/Display";
-
-import { CommunityGrid } from "../components/GridView";
 
 const TriStateCheckbox = ({ checked, onChange, onBlur }, ref) => {
   const [localChecked, setLocalChecked] = useState(checked ?? null);
@@ -52,22 +35,15 @@ const TriStateCheckbox = ({ checked, onChange, onBlur }, ref) => {
     label = "NSFW Included";
   }
 
-  const handleBlur = () => {
-    if (onBlur) {
-      onBlur(localChecked);
-    }
-  };
   return (
     <Tooltip title={label} placement="top">
       <Checkbox
         inputRef={ref}
         label={"Show NSFW"}
-        color={localChecked == null ? "info" : localChecked == true ? "danger" : "neutral"}
+        color={localChecked == null ? "warning" : localChecked == true ? "danger" : "neutral"}
         checked={!!localChecked}
         indeterminate={localChecked === null}
-        // onFocus={onFocus}
         onChange={handleChange}
-        onBlur={handleBlur}
       />
     </Tooltip>
   );

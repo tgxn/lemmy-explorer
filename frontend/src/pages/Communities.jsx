@@ -29,10 +29,7 @@ function Communities({ homeBaseUrl }) {
   );
 
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
-  const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
-
-  // new
-  const [hideNSFW, setHideNSFW] = useStorage("community.hideNSFW", true);
+  const [showNSFW, setShowNSFW] = useStorage("community.showNSFW", false);
 
   const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
 
@@ -53,7 +50,7 @@ function Communities({ homeBaseUrl }) {
 
     // Variable "ShowNSFW" is used to drive this
     //  Default:    Hide NSFW     false
-    if (hideNSFW == false) {
+    if (showNSFW == false) {
       console.log(`Hiding NSFW communities`);
       communties = communties.filter((community) => {
         return !community.nsfw;
@@ -61,12 +58,12 @@ function Communities({ homeBaseUrl }) {
     }
 
     //  One Click:  Include NSFW  null
-    else if (hideNSFW == null) {
+    else if (showNSFW == null) {
       console.log(`Including NSFW communities`);
     }
 
     //  Two Clicks: NSFW Only     true
-    else if (hideNSFW == true) {
+    else if (showNSFW == true) {
       console.log(`Showing NSFW communities`);
       communties = communties.filter((community) => {
         return community.nsfw;
@@ -119,7 +116,7 @@ function Communities({ homeBaseUrl }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, hideNSFW, orderBy, debounceFilterText, hideNoBanner]);
+  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -173,7 +170,7 @@ function Communities({ homeBaseUrl }) {
         </Select>
 
         <Box sx={{ display: "flex", gap: 3 }}>
-          <TriStateCheckbox checked={hideNSFW} onChange={(checked) => setHideNSFW(checked)} />
+          <TriStateCheckbox checked={showNSFW} onChange={(checked) => setShowNSFW(checked)} />
 
           <Checkbox
             label="Hide No Banner"
