@@ -16,14 +16,6 @@ import Checkbox from "@mui/joy/Checkbox";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
-import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
-import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
-import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
-
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab from "@mui/joy/Tab";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
@@ -49,6 +41,8 @@ function Communities({ homeBaseUrl }) {
     "/communities.json",
   );
 
+  const [viewType, setViewType] = useStorage("community.viewType", "grid");
+
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNSFW, setShowNSFW] = useStorage("community.showNSFW", false);
 
@@ -64,7 +58,6 @@ function Communities({ homeBaseUrl }) {
     if (!data) return [];
 
     console.time("sort+filter communities");
-
     console.log(`Loaded ${data.length} communities`);
 
     let communties = [...data];
@@ -256,15 +249,17 @@ function Communities({ homeBaseUrl }) {
           </Tabs> */}
           <ButtonGroup>
             <IconButton
-              variant={"outlined"}
+              variant={viewType == "grid" ? "soft" : "outlined"}
+              onClick={() => setViewType("grid")}
               sx={{
                 p: 1,
               }}
             >
-              <GridViewIcon /> Grid View
+              <ViewModuleIcon /> Grid View
             </IconButton>
             <IconButton
-              variant={"outlined"}
+              variant={viewType == "list" ? "soft" : "outlined"}
+              onClick={() => setViewType("list")}
               sx={{
                 p: 1,
               }}
