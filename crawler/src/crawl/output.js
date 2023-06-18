@@ -43,7 +43,7 @@ export default class CrawlOutput {
 
     // start crawler jobs for all of the instances this one is federated with
     instances.forEach((instance) => {
-      if (!instance.siteData.federated) {
+      if (!instance.siteData?.federated) {
         // logging.debug("no federated data", instance.siteData.site.actor_id);
         return;
       }
@@ -116,6 +116,10 @@ export default class CrawlOutput {
       this.getFederationLists(instances);
 
     let storeData = instances.map((instance) => {
+      if (!instance.siteData?.site?.actor_id) {
+        logging.error("no actor_id", instance);
+        return null;
+      }
       let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
 
       const siteUptime = getBaseUrlUptime(siteBaseUrl);
@@ -176,6 +180,8 @@ export default class CrawlOutput {
 
     // remove those with errors that happened before time
     storeData = storeData.filter((instance) => {
+      if (instance == null) return false; //take out skipped
+
       const fail = findFail(instance.baseurl);
       if (fail) {
         if (instance.time < fail.time) {

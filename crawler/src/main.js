@@ -9,6 +9,8 @@ import CrawlOutput from "./crawl/output.js";
 import CrawlAged from "./crawl/aged.js";
 import CrawlUptime from "./crawl/uptime.js";
 
+import storage from "./storage.js";
+
 import {
   START_URLS,
   AGED_CRON_EXPRESSION,
@@ -16,6 +18,8 @@ import {
 } from "./lib/const.js";
 
 export async function start(args) {
+  await storage.connect();
+
   if (args.length > 0) {
     // single-argument commands
     if (args.length === 1) {

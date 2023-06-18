@@ -2,7 +2,7 @@ import logging from "../lib/logging.js";
 
 import axios from "axios";
 
-import { putInstanceData, storeFediverseInstance } from "../lib/storage.js";
+import storage from "../storage.js";
 
 import {
   CRAWLER_USER_AGENT,
@@ -31,7 +31,7 @@ export default class InstanceCrawler {
 
     if (instanceData) {
       // store/update the instance
-      await putInstanceData(this.crawlDomain, {
+      await storage.putRedis(`instance:${this.crawlDomain}`, {
         ...instanceData,
         lastCrawled: Date.now(),
       });
@@ -78,7 +78,8 @@ export default class InstanceCrawler {
     const software = nodeinfo2.data.software;
 
     // store all fediverse instance software for easy metrics
-    await storeFediverseInstance(this.crawlDomain, software);
+    const dd = { time: Date.now(), ...software };
+    return storage.putRedis(`fediverse:${this.crawlDomain}`, dd);
 
     if (software.name != "lemmy" && software.name != "lemmybb") {
       throw new CrawlWarning(`not a lemmy instance (${software.name})`);

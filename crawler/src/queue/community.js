@@ -3,16 +3,10 @@ import logging from "../lib/logging.js";
 import Queue from "bee-queue";
 import { AxiosError } from "axios";
 
-import {
-  getInstanceData,
-  putCommunityData,
-  getError,
-  storeError,
-} from "../lib/storage.js";
-
-import { CRAWL_TIMEOUT, CRAWL_RETRY, MIN_RECRAWL_MS } from "../lib/const.js";
+import storage from "../storage.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
+import { CRAWL_TIMEOUT, CRAWL_RETRY, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import CommunityCrawler from "../crawl/community.js";
 
@@ -39,7 +33,7 @@ export default class CommunityQueue {
   // returns a amount os ms since we last crawled it, false if all good
   async getLastCrawlMsAgo(instanceBaseUrl) {
     // rely on the last crawled time in the instance table.
-    const existingInstance = await getInstanceData(instanceBaseUrl);
+    const existingInstance = await storage.instance.getOne(instanceBaseUrl);
     if (existingInstance?.lastCrawled) {
       // logging.info("lastCrawled", existingInstance.lastCrawled);
 
@@ -50,7 +44,9 @@ export default class CommunityQueue {
     }
 
     // check for recent error
-    const lastError = await getError("community", instanceBaseUrl);
+    const lastError = await storage.getRedis(
+      `error:community:${instanceBaseUrl}`
+    );
     if (lastError?.time) {
       // logging.info("lastError", lastError.time);
 
@@ -105,7 +101,10 @@ export default class CommunityQueue {
         };
 
         if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storeError("community", job.data.baseUrl, errorDetail);
+          await storage.putRedis(
+            `error:community:${job.data.baseUrl}`,
+            errorDetail
+          );
 
           logging.error(
             `[Community] [${job.data.baseUrl}] Error: ${error.message}`

@@ -3,20 +3,13 @@ import logging from "../lib/logging.js";
 import Queue from "bee-queue";
 import { AxiosError } from "axios";
 
+import storage from "../storage.js";
 import { isValidLemmyDomain } from "../lib/validator.js";
-import {
-  storeError,
-  getError,
-  getInstanceData,
-  getFediverseData,
-} from "../lib/storage.js";
-
-import CommunityQueue from "./community.js";
-
-import { CRAWL_TIMEOUT, CRAWL_RETRY, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
+import { CRAWL_TIMEOUT, CRAWL_RETRY, MIN_RECRAWL_MS } from "../lib/const.js";
 
+import CommunityQueue from "./community.js";
 import InstanceCrawler from "../crawl/instance.js";
 
 export default class InstanceQueue {
@@ -87,7 +80,7 @@ export default class InstanceQueue {
 
   // returns a amount os ms since we last crawled it, false if all good
   async getLastCrawlMsAgo(instanceBaseUrl) {
-    const existingInstance = await getInstanceData(instanceBaseUrl);
+    const existingInstance = await storage.instance.getOne(instanceBaseUrl);
 
     if (existingInstance?.lastCrawled) {
       // logging.info("lastCrawled", existingInstance.lastCrawled);
@@ -99,7 +92,7 @@ export default class InstanceQueue {
     }
 
     // check for recent error
-    const lastError = await getError("instance", instanceBaseUrl);
+    const lastError = await storage.failure.getOne(instanceBaseUrl);
     if (lastError?.time) {
       // logging.info("lastError", lastError.time);
 
@@ -136,7 +129,10 @@ export default class InstanceQueue {
         logging.debug(`[Instance] [${job.data.baseUrl}] Starting Crawl`);
 
         // check if it's known to not be running lemmy
-        const knownFediverseServer = await getFediverseData(instanceBaseUrl);
+        const knownFediverseServer = await storage.fediverse.getOne(
+          instanceBaseUrl
+        );
+
         if (knownFediverseServer) {
           if (
             knownFediverseServer.name !== "lemmy" &&
@@ -187,7 +183,10 @@ export default class InstanceQueue {
         };
 
         if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storeError("instance", job.data.baseUrl, errorDetail);
+          await storage.putRedis(
+            `error:instance:${job.data.baseUrl}`,
+            errorDetail
+          );
 
           logging.error(
             `[Instance] [${job.data.baseUrl}] Error: ${error.message}`

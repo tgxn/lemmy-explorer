@@ -2,11 +2,9 @@ import logging from "../lib/logging.js";
 
 import axios from "axios";
 
-import { putCommunityData } from "../lib/storage.js";
-
 import { CrawlError, CrawlWarning } from "../lib/error.js";
 
-// import storage from "../storage/storage.js";
+import storage from "../storage.js";
 
 import {
   AXIOS_REQUEST_TIMEOUT,
@@ -53,10 +51,13 @@ export default class CommunityCrawler {
           continue;
         }
 
-        await putCommunityData(this.crawlDomain, {
-          ...community,
-          lastCrawled: Date.now(),
-        });
+        await storage.putRedis(
+          `community:${baseUrl}:${data.community.name.toLowerCase()}`,
+          {
+            ...community,
+            lastCrawled: Date.now(),
+          }
+        );
         communities++;
       }
     }
