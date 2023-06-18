@@ -71,10 +71,10 @@ const OuterElementType = React.forwardRef((props, ref) => {
       component="div"
       ref={ref}
       sx={{
-        zIndex: 1300,
+        // zIndex: 1300,
         "& ul": {
           padding: 0,
-          zIndex: 1300,
+          // zIndex: 1300,
           margin: 0,
           flexShrink: 0,
         },

@@ -33,6 +33,8 @@ import { PageLoading, PageError, SimpleNumberFormat } from "../components/Displa
 
 import { CommunityGrid } from "../components/GridView";
 
+import { CommunityList } from "../components/ListView";
+
 import TriStateCheckbox from "../components/TriStateCheckbox";
 
 function Communities({ homeBaseUrl }) {
@@ -273,7 +275,12 @@ function Communities({ homeBaseUrl }) {
       <Box sx={{ my: 4 }}>
         {isLoading && !isError && <PageLoading />}
         {isError && <PageError error={error} />}
-        {isSuccess && <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />}
+        {isSuccess && viewType == "grid" && (
+          <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />
+        )}
+        {isSuccess && viewType == "list" && (
+          <CommunityList items={communitiesData} homeBaseUrl={homeBaseUrl} />
+        )}
       </Box>
     </Container>
   );
