@@ -56,7 +56,8 @@ export default class InstanceQueue {
     if (isWorker) this.process();
   }
 
-  createJob(instanceBaseUrl) {
+  async createJob(instanceBaseUrl) {
+    // console.log("createJob", instanceBaseUrl);
     // replace http/s with nothign
     let trimmedUrl = instanceBaseUrl.replace(/^https?:\/\//, "").trim();
 
@@ -66,8 +67,10 @@ export default class InstanceQueue {
       return;
     }
 
+    logging.silly("InstanceQueue createJob", trimmedUrl);
+
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
-    job
+    await job
       .timeout(CRAWL_TIMEOUT.INSTANCE)
       .retries(CRAWL_RETRY.INSTANCE)
       .setId(trimmedUrl) // deduplicate
@@ -78,7 +81,7 @@ export default class InstanceQueue {
   }
 
   // start a job for each instances in the federation lists
-  crawlFederatedInstanceJobs(federatedData) {
+  async crawlFederatedInstanceJobs(federatedData) {
     const linked = federatedData.linked || [];
     const allowed = federatedData.allowed || [];
     const blocked = federatedData.blocked || [];
@@ -88,7 +91,7 @@ export default class InstanceQueue {
 
     for (var instance of instancesDeDup) {
       if (isValidLemmyDomain(instance)) {
-        this.createJob(instance);
+        await this.createJob(instance);
       }
     }
 
@@ -171,17 +174,17 @@ export default class InstanceQueue {
 
         // start crawl jobs for federated instances
         if (instanceData.siteData?.federated?.linked.length > 0) {
-          const countFederated = this.crawlFederatedInstanceJobs(
+          const countFederated = await this.crawlFederatedInstanceJobs(
             instanceData.siteData.federated
           );
 
           logging.info(
-            `[Instance] [${job.data.baseUrl}] Creating ${countFederated.length} federated instance jobs`
+            `[Instance] [${job.data.baseUrl}] Created ${countFederated.length} federated instance jobs`
           );
         }
 
         // create job to scan the instance for communities once a crawl succeeds
-        this.crawlCommunity.createJob(instanceBaseUrl);
+        await this.crawlCommunity.createJob(instanceBaseUrl);
 
         return instanceData;
       } catch (error) {

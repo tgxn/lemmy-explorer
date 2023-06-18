@@ -1,4 +1,5 @@
 import path from "path";
+import util from "util";
 
 import * as winston from "winston";
 import "winston-daily-rotate-file";
@@ -7,7 +8,39 @@ import { LOG_PATH } from "../lib/const.js";
 
 const logPath = path.resolve(process.cwd(), LOG_PATH);
 
-const { combine, timestamp, colorize, simple, cli, json } = winston.format;
+const {
+  combine,
+  timestamp,
+  colorize,
+  simple,
+  cli,
+  printf,
+  json,
+  splat,
+  errors,
+} = winston.format;
+
+winston.addColors({ json: "grey" });
+
+const myFormatter = winston.format((info) => {
+  const { message } = info;
+
+  const colorizer = winston.format.colorize();
+
+  let splatData = info[Symbol.for("splat")];
+  if (splatData) {
+    let extraString = JSON.stringify(splatData);
+
+    info.message = `${message} ${colorizer.colorize("json", extraString)}`;
+
+    delete info[Symbol.for("splat")]; // We added `data` to the message so we can delete it
+  }
+
+  return {
+    level: info.level,
+    message: info.message,
+  };
+})();
 
 const winstonLogger = winston.createLogger({
   transports: [
@@ -17,31 +50,18 @@ const winstonLogger = winston.createLogger({
       datePattern: "YYYY-MM-DD-HH",
       maxSize: "20m",
       maxFiles: 10,
-      format: combine(timestamp(), simple()),
+      format: combine(timestamp(), simple(), errors({ stack: true })),
     }),
     new winston.transports.Console({
       level: "debug",
-      format: combine(colorize(), cli(), simple()),
+      format: combine(colorize(), myFormatter, simple()),
     }),
   ],
 });
 
-const wrapper = (original) => {
-  return (message, ...args) => {
-    const meta = args[0] ? args[0] : null;
-    return original(message, meta);
-  };
-};
-
-winstonLogger.error = wrapper(winstonLogger.error);
-winstonLogger.warn = wrapper(winstonLogger.warn);
-winstonLogger.info = wrapper(winstonLogger.info);
-winstonLogger.verbose = wrapper(winstonLogger.verbose);
-winstonLogger.debug = wrapper(winstonLogger.debug);
-winstonLogger.silly = wrapper(winstonLogger.silly);
-
-// add wrapper protoype to console.log to winstonLogger
-console.log = wrapper(winstonLogger.info);
-console.info = wrapper(winstonLogger.info);
+console.log = winstonLogger.info;
+console.info = winstonLogger.info;
+console.error = winstonLogger.error;
+console.debug = winstonLogger.debug;
 
 export default winstonLogger;

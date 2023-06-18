@@ -38,9 +38,9 @@ export async function start(args) {
           logging.warn("--init passed, creating seed jobs");
           const crawler = new InstanceQueue();
           for (var baseUrl of START_URLS) {
-            crawler.createJob(baseUrl);
+            await crawler.createJob(baseUrl);
           }
-          // crawler.createJob("lemmy.tgxn.net");
+          // await crawler.createJob("lemmy.tgxn.net");
           return process.exit(0);
 
         // get redis bb queue health from redis

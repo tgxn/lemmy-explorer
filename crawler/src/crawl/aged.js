@@ -1,6 +1,7 @@
 import logging from "../lib/logging.js";
 
 import InstanceQueue from "../queue/instance.js";
+import CommunityQueue from "../queue/community.js";
 
 import {
   listInstanceData,
@@ -84,9 +85,13 @@ export default class CrawlAged {
   async createJobs() {
     await this.getAged();
 
-    const crawler = new InstanceQueue(false);
+    const instanceCrawler = new InstanceQueue(false);
+    const communityCrawler = new CommunityQueue(false);
     for (const baseUrl of this.agedInstanceBaseUrls) {
-      crawler.createJob(baseUrl);
+      await instanceCrawler.createJob(baseUrl);
+      await communityCrawler.createJob(baseUrl);
     }
+
+    logging.info("Done Creating Aged Jobs");
   }
 }
