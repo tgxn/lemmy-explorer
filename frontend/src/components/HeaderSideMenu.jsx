@@ -20,7 +20,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import HistoryIcon from "@mui/icons-material/History";
 import PestControlIcon from "@mui/icons-material/PestControl";
 
-import ConnectInstanceButton from "./ConnectInstanceButton";
+import HomeInstanceButton from "./HomeInstanceButton";
 
 function ColorSchemeToggle({ onClick, variant, ...props }) {
   const { mode, setMode } = useColorScheme();
@@ -108,10 +108,8 @@ export default function HeaderSideMenu() {
 
   return (
     <>
-      <Box
-      //  sx={showWhenSmall}
-      >
-        <ConnectInstanceButton />
+      <Box>
+        <HomeInstanceButton />
       </Box>
       <Box sx={hideWhenSmall}>
         <ColorSchemeToggle />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
 
 import useStorage from "../hooks/useStorage";
 import useQueryCache from "../hooks/useQueryCache";
@@ -8,32 +9,18 @@ import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
-import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
-import HomeIcon from "@mui/icons-material/Home";
 
-import CommunityCard from "../components/CommunityCard";
-import Pagination from "../components/Pagination";
 import { PageLoading, PageError } from "../components/Display";
 
-const CommunityGrid = React.memo(function (props) {
-  const { items, localURL } = props;
+import { CommunityGrid } from "../components/GridView";
 
-  return (
-    <Grid container spacing={2}>
-      {items.map((community, index) => (
-        <CommunityCard key={index} community={community} localURL={localURL} />
-      ))}
-    </Grid>
-  );
-});
-
-export default function Communities() {
+function Communities({ homeBaseUrl }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
     "communitiesData",
     "/communities.json",
@@ -44,12 +31,6 @@ export default function Communities() {
 
   const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
 
-  const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
-  const [page, setPage] = useState(0);
-
-  const [totalFiltered, setTotalFiltered] = useState(0);
-  const [processingData, setProcessingData] = React.useState(true);
-
   // debounce the filter text input
   const [filterText, setFilterText] = useStorage("community.filterText", "");
   const debounceFilterText = useDebounce(filterText, 500);
@@ -59,13 +40,11 @@ export default function Communities() {
     if (isError) return [];
     if (!data) return [];
 
-    console.time("sort+filter");
-
-    setProcessingData(true);
+    console.time("sort+filter communities");
 
     console.log(`Loaded ${data.length} communities`);
 
-    let communties = data;
+    let communties = [...data];
 
     // hide nsfw
     if (!showNsfw) {
@@ -111,21 +90,17 @@ export default function Communities() {
     }
     console.log(`Sorted ${communties.length} communities`);
 
-    // pagination
-    setTotalFiltered(communties.length);
-    communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
-
     console.log(
       `updating communities data with ${communties.length} communities, removed: ${
         data.length - communties.length
       }`,
     );
-    // setCommunitiesData(communties);
-    setProcessingData(false);
 
-    console.timeEnd("sort+filter");
-    return communties;
-  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner, page, pageLimit]);
+    console.timeEnd("sort+filter communities");
+
+    // return a clone so that it triggers a re-render  on sort
+    return [...communties];
+  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -200,21 +175,20 @@ export default function Communities() {
             alignItems: "center",
           }}
         >
-          <Pagination
-            page={page}
-            count={totalFiltered}
-            setPage={(value) => setPage(value)}
-            limit={pageLimit}
-          />
+          {/* right side - view change buttons here */}
         </Box>
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {(isLoading || (processingData && !isError)) && <PageLoading />}
+        {isLoading && !isError && <PageLoading />}
         {isError && <PageError error={error} />}
-
-        {isSuccess && !processingData && <CommunityGrid items={communitiesData} />}
+        {isSuccess && <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />}
       </Box>
     </Container>
   );
 }
+
+const mapStateToProps = (state) => ({
+  homeBaseUrl: state.configReducer.homeBaseUrl,
+});
+export default connect(mapStateToProps)(Communities);

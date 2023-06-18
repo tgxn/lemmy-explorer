@@ -1,10 +1,12 @@
 import React from "react";
 
+import { useImage } from "react-image";
+
 import CircularProgress from "@mui/joy/CircularProgress";
 
 import { NumericFormat } from "react-number-format";
 
-import Box from "@mui/material/Box";
+import Box from "@mui/joy/Box";
 
 export function ContentSkeleton({ radius = "4px" }) {
   return (
@@ -18,7 +20,7 @@ export function ContentSkeleton({ radius = "4px" }) {
         alignItems: "center",
         justifyContent: "center",
 
-        height: "150px",
+        height: "100%",
         textAlign: "center",
       })}
     >
@@ -50,18 +52,14 @@ export function ContentError({ message = false, bgcolor = "#ff55551c" }) {
 
         // flexGrow: 1,
 
-        height: "150px",
+        height: "100%",
         textAlign: "center",
       })}
     >
-      {message ? (
-        message
-      ) : (
-        <>
-          😭
-          <br /> Content Error
-        </>
-      )}
+      <>
+        😭
+        <br /> {message ? message : "Content Error"}
+      </>
     </Box>
   );
 }
@@ -128,4 +126,25 @@ export function TinyNumber({ value }) {
   }, [value]);
 
   return <React.Fragment>{number}</React.Fragment>;
+}
+
+export function BannerImage({ imageSrc }) {
+  const { src, isLoading, error } = useImage({
+    srcList: imageSrc,
+
+    useSuspense: false,
+  });
+
+  return (
+    <React.Fragment>
+      {!imageSrc && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
+      {imageSrc && (
+        <React.Fragment>
+          {isLoading && <ContentSkeleton />}
+          {error && <ContentError />}
+          <img src={src} loading="lazy" width={"100%"} />
+        </React.Fragment>
+      )}
+    </React.Fragment>
+  );
 }
