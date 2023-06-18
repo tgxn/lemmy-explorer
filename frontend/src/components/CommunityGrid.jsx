@@ -1,8 +1,6 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
-import useWindowScroll from "@react-hook/window-scroll";
-
 import { useMasonry, usePositioner, useContainerPosition, useScroller } from "masonic";
 
 import { useWindowSize } from "@react-hook/window-size";
@@ -20,10 +18,8 @@ const CommunityGrid = function ({ items, homeBaseUrl }) {
 
   const CardWithIsScrolling = React.useCallback(
     (props) => <CommunityCard community={props.data} homeBaseUrl={homeBaseUrl} />,
-    [isScrolling],
+    [isScrolling, homeBaseUrl],
   );
-
-  console.log("CommunityGrid useMasonry", items);
 
   return useMasonry({
     containerRef,
@@ -36,8 +32,6 @@ const CommunityGrid = function ({ items, homeBaseUrl }) {
     render: CardWithIsScrolling,
   });
 };
-// export default CommunityGrid;
-
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
 });

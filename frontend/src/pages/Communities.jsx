@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
 
 import useStorage from "../hooks/useStorage";
 import useQueryCache from "../hooks/useQueryCache";
@@ -8,7 +9,6 @@ import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
-import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 
@@ -16,25 +16,11 @@ import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
-import CommunityCard from "../components/CommunityCard";
-import Pagination from "../components/Pagination";
 import { PageLoading, PageError } from "../components/Display";
 
 import CommunityGrid from "../components/CommunityGrid";
 
-// const CommunityGrid = React.memo(function (props) {
-//   const { items } = props;
-
-//   return (
-//     <Grid container spacing={2}>
-//       {items.map((community, index) => (
-//         <CommunityCard key={index} community={community} />
-//       ))}
-//     </Grid>
-//   );
-// });
-
-export default function Communities() {
+function Communities({ homeBaseUrl }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
     "communitiesData",
     "/communities.json",
@@ -203,8 +189,13 @@ export default function Communities() {
         {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && <CommunityGrid items={communitiesData} />}
+        {isSuccess && <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />}
       </Box>
     </Container>
   );
 }
+
+const mapStateToProps = (state) => ({
+  homeBaseUrl: state.configReducer.homeBaseUrl,
+});
+export default connect(mapStateToProps)(Communities);
