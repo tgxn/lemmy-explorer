@@ -56,14 +56,10 @@ export function ContentError({ message = false, bgcolor = "#ff55551c" }) {
         textAlign: "center",
       })}
     >
-      {message ? (
-        message
-      ) : (
-        <>
-          😭
-          <br /> Content Error
-        </>
-      )}
+      <>
+        😭
+        <br /> {message ? message : "Content Error"}
+      </>
     </Box>
   );
 }

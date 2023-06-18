@@ -14,9 +14,7 @@ import HomeIcon from "@mui/icons-material/Home";
 
 import SelectHomeInstance from "./SelectHomeInstance";
 
-// a popup menu that lets the user login using username, instance address and password
-// the button should have a home icon
-function ConnectInstanceButton({ homeBaseUrl, dispatch }) {
+function HomeInstanceButton({ homeBaseUrl, dispatch }) {
   const [isOpen, setOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -74,4 +72,4 @@ function ConnectInstanceButton({ homeBaseUrl, dispatch }) {
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
 });
-export default connect(mapStateToProps)(ConnectInstanceButton);
+export default connect(mapStateToProps)(HomeInstanceButton);

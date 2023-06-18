@@ -20,6 +20,12 @@ import HomeIcon from "@mui/icons-material/Home";
 
 import { setHomeInstance } from "../reducers/configReducer";
 
+/**
+ * This component renders a button that allows the user to select a home instance.
+ *
+ * It uses a react-window Virtualized List to render the list of instances.
+ */
+
 const filterOptions = createFilterOptions({
   //   matchFrom: "start",
   stringify: (option) => option.baseurl,
@@ -118,22 +124,16 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props, ref) 
 function SelectHomeInstance({ homeBaseUrl, dispatch }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
-  //   const [localValue, _setLocalValue] = React.useState(homeBaseUrl);
-
   const onChange = (newValue) => {
     console.log("onChange", newValue);
 
     if (newValue == null) {
       dispatch(setHomeInstance(null));
-      //   _setLocalValue(null);
       return;
     }
 
     // send the base url to upstream
     dispatch(setHomeInstance(newValue.baseurl));
-
-    // local value is an object with title
-    // _setLocalValue(newValue);
   };
 
   return (

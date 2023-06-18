@@ -25,7 +25,6 @@ function Communities({ homeBaseUrl }) {
     "communitiesData",
     "/communities.json",
   );
-  const [processingData, setProcessingData] = React.useState(true);
 
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
@@ -36,14 +35,11 @@ function Communities({ homeBaseUrl }) {
   const [filterText, setFilterText] = useStorage("community.filterText", "");
   const debounceFilterText = useDebounce(filterText, 500);
 
-  // const [communitiesData, setCommunitiesData] = React.useState([]);
-
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
-    if (isError) return;
-    if (!data) return;
+    if (isError) return [];
+    if (!data) return [];
 
-    setProcessingData(true);
     console.time("sort+filter communities");
 
     console.log(`Loaded ${data.length} communities`);
@@ -100,11 +96,10 @@ function Communities({ homeBaseUrl }) {
       }`,
     );
 
-    setProcessingData(false);
-
     console.timeEnd("sort+filter communities");
 
-    return communties;
+    // return a clone so that it triggers a re-render  on sort
+    return [...communties];
   }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner]);
 
   return (
@@ -185,9 +180,8 @@ function Communities({ homeBaseUrl }) {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {(isLoading || (processingData && !isError)) && <PageLoading />}
+        {isLoading && !isError && <PageLoading />}
         {isError && <PageError error={error} />}
-
         {isSuccess && <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />}
       </Box>
     </Container>

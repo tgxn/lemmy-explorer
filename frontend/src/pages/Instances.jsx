@@ -2,46 +2,27 @@ import React from "react";
 
 import useQueryCache from "../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
+import useStorage from "../hooks/useStorage";
 
 import Container from "@mui/joy/Container";
-
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
-import Grid from "@mui/joy/Grid";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 
-import InstanceCard from "../components/InstanceCard";
-import Pagination from "../components/Pagination";
 import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError } from "../components/Display";
-
 import { InstanceGrid } from "../components/GridView";
 
-import useStorage from "../hooks/useStorage";
-
-// const InstanceGrid = React.memo(function (props) {
-//   const { items, itemRendererProps } = props;
-
-//   return (
-//     <Grid container spacing={2}>
-//       {items.map((instance, index) => (
-//         <InstanceCard key={index} instance={instance} {...itemRendererProps} />
-//       ))}
-//     </Grid>
-//   );
-// });
-
 export default function Instances() {
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+
   const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
   const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
-
-  const [pageLimit, setPagelimit] = useStorage("instance.pageLimit", 100);
-  const [page, setPage] = React.useState(0);
 
   // debounce the filter text input
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
@@ -49,17 +30,10 @@ export default function Instances() {
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("community.filterLangCodes", []);
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
-
-  const [processingData, setProcessingData] = React.useState(true);
-  const [totalFiltered, setTotalFiltered] = React.useState(0);
-
   // this applies the filtering and sorting to the data loaded from .json
   const instancesData = React.useMemo(() => {
-    if (!data) return;
-    if (error) return;
-
-    setProcessingData(true);
+    if (!data) return [];
+    if (error) return [];
 
     let instances = data;
     if (showOpenOnly) {
@@ -90,9 +64,6 @@ export default function Instances() {
 
         // if every of the filterLangCodes are specifically in the instanceLangCodes, return true
         return onlyShowLangs.every((lang) => instanceLangs.includes(lang)); // could add || instanceLangs[0] == "all" to show sites that have ever language enabled
-
-        // remove non-matching
-        return false;
       });
     }
 
@@ -123,15 +94,9 @@ export default function Instances() {
       });
     }
 
-    // pagination
-    // setTotalFiltered(instances.length);
-    // instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
-    // setInstancesData(instances);
-
-    setProcessingData(false);
-
-    return instances;
-  }, [data, orderBy, showOpenOnly, debounceFilterText, page, pageLimit, filterLangCodes]);
+    // return a clone so that it triggers a re-render  on sort
+    return [...instances];
+  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -214,10 +179,9 @@ export default function Instances() {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {(isLoading || (processingData && !isError)) && <PageLoading />}
+        {isLoading && !isError && <PageLoading />}
         {isError && <PageError error={error} />}
-
-        {isSuccess && !processingData && <InstanceGrid items={instancesData} />}
+        {isSuccess && <InstanceGrid items={instancesData} />}
       </Box>
     </Container>
   );

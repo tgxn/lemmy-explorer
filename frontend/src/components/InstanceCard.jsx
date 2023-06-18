@@ -4,7 +4,6 @@ import { connect } from "react-redux";
 import Moment from "react-moment";
 
 import Avatar from "@mui/joy/Avatar";
-
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
@@ -13,7 +12,6 @@ import CardOverflow from "@mui/joy/CardOverflow";
 import Box from "@mui/joy/Box";
 import Tooltip from "@mui/joy/Tooltip";
 import Link from "@mui/joy/Link";
-import Grid from "@mui/joy/Grid";
 import IconButton from "@mui/joy/IconButton";
 
 import PersonIcon from "@mui/icons-material/Person";
@@ -24,19 +22,13 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import HomeIcon from "@mui/icons-material/Home";
 
-import { ContentSkeleton, ContentError, TinyNumber, BannerImage } from "./Display";
+import { TinyNumber, BannerImage } from "./Display";
 import CopyLink from "./CopyLink";
 
 import { setHomeInstance } from "../reducers/configReducer";
 
-// import InstanceModal from "./InstanceModal";
-
 function InstanceCard({ instance, homeBaseUrl, dispatch }) {
-  const [loadedBanner, setLoadedBanner] = React.useState(false);
-  const [bannerError, setBannerError] = React.useState(false);
-
   return (
-    // <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
     <Card
       variant="outlined"
       sx={{
@@ -148,33 +140,6 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
       >
         <BannerImage imageSrc={instance.banner || false} />
       </CardOverflow>
-
-      {/* <CardOverflow
-        sx={{
-          p: 0,
-          height: "150px",
-          overflow: "hidden",
-          borderRadius: 0,
-        }}
-      >
-        {!instance.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
-        {instance.banner && bannerError && <ContentError />}
-        {instance.banner && !bannerError && !loadedBanner && <ContentSkeleton />}
-        <img
-          src={instance.banner}
-          srcSet={instance.banner}
-          loading="lazy"
-          width={"100%"}
-          style={{
-            display: loadedBanner ? "flex" : "none",
-          }}
-          onLoad={() => {
-            setLoadedBanner(true);
-            setBannerError(false);
-          }}
-          onError={() => setBannerError(true)}
-        />
-      </CardOverflow> */}
 
       <CardContent orientation="horizontal">
         <Typography
@@ -300,7 +265,6 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
         </CardContent>
       </CardOverflow>
     </Card>
-    // </Grid>
   );
 }
 

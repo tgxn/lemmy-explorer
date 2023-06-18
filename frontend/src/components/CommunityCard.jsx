@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 import Avatar from "@mui/joy/Avatar";
 import Link from "@mui/joy/Link";
@@ -8,7 +8,6 @@ import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
-import Grid from "@mui/joy/Grid";
 import Tooltip from "@mui/joy/Tooltip";
 
 import MessageIcon from "@mui/icons-material/Message";
@@ -17,8 +16,7 @@ import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { ContentSkeleton, ContentError, TinyNumber, BannerImage } from "./Display";
-
+import { TinyNumber, BannerImage } from "./Display";
 import CopyLink from "./CopyLink";
 
 export default function ({ community, homeBaseUrl, ...rest }) {

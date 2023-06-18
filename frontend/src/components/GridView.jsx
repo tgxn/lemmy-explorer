@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
 
 import { useMasonry, usePositioner, useContainerPosition, useScroller } from "masonic";
@@ -63,5 +63,3 @@ export const CommunityGrid = connect(mapStateToProps)(function ({ items, homeBas
     render: CardWithIsScrolling,
   });
 });
-
-// export const CommunityGrid = CommunityGrid);
