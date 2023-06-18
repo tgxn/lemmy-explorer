@@ -13,6 +13,7 @@ import Checkbox from "@mui/joy/Checkbox";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
+import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError } from "../components/Display";
@@ -112,6 +113,7 @@ export default function Instances() {
         }}
       >
         <Input
+          startDecorator={<SearchIcon />}
           placeholder="Filter Instances"
           value={filterText}
           sx={{
