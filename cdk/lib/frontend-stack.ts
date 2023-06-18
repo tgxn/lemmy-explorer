@@ -99,7 +99,7 @@ export class FrontendStack extends Stack {
         origin: bucketOrigin,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        cachePolicy: CachePolicy.CACHING_DISABLED,
+        cachePolicy: CachePolicy.CACHING_OPTIMIZED,
         compress: true,
       },
 
