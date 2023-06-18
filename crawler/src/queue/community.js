@@ -18,8 +18,8 @@ import { CrawlError } from "../lib/error.js";
 import CommunityCrawler from "../crawl/community.js";
 
 export default class CommunityQueue {
-  constructor(isWorker = false) {
-    this.queue = new Queue("community", {
+  constructor(isWorker = false, queueName = "community") {
+    this.queue = new Queue(queueName, {
       removeOnSuccess: true,
       removeOnFailure: true,
       isWorker,
@@ -36,7 +36,7 @@ export default class CommunityQueue {
     if (isWorker) this.process();
   }
 
-  async createJob(instanceBaseUrl) {
+  async createJob(instanceBaseUrl, onSuccess = null) {
     const trimmedUrl = instanceBaseUrl.trim();
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
 
@@ -46,9 +46,10 @@ export default class CommunityQueue {
       .retries(CRAWL_RETRY.COMMUNITY)
       .setId(trimmedUrl) // deduplicate
       .save();
-    // job.on("succeeded", (result) => {
-    //   logging.info(`Completed communityQueue ${job.id}`, instanceBaseUrl);
-    // });
+    job.on("succeeded", (result) => {
+      // logging.info(`Completed communityQueue ${job.id}`, instanceBaseUrl);
+      onSuccess && onSuccess(result);
+    });
   }
 
   async process() {
