@@ -1,7 +1,4 @@
-import React, { Suspense } from "react";
-import { connect } from "react-redux";
-
-import { useImage } from "react-image";
+import React, { useState, useEffect } from "react";
 
 import Avatar from "@mui/joy/Avatar";
 import Link from "@mui/joy/Link";
@@ -20,41 +17,9 @@ import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { ContentSkeleton, ContentError, TinyNumber } from "./Display";
+import { ContentSkeleton, ContentError, TinyNumber, BannerImage } from "./Display";
 
 import CopyLink from "./CopyLink";
-
-function BannerImage({ imageSrc }) {
-  const { src, isLoading, error } = useImage({
-    srcList: imageSrc,
-
-    useSuspense: false,
-  });
-
-  return (
-    <React.Fragment>
-      {!imageSrc && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
-      {imageSrc && (
-        <React.Fragment>
-          {error && <ContentError />}
-          <img
-            src={src}
-            loading="lazy"
-            width={"100%"}
-            // style={{
-            //   display: !bannerError && loadedBanner ? "flex" : "none",
-            // }}
-            // onLoad={() => {
-            //   setLoadedBanner(true);
-            //   setBannerError(false);
-            // }}
-            // onError={() => setBannerError(true)}
-          />
-        </React.Fragment>
-      )}
-    </React.Fragment>
-  );
-}
 
 export default function ({ community, homeBaseUrl, ...rest }) {
   console.log("CommunityCard", community, rest);
@@ -63,12 +28,13 @@ export default function ({ community, homeBaseUrl, ...rest }) {
       variant="outlined"
       sx={{
         pt: 1,
-        height: "375px",
+        height: "350px",
         "& .MuiIconButton-root": {
           mt: 1,
         },
       }}
     >
+      {/* Community Title */}
       <CardContent
         orientation="horizontal"
         sx={{ columnGap: 0, flexGrow: 0, justifyContent: "space-between" }}
@@ -76,7 +42,6 @@ export default function ({ community, homeBaseUrl, ...rest }) {
         <Box
           sx={{
             flexShrink: 0,
-
             pt: 1.5,
             px: 0.25,
             pr: 1,
@@ -132,6 +97,7 @@ export default function ({ community, homeBaseUrl, ...rest }) {
               </Link>
             </Tooltip>
           </Typography>
+
           <Typography level="body3">
             <CopyLink
               copyText={`!${community.name}@${community.url && community.url.split("/")[2]}`}
@@ -144,6 +110,7 @@ export default function ({ community, homeBaseUrl, ...rest }) {
         </Box>
       </CardContent>
 
+      {/* Community Banner */}
       <CardOverflow
         sx={() => ({
           background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)",

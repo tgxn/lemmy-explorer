@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useImage } from "react-image";
+
 import CircularProgress from "@mui/joy/CircularProgress";
 
 import { NumericFormat } from "react-number-format";
@@ -128,4 +130,36 @@ export function TinyNumber({ value }) {
   }, [value]);
 
   return <React.Fragment>{number}</React.Fragment>;
+}
+
+export function BannerImage({ imageSrc }) {
+  const { src, isLoading, error } = useImage({
+    srcList: imageSrc,
+
+    useSuspense: false,
+  });
+
+  return (
+    <React.Fragment>
+      {!imageSrc && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
+      {imageSrc && (
+        <React.Fragment>
+          {error && <ContentError />}
+          <img
+            src={src}
+            loading="lazy"
+            width={"100%"}
+            // style={{
+            //   display: !bannerError && loadedBanner ? "flex" : "none",
+            // }}
+            // onLoad={() => {
+            //   setLoadedBanner(true);
+            //   setBannerError(false);
+            // }}
+            // onError={() => setBannerError(true)}
+          />
+        </React.Fragment>
+      )}
+    </React.Fragment>
+  );
 }

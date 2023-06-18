@@ -18,7 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import { PageLoading, PageError } from "../components/Display";
 
-import CommunityGrid from "../components/CommunityGrid";
+import { CommunityGrid } from "../components/GridView";
 
 function Communities({ homeBaseUrl }) {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
@@ -36,16 +36,15 @@ function Communities({ homeBaseUrl }) {
   const [filterText, setFilterText] = useStorage("community.filterText", "");
   const debounceFilterText = useDebounce(filterText, 500);
 
-  const [communitiesData, setCommunitiesData] = React.useState([]);
+  // const [communitiesData, setCommunitiesData] = React.useState([]);
 
   // this applies the filtering and sorting to the data loaded from .json
-  React.useEffect(() => {
+  const communitiesData = React.useMemo(() => {
     if (isError) return;
     if (!data) return;
 
-    console.time("sort+filter");
-
     setProcessingData(true);
+    console.time("sort+filter communities");
 
     console.log(`Loaded ${data.length} communities`);
 
@@ -102,10 +101,10 @@ function Communities({ homeBaseUrl }) {
     );
 
     setProcessingData(false);
-    setCommunitiesData(communties);
 
-    console.timeEnd("sort+filter");
-    // console.log("sort+filter", communties);
+    console.timeEnd("sort+filter communities");
+
+    return communties;
   }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner]);
 
   return (

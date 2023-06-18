@@ -20,19 +20,21 @@ import Pagination from "../components/Pagination";
 import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError } from "../components/Display";
 
+import { InstanceGrid } from "../components/GridView";
+
 import useStorage from "../hooks/useStorage";
 
-const InstanceGrid = React.memo(function (props) {
-  const { items, itemRendererProps } = props;
+// const InstanceGrid = React.memo(function (props) {
+//   const { items, itemRendererProps } = props;
 
-  return (
-    <Grid container spacing={2}>
-      {items.map((instance, index) => (
-        <InstanceCard key={index} instance={instance} {...itemRendererProps} />
-      ))}
-    </Grid>
-  );
-});
+//   return (
+//     <Grid container spacing={2}>
+//       {items.map((instance, index) => (
+//         <InstanceCard key={index} instance={instance} {...itemRendererProps} />
+//       ))}
+//     </Grid>
+//   );
+// });
 
 export default function Instances() {
   const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
@@ -122,8 +124,8 @@ export default function Instances() {
     }
 
     // pagination
-    setTotalFiltered(instances.length);
-    instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
+    // setTotalFiltered(instances.length);
+    // instances = instances.slice(page * pageLimit, (page + 1) * pageLimit);
     // setInstancesData(instances);
 
     setProcessingData(false);
@@ -202,12 +204,12 @@ export default function Instances() {
             alignItems: "center",
           }}
         >
-          <Pagination
+          {/* <Pagination
             page={page}
             count={totalFiltered}
             setPage={(value) => setPage(value)}
             limit={pageLimit}
-          />
+          /> */}
         </Box>
       </Box>
 

@@ -24,7 +24,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import HomeIcon from "@mui/icons-material/Home";
 
-import { ContentSkeleton, ContentError, TinyNumber } from "./Display";
+import { ContentSkeleton, ContentError, TinyNumber, BannerImage } from "./Display";
 import CopyLink from "./CopyLink";
 
 import { setHomeInstance } from "../reducers/configReducer";
@@ -36,245 +36,271 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
   const [bannerError, setBannerError] = React.useState(false);
 
   return (
-    <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
-      <Card
-        variant="outlined"
-        sx={{
-          pt: 1,
-          "& .MuiIconButton-root": {
-            mt: 1,
-          },
-        }}
+    // <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
+    <Card
+      variant="outlined"
+      sx={{
+        pt: 1,
+        height: "350px",
+        "& .MuiIconButton-root": {
+          mt: 1,
+        },
+      }}
+    >
+      {/* Instance Name */}
+      <CardContent
+        orientation="horizontal"
+        sx={{ columnGap: 0, flexGrow: 0, justifyContent: "space-between" }}
       >
-        {/* Instance Name */}
-        <CardContent orientation="horizontal" sx={{ columnGap: 0, justifyContent: "space-between" }}>
-          <Box
-            sx={{
-              flexShrink: 0,
-              pt: 1.5,
-              px: 0.25,
-              pr: 1,
-            }}
-          >
-            <Avatar
-              alt={instance.name}
-              src={instance.icon}
-              sx={{
-                display: "flex",
-              }}
-            />
-          </Box>
-
-          <Box
-            sx={{
-              p: 0.5,
-              flexGrow: 1,
-              overflow: "hidden",
-            }}
-          >
-            <Typography level="body3" sx={{ pb: 0.4, whiteSpace: "nowrap" }}>
-              <Link
-                level="body1"
-                variant="plain"
-                color="neutral"
-                href={instance.url}
-                target="_blank"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-              </Link>
-            </Typography>
-
-            <Typography level="body3">
-              <CopyLink
-                copyText={instance.url.split("/")[2]}
-                linkProps={{
-                  variant: "plain",
-                  color: "neutral",
-                }}
-              />
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              flexShrink: 0,
-              pt: 0.5,
-            }}
-          >
-            <Tooltip title="Set home instance" variant="soft">
-              <IconButton
-                size="md"
-                variant="outlined"
-                color={homeBaseUrl == instance.url.split("/")[2] ? "success" : "neutral"}
-                sx={{ ml: "auto", alignSelf: "flex-start", flexShrink: 1 }}
-                onClick={() => {
-                  dispatch(setHomeInstance(instance.url.split("/")[2]));
-                }}
-              >
-                <HomeIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </CardContent>
-
-        {/* Instance Banner */}
-        <CardOverflow
+        <Box
           sx={{
-            p: 0,
-            height: "150px",
-            overflow: "hidden",
-            borderRadius: 0,
+            flexShrink: 0,
+            pt: 1.5,
+            px: 0.25,
+            pr: 1,
           }}
         >
-          {!instance.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
-          {instance.banner && bannerError && <ContentError />}
-          {instance.banner && !bannerError && !loadedBanner && <ContentSkeleton />}
-          <img
-            src={instance.banner}
-            srcSet={instance.banner}
-            loading="lazy"
-            width={"100%"}
-            style={{
-              display: loadedBanner ? "flex" : "none",
+          <Avatar
+            alt={instance.name}
+            src={instance.icon}
+            sx={{
+              display: "flex",
             }}
-            onLoad={() => {
-              setLoadedBanner(true);
-              setBannerError(false);
-            }}
-            onError={() => setBannerError(true)}
           />
-        </CardOverflow>
+        </Box>
 
-        <CardContent orientation="horizontal">
+        <Box
+          sx={{
+            p: 0.5,
+            flexGrow: 1,
+            overflow: "hidden",
+          }}
+        >
           <Typography
             level="body3"
             sx={{
-              maxHeight: "90px",
+              fontWeight: "bold",
+              fontSize: "16px",
               overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
             }}
           >
-            {instance.desc}
+            <Link
+              level="body1"
+              variant="plain"
+              alt={instance.name}
+              color="neutral"
+              href={instance.url}
+              target="_blank"
+              // sx={{
+              //   fontWeight: "bold",
+              //   fontSize: "16px",
+              //   textOverflow: "ellipsis",
+              // }}
+            >
+              {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+            </Link>
           </Typography>
-        </CardContent>
 
-        <CardOverflow
-          variant="soft"
+          <Typography level="body3">
+            <CopyLink
+              copyText={instance.url.split("/")[2]}
+              linkProps={{
+                variant: "plain",
+                color: "neutral",
+              }}
+            />
+          </Typography>
+        </Box>
+
+        <Box
           sx={{
-            bgcolor: "background.level1",
+            flexShrink: 0,
+            pt: 0.5,
           }}
         >
-          <Divider inset="context" />
-          <CardContent
-            orientation="horizontal"
-            sx={{
-              justifyContent: "space-around",
-            }}
-          >
-            <Tooltip title="Total Users" variant="soft">
-              <Typography
-                level="body3"
-                fontWeight="md"
-                textColor="text.secondary"
-                sx={{
-                  cursor: "default",
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "nowrap",
-                  gap: 0.5,
-                }}
-              >
-                <PersonIcon />
-                <TinyNumber value={instance.usage.users.total} />
-              </Typography>
-            </Tooltip>
-            <Divider orientation="vertical" />
-            <Tooltip title="Posts" variant="soft">
-              <Typography
-                level="body3"
-                fontWeight="md"
-                textColor="text.secondary"
-                sx={{
-                  cursor: "default",
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "nowrap",
-                  gap: 0.5,
-                }}
-              >
-                <MessageIcon />
-                <TinyNumber value={instance.usage.localPosts} />
-              </Typography>
-            </Tooltip>
-            <Divider orientation="vertical" />
-            <Tooltip title="Comments" variant="soft">
-              <Typography
-                level="body3"
-                fontWeight="md"
-                textColor="text.secondary"
-                sx={{
-                  cursor: "default",
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "nowrap",
-                  gap: 0.5,
-                }}
-              >
-                <ForumIcon />
-                <TinyNumber value={instance.usage.localComments} />
-              </Typography>
-            </Tooltip>
-            <Divider orientation="vertical" />
-
-            <Tooltip
-              title={
-                <>
-                  Uptime{" "}
-                  {instance.uptime?.uptime_alltime ? (
-                    <>
-                      (First seen <Moment fromNow>{instance.uptime?.date_created}</Moment>)
-                    </>
-                  ) : (
-                    <>(Unknown instance)</>
-                  )}
-                </>
-              }
-              variant="soft"
+          <Tooltip title="Set home instance" variant="soft">
+            <IconButton
+              size="md"
+              variant="outlined"
+              color={homeBaseUrl == instance.url.split("/")[2] ? "success" : "neutral"}
+              sx={{ ml: "auto", alignSelf: "flex-start", flexShrink: 1 }}
+              onClick={() => {
+                dispatch(setHomeInstance(instance.url.split("/")[2]));
+              }}
             >
-              <Typography
-                level="body3"
-                fontWeight="md"
-                textColor="text.secondary"
-                sx={{
-                  cursor: "default",
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "nowrap",
-                  gap: 0.5,
-                }}
-              >
-                {instance.uptime?.uptime_alltime && (
-                  <>
-                    <TrendingUpIcon />
-                    {instance.uptime?.uptime_alltime}%
-                  </>
-                )}
+              <HomeIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </CardContent>
 
-                {!instance.uptime?.uptime_alltime && (
+      {/* Instance Banner */}
+      <CardOverflow
+        sx={() => ({
+          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)",
+          p: 0,
+          height: "150px",
+          overflow: "hidden",
+          borderRadius: 0,
+        })}
+      >
+        <BannerImage imageSrc={instance.banner || false} />
+      </CardOverflow>
+
+      {/* <CardOverflow
+        sx={{
+          p: 0,
+          height: "150px",
+          overflow: "hidden",
+          borderRadius: 0,
+        }}
+      >
+        {!instance.banner && <ContentError message={"No Banner"} bgcolor={"#ff55fc21"} />}
+        {instance.banner && bannerError && <ContentError />}
+        {instance.banner && !bannerError && !loadedBanner && <ContentSkeleton />}
+        <img
+          src={instance.banner}
+          srcSet={instance.banner}
+          loading="lazy"
+          width={"100%"}
+          style={{
+            display: loadedBanner ? "flex" : "none",
+          }}
+          onLoad={() => {
+            setLoadedBanner(true);
+            setBannerError(false);
+          }}
+          onError={() => setBannerError(true)}
+        />
+      </CardOverflow> */}
+
+      <CardContent orientation="horizontal">
+        <Typography
+          level="body3"
+          sx={{
+            maxHeight: "90px",
+            overflow: "hidden",
+          }}
+        >
+          {instance.desc}
+        </Typography>
+      </CardContent>
+
+      <CardOverflow
+        variant="soft"
+        sx={{
+          bgcolor: "background.level1",
+        }}
+      >
+        <Divider inset="context" />
+        <CardContent
+          orientation="horizontal"
+          sx={{
+            justifyContent: "space-around",
+          }}
+        >
+          <Tooltip title="Total Users" variant="soft">
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                gap: 0.5,
+              }}
+            >
+              <PersonIcon />
+              <TinyNumber value={instance.usage.users.total} />
+            </Typography>
+          </Tooltip>
+          <Divider orientation="vertical" />
+          <Tooltip title="Posts" variant="soft">
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                gap: 0.5,
+              }}
+            >
+              <MessageIcon />
+              <TinyNumber value={instance.usage.localPosts} />
+            </Typography>
+          </Tooltip>
+          <Divider orientation="vertical" />
+          <Tooltip title="Comments" variant="soft">
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                gap: 0.5,
+              }}
+            >
+              <ForumIcon />
+              <TinyNumber value={instance.usage.localComments} />
+            </Typography>
+          </Tooltip>
+          <Divider orientation="vertical" />
+
+          <Tooltip
+            title={
+              <>
+                Uptime{" "}
+                {instance.uptime?.uptime_alltime ? (
                   <>
-                    <ThumbDownIcon />
+                    (First seen <Moment fromNow>{instance.uptime?.date_created}</Moment>)
                   </>
+                ) : (
+                  <>(Unknown instance)</>
                 )}
-              </Typography>
-            </Tooltip>
-          </CardContent>
-        </CardOverflow>
-      </Card>
-    </Grid>
+              </>
+            }
+            variant="soft"
+          >
+            <Typography
+              level="body3"
+              fontWeight="md"
+              textColor="text.secondary"
+              sx={{
+                cursor: "default",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                gap: 0.5,
+              }}
+            >
+              {instance.uptime?.uptime_alltime && (
+                <>
+                  <TrendingUpIcon />
+                  {instance.uptime?.uptime_alltime}%
+                </>
+              )}
+
+              {!instance.uptime?.uptime_alltime && (
+                <>
+                  <ThumbDownIcon />
+                </>
+              )}
+            </Typography>
+          </Tooltip>
+        </CardContent>
+      </CardOverflow>
+    </Card>
+    // </Grid>
   );
 }
 
