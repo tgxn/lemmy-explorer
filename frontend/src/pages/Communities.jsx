@@ -5,18 +5,39 @@ import useStorage from "../hooks/useStorage";
 import useQueryCache from "../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
 
+import Chip from "@mui/joy/Chip";
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
+import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import Checkbox from "@mui/joy/Checkbox";
+
+import ButtonGroup from "@mui/joy/ButtonGroup";
+import IconButton from "@mui/joy/IconButton";
+import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
+import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
+import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
+import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
+
+import Tabs from "@mui/joy/Tabs";
+import TabList from "@mui/joy/TabList";
+import Tab from "@mui/joy/Tab";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
-import { PageLoading, PageError } from "../components/Display";
+import GridViewIcon from "@mui/icons-material/GridView";
+import AppsIcon from "@mui/icons-material/Apps";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import TocIcon from "@mui/icons-material/Toc";
+import ViewListIcon from "@mui/icons-material/ViewList";
+
+import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
 
 import { CommunityGrid } from "../components/GridView";
 
@@ -119,7 +140,13 @@ function Communities({ homeBaseUrl }) {
   }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner]);
 
   return (
-    <Container maxWidth={false} sx={{}}>
+    <Container
+      maxWidth={false}
+      style={{
+        paddingRight: "16px",
+        paddingLeft: "16px",
+      }}
+    >
       <Box
         component="header"
         sx={{
@@ -154,6 +181,7 @@ function Communities({ homeBaseUrl }) {
             minWidth: 120,
             width: { xs: "100%", sm: 240 },
             flexShrink: 0,
+            flexGrow: 0,
             [`& .${selectClasses.indicator}`]: {
               transition: "0.2s",
               [`&.${selectClasses.expanded}`]: {
@@ -183,11 +211,67 @@ function Communities({ homeBaseUrl }) {
           sx={{
             display: "flex",
             flexGrow: 1,
-            justifyContent: { xs: "center", sm: "flex-end" },
+            justifyContent: "flex-end",
             alignItems: "center",
           }}
         >
-          {/* right side - view change buttons here */}
+          {isSuccess && (
+            <Chip
+              sx={{
+                borderRadius: "4px",
+                mr: 1,
+              }}
+              color="neutral"
+            >
+              Showing{" "}
+              <SimpleNumberFormat
+                value={communitiesData.length}
+                displayType={"text"}
+                decimalScale={2}
+                thousandSeparator={","}
+              />{" "}
+              communities
+            </Chip>
+          )}
+
+          {/* <Tabs aria-label="Disabled tabs" defaultValue={0} sx={{ borderRadius: "sm" }} size="sm">
+            <TabList sx={{ "--List-radius": "8px", "--List-padding": "4px" }}>
+              <Tab
+                sx={{
+                  display: "flex",
+                }}
+              >
+                <ListItemDecorator>
+                  <GridViewIcon />{" "}
+                </ListItemDecorator>
+                Grid View
+              </Tab>
+              <Tab>
+                <ListItemDecorator>
+                  <ViewListIcon />{" "}
+                </ListItemDecorator>
+                List View
+              </Tab>
+            </TabList>
+          </Tabs> */}
+          <ButtonGroup>
+            <IconButton
+              variant={"outlined"}
+              sx={{
+                p: 1,
+              }}
+            >
+              <GridViewIcon /> Grid View
+            </IconButton>
+            <IconButton
+              variant={"outlined"}
+              sx={{
+                p: 1,
+              }}
+            >
+              <ViewListIcon /> List View
+            </IconButton>
+          </ButtonGroup>
         </Box>
       </Box>
 

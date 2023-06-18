@@ -10,13 +10,14 @@ import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
+import Chip from "@mui/joy/Chip";
 
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/LanguageFilter";
-import { PageLoading, PageError } from "../components/Display";
+import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
 import { InstanceGrid } from "../components/GridView";
 
 export default function Instances() {
@@ -171,12 +172,21 @@ export default function Instances() {
             alignItems: "center",
           }}
         >
-          {/* <Pagination
-            page={page}
-            count={totalFiltered}
-            setPage={(value) => setPage(value)}
-            limit={pageLimit}
-          /> */}
+          <Chip
+            sx={{
+              borderRadius: "4px",
+              mr: 1,
+            }}
+            color="info"
+          >
+            Instances:{" "}
+            <SimpleNumberFormat
+              value={instancesData.length}
+              displayType={"text"}
+              decimalScale={2}
+              thousandSeparator={","}
+            />
+          </Chip>
         </Box>
       </Box>
 
