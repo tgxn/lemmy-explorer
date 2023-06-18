@@ -36,10 +36,12 @@ export default class CommunityQueue {
     if (isWorker) this.process();
   }
 
-  createJob(instanceBaseUrl) {
+  async createJob(instanceBaseUrl) {
     const trimmedUrl = instanceBaseUrl.trim();
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
-    job
+
+    logging.silly("CommunityQueue createJob", trimmedUrl);
+    await job
       .timeout(CRAWL_TIMEOUT.COMMUNITY)
       .retries(CRAWL_RETRY.COMMUNITY)
       .setId(trimmedUrl) // deduplicate

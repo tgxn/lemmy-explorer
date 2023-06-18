@@ -4,6 +4,8 @@ import axios from "axios";
 
 import { putCommunityData } from "../lib/storage.js";
 
+import storage from "../storage/storage.js";
+
 import {
   AXIOS_REQUEST_TIMEOUT,
   CRAWLER_USER_AGENT,
