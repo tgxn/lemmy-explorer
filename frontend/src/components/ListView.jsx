@@ -38,10 +38,10 @@ export const CommunityList = React.memo(function CommunityList({ items, homeBase
               width={width}
               scrollTop={scrollTop}
               rowHeight={50}
-              className={["MuiTable-root"]}
+              className={["MuiTable-root", "MuiTable-stickyHeader"]}
               rowStyle={{
                 display: "flex",
-                //  alignItems: "left"
+                backgroundColor: "darkblue",
               }}
               rowCount={items.length}
               rowGetter={({ index }) => items[index]}
@@ -64,7 +64,7 @@ export const CommunityList = React.memo(function CommunityList({ items, homeBase
                 cellRenderer={({ rowData }) => {
                   console.log(rowData);
                   return (
-                    <Box sx={{ display: "inline" }}>
+                    <td>
                       <Avatar
                         alt={rowData.title}
                         src={rowData.icon}
@@ -73,7 +73,7 @@ export const CommunityList = React.memo(function CommunityList({ items, homeBase
                         }}
                       />
                       {rowData.title}
-                    </Box>
+                    </td>
                   );
                 }}
               />
