@@ -56,11 +56,9 @@ function BannerImage({ imageSrc }) {
   );
 }
 
-const CommunityCard = React.memo(function ({ community, homeBaseUrl }) {
-  console.log("CommunityCard props", community);
-
+export default function ({ community, homeBaseUrl, ...rest }) {
+  console.log("CommunityCard", community, rest);
   return (
-    // <Grid xs={12} sm={6} md={4} lg={3} xl={2}>
     <Card
       variant="outlined"
       sx={{
@@ -71,10 +69,14 @@ const CommunityCard = React.memo(function ({ community, homeBaseUrl }) {
         },
       }}
     >
-      <CardContent orientation="horizontal" sx={{ columnGap: 0, justifyContent: "space-between" }}>
+      <CardContent
+        orientation="horizontal"
+        sx={{ columnGap: 0, flexGrow: 0, justifyContent: "space-between" }}
+      >
         <Box
           sx={{
             flexShrink: 0,
+
             pt: 1.5,
             px: 0.25,
             pr: 1,
@@ -254,9 +256,4 @@ const CommunityCard = React.memo(function ({ community, homeBaseUrl }) {
     </Card>
     // </Grid>
   );
-});
-
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-export default connect(mapStateToProps)(CommunityCard);
+}

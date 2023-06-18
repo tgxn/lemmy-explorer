@@ -10,7 +10,7 @@ import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
-import Box from "@mui/material/Box";
+import Box from "@mui/joy/Box";
 import Tooltip from "@mui/joy/Tooltip";
 import Link from "@mui/joy/Link";
 import Grid from "@mui/joy/Grid";

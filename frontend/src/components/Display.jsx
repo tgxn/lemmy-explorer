@@ -4,7 +4,7 @@ import CircularProgress from "@mui/joy/CircularProgress";
 
 import { NumericFormat } from "react-number-format";
 
-import Box from "@mui/material/Box";
+import Box from "@mui/joy/Box";
 
 export function ContentSkeleton({ radius = "4px" }) {
   return (

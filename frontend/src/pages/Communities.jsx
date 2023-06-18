@@ -39,26 +39,23 @@ export default function Communities() {
     "communitiesData",
     "/communities.json",
   );
+  const [processingData, setProcessingData] = React.useState(true);
 
   const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
   const [showNsfw, setShowNsfw] = useStorage("community.showNsfw", false);
 
   const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
 
-  const [pageLimit, setPagelimit] = useStorage("community.pageLimit", 100);
-  const [page, setPage] = useState(0);
-
-  const [totalFiltered, setTotalFiltered] = useState(0);
-  const [processingData, setProcessingData] = React.useState(true);
-
   // debounce the filter text input
   const [filterText, setFilterText] = useStorage("community.filterText", "");
   const debounceFilterText = useDebounce(filterText, 500);
 
+  const [communitiesData, setCommunitiesData] = React.useState([]);
+
   // this applies the filtering and sorting to the data loaded from .json
-  const communitiesData = React.useMemo(() => {
-    if (isError) return [];
-    if (!data) return [];
+  React.useEffect(() => {
+    if (isError) return;
+    if (!data) return;
 
     console.time("sort+filter");
 
@@ -66,7 +63,7 @@ export default function Communities() {
 
     console.log(`Loaded ${data.length} communities`);
 
-    let communties = data;
+    let communties = [...data];
 
     // hide nsfw
     if (!showNsfw) {
@@ -112,21 +109,18 @@ export default function Communities() {
     }
     console.log(`Sorted ${communties.length} communities`);
 
-    // pagination
-    setTotalFiltered(communties.length);
-    // communties = communties.slice(page * pageLimit, (page + 1) * pageLimit);
-
     console.log(
       `updating communities data with ${communties.length} communities, removed: ${
         data.length - communties.length
       }`,
     );
-    // setCommunitiesData(communties);
+
     setProcessingData(false);
+    setCommunitiesData(communties);
 
     console.timeEnd("sort+filter");
-    return communties;
-  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner, page, pageLimit]);
+    // console.log("sort+filter", communties);
+  }, [data, showNsfw, orderBy, debounceFilterText, hideNoBanner]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -201,12 +195,7 @@ export default function Communities() {
             alignItems: "center",
           }}
         >
-          {/* <Pagination
-            page={page}
-            count={totalFiltered}
-            setPage={(value) => setPage(value)}
-            limit={pageLimit}
-          /> */}
+          {/* right side - view change buttons here */}
         </Box>
       </Box>
 
@@ -214,7 +203,7 @@ export default function Communities() {
         {(isLoading || (processingData && !isError)) && <PageLoading />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && !processingData && <CommunityGrid items={communitiesData} />}
+        {isSuccess && <CommunityGrid items={communitiesData} />}
       </Box>
     </Container>
   );
