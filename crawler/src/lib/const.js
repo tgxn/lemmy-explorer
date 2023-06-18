@@ -15,24 +15,24 @@ export const CRAWL_TIMEOUT = {
 // how many times to retry a failed job
 export const CRAWL_RETRY = {
   INSTANCE: 1,
-  COMMUNITY: 2,
+  COMMUNITY: 0,
 };
 
-// the minimum amount of time (in ms) between crawling the same instance
-const MIN_RECRAWL_HOURS = 2;
+// the minimum amount of time between crawling the same instance
+const MIN_RECRAWL_HOURS = 4;
 export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 
-// look for aged records to re-crawl
+// consider records to be aged after this long (to re-crawl)
 const RECRAWL_AGED_HOURS = 6;
 export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
 
 // how often should the cron run with --cron
 export const AGED_CRON_EXPRESSION = "*/5 * * * *"; // every 5 minutes
 
-// how often to hit fediverse.observer to get uptimes
+// how often to hit fediverse.observer to get uptimes with --cron
 export const UPTIME_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
 
-// the maximum age (in ms) for output items to be included in the json dumps
+// the maximum age for output items to be included in the json dumps
 const OUTPUT_MAX_AGE_HOURS = 12;
 export const OUTPUT_MAX_AGE_MS = OUTPUT_MAX_AGE_HOURS * 60 * 60 * 1000;
 

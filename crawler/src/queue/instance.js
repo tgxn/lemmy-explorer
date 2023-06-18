@@ -1,29 +1,19 @@
 import logging from "../lib/logging.js";
 
 import Queue from "bee-queue";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 
 import { isValidLemmyDomain } from "../lib/validator.js";
 import {
-  putInstanceData,
-  storeFediverseInstance,
   storeError,
   getError,
   getInstanceData,
   getFediverseData,
-  listInstanceData,
 } from "../lib/storage.js";
 
 import CommunityQueue from "./community.js";
 
-import {
-  CRAWL_TIMEOUT,
-  CRAWL_RETRY,
-  MIN_RECRAWL_MS,
-  CRAWLER_USER_AGENT,
-  CRAWLER_ATTRIB_URL,
-  AXIOS_REQUEST_TIMEOUT,
-} from "../lib/const.js";
+import { CRAWL_TIMEOUT, CRAWL_RETRY, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
 
@@ -39,7 +29,11 @@ export default class InstanceQueue {
 
     // report failures!
     this.queue.on("failed", (job, err) => {
-      logging.error(`Job ${job.id} failed with error ${err.message}`, job, err);
+      logging.error(
+        `InstanceQueue Job ${job.id} failed with error ${err.message}`,
+        job,
+        err
+      );
     });
 
     this.crawlCommunity = new CommunityQueue();
@@ -177,6 +171,9 @@ export default class InstanceQueue {
         }
 
         // create job to scan the instance for communities once a crawl succeeds
+        logging.info(
+          `[Instance] [${job.data.baseUrl}] Creating community crawl job ${instanceBaseUrl}`
+        );
         await this.crawlCommunity.createJob(instanceBaseUrl);
 
         return instanceData;
@@ -185,7 +182,7 @@ export default class InstanceQueue {
           error: error.message,
           stack: error.stack,
           isAxiosError: error.isAxiosError,
-          response: error.isAxiosError ? error.request.url : null,
+          requestUrl: error.isAxiosError ? error.request.url : null,
           time: new Date().getTime(),
         };
 
