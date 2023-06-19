@@ -37,7 +37,7 @@ import { showInstanceModal } from "../reducers/modalReducer";
 import InstanceAvatar from "./InstanceAvatar";
 import InstanceModal from "./InstanceModal";
 
-export default function InstanceCard({ instance, dispatch }) {
+function InstanceCard({ instance, dispatch }) {
   return (
     <Card
       variant="outlined"
@@ -295,3 +295,5 @@ export default function InstanceCard({ instance, dispatch }) {
     </Card>
   );
 }
+
+export default connect()(InstanceCard);

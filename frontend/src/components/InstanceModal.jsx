@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 
 import Button from "@mui/joy/Button";
 import Modal from "@mui/joy/Modal";
@@ -6,14 +7,16 @@ import ModalClose from "@mui/joy/ModalClose";
 import Typography from "@mui/joy/Typography";
 import Sheet from "@mui/joy/Sheet";
 
-export default function InstanceModal({ isOpen, setOpen, instanceDat }) {
+import { hideInstanceModal } from "../reducers/modalReducer";
+
+function InstanceModal({ isOpen, setOpen, instance }) {
   return (
     <Modal
-      aria-labelledby="modal-title"
-      aria-describedby="modal-desc"
+      // aria-labelledby="modal-title"
+      // aria-describedby="modal-desc"
       open={isOpen}
       onClose={() => setOpen(false)}
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      // sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
     >
       <Sheet
         variant="outlined"
@@ -45,3 +48,13 @@ export default function InstanceModal({ isOpen, setOpen, instanceDat }) {
     </Modal>
   );
 }
+
+const mapStateToProps = (state) => ({
+  isOpen: state.modalReducer.instanceModalOpen,
+  instance: state.modalReducer.instanceData,
+});
+const mapDispatchToProps = (dispatch) => ({
+  setOpen: (isOpen) => dispatch(hideInstanceModal(isOpen)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(InstanceModal);

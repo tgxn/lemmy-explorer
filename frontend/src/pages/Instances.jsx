@@ -102,6 +102,7 @@ export default function Instances() {
 
   return (
     <Container maxWidth={false} sx={{}}>
+      <InstanceModal />
       <Box
         component="header"
         sx={{
@@ -179,8 +180,6 @@ export default function Instances() {
           /> */}
         </Box>
       </Box>
-
-      <InstanceModal />
 
       <Box sx={{ my: 4 }}>
         {isLoading && !isError && <PageLoading />}
