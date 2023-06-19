@@ -30,4 +30,38 @@ export default class Instance {
   async delete(key) {
     return this.storage.deleteRedis(`instance:${key}`);
   }
+
+  // use these to track instance attributes over time
+  async setTrackedAttribute(instanceId, attributeName, attributeValue) {
+    // hset or zadd?
+    await client.zadd(
+      `attributes:instance:${instanceId}:${attributeName}`,
+      Date.now(),
+      attributeValue
+    );
+  }
+  async getAttributeArray(instanceId, attributeName) {
+    // return client.hgetall(`attributes:instance:${instanceId}:${attributeName}`);
+
+    const start = 0;
+    const end = Date.now();
+
+    return client.zrangebyscore(
+      `attributes:instance:${instanceId}:${attributeName}`,
+      start,
+      end
+    );
+
+    // return new Promise((resolve, reject) => {
+    //   client.zrangebyscore(
+    //     `${sensorId}:${attribute}`,
+    //     start,
+    //     end,
+    //     (err, data) => {
+    //       if (err) reject(err);
+    //       resolve(data);
+    //     }
+    //   );
+    // });
+  }
 }

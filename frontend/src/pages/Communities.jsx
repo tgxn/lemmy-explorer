@@ -136,7 +136,7 @@ function Communities({ homeBaseUrl }) {
 
   return (
     <Container
-      maxWidth={false}
+      maxWidth={viewType === "grid" ? false : "xl"}
       style={{
         paddingRight: "16px",
         paddingLeft: "16px",
