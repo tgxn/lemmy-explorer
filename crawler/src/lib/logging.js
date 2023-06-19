@@ -1,67 +1,77 @@
-import path from "path";
-import util from "util";
+// import path from "path";
+// import util from "util";
 
-import * as winston from "winston";
-import "winston-daily-rotate-file";
+// // import * as winston from "winston";
+// // import "winston-daily-rotate-file";
 
-import { LOG_PATH } from "../lib/const.js";
+// import logger from "tracer";
 
-const logPath = path.resolve(process.cwd(), LOG_PATH);
+// const logging = logger.console({ level: "info" });
 
-const {
-  combine,
-  timestamp,
-  colorize,
-  simple,
-  cli,
-  printf,
-  json,
-  splat,
-  errors,
-} = winston.format;
+import { LOG_LEVEL } from "../lib/const.js";
 
-winston.addColors({ json: "grey" });
+// // const logPath = path.resolve(process.cwd(), LOG_PATH);
 
-const myFormatter = winston.format((info) => {
-  const { message } = info;
+// // const {
+// //   combine,
+// //   timestamp,
+// //   colorize,
+// //   simple,
+// //   cli,
+// //   printf,
+// //   json,
+// //   splat,
+// //   errors,
+// // } = winston.format;
 
-  const colorizer = winston.format.colorize();
+// // winston.addColors({ json: "grey" });
 
-  let splatData = info[Symbol.for("splat")];
-  if (splatData) {
-    let extraString = JSON.stringify(splatData);
+// // const myFormatter = winston.format((info) => {
+// //   const { message } = info;
 
-    info.message = `${message} ${colorizer.colorize("json", extraString)}`;
+// //   const colorizer = winston.format.colorize();
 
-    delete info[Symbol.for("splat")]; // We added `data` to the message so we can delete it
-  }
+// //   let splatData = info[Symbol.for("splat")];
+// //   if (splatData) {
+// //     let extraString = JSON.stringify(splatData);
 
-  return {
-    level: info.level,
-    message: info.message,
-  };
-})();
+// //     info.message = `${message} ${colorizer.colorize("json", extraString)}`;
 
-const winstonLogger = winston.createLogger({
-  transports: [
-    new winston.transports.DailyRotateFile({
-      level: "debug",
-      filename: path.join(logPath, "crawler-%DATE%.log"),
-      datePattern: "YYYY-MM-DD-HH",
-      maxSize: "20m",
-      maxFiles: 10,
-      format: combine(timestamp(), simple(), errors({ stack: true })),
-    }),
-    new winston.transports.Console({
-      level: "debug",
-      format: combine(colorize(), myFormatter, simple()),
-    }),
-  ],
-});
+// //     delete info[Symbol.for("splat")]; // We added `data` to the message so we can delete it
+// //   }
 
-console.log = winstonLogger.info;
-console.info = winstonLogger.info;
-console.error = winstonLogger.error;
-console.debug = winstonLogger.debug;
+// //   return {
+// //     level: info.level,
+// //     message: info.message,
+// //   };
+// // })();
 
-export default winstonLogger;
+// // const winstonLogger = winston.createLogger({
+// //   transports: [
+// //     new winston.transports.DailyRotateFile({
+// //       level: "debug",
+// //       filename: path.join(logPath, "crawler-%DATE%.log"),
+// //       datePattern: "YYYY-MM-DD-HH",
+// //       maxSize: "20m",
+// //       maxFiles: 10,
+// //       format: combine(timestamp(), simple(), errors({ stack: true })),
+// //     }),
+// //     new winston.transports.Console({
+// //       level: "debug",
+// //       format: combine(colorize(), myFormatter, simple()),
+// //     }),
+// //   ],
+// // });
+
+const logging = {
+  silly: console.debug,
+  trace: console.trace,
+  verbose: console.trace,
+  debug: console.debug,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+  fatal: console.error,
+};
+
+export default logging;

@@ -92,7 +92,7 @@ export default class InstanceQueue {
     }
 
     // check for recent error
-    const lastError = await storage.failure.getOne(instanceBaseUrl);
+    const lastError = await storage.failure.getOne("instance", instanceBaseUrl);
     if (lastError?.time) {
       // logging.info("lastError", lastError.time);
 
@@ -202,7 +202,7 @@ export default class InstanceQueue {
           logging.verbose(
             `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
           );
-          console.trace(error);
+          // console.trace(error);
         }
       }
       return true;

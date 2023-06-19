@@ -43,7 +43,7 @@ export default class CrawlUptime {
     });
     logging.info(instances.data);
 
-    await storage.putRedis(`uptime:${Date.now()}`, {
+    await storage.uptime.addNew({
       timestamp: Date.now(),
       nodes: instances.data.data.nodes,
     });

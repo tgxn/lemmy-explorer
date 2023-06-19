@@ -4,7 +4,7 @@ function hoursToMs(hours) {
 
 export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
-export const LOG_PATH = process.env.LOG_PATH || "./logs";
+export const LOG_LEVEL = process.env.LOG_PATH || "debug";
 
 // timeout for the instance and community crawlers
 export const CRAWL_TIMEOUT = {

@@ -24,10 +24,8 @@ class Storage {
 
     this.instance = new InstanceStore(this);
     this.community = new CommunityStore(this);
-
     this.uptime = new UptimeStore(this);
     this.fediverse = new FediverseStore(this);
-
     this.failure = new FailureStore(this);
   }
 

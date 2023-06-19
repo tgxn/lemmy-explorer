@@ -44,8 +44,9 @@ export default class CommunityQueue {
     }
 
     // check for recent error
-    const lastError = await storage.getRedis(
-      `error:community:${instanceBaseUrl}`
+    const lastError = await storage.failure.getOne(
+      "community",
+      instanceBaseUrl
     );
     if (lastError?.time) {
       // logging.info("lastError", lastError.time);
@@ -101,8 +102,9 @@ export default class CommunityQueue {
         };
 
         if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.putRedis(
-            `error:community:${job.data.baseUrl}`,
+          await storage.failure.upsert(
+            "community",
+            job.data.baseUrl,
             errorDetail
           );
 
@@ -114,11 +116,13 @@ export default class CommunityQueue {
         // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
         else if (error instanceof CrawlWarning) {
           logging.warn(
-            `[Community] [${job.data.baseUrl}] Warn: ${error.message}`
+            `[Community] [${job.data.baseUrl}] Warn: ${error.message}`,
+            error
           );
         } else {
           logging.verbose(
-            `[Community] [${job.data.baseUrl}] Error: ${error.message}`
+            `[Community] [${job.data.baseUrl}] Error: ${error.message}`,
+            error
           );
           // console.trace(error);
         }

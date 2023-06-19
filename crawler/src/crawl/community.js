@@ -51,13 +51,7 @@ export default class CommunityCrawler {
           continue;
         }
 
-        await storage.putRedis(
-          `community:${baseUrl}:${data.community.name.toLowerCase()}`,
-          {
-            ...community,
-            lastCrawled: Date.now(),
-          }
-        );
+        await storage.community.upsert(this.crawlDomain, community);
         communities++;
       }
     }

@@ -31,7 +31,7 @@ export default class InstanceCrawler {
 
     if (instanceData) {
       // store/update the instance
-      await storage.putRedis(`instance:${this.crawlDomain}`, {
+      await storage.instance.upsert(this.crawlDomain, {
         ...instanceData,
         lastCrawled: Date.now(),
       });
@@ -78,8 +78,7 @@ export default class InstanceCrawler {
     const software = nodeinfo2.data.software;
 
     // store all fediverse instance software for easy metrics
-    const dd = { time: Date.now(), ...software };
-    return storage.putRedis(`fediverse:${this.crawlDomain}`, dd);
+    await storage.fediverse.upsert(this.crawlDomain, software);
 
     if (software.name != "lemmy" && software.name != "lemmybb") {
       throw new CrawlWarning(`not a lemmy instance (${software.name})`);

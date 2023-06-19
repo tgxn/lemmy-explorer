@@ -34,10 +34,14 @@ export default class Community {
   async getOne(key) {
     return this.storage.getRedis(`community:${key}`);
   }
-  async upsert(baseUrl, data) {
+  async upsert(baseUrl, community) {
+    const storeData = {
+      ...community,
+      lastCrawled: Date.now(),
+    };
     return this.storage.putRedis(
-      `community:${baseUrl}:${data.community.name.toLowerCase()}`,
-      data
+      `community:${baseUrl}:${community.community.name.toLowerCase()}`,
+      storeData
     );
   }
 }

@@ -127,4 +127,6 @@ export async function start(args) {
     new InstanceQueue(true);
     new CommunityQueue(true);
   }
+
+  // storage.close();
 }
