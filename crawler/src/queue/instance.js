@@ -7,7 +7,11 @@ import storage from "../storage.js";
 import { isValidLemmyDomain } from "../lib/validator.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
-import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
+import {
+  CRAWL_TIMEOUT,
+  MIN_RECRAWL_MS,
+  RECRAWL_FEDIVERSE_MS,
+} from "../lib/const.js";
 
 import CommunityQueue from "./community.js";
 import InstanceCrawler from "../crawl/instance.js";

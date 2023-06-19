@@ -360,6 +360,8 @@ export default class CrawlOutput {
       "../frontend/public/overview.json",
       JSON.stringify(metrics)
     );
+
+    return true;
   }
 
   async writeJsonFile(filename, data) {

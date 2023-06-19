@@ -6,6 +6,13 @@ export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 export const LOG_LEVEL = process.env.LOG_PATH || "debug";
 
+// should there be a cron job to upload the exported data to s3 automatically?
+export const AUTO_UPLOAD_S3 = process.env.AUTO_UPLOAD_S3 || false;
+export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || "";
+
+// every 2 hours by default
+export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */2 * * *";
+
 // timeout for the instance and community crawlers
 export const CRAWL_TIMEOUT = {
   INSTANCE: 2 * 60 * 1000, // 2 minutes in ms
