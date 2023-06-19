@@ -9,13 +9,20 @@ import CrawlOutput from "./crawl/output.js";
 import CrawlAged from "./crawl/aged.js";
 import CrawlUptime from "./crawl/uptime.js";
 
+import storage from "./storage.js";
+
 import {
   START_URLS,
   AGED_CRON_EXPRESSION,
   UPTIME_CRON_EXPRESSION,
+  AUTO_UPLOAD_S3,
+  PUBLISH_S3_BUCKET,
+  PUBLISH_S3_CRON,
 } from "./lib/const.js";
 
 export async function start(args) {
+  await storage.connect();
+
   if (args.length > 0) {
     // single-argument commands
     if (args.length === 1) {
@@ -71,15 +78,33 @@ export async function start(args) {
 
         // starts all cron workers (aged, uptime)
         case "--cron":
-          logging.info("Started Cron Task");
-          const agedTask = cron.schedule(AGED_CRON_EXPRESSION, () => {
+          logging.info("Creating Cron Tasks (Aged/Uptime)");
+
+          const agedTask = cron.schedule(AGED_CRON_EXPRESSION, async () => {
             const aged = new CrawlAged();
             aged.createJobs();
           });
-          const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, () => {
+
+          const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, async () => {
             const uptime = new CrawlUptime();
             uptime.crawl();
           });
+
+          if (AUTO_UPLOAD_S3) {
+            console.log("Creating S3 Publish Cron Task", PUBLISH_S3_CRON);
+            const outputTask = cron.schedule(
+              UPTIME_CRON_EXPRESSION,
+              async () => {
+                const output = new CrawlOutput();
+                const outputResult = await output.start();
+
+                // push to s3 if successful
+                if (outputResult) {
+                  console.log("Should Push to S3", PUBLISH_S3_BUCKET);
+                }
+              }
+            );
+          }
           return; // dont exit the process cause they are long running
       }
     }
@@ -123,4 +148,6 @@ export async function start(args) {
     new InstanceQueue(true);
     new CommunityQueue(true);
   }
+
+  // storage.close();
 }

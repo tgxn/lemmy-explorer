@@ -1,32 +1,19 @@
 import logging from "../lib/logging.js";
 
 import Queue from "bee-queue";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 
+import storage from "../storage.js";
 import { isValidLemmyDomain } from "../lib/validator.js";
-import {
-  putInstanceData,
-  storeFediverseInstance,
-  storeError,
-  getError,
-  getInstanceData,
-  getFediverseData,
-  listInstanceData,
-} from "../lib/storage.js";
-
-import CommunityQueue from "./community.js";
-
-import {
-  CRAWL_TIMEOUT,
-  CRAWL_RETRY,
-  MIN_RECRAWL_MS,
-  CRAWLER_USER_AGENT,
-  CRAWLER_ATTRIB_URL,
-  AXIOS_REQUEST_TIMEOUT,
-} from "../lib/const.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
+import {
+  CRAWL_TIMEOUT,
+  MIN_RECRAWL_MS,
+  RECRAWL_FEDIVERSE_MS,
+} from "../lib/const.js";
 
+import CommunityQueue from "./community.js";
 import InstanceCrawler from "../crawl/instance.js";
 
 export default class InstanceQueue {
@@ -39,7 +26,11 @@ export default class InstanceQueue {
 
     // report failures!
     this.queue.on("failed", (job, err) => {
-      logging.error(`Job ${job.id} failed with error ${err.message}`, job, err);
+      logging.error(
+        `InstanceQueue Job ${job.id} failed with error ${err.message}`,
+        job,
+        err
+      );
     });
 
     this.crawlCommunity = new CommunityQueue();
@@ -64,7 +55,6 @@ export default class InstanceQueue {
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
     await job
       .timeout(CRAWL_TIMEOUT.INSTANCE)
-      .retries(CRAWL_RETRY.INSTANCE)
       .setId(trimmedUrl) // deduplicate
       .save();
     job.on("succeeded", (result) => {
@@ -93,7 +83,7 @@ export default class InstanceQueue {
 
   // returns a amount os ms since we last crawled it, false if all good
   async getLastCrawlMsAgo(instanceBaseUrl) {
-    const existingInstance = await getInstanceData(instanceBaseUrl);
+    const existingInstance = await storage.instance.getOne(instanceBaseUrl);
 
     if (existingInstance?.lastCrawled) {
       // logging.info("lastCrawled", existingInstance.lastCrawled);
@@ -105,7 +95,10 @@ export default class InstanceQueue {
     }
 
     // check for recent error
-    const lastError = await getError("instance", instanceBaseUrl);
+    const lastError = await storage.tracking.getOneError(
+      "instance",
+      instanceBaseUrl
+    );
     if (lastError?.time) {
       // logging.info("lastError", lastError.time);
 
@@ -142,11 +135,16 @@ export default class InstanceQueue {
         logging.debug(`[Instance] [${job.data.baseUrl}] Starting Crawl`);
 
         // check if it's known to not be running lemmy
-        const knownFediverseServer = await getFediverseData(instanceBaseUrl);
+        const knownFediverseServer = await storage.fediverse.getOne(
+          instanceBaseUrl
+        );
+
         if (knownFediverseServer) {
           if (
             knownFediverseServer.name !== "lemmy" &&
-            knownFediverseServer.name !== "lemmybb"
+            knownFediverseServer.name !== "lemmybb" &&
+            knownFediverseServer.time &&
+            Date.now() - knownFediverseServer.time < RECRAWL_FEDIVERSE_MS // re-scan fedi servers to check their status
           ) {
             throw new CrawlWarning(
               `Skipping - Known non-lemmy server ${knownFediverseServer.name}`
@@ -154,12 +152,27 @@ export default class InstanceQueue {
           }
         }
 
-        // check if instance has already been crawled within CRAWL_EVERY
-        const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
-        if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
-          throw new CrawlWarning(
-            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
-          );
+        // // check if instance has already been crawled within CRAWL_EVERY
+        // const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
+        // if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
+        //   throw new CrawlWarning(
+        //     `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
+        //   );
+        // }
+
+        const lastCrawlTs = await storage.tracking.getLastCrawl(
+          "instance",
+          instanceBaseUrl
+        );
+        if (lastCrawlTs) {
+          const lastCrawledMsAgo = Date.now() - lastCrawlTs;
+          if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
+            throw new CrawlWarning(
+              `Skipping - Crawled too recently (${
+                lastCrawledMsAgo / 1000
+              }s ago)`
+            );
+          }
         }
 
         const crawler = new InstanceCrawler(instanceBaseUrl);
@@ -177,6 +190,9 @@ export default class InstanceQueue {
         }
 
         // create job to scan the instance for communities once a crawl succeeds
+        logging.info(
+          `[Instance] [${job.data.baseUrl}] Creating community crawl job ${instanceBaseUrl}`
+        );
         await this.crawlCommunity.createJob(instanceBaseUrl);
 
         return instanceData;
@@ -185,12 +201,15 @@ export default class InstanceQueue {
           error: error.message,
           stack: error.stack,
           isAxiosError: error.isAxiosError,
-          response: error.isAxiosError ? error.request.url : null,
+          requestUrl: error.isAxiosError ? error.request.url : null,
           time: new Date().getTime(),
         };
 
         if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storeError("instance", job.data.baseUrl, errorDetail);
+          await storage.putRedis(
+            `error:instance:${job.data.baseUrl}`,
+            errorDetail
+          );
 
           logging.error(
             `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
@@ -206,8 +225,10 @@ export default class InstanceQueue {
           logging.verbose(
             `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
           );
-          console.trace(error);
         }
+      } finally {
+        // set last scan time if it was success or failure.
+        await storage.tracking.setLastCrawl("instance", job.data.baseUrl);
       }
       return true;
     });
