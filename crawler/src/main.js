@@ -9,6 +9,8 @@ import CrawlOutput from "./crawl/output.js";
 import CrawlAged from "./crawl/aged.js";
 import CrawlUptime from "./crawl/uptime.js";
 
+import Failures from "./crawl/failures.js";
+
 import storage from "./storage.js";
 
 import {
@@ -38,6 +40,12 @@ export async function start(args) {
           const output = new CrawlOutput();
           await output.start();
 
+          return process.exit(0);
+
+        case "--clean":
+          console.log("Cleaning data");
+          const failures = new Failures();
+          await failures.clean();
           return process.exit(0);
 
         // should we initialize the workers with a starter list of lemmy's?
