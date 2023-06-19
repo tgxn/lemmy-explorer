@@ -87,7 +87,7 @@ export default class CrawlOutput {
     /// Lemmy Instances
     ///
 
-    let failureData = await storage.failure.getAll("instance");
+    let failureData = await storage.tracking.getAllErrors("instance");
 
     function findFail(baseUrl) {
       const keyName = `error:instance:${baseUrl}`;

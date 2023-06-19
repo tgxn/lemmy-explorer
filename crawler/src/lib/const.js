@@ -12,12 +12,6 @@ export const CRAWL_TIMEOUT = {
   COMMUNITY: 5 * 60 * 1000, // 5 minutes in ms
 };
 
-// how many times to retry a failed job
-export const CRAWL_RETRY = {
-  INSTANCE: 1,
-  COMMUNITY: 0,
-};
-
 // the minimum amount of time between crawling the same instance
 const MIN_RECRAWL_HOURS = 4;
 export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
@@ -25,6 +19,10 @@ export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 // consider records to be aged after this long (to re-crawl)
 const RECRAWL_AGED_HOURS = 6;
 export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
+
+// if a server is identified as a non-lemmy server, ho often should we wait before checking again?
+const RECRAWL_FEDIVERSE_HOURS = 24 * 7;
+export const RECRAWL_FEDIVERSE_MS = hoursToMs(RECRAWL_FEDIVERSE_HOURS);
 
 // how often should the cron run with --cron
 export const AGED_CRON_EXPRESSION = "*/5 * * * *"; // every 5 minutes

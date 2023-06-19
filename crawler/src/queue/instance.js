@@ -7,7 +7,7 @@ import storage from "../storage.js";
 import { isValidLemmyDomain } from "../lib/validator.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
-import { CRAWL_TIMEOUT, CRAWL_RETRY, MIN_RECRAWL_MS } from "../lib/const.js";
+import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import CommunityQueue from "./community.js";
 import InstanceCrawler from "../crawl/instance.js";
@@ -51,7 +51,6 @@ export default class InstanceQueue {
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
     await job
       .timeout(CRAWL_TIMEOUT.INSTANCE)
-      .retries(CRAWL_RETRY.INSTANCE)
       .setId(trimmedUrl) // deduplicate
       .save();
     job.on("succeeded", (result) => {
@@ -92,7 +91,10 @@ export default class InstanceQueue {
     }
 
     // check for recent error
-    const lastError = await storage.failure.getOne("instance", instanceBaseUrl);
+    const lastError = await storage.tracking.getOneError(
+      "instance",
+      instanceBaseUrl
+    );
     if (lastError?.time) {
       // logging.info("lastError", lastError.time);
 
@@ -136,7 +138,9 @@ export default class InstanceQueue {
         if (knownFediverseServer) {
           if (
             knownFediverseServer.name !== "lemmy" &&
-            knownFediverseServer.name !== "lemmybb"
+            knownFediverseServer.name !== "lemmybb" &&
+            knownFediverseServer.time &&
+            Date.now() - knownFediverseServer.time < RECRAWL_FEDIVERSE_MS // re-scan fedi servers to check their status
           ) {
             throw new CrawlWarning(
               `Skipping - Known non-lemmy server ${knownFediverseServer.name}`
@@ -144,12 +148,27 @@ export default class InstanceQueue {
           }
         }
 
-        // check if instance has already been crawled within CRAWL_EVERY
-        const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
-        if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
-          throw new CrawlWarning(
-            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
-          );
+        // // check if instance has already been crawled within CRAWL_EVERY
+        // const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
+        // if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
+        //   throw new CrawlWarning(
+        //     `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
+        //   );
+        // }
+
+        const lastCrawlTs = await storage.tracking.getLastCrawl(
+          "instance",
+          instanceBaseUrl
+        );
+        if (lastCrawlTs) {
+          const lastCrawledMsAgo = Date.now() - lastCrawlTs;
+          if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
+            throw new CrawlWarning(
+              `Skipping - Crawled too recently (${
+                lastCrawledMsAgo / 1000
+              }s ago)`
+            );
+          }
         }
 
         const crawler = new InstanceCrawler(instanceBaseUrl);
@@ -202,8 +221,10 @@ export default class InstanceQueue {
           logging.verbose(
             `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
           );
-          // console.trace(error);
         }
+      } finally {
+        // set last scan time if it was success or failure.
+        await storage.tracking.setLastCrawl("instance", job.data.baseUrl);
       }
       return true;
     });

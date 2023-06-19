@@ -8,7 +8,7 @@ import CommunityStore from "./storage/community.js";
 import FediverseStore from "./storage/fediverse.js";
 import UptimeStore from "./storage/uptime.js";
 
-import FailureStore from "./storage/failure.js";
+import TrackingStore from "./storage/tracking.js";
 
 class Storage {
   constructor() {
@@ -26,7 +26,8 @@ class Storage {
     this.community = new CommunityStore(this);
     this.uptime = new UptimeStore(this);
     this.fediverse = new FediverseStore(this);
-    this.failure = new FailureStore(this);
+
+    this.tracking = new TrackingStore(this);
   }
 
   close() {
