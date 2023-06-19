@@ -13,54 +13,107 @@
  *
  */
 
-class FailureCrawl {}
+import storage from "../storage.js";
 
-// for testing invalid entries...
-import redis from "redis";
+import { getActorBaseUrl } from "../lib/validator.js";
 
-import { REDIS_URL } from "./src/lib/const.js";
+export default class FailureCrawl {
+  constructor() {}
 
-const client = redis.createClient({
-  url: REDIS_URL,
-});
-
-async function connectIfNeeded() {
-  if (!client.isOpen) {
-    await client.connect();
+  async clean() {
+    await this.cleanInstancesWithInvalidBaseUrl();
+    await this.cleanCommunitiesWithInvalidBaseUrl();
   }
-}
 
-async function listRedisWithKeys(key) {
-  const keys = await client.keys(key);
-  const object = {};
-  await Promise.all(
-    keys.map(async (key) => {
-      const keydata = await client.get(key);
-      object[key] = JSON.parse(keydata);
-    })
-  );
-  return object;
-}
+  isInstanceValid(baseUrl, actorId) {
+    const actorBaseUrl = getActorBaseUrl(actorId);
 
-async function main() {
-  await connectIfNeeded();
-
-  const keys = await listRedisWithKeys("instance:*");
-
-  //   console.log(keys);
-
-  // for each key/value
-  for (const [key, value] of Object.entries(keys)) {
-    if (!value?.siteData?.site) {
-      console.info("unknwn", key, value);
-
-      // delete
-      await client.del(key);
+    if (!actorBaseUrl) {
+      console.error(baseUrl, "INVALID fail", actorId);
+      return false;
     }
 
-    // do something with the key/value
-    // console.log(key);
+    if (actorBaseUrl !== baseUrl) {
+      console.error(baseUrl, "match FAIL", `${actorBaseUrl} != ${baseUrl}`);
+      return false;
+    }
+
+    return true;
+  }
+
+  // clean out any instances from the db that have non-matching baseurl and key, or if the actorid is invalid
+  async cleanInstancesWithInvalidBaseUrl() {
+    console.log("cleanInstancesWithInvalidBaseUrl");
+    const keys = await storage.instance.getAllWithKeys();
+
+    for (const [key, value] of Object.entries(keys)) {
+      const keyBaseUrl = key.replace("instance:", "");
+
+      const isValid = this.isInstanceValid(
+        keyBaseUrl,
+        value?.siteData?.site.actor_id
+      );
+      if (!isValid) {
+        await storage.instance.delete(keyBaseUrl);
+      }
+    }
+  }
+
+  async isCommunityValid(keyBaseUrl, keyCommmunity, record) {
+    const isInstanceValid = this.isInstanceValid(
+      keyBaseUrl,
+      record?.community?.actor_id
+    );
+
+    if (!isInstanceValid) {
+      return false;
+    }
+
+    if (record.community.name.toLowerCase() != keyCommmunity) {
+      console.error("MATCH NAME", keyCommmunity, record?.community.name);
+      return false;
+    }
+
+    return true;
+  }
+
+  async cleanCommunitiesWithInvalidBaseUrl() {
+    console.log("cleanCommunitiesWithInvalidBaseUrl");
+    const keys = await storage.community.getAllWithKeys();
+
+    for (const [key, value] of Object.entries(keys)) {
+      const keyBaseUrl = key.split(":")[1];
+      const keyCommmunity = key.split(":")[2];
+
+      const isValid = this.isCommunityValid(keyBaseUrl, keyCommmunity, value);
+      if (!isValid) {
+        await storage.community.delete(keyBaseUrl, keyCommmunity);
+        continue;
+      }
+
+      // check an instance exists for it=
+      const instance = await storage.instance.getOne(keyBaseUrl);
+      if (!instance) {
+        console.error("instance not found", keyBaseUrl, keyCommmunity);
+        await storage.community.delete(keyBaseUrl, keyCommmunity);
+        continue;
+      }
+    }
+  }
+
+  async cleanInvalidInstances() {
+    const keys = await storage.instance.getAll();
+
+    //   console.log(keys);
+
+    // for each key/value
+    for (const [key, value] of Object.entries(keys)) {
+      if (!value?.siteData?.site) {
+        console.info("unknwn", key, value);
+
+        // delete
+        // await client.del(key);
+      }
+    }
   }
 }
-
-main();

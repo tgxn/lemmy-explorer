@@ -18,10 +18,16 @@ export default class Instance {
   async getAll() {
     return this.storage.listRedis(`instance:*`);
   }
+  async getAllWithKeys() {
+    return this.storage.listRedisWithKeys(`instance:*`);
+  }
   async getOne(key) {
     return this.storage.getRedis(`instance:${key}`);
   }
   async upsert(baseUrl, value) {
     return this.storage.putRedis(`instance:${baseUrl}`, value);
+  }
+  async delete(key) {
+    return this.storage.deleteRedis(`instance:${key}`);
   }
 }

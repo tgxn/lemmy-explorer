@@ -74,6 +74,10 @@ class Storage {
       })
     );
   }
+
+  async deleteRedis(key) {
+    return this.client.del(key);
+  }
 }
 const storage = new Storage();
 export default storage;
