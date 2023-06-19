@@ -11,6 +11,7 @@ import {
 } from "../lib/const.js";
 
 import { CrawlError, CrawlWarning } from "../lib/error.js";
+import { getActorBaseUrl } from "../lib/validator.js";
 
 export default class InstanceCrawler {
   constructor(crawlDomain) {
@@ -46,13 +47,7 @@ export default class InstanceCrawler {
     throw new CrawlError("No instance data returned");
   }
 
-  /**
-   * Crawls Linked Lemmy Instance Stats
-   *
-   * Based on code from stats crawler.
-   * https://github.com/LemmyNet/lemmy-stats-crawler/blob/main/src/crawl.rs
-   */
-  async crawlInstance() {
+  async getNodeInfo() {
     const wellKnownUrl =
       "https://" + this.crawlDomain + "/.well-known/nodeinfo";
     const wellKnownInfo = await this.axios.get(wellKnownUrl);
@@ -71,22 +66,63 @@ export default class InstanceCrawler {
       throw new CrawlError("no diaspora rel in /.well-known/nodeinfo");
     }
 
-    const nodeinfo2 = await this.axios.get(nodeinfoUrl);
-    if (!nodeinfo2.data.software) {
-      throw new CrawlError("no software key in " + nodeinfoUrl);
-    }
-    const software = nodeinfo2.data.software;
+    const nodeNodeInfoData = await this.axios.get(nodeinfoUrl);
+    return nodeNodeInfoData.data;
+  }
 
-    // store all fediverse instance software for easy metrics
-    await storage.fediverse.upsert(this.crawlDomain, software);
-
-    if (software.name != "lemmy" && software.name != "lemmybb") {
-      throw new CrawlWarning(`not a lemmy instance (${software.name})`);
-    }
-
+  async getSiteInfo() {
     const siteInfo = await this.axios.get(
       "https://" + this.crawlDomain + "/api/v3/site"
     );
+
+    return siteInfo.data;
+  }
+
+  /**
+   * Crawls Linked Lemmy Instance Stats
+   *
+   * Based on code from stats crawler.
+   * https://github.com/LemmyNet/lemmy-stats-crawler/blob/main/src/crawl.rs
+   */
+  async crawlInstance() {
+    const nodeInfo = await this.getNodeInfo();
+    if (!nodeInfo.software) {
+      throw new CrawlError("no software key found for " + this.crawlDomain);
+    }
+
+    // store all fediverse instance software for easy metrics
+    await storage.fediverse.upsert(this.crawlDomain, nodeInfo.software);
+
+    // only allow lemmy instances
+    if (
+      nodeInfo.software.name != "lemmy" &&
+      nodeInfo.software.name != "lemmybb"
+    ) {
+      throw new CrawlWarning(
+        `not a lemmy instance (${nodeInfo.software.name})`
+      );
+    }
+
+    const siteInfo = await this.getSiteInfo();
+
+    const actorBaseUrl = getActorBaseUrl(siteInfo.site_view.site.actor_id);
+    if (!actorBaseUrl) {
+      console.error(
+        `${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`
+      );
+      throw new CrawlError(
+        `${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`
+      );
+    }
+
+    if (actorBaseUrl !== this.crawlDomain) {
+      console.error(
+        `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`
+      );
+      throw new CrawlError(
+        `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`
+      );
+    }
 
     /**
      * map all languages to array of their codes
@@ -116,25 +152,25 @@ export default class InstanceCrawler {
     }
 
     const discussionLangs = mapLangsToCodes(
-      siteInfo.data.all_languages,
-      siteInfo.data.discussion_languages
+      siteInfo.all_languages,
+      siteInfo.discussion_languages
     );
 
-    //   logging.info(siteInfo.data);
+    //   logging.info(siteInfo);
     const instanceData = {
       nodeData: {
-        software: nodeinfo2.data.software,
-        usage: nodeinfo2.data.usage,
-        openRegistrations: nodeinfo2.data.openRegistrations,
+        software: nodeInfo.software,
+        usage: nodeInfo.usage,
+        openRegistrations: nodeInfo.openRegistrations,
       },
       siteData: {
-        site: siteInfo.data.site_view.site,
-        config: siteInfo.data.site_view.local_site,
-        counts: siteInfo.data.site_view.counts,
-        admins: siteInfo.data.admins,
-        version: siteInfo.data.version,
-        taglines: siteInfo.data.taglines,
-        federated: siteInfo.data.federated_instances,
+        site: siteInfo.site_view.site,
+        config: siteInfo.site_view.local_site,
+        counts: siteInfo.site_view.counts,
+        admins: siteInfo.admins,
+        version: siteInfo.version,
+        taglines: siteInfo.taglines,
+        federated: siteInfo.federated_instances,
       },
       langs: discussionLangs,
     };

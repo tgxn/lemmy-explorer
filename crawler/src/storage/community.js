@@ -31,8 +31,11 @@ export default class Community {
   async getAll() {
     return this.storage.listRedis(`community:*`);
   }
-  async getOne(key) {
-    return this.storage.getRedis(`community:${key}`);
+  async getAllWithKeys() {
+    return this.storage.listRedisWithKeys(`community:*`);
+  }
+  async getOne(baseUrl, communityName) {
+    return this.storage.getRedis(`community:${baseUrl}:${communityName}`);
   }
   async upsert(baseUrl, community) {
     const storeData = {
@@ -43,5 +46,8 @@ export default class Community {
       `community:${baseUrl}:${community.community.name.toLowerCase()}`,
       storeData
     );
+  }
+  async delete(baseUrl, communityName) {
+    return this.storage.deleteRedis(`community:${baseUrl}:${communityName}`);
   }
 }
