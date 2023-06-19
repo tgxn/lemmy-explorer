@@ -5,13 +5,7 @@ import logging from "../lib/logging.js";
 import { open } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
 
-import {
-  listInstanceData,
-  listCommunityData,
-  listFediverseData,
-  listFailureData,
-  getLatestUptimeData,
-} from "../lib/storage.js";
+import storage from "../storage.js";
 
 import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
 
@@ -43,7 +37,7 @@ export default class CrawlOutput {
 
     // start crawler jobs for all of the instances this one is federated with
     instances.forEach((instance) => {
-      if (!instance.siteData.federated) {
+      if (!instance.siteData?.federated) {
         // logging.debug("no federated data", instance.siteData.site.actor_id);
         return;
       }
@@ -82,7 +76,7 @@ export default class CrawlOutput {
 
   async start() {
     // get uptime data from crawl table
-    const uptimeData = await getLatestUptimeData();
+    const uptimeData = await storage.uptime.getLatest();
     function getBaseUrlUptime(baseUrl) {
       const foundKey = uptimeData.nodes.find((k) => k.domain == baseUrl);
       return foundKey;
@@ -93,7 +87,7 @@ export default class CrawlOutput {
     /// Lemmy Instances
     ///
 
-    let failureData = await listFailureData("instance");
+    let failureData = await storage.tracking.getAllErrors("instance");
 
     function findFail(baseUrl) {
       const keyName = `error:instance:${baseUrl}`;
@@ -110,12 +104,16 @@ export default class CrawlOutput {
 
     logging.info(`Failures: ${Object.keys(failureData).length}`);
 
-    const instances = await listInstanceData();
+    const instances = await storage.instance.getAll();
 
     const [linkedFederation, allowedFederation, blockedFederation] =
       this.getFederationLists(instances);
 
     let storeData = instances.map((instance) => {
+      if (!instance.siteData?.site?.actor_id) {
+        logging.error("no actor_id", instance);
+        return null;
+      }
       let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
 
       const siteUptime = getBaseUrlUptime(siteBaseUrl);
@@ -176,6 +174,8 @@ export default class CrawlOutput {
 
     // remove those with errors that happened before time
     storeData = storeData.filter((instance) => {
+      if (instance == null) return false; // take out skipped
+
       const fail = findFail(instance.baseurl);
       if (fail) {
         if (instance.time < fail.time) {
@@ -215,7 +215,7 @@ export default class CrawlOutput {
     /// Lemmy Communities
     ///
 
-    const communities = await listCommunityData();
+    const communities = await storage.community.getAll();
 
     let storeCommunityData = communities.map((community) => {
       let siteBaseUrl = community.community.actor_id.split("/")[2];
@@ -298,7 +298,7 @@ export default class CrawlOutput {
     /// Fediverse Servers
     ///
 
-    const fediverseData = await listFediverseData();
+    const fediverseData = await storage.fediverse.getAll();
     // logging.info("Fediverse", fediverseData);
 
     let returnStats = [];
@@ -360,6 +360,8 @@ export default class CrawlOutput {
       "../frontend/public/overview.json",
       JSON.stringify(metrics)
     );
+
+    return true;
   }
 
   async writeJsonFile(filename, data) {

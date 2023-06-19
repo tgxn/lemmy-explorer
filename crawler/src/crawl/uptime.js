@@ -6,7 +6,7 @@ import logging from "../lib/logging.js";
 
 import axios from "axios";
 
-import { putUptimeData } from "../lib/storage.js";
+import storage from "../storage.js";
 
 import {
   CRAWLER_USER_AGENT,
@@ -43,7 +43,7 @@ export default class CrawlUptime {
     });
     logging.info(instances.data);
 
-    await putUptimeData({
+    await storage.uptime.addNew({
       timestamp: Date.now(),
       nodes: instances.data.data.nodes,
     });

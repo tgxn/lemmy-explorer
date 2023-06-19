@@ -7,3 +7,16 @@ services:
       - '6379:6379'
     volumes: 
       - ./.data/redis:/data
+
+  crawler:
+    build: .
+    image: crawler:local
+    restart: always
+    depends_on:
+      - redis
+    volumes:
+      - ./.data/crawler:/data 
+    environment:
+      REDIS_URL: redis://redis:6379
+      # AUTO_UPLOAD_S3: true
+      # PUBLISH_S3_BUCKET: lemmyexplorer-frontend-prod-sitebucket397a1860-cb3zfohjrbqb

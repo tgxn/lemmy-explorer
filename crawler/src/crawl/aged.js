@@ -3,11 +3,7 @@ import logging from "../lib/logging.js";
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";
 
-import {
-  listInstanceData,
-  listCommunityData,
-  listFediverseData,
-} from "../lib/storage.js";
+import storage from "../storage.js";
 
 import { RECRAWL_AGED_MS } from "../lib/const.js";
 
@@ -25,7 +21,7 @@ export default class CrawlAged {
   async getAged() {
     logging.info("Fetching Aged Instances", new Date().toLocaleString());
 
-    const instances = await listInstanceData();
+    const instances = await storage.instance.getAll();
 
     const agedInstances = instances.filter((instance) => {
       if (!instance.lastCrawled) return true; // not set
@@ -51,7 +47,7 @@ export default class CrawlAged {
     /// Lemmy Communities
     ///
 
-    const communities = await listCommunityData();
+    const communities = await storage.community.getAll();
 
     // remove communities not updated in 24h
     const agedCommunities = communities.filter((community) => {
