@@ -18,6 +18,8 @@ import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError } from "../components/Display";
 import { InstanceGrid } from "../components/GridView";
 
+import InstanceModal from "../components/InstanceModal";
+
 export default function Instances() {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
@@ -177,6 +179,8 @@ export default function Instances() {
           /> */}
         </Box>
       </Box>
+
+      <InstanceModal />
 
       <Box sx={{ my: 4 }}>
         {isLoading && !isError && <PageLoading />}

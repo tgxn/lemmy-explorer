@@ -142,7 +142,20 @@ export function BannerImage({ imageSrc }) {
         <React.Fragment>
           {isLoading && <ContentSkeleton />}
           {error && <ContentError />}
-          <img src={src} loading="lazy" width={"100%"} />
+          <img
+            src={src}
+            loading="lazy"
+            width={"100%"}
+            height={"100%"}
+            alt={"Banner"}
+            //scaling
+            style={{
+              // consdytr
+              objectFit: "contain",
+              objectPosition: "center center",
+              // aligh
+            }}
+          />
         </React.Fragment>
       )}
     </React.Fragment>

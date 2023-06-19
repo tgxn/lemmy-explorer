@@ -13,7 +13,7 @@ import MenuItem from "@mui/joy/MenuItem";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListDivider from "@mui/joy/ListDivider";
 
-import MoreVert from "@mui/icons-material/MoreVert";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -137,7 +137,7 @@ export default function HeaderSideMenu() {
           onClick={handleClick}
           sx={{ p: 1 }}
         >
-          <MoreVert />
+          <MoreVertIcon />
         </IconButton>
       </Tooltip>
       <Menu

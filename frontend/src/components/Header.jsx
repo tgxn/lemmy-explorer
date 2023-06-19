@@ -12,7 +12,7 @@ import Typography from "@mui/joy/Typography";
 import { SimpleNumberFormat } from "../components/Display";
 import HeaderSideMenu from "../components/HeaderSideMenu";
 
-export default function TabsVariants() {
+export default function Header() {
   const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "/meta.json");
 
   const [index, setIndex] = React.useState(0);

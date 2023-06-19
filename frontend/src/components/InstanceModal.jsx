@@ -1,4 +1,5 @@
-import * as React from "react";
+import React from "react";
+
 import Button from "@mui/joy/Button";
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
