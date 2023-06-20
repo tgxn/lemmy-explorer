@@ -32,22 +32,21 @@ export default class Instance {
   }
 
   // use these to track instance attributes over time
-  async setTrackedAttribute(instanceId, attributeName, attributeValue) {
+  async setTrackedAttribute(baseUrl, attributeName, attributeValue) {
     // hset or zadd?
-    await client.zadd(
-      `attributes:instance:${instanceId}:${attributeName}`,
-      Date.now(),
-      attributeValue
+    await this.storage.client.zAdd(
+      `attributes:instance:${baseUrl}:${attributeName}`,
+      [{ score: Date.now(), value: JSON.stringify(attributeValue) }]
     );
   }
-  async getAttributeArray(instanceId, attributeName) {
-    // return client.hgetall(`attributes:instance:${instanceId}:${attributeName}`);
+  async getAttributeArray(baseUrl, attributeName) {
+    // return client.hgetall(`attributes:instance:${baseUrl}:${attributeName}`);
 
     const start = 0;
     const end = Date.now();
 
-    return client.zrangebyscore(
-      `attributes:instance:${instanceId}:${attributeName}`,
+    return this.storage.client.zrangebyscore(
+      `attributes:instance:${baseUrl}:${attributeName}`,
       start,
       end
     );

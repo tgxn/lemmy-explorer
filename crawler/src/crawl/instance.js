@@ -175,6 +175,27 @@ export default class InstanceCrawler {
       langs: discussionLangs,
     };
 
+    try {
+      // store versioned attributes
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "version",
+        siteInfo.version
+      );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "users",
+        siteInfo.site_view.counts.users
+      );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "communities",
+        siteInfo.site_view.counts.communities
+      );
+    } catch (e) {
+      console.error(e);
+    }
+
     return instanceData;
   }
 }
