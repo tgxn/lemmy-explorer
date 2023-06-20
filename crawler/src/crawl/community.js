@@ -51,6 +51,13 @@ export default class CommunityCrawler {
           continue;
         }
 
+        await storage.community.setTrackedAttribute(
+          this.crawlDomain,
+          communityPart,
+          "subscribers",
+          community.community.counts.subscribers
+        );
+
         await storage.community.upsert(this.crawlDomain, community);
         communities++;
       }

@@ -20,12 +20,9 @@ export default class CrawlOutput {
 
   async loadAllData() {
     this.uptimeData = await storage.uptime.getLatest();
-
     this.instanceErrors = await storage.tracking.getAllErrors("instance");
     this.communityErrors = await storage.tracking.getAllErrors("community");
-
     this.instanceList = await storage.instance.getAll();
-
     this.communityList = await storage.community.getAll();
   }
 
@@ -35,6 +32,7 @@ export default class CrawlOutput {
     return foundKey;
   }
 
+  // find a failure for a given baseurl
   findFail(baseUrl) {
     const keyName = `error:instance:${baseUrl}`;
 
@@ -50,6 +48,7 @@ export default class CrawlOutput {
     return null;
   }
 
+  // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
   getFederationLists(instances) {
     // count instances by list
     let linkedFederation = {};

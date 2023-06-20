@@ -81,9 +81,8 @@ export default class CommunityQueue {
     this.queue.process(async (job) => {
       try {
         const instanceBaseUrl = job.data.baseUrl;
-        // check if community's instance has already been crawled within CRAWL_EVERY
-        // const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
 
+        // check if community's instance has already been crawled within MIN_RECRAWL_MS
         const lastCrawlTs = await storage.tracking.getLastCrawl(
           "community",
           instanceBaseUrl
@@ -98,12 +97,6 @@ export default class CommunityQueue {
             );
           }
         }
-
-        // if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
-        //   throw new CrawlWarning(
-        //     `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
-        //   );
-        // }
 
         const crawler = new CommunityCrawler(instanceBaseUrl);
         const communityData = await crawler.crawl();

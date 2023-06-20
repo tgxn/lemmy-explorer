@@ -20,7 +20,7 @@ export const CRAWL_TIMEOUT = {
 };
 
 // the minimum amount of time between crawling the same instance
-const MIN_RECRAWL_HOURS = 4;
+const MIN_RECRAWL_HOURS = 6;
 export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 
 // consider records to be aged after this long (to re-crawl)

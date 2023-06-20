@@ -75,6 +75,13 @@ class Storage {
     );
   }
 
+  async redisZAdd(key, score, value) {
+    if (typeof value !== "string") {
+      value = JSON.stringify(value);
+    }
+    return this.client.zAdd(key, [{ score, value }]);
+  }
+
   async deleteRedis(key) {
     return this.client.del(key);
   }
