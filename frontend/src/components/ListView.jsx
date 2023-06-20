@@ -18,6 +18,7 @@ import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrow
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import RestoreIcon from "@mui/icons-material/Restore";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 import { TinyNumber } from "./Display";
 import CopyLink from "./CopyLink";
@@ -137,7 +138,7 @@ const RenderHeaderRow = ({ className, columns, style }) => {
 export const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
   const theme = useTheme();
   const smallDisplay = useMediaQuery(theme.breakpoints.up("md"));
-  const xSmallDisplay = useMediaQuery(theme.breakpoints.down("xs"));
+
   return (
     <WindowScroller>
       {({ height, scrollTop }) => (
@@ -346,6 +347,7 @@ export const InstanceList = React.memo(function ({ items, homeBaseUrl }) {
                 flexGrow={1}
                 flexShrink={1}
                 width={width}
+                minWidth={350}
                 headerStyle={{
                   justifyContent: "left",
                 }}
@@ -466,18 +468,24 @@ export const InstanceList = React.memo(function ({ items, homeBaseUrl }) {
                 style={{
                   display: "flex",
                   justifyContent: "center",
+                  alignItems: "center",
                 }}
                 cellRenderer={({ rowData }) => (
-                  <>
+                  <Box
+                    sx={{
+                      px: 1,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Tooltip title="This instance's blocklist" variant="soft" placement="top-start">
                       <Box
                         sx={{
                           px: 1,
-                          cursor: "default",
-
-                          display: "inline",
+                          display: "flex",
+                          justifyContent: "center",
                           alignItems: "center",
-                          flexWrap: "wrap",
                         }}
                       >
                         <KeyboardDoubleArrowUpIcon /> {rowData.blocks.outgoing}
@@ -487,50 +495,85 @@ export const InstanceList = React.memo(function ({ items, homeBaseUrl }) {
                     <Tooltip title="Instances blocking this one" variant="soft" placement="top-start">
                       <Box
                         sx={{
-                          // display: "inline-block",
-
-                          cursor: "default",
-
-                          display: "inline",
+                          px: 1,
+                          display: "flex",
+                          justifyContent: "center",
                           alignItems: "center",
-                          flexWrap: "wrap",
                         }}
                       >
                         <KeyboardDoubleArrowDownIcon /> {rowData.blocks.incoming}
                       </Box>
                     </Tooltip>
-                  </>
+                  </Box>
                 )}
+              />
+
+              <Column
+                label="Version"
+                dataKey="version"
+                width={width}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                cellRenderer={({ rowData }) => <TinyNumber value={rowData.version} />}
               />
 
               <Column
                 label="First Seen"
                 dataKey="first_seen"
                 width={width}
+                headerStyle={{
+                  justifyContent: "flex-start",
+                }}
                 style={{
                   display: "flex",
-                  justifyContent: "center",
+                  justifyContent: "flex-start",
                 }}
-                cellRenderer={({ rowData }) => (
-                  <Tooltip title="First Seen" variant="soft" placement="top-start">
-                    <Box
-                      sx={{
-                        // display: "inline-block",
-                        px: 1,
-                        cursor: "default",
+                cellRenderer={({ rowData }) => {
+                  if (rowData.uptime?.uptime_alltime)
+                    return (
+                      <>
+                        <Tooltip title="First Seen" variant="soft" placement="top-start">
+                          <Box
+                            sx={{
+                              cursor: "default",
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                alignItems: "center",
+                              }}
+                            >
+                              <RestoreIcon />
+                              <Moment fromNow>{rowData.uptime?.date_created}</Moment>
+                            </Box>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                alignItems: "center",
+                              }}
+                            >
+                              <TrendingUpIcon />
+                              {rowData.uptime?.uptime_alltime}%
+                            </Box>
+                          </Box>
+                        </Tooltip>
+                      </>
+                    );
 
-                        display: "inline-flex",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <RestoreIcon />
-                      <Moment fromNow>{rowData.uptime?.date_created}</Moment>
-                      <TrendingUpIcon />
-                      {rowData.uptime?.uptime_alltime}%
-                    </Box>
-                  </Tooltip>
-                )}
+                  if (!rowData.uptime?.uptime_alltime)
+                    return (
+                      <>
+                        <ThumbDownIcon />
+                      </>
+                    );
+                }}
               />
             </VirtualTable>
           )}
