@@ -129,7 +129,7 @@ export default function ({ community, homeBaseUrl, ...rest }) {
             overflow: "hidden",
           }}
         >
-          {community.desc ? community.desc.substring(0, 200) : ""}
+          {community.desc ? community.desc : ""}
         </Typography>
       </CardContent>
       <CardOverflow

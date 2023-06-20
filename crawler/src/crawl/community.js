@@ -51,6 +51,13 @@ export default class CommunityCrawler {
           continue;
         }
 
+        await storage.community.setTrackedAttribute(
+          this.crawlDomain,
+          communityPart,
+          "subscribers",
+          community.community.counts.subscribers
+        );
+
         await storage.community.upsert(this.crawlDomain, community);
         communities++;
       }
@@ -62,18 +69,41 @@ export default class CommunityCrawler {
     return communityData;
   }
 
+  async getUrlWithRetry(url, options = {}, maxRetries = 3, current = 0) {
+    try {
+      return await this.axios.get(url, options);
+    } catch (e) {
+      if (current < maxRetries) {
+        logging.debug(`retrying url ${url} attempt ${current + 1}`);
+        return await this.callUrlWithRetry(
+          url,
+          options,
+          maxRetries,
+          current + 1
+        );
+      }
+      throw e;
+    }
+  }
+
   async crawlCommunityPaginatedList(pageNumber = 1) {
     logging.debug(`page number ${pageNumber}`);
-    const communityList = await this.axios.get(
-      "https://" + this.crawlDomain + "/api/v3/community/list",
-      {
-        params: {
-          type_: "Local",
-          page: pageNumber,
-          limit: 50,
-        },
-      }
-    );
+    let communityList;
+    try {
+      communityList = await this.getUrlWithRetry(
+        "https://" + this.crawlDomain + "/api/v3/community/list",
+        {
+          params: {
+            type_: "Local",
+            page: pageNumber,
+            limit: 50,
+          },
+        }
+      );
+    } catch (e) {
+      throw new CrawlError("Failed to get community page");
+    }
+
     try {
       const communities = communityList.data.communities;
 
@@ -82,6 +112,8 @@ export default class CommunityCrawler {
       list.push(...communities);
 
       if (communities.length == 50) {
+        // sleep for 1s between pages
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         const pagenew = await this.crawlCommunityPaginatedList(pageNumber + 1);
 
         list.push(...pagenew);
@@ -89,6 +121,7 @@ export default class CommunityCrawler {
 
       return list;
     } catch (e) {
+      console.error(e);
       throw new CrawlError("Community list not found in api response");
     }
   }

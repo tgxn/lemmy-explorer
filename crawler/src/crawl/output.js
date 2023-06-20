@@ -5,6 +5,8 @@ import logging from "../lib/logging.js";
 import { open } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
 
+import removeMd from "remove-markdown";
+
 import storage from "../storage.js";
 
 import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
@@ -20,12 +22,9 @@ export default class CrawlOutput {
 
   async loadAllData() {
     this.uptimeData = await storage.uptime.getLatest();
-
     this.instanceErrors = await storage.tracking.getAllErrors("instance");
     this.communityErrors = await storage.tracking.getAllErrors("community");
-
     this.instanceList = await storage.instance.getAll();
-
     this.communityList = await storage.community.getAll();
   }
 
@@ -35,6 +34,7 @@ export default class CrawlOutput {
     return foundKey;
   }
 
+  // find a failure for a given baseurl
   findFail(baseUrl) {
     const keyName = `error:instance:${baseUrl}`;
 
@@ -50,6 +50,12 @@ export default class CrawlOutput {
     return null;
   }
 
+  stripMarkdown(text) {
+    // strip markdown
+    return removeMd(text);
+  }
+
+  // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
   getFederationLists(instances) {
     // count instances by list
     let linkedFederation = {};
@@ -149,7 +155,7 @@ export default class CrawlOutput {
         baseurl: siteBaseUrl,
         url: instance.siteData.site.actor_id,
         name: instance.siteData.site.name,
-        desc: instance.siteData.site.description,
+        desc: this.stripMarkdown(instance.siteData.site.description),
 
         // config
         downvotes: instance.siteData.config?.enable_downvotes,
@@ -254,7 +260,10 @@ export default class CrawlOutput {
         url: community.community.actor_id,
         name: community.community.name,
         title: community.community.title,
-        desc: community.community.description,
+        desc: this.stripMarkdown(community.community.description).substring(
+          0,
+          350
+        ),
         icon: community.community.icon,
         banner: community.community.banner,
         nsfw: community.community.nsfw,
