@@ -62,11 +62,28 @@ export default class CommunityCrawler {
     return communityData;
   }
 
+  async getUrlWithRetry(url, options = {}, maxRetries = 3, current = 0) {
+    try {
+      return await this.axios.get(url, options);
+    } catch (e) {
+      if (current < maxRetries) {
+        logging.debug(`retrying url ${url} attempt ${current + 1}`);
+        return await this.callUrlWithRetry(
+          url,
+          options,
+          maxRetries,
+          current + 1
+        );
+      }
+      throw e;
+    }
+  }
+
   async crawlCommunityPaginatedList(pageNumber = 1) {
     logging.debug(`page number ${pageNumber}`);
     let communityList;
     try {
-      communityList = await this.axios.get(
+      communityList = await this.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community/list",
         {
           params: {
@@ -77,17 +94,7 @@ export default class CommunityCrawler {
         }
       );
     } catch (e) {
-      // try page again
-      communityList = await this.axios.get(
-        "https://" + this.crawlDomain + "/api/v3/community/list",
-        {
-          params: {
-            type_: "Local",
-            page: pageNumber,
-            limit: 50,
-          },
-        }
-      );
+      throw new CrawlError("Failed to get community page");
     }
 
     try {
