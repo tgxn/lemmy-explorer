@@ -12,6 +12,12 @@ import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 import Chip from "@mui/joy/Chip";
 
+import ButtonGroup from "@mui/joy/ButtonGroup";
+import IconButton from "@mui/joy/IconButton";
+
+import ViewCompactIcon from "@mui/icons-material/ViewCompact";
+import ViewListIcon from "@mui/icons-material/ViewList";
+
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
@@ -19,9 +25,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import LanguageFilter from "../components/LanguageFilter";
 import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
 import { InstanceGrid } from "../components/GridView";
+import { InstanceList } from "../components/ListView";
 
 export default function Instances() {
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+
+  const [viewType, setViewType] = useStorage("instance.viewType", "grid");
 
   const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
   const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
@@ -30,7 +39,7 @@ export default function Instances() {
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
   const debounceFilterText = useDebounce(filterText, 500);
 
-  const [filterLangCodes, setFilterLangCodes] = useStorage("community.filterLangCodes", []);
+  const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
 
   // this applies the filtering and sorting to the data loaded from .json
   const instancesData = React.useMemo(() => {
@@ -172,28 +181,64 @@ export default function Instances() {
             alignItems: "center",
           }}
         >
-          <Chip
+          {isSuccess && (
+            <Chip
+              sx={{
+                borderRadius: "4px",
+                mr: 1,
+              }}
+              color="info"
+            >
+              Instances:{" "}
+              <SimpleNumberFormat
+                value={instancesData.length}
+                displayType={"text"}
+                decimalScale={2}
+                thousandSeparator={","}
+              />
+            </Chip>
+          )}
+
+          <ButtonGroup
             sx={{
-              borderRadius: "4px",
-              mr: 1,
+              "--ButtonGroup-radius": "3px",
+              "--ButtonGroup-separatorSize": "0px",
+              "--ButtonGroup-connected": "0",
+              "--joy-palette-neutral-plainHoverBg": "transparent",
+              "--joy-palette-neutral-plainActiveBg": "transparent",
+              "&:hover": {
+                boxShadow: "inset 0px 0px 0px 1px var(--joy-palette-neutral-softBg)",
+                "--ButtonGroup-connected": "1",
+              },
             }}
-            color="info"
           >
-            Instances:{" "}
-            <SimpleNumberFormat
-              value={instancesData.length}
-              displayType={"text"}
-              decimalScale={2}
-              thousandSeparator={","}
-            />
-          </Chip>
+            <IconButton
+              variant={viewType == "grid" ? "soft" : "plain"}
+              onClick={() => setViewType("grid")}
+              sx={{
+                p: 1,
+              }}
+            >
+              <ViewCompactIcon /> Grid View
+            </IconButton>
+            <IconButton
+              variant={viewType == "list" ? "soft" : "plain"}
+              onClick={() => setViewType("list")}
+              sx={{
+                p: 1,
+              }}
+            >
+              <ViewListIcon /> List View
+            </IconButton>
+          </ButtonGroup>
         </Box>
       </Box>
 
       <Box sx={{ my: 4 }}>
         {isLoading && !isError && <PageLoading />}
         {isError && <PageError error={error} />}
-        {isSuccess && <InstanceGrid items={instancesData} />}
+        {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
+        {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}
       </Box>
     </Container>
   );

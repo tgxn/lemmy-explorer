@@ -11,7 +11,6 @@ import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import Checkbox from "@mui/joy/Checkbox";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
@@ -20,21 +19,12 @@ import IconButton from "@mui/joy/IconButton";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
-
-import GridViewIcon from "@mui/icons-material/GridView";
-import AppsIcon from "@mui/icons-material/Apps";
-import ViewModuleIcon from "@mui/icons-material/ViewModule";
-
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import TocIcon from "@mui/icons-material/Toc";
+import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
 import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
-
 import { CommunityGrid } from "../components/GridView";
-
 import { CommunityList } from "../components/ListView";
-
 import TriStateCheckbox from "../components/TriStateCheckbox";
 
 function Communities({ homeBaseUrl }) {
@@ -229,38 +219,30 @@ function Communities({ homeBaseUrl }) {
             </Chip>
           )}
 
-          {/* <Tabs aria-label="Disabled tabs" defaultValue={0} sx={{ borderRadius: "sm" }} size="sm">
-            <TabList sx={{ "--List-radius": "8px", "--List-padding": "4px" }}>
-              <Tab
-                sx={{
-                  display: "flex",
-                }}
-              >
-                <ListItemDecorator>
-                  <GridViewIcon />{" "}
-                </ListItemDecorator>
-                Grid View
-              </Tab>
-              <Tab>
-                <ListItemDecorator>
-                  <ViewListIcon />{" "}
-                </ListItemDecorator>
-                List View
-              </Tab>
-            </TabList>
-          </Tabs> */}
-          <ButtonGroup>
+          <ButtonGroup
+            sx={{
+              "--ButtonGroup-radius": "3px",
+              "--ButtonGroup-separatorSize": "0px",
+              "--ButtonGroup-connected": "0",
+              "--joy-palette-neutral-plainHoverBg": "transparent",
+              "--joy-palette-neutral-plainActiveBg": "transparent",
+              "&:hover": {
+                boxShadow: "inset 0px 0px 0px 1px var(--joy-palette-neutral-softBg)",
+                "--ButtonGroup-connected": "1",
+              },
+            }}
+          >
             <IconButton
-              variant={viewType == "grid" ? "soft" : "outlined"}
+              variant={viewType == "grid" ? "soft" : "plain"}
               onClick={() => setViewType("grid")}
               sx={{
                 p: 1,
               }}
             >
-              <ViewModuleIcon /> Grid View
+              <ViewCompactIcon /> Grid View
             </IconButton>
             <IconButton
-              variant={viewType == "list" ? "soft" : "outlined"}
+              variant={viewType == "list" ? "soft" : "plain"}
               onClick={() => setViewType("list")}
               sx={{
                 p: 1,
