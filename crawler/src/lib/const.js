@@ -38,7 +38,7 @@ export const AGED_CRON_EXPRESSION = "*/5 * * * *"; // every 5 minutes
 export const UPTIME_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
 
 // the maximum age for output items to be included in the json dumps
-const OUTPUT_MAX_AGE_HOURS = 12;
+const OUTPUT_MAX_AGE_HOURS = 24;
 export const OUTPUT_MAX_AGE_MS = OUTPUT_MAX_AGE_HOURS * 60 * 60 * 1000;
 
 // for each request we make, after how much time should axios be configured to timeout
@@ -343,7 +343,12 @@ export const FEDDIT_URLS = [
   "zoo.splitlinux.org",
 ];
 
-export const START_URLS = ["lemmy.tgxn.net", ...FEDDIT_URLS];
+export const START_URLS = [
+  "lemmy.tgxn.net",
+  "lemmygrad.ml",
+  "lemmynsfw.com",
+  ...FEDDIT_URLS,
+];
 
 // used for the crawler headers when making requests
 export const CRAWLER_USER_AGENT = "lemmy-explorer-crawler/1.0.0";

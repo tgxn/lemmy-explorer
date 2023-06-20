@@ -58,7 +58,7 @@ export default class Community {
     attributeName,
     attributeValue
   ) {
-    await this.storage.redisZAdd(
+    return await this.storage.redisZAdd(
       `attributes:community:${baseUrl}:${communityName}:${attributeName}`,
       Date.now(),
       attributeValue

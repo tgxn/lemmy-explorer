@@ -55,7 +55,7 @@ export default class CommunityCrawler {
           this.crawlDomain,
           communityPart,
           "subscribers",
-          community.community.counts.subscribers
+          community.counts.subscribers
         );
 
         await storage.community.upsert(this.crawlDomain, community);

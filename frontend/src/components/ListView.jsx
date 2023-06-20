@@ -1,12 +1,23 @@
 import React from "react";
 
+import Moment from "react-moment";
+
 import { AutoSizer, Column, Table as VirtualTable, WindowScroller } from "react-virtualized";
+
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 import Avatar from "@mui/joy/Avatar";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
 import Link from "@mui/joy/Link";
+import Tooltip from "@mui/joy/Tooltip";
+
+import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
+import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import RestoreIcon from "@mui/icons-material/Restore";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 import { TinyNumber } from "./Display";
 import CopyLink from "./CopyLink";
@@ -110,6 +121,8 @@ const RenderHeaderRow = ({ className, columns, style }) => {
       style={{
         ...style,
         fontWeight: "bold",
+
+        color: "var(--joy-palette-primary-50)",
         fontSize: "16px",
         height: "40px",
         margin: 0,
@@ -122,6 +135,9 @@ const RenderHeaderRow = ({ className, columns, style }) => {
 };
 
 export const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
+  const theme = useTheme();
+  const smallDisplay = useMediaQuery(theme.breakpoints.up("md"));
+  const xSmallDisplay = useMediaQuery(theme.breakpoints.down("xs"));
   return (
     <WindowScroller>
       {({ height, scrollTop }) => (
@@ -250,16 +266,18 @@ export const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
                 )}
               />
 
-              <Column
-                label="Subscribers"
-                dataKey="subscribers"
-                width={width}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-                cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.subscribers} />}
-              />
+              {!smallDisplay && (
+                <Column
+                  label="Subscribers"
+                  dataKey="subscribers"
+                  width={width}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                  cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.subscribers} />}
+                />
+              )}
 
               <Column
                 label="Posts"
@@ -420,17 +438,6 @@ export const InstanceList = React.memo(function ({ items, homeBaseUrl }) {
               />
 
               <Column
-                label="Subscribers"
-                dataKey="subscribers"
-                width={width}
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-                cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.subscribers} />}
-              />
-
-              <Column
                 label="Posts"
                 dataKey="posts"
                 width={width}
@@ -450,6 +457,80 @@ export const InstanceList = React.memo(function ({ items, homeBaseUrl }) {
                   justifyContent: "center",
                 }}
                 cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.comments} />}
+              />
+
+              <Column
+                label="Blocks"
+                dataKey="blocks"
+                width={width}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                cellRenderer={({ rowData }) => (
+                  <>
+                    <Tooltip title="This instance's blocklist" variant="soft" placement="top-start">
+                      <Box
+                        sx={{
+                          px: 1,
+                          cursor: "default",
+
+                          display: "inline",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <KeyboardDoubleArrowUpIcon /> {rowData.blocks.outgoing}
+                      </Box>
+                    </Tooltip>
+
+                    <Tooltip title="Instances blocking this one" variant="soft" placement="top-start">
+                      <Box
+                        sx={{
+                          // display: "inline-block",
+
+                          cursor: "default",
+
+                          display: "inline",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <KeyboardDoubleArrowDownIcon /> {rowData.blocks.incoming}
+                      </Box>
+                    </Tooltip>
+                  </>
+                )}
+              />
+
+              <Column
+                label="First Seen"
+                dataKey="first_seen"
+                width={width}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+                cellRenderer={({ rowData }) => (
+                  <Tooltip title="First Seen" variant="soft" placement="top-start">
+                    <Box
+                      sx={{
+                        // display: "inline-block",
+                        px: 1,
+                        cursor: "default",
+
+                        display: "inline-flex",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <RestoreIcon />
+                      <Moment fromNow>{rowData.uptime?.date_created}</Moment>
+                      <TrendingUpIcon />
+                      {rowData.uptime?.uptime_alltime}%
+                    </Box>
+                  </Tooltip>
+                )}
               />
             </VirtualTable>
           )}

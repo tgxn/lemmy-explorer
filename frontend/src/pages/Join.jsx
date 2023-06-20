@@ -5,7 +5,6 @@ import Moment from "react-moment";
 import { useNavigate } from "react-router-dom";
 import useQueryCache from "../hooks/useQueryCache";
 
-import Card from "@mui/joy/Card";
 import Container from "@mui/joy/Container";
 import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
