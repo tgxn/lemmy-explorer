@@ -260,7 +260,10 @@ export default class CrawlOutput {
         url: community.community.actor_id,
         name: community.community.name,
         title: community.community.title,
-        desc: this.stripMarkdown(community.community.description),
+        desc: this.stripMarkdown(community.community.description).substring(
+          0,
+          350
+        ),
         icon: community.community.icon,
         banner: community.community.banner,
         nsfw: community.community.nsfw,
