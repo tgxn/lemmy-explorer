@@ -175,6 +175,19 @@ export default class InstanceQueue {
           }
         }
 
+        const lastErrorTs = await storage.tracking.getOneError(
+          "instance",
+          instanceBaseUrl
+        );
+        if (lastErrorTs) {
+          const lastErrorMsAgo = Date.now() - lastErrorTs;
+          if (lastErrorMsAgo < MIN_RECRAWL_MS) {
+            throw new CrawlWarning(
+              `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
+            );
+          }
+        }
+
         const crawler = new InstanceCrawler(instanceBaseUrl);
         const instanceData = await crawler.crawl();
 
@@ -227,7 +240,7 @@ export default class InstanceQueue {
           );
         }
       } finally {
-        // set last scan time if it was success or failure.
+        // set last scan time if it was success or error
         await storage.tracking.setLastCrawl("instance", job.data.baseUrl);
       }
       return true;

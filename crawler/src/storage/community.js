@@ -50,4 +50,18 @@ export default class Community {
   async delete(baseUrl, communityName) {
     return this.storage.deleteRedis(`community:${baseUrl}:${communityName}`);
   }
+
+  // use these to track community attributes over time
+  async setTrackedAttribute(
+    baseUrl,
+    communityName,
+    attributeName,
+    attributeValue
+  ) {
+    return await this.storage.redisZAdd(
+      `attributes:community:${baseUrl}:${communityName}:${attributeName}`,
+      Date.now(),
+      attributeValue
+    );
+  }
 }

@@ -5,17 +5,57 @@ import logging from "../lib/logging.js";
 import { open } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
 
+import removeMd from "remove-markdown";
+
 import storage from "../storage.js";
 
 import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
 
 export default class CrawlOutput {
   constructor() {
-    this.storeData = [];
-    this.storeCommunityData = [];
-    this.storeFediverseData = [];
+    this.uptimeData = null;
+    this.instanceErrors = null;
+    this.communityErrors = null;
+    this.instanceList = null;
+    this.communityList = null;
   }
 
+  async loadAllData() {
+    this.uptimeData = await storage.uptime.getLatest();
+    this.instanceErrors = await storage.tracking.getAllErrors("instance");
+    this.communityErrors = await storage.tracking.getAllErrors("community");
+    this.instanceList = await storage.instance.getAll();
+    this.communityList = await storage.community.getAll();
+  }
+
+  /// find updatenode for given baseurl
+  getBaseUrlUptime(baseUrl) {
+    const foundKey = this.uptimeData.nodes.find((k) => k.domain == baseUrl);
+    return foundKey;
+  }
+
+  // find a failure for a given baseurl
+  findFail(baseUrl) {
+    const keyName = `error:instance:${baseUrl}`;
+
+    const value =
+      this.instanceErrors[
+        Object.keys(this.instanceErrors).find((k) => k === keyName)
+      ];
+
+    if (value) {
+      return value;
+    }
+
+    return null;
+  }
+
+  stripMarkdown(text) {
+    // strip markdown
+    return removeMd(text);
+  }
+
+  // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
   getFederationLists(instances) {
     // count instances by list
     let linkedFederation = {};
@@ -75,48 +115,22 @@ export default class CrawlOutput {
   }
 
   async start() {
-    // get uptime data from crawl table
-    const uptimeData = await storage.uptime.getLatest();
-    function getBaseUrlUptime(baseUrl) {
-      const foundKey = uptimeData.nodes.find((k) => k.domain == baseUrl);
-      return foundKey;
-    }
-    logging.info(`Uptime: ${uptimeData.nodes.length}`);
+    await this.loadAllData();
 
-    ///
-    /// Lemmy Instances
-    ///
-
-    let failureData = await storage.tracking.getAllErrors("instance");
-
-    function findFail(baseUrl) {
-      const keyName = `error:instance:${baseUrl}`;
-
-      const value =
-        failureData[Object.keys(failureData).find((k) => k === keyName)];
-
-      if (value) {
-        return value;
-      }
-
-      return null;
-    }
-
-    logging.info(`Failures: ${Object.keys(failureData).length}`);
-
-    const instances = await storage.instance.getAll();
+    logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
+    logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
 
     const [linkedFederation, allowedFederation, blockedFederation] =
-      this.getFederationLists(instances);
+      this.getFederationLists(this.instanceList);
 
-    let storeData = instances.map((instance) => {
+    let storeData = this.instanceList.map((instance) => {
       if (!instance.siteData?.site?.actor_id) {
         logging.error("no actor_id", instance);
         return null;
       }
       let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
 
-      const siteUptime = getBaseUrlUptime(siteBaseUrl);
+      const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
 
       const incomingBlocks = blockedFederation[siteBaseUrl] || 0;
       const outgoingBlocks = instance.siteData.federated?.blocked?.length || 0;
@@ -141,7 +155,7 @@ export default class CrawlOutput {
         baseurl: siteBaseUrl,
         url: instance.siteData.site.actor_id,
         name: instance.siteData.site.name,
-        desc: instance.siteData.site.description,
+        desc: this.stripMarkdown(instance.siteData.site.description),
 
         // config
         downvotes: instance.siteData.config?.enable_downvotes,
@@ -176,7 +190,7 @@ export default class CrawlOutput {
     storeData = storeData.filter((instance) => {
       if (instance == null) return false; // take out skipped
 
-      const fail = findFail(instance.baseurl);
+      const fail = this.findFail(instance.baseurl);
       if (fail) {
         if (instance.time < fail.time) {
           // logging.info("filtered due to fail", instance.baseurl, fail.error);
@@ -204,7 +218,9 @@ export default class CrawlOutput {
       (instance) => instance.url !== "" || instance.name !== ""
     );
 
-    logging.info(`Instances ${instances.length} -> ${storeData.length}`);
+    logging.info(
+      `Instances ${this.instanceList.length} -> ${storeData.length}`
+    );
 
     await this.writeJsonFile(
       "../frontend/public/instances.json",
@@ -244,7 +260,10 @@ export default class CrawlOutput {
         url: community.community.actor_id,
         name: community.community.name,
         title: community.community.title,
-        desc: community.community.description,
+        desc: this.stripMarkdown(community.community.description).substring(
+          0,
+          350
+        ),
         icon: community.community.icon,
         banner: community.community.banner,
         nsfw: community.community.nsfw,
@@ -256,7 +275,7 @@ export default class CrawlOutput {
 
     // remove those with errors that happened before updated time
     storeCommunityData = storeCommunityData.filter((community) => {
-      const fail = findFail(community.baseurl);
+      const fail = this.findFail(community.baseurl);
       if (fail) {
         if (community.time < fail.time) {
           // logging.info("filtered due to fail", fail, instance.baseurl);
