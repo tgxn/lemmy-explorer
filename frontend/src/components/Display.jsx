@@ -131,7 +131,6 @@ export function TinyNumber({ value }) {
 export function BannerImage({ imageSrc }) {
   const { src, isLoading, error } = useImage({
     srcList: imageSrc,
-
     useSuspense: false,
   });
 

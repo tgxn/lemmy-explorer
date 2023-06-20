@@ -4,7 +4,7 @@ import { LOG_LEVEL } from "../lib/const.js";
 
 const logging = {
   silly: () => {},
-  trace: () => {},
+  trace: console.trace,
   verbose: console.trace,
   debug: console.debug,
   info: console.info,
