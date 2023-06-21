@@ -28,7 +28,7 @@ import { CommunityGrid } from "../components/GridView";
 import { CommunityList } from "../components/ListView";
 import TriStateCheckbox from "../components/TriStateCheckbox";
 
-function Communities({ homeBaseUrl }) {
+function Communities({ homeBaseUrl, filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
@@ -78,6 +78,11 @@ function Communities({ homeBaseUrl }) {
     console.log(`Loaded ${data.length} communities`);
 
     let communties = [...data];
+
+    // hide sus instances by default
+    if (filterSuspicious) {
+      communties = communties.filter((community) => !community.isSuspicious);
+    }
 
     // Variable "ShowNSFW" is used to drive this
     //  Default:    Hide NSFW     false
@@ -185,7 +190,7 @@ function Communities({ homeBaseUrl }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner]);
+  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner, filterSuspicious]);
 
   return (
     <Container
@@ -332,6 +337,7 @@ function Communities({ homeBaseUrl }) {
 }
 
 const mapStateToProps = (state) => ({
+  filterSuspicious: state.configReducer.filterSuspicious,
   homeBaseUrl: state.configReducer.homeBaseUrl,
 });
 export default connect(mapStateToProps)(Communities);

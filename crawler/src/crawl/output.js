@@ -379,6 +379,12 @@ export default class CrawlOutput {
       // also score based subscribers
       score = score * community.counts.subscribers;
 
+      const relatedInstance = this.instanceList.find(
+        (instance) =>
+          instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
+      );
+      const isInstanceSus = this.isInstanceSus(relatedInstance);
+
       return {
         baseurl: siteBaseUrl,
         url: community.community.actor_id,
@@ -393,6 +399,8 @@ export default class CrawlOutput {
         nsfw: community.community.nsfw,
         counts: community.counts,
         time: community.lastCrawled || null,
+
+        isSuspicious: isInstanceSus,
         score: score,
       };
     });
