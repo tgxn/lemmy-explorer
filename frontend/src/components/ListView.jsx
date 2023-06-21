@@ -218,19 +218,31 @@ export const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          <Link
-                            level="body1"
-                            variant="plain"
-                            alt={rowData.name}
-                            color="neutral"
-                            href={rowData.url}
-                            target="_blank"
-                            sx={{
-                              color: "var(--joy-palette-primary-50)",
-                            }}
+                          <Tooltip
+                            title={"Visit: " + rowData.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
+                            variant="soft"
+                            placement="top-start"
                           >
-                            {rowData.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-                          </Link>
+                            <Link
+                              level="body1"
+                              variant="plain"
+                              alt={rowData.name}
+                              color="neutral"
+                              href={
+                                homeBaseUrl
+                                  ? `https://${homeBaseUrl}/c/${rowData.name}@${
+                                      rowData.url && rowData.url.split("/")[2]
+                                    }`
+                                  : rowData.url
+                              }
+                              target="_blank"
+                              sx={{
+                                color: "var(--joy-palette-primary-50)",
+                              }}
+                            >
+                              {rowData.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+                            </Link>
+                          </Tooltip>
                         </Typography>
 
                         <Typography level="body3">
@@ -309,7 +321,7 @@ export const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
   );
 });
 
-export const InstanceList = React.memo(function ({ items, homeBaseUrl }) {
+export const InstanceList = React.memo(function ({ items }) {
   return (
     <WindowScroller>
       {({ height, scrollTop }) => (

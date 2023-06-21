@@ -8,7 +8,7 @@ import { NumericFormat } from "react-number-format";
 
 import Box from "@mui/joy/Box";
 
-export function ContentSkeleton({ radius = "4px" }) {
+export const ContentSkeleton = React.memo(function ({ radius = "4px" }) {
   return (
     <Box
       sx={(theme) => ({
@@ -33,9 +33,9 @@ export function ContentSkeleton({ radius = "4px" }) {
       />
     </Box>
   );
-}
+});
 
-export function ContentError({ message = false, bgcolor = "#ff55551c" }) {
+export const ContentError = React.memo(function ({ message = false, bgcolor = "#ff55551c" }) {
   return (
     <Box
       component="div"
@@ -62,9 +62,9 @@ export function ContentError({ message = false, bgcolor = "#ff55551c" }) {
       </>
     </Box>
   );
-}
+});
 
-export function PageLoading() {
+export const PageLoading = React.memo(function () {
   return (
     <Box
       sx={(theme) => ({
@@ -87,9 +87,9 @@ export function PageLoading() {
       />
     </Box>
   );
-}
+});
 
-export function PageError() {
+export const PageError = React.memo(function () {
   return (
     <Box
       sx={(theme) => ({
@@ -108,11 +108,11 @@ export function PageError() {
       <br /> You could try reloading the page!
     </Box>
   );
-}
+});
 
-export function SimpleNumberFormat({ value }) {
+export const SimpleNumberFormat = React.memo(function SimpleNumberFormat({ value }) {
   return <NumericFormat displayType="text" value={value} allowLeadingZeros thousandSeparator="," />;
-}
+});
 
 export function TinyNumber({ value }) {
   const number = React.useMemo(() => {
@@ -128,7 +128,7 @@ export function TinyNumber({ value }) {
   return <React.Fragment>{number}</React.Fragment>;
 }
 
-export function BannerImage({ imageSrc }) {
+export const BannerImage = React.memo(function BannerImage({ imageSrc }) {
   const { src, isLoading, error } = useImage({
     srcList: imageSrc,
     useSuspense: false,
@@ -146,4 +146,4 @@ export function BannerImage({ imageSrc }) {
       )}
     </React.Fragment>
   );
-}
+});

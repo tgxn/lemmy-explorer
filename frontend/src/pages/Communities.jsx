@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 
+import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
 import useQueryCache from "../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -28,6 +29,8 @@ import { CommunityList } from "../components/ListView";
 import TriStateCheckbox from "../components/TriStateCheckbox";
 
 function Communities({ homeBaseUrl }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const { isLoading, isSuccess, isError, error, data } = useQueryCache(
     "communitiesData",
     "/communities.json",
@@ -35,14 +38,36 @@ function Communities({ homeBaseUrl }) {
 
   const [viewType, setViewType] = useStorage("community.viewType", "grid");
 
-  const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
-  const [showNSFW, setShowNSFW] = useStorage("community.showNSFW", false);
-
-  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
+  const [orderBy, setOrderBy] = React.useState("smart");
+  const [showNSFW, setShowNSFW] = React.useState(false);
+  const [hideNoBanner, setHideNoBanner] = React.useState(false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = useStorage("community.filterText", "");
+  const [filterText, setFilterText] = React.useState("");
   const debounceFilterText = useDebounce(filterText, 500);
+
+  // load query params
+  useEffect(() => {
+    if (searchParams.has("query")) setFilterText(searchParams.get("query"));
+    if (searchParams.has("order")) setOrderBy(searchParams.get("order"));
+    if (searchParams.has("nsfw"))
+      setShowNSFW(
+        searchParams.get("nsfw") == "true" ? true : searchParams.get("nsfw") == "null" ? null : false,
+      );
+    if (searchParams.has("banner")) setHideNoBanner(searchParams.get("banner"));
+  }, []);
+
+  // update query params
+  useEffect(() => {
+    const parms = {};
+
+    if (filterText) parms.query = filterText;
+    if (orderBy != "smart") parms.order = orderBy;
+    if (showNSFW != false) parms.nsfw = showNSFW;
+    if (hideNoBanner != false) parms.banner = hideNoBanner;
+
+    setSearchParams(parms);
+  }, [orderBy, showNSFW, hideNoBanner, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
