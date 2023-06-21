@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
 
+import { useSearchParams } from "react-router-dom";
 import useQueryCache from "../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
 import useStorage from "../hooks/useStorage";
@@ -28,6 +30,8 @@ import { InstanceGrid } from "../components/GridView";
 import { InstanceList } from "../components/ListView";
 
 export default function Instances() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
 
   const [viewType, setViewType] = useStorage("instance.viewType", "grid");
@@ -40,6 +44,24 @@ export default function Instances() {
   const debounceFilterText = useDebounce(filterText, 500);
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
+
+  // load query params
+  useEffect(() => {
+    if (searchParams.has("query")) setFilterText(searchParams.get("query"));
+    if (searchParams.has("order")) setOrderBy(searchParams.get("order"));
+    if (searchParams.has("open")) setShowOpenOnly(searchParams.get("open"));
+  }, []);
+
+  // update query params
+  useEffect(() => {
+    const parms = {};
+
+    if (filterText) parms.query = filterText;
+    if (orderBy != "smart") parms.order = orderBy;
+    if (showOpenOnly) parms.open = showOpenOnly;
+
+    setSearchParams(parms);
+  }, [showOpenOnly, orderBy, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const instancesData = React.useMemo(() => {
@@ -90,10 +112,11 @@ export default function Instances() {
         console.log(`Excluding ${exclude.length} terms`);
         exclude.forEach((term) => {
           instances = instances.filter((instance) => {
-            return (
-              (instance.name && !instance.name.toLowerCase().includes(term)) ||
-              (instance.title && !instance.title.toLowerCase().includes(term)) ||
-              (instance.desc && !instance.desc.toLowerCase().includes(term))
+            return !(
+              (instance.name && instance.name.toLowerCase().includes(term)) ||
+              (instance.baseurl && instance.baseurl.toLowerCase().includes(term)) ||
+              (instance.title && instance.title.toLowerCase().includes(term)) ||
+              (instance.desc && instance.desc.toLowerCase().includes(term))
             );
           });
         });
