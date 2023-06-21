@@ -30,7 +30,7 @@ export default class CrawlOutput {
 
   // https://github.com/db0/lemmy-overseer/blob/main/overseer/observer.py#L56
   isInstanceSus(instance) {
-    const SUS_LEVEL = 25;
+    const SUS_LEVEL = 20;
 
     // ignore instances that have no data
     if (!instance.nodeData?.usage?.users?.total) {
