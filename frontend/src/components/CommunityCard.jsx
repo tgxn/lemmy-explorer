@@ -20,7 +20,7 @@ import { TinyNumber, BannerImage } from "./Display";
 import CopyLink from "./CopyLink";
 
 export default function ({ community, homeBaseUrl, ...rest }) {
-  console.log("CommunityCard", community, rest);
+  // console.log("CommunityCard", community, rest);
   return (
     <Card
       variant="outlined"

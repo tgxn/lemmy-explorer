@@ -116,10 +116,10 @@ function Communities({ homeBaseUrl }) {
         console.log(`Filtering out ${exclude.length} terms`);
         exclude.forEach((term) => {
           communties = communties.filter((community) => {
-            return (
-              (community.name && !community.name.toLowerCase().includes(term)) ||
-              (community.title && !community.title.toLowerCase().includes(term)) ||
-              (community.desc && !community.desc.toLowerCase().includes(term))
+            return !(
+              (community.name && community.name.toLowerCase().includes(term)) ||
+              (community.title && community.title.toLowerCase().includes(term)) ||
+              (community.desc && community.desc.toLowerCase().includes(term))
             );
           });
         });
