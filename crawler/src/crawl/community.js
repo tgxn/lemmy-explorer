@@ -1,28 +1,16 @@
 import logging from "../lib/logging.js";
 
-import axios from "axios";
-
-import { CrawlError, CrawlWarning } from "../lib/error.js";
+import { CrawlError } from "../lib/error.js";
 
 import storage from "../storage.js";
 
-import {
-  AXIOS_REQUEST_TIMEOUT,
-  CRAWLER_USER_AGENT,
-  CRAWLER_ATTRIB_URL,
-} from "../lib/const.js";
+import AxiosClient from "../lib/axios.js";
 
 export default class CommunityCrawler {
   constructor(crawlDomain) {
     this.crawlDomain = crawlDomain;
 
-    this.axios = axios.create({
-      timeout: AXIOS_REQUEST_TIMEOUT,
-      headers: {
-        "User-Agent": CRAWLER_USER_AGENT,
-        "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
-      },
-    });
+    this.client = new AxiosClient();
   }
 
   async crawl() {
@@ -69,28 +57,12 @@ export default class CommunityCrawler {
     return communityData;
   }
 
-  async getUrlWithRetry(url, options = {}, maxRetries = 3, current = 0) {
-    try {
-      return await this.axios.get(url, options);
-    } catch (e) {
-      if (current < maxRetries) {
-        logging.debug(`retrying url ${url} attempt ${current + 1}`);
-        return await this.callUrlWithRetry(
-          url,
-          options,
-          maxRetries,
-          current + 1
-        );
-      }
-      throw e;
-    }
-  }
-
   async crawlCommunityPaginatedList(pageNumber = 1) {
-    logging.debug(`page number ${pageNumber}`);
+    logging.silly(`page number ${pageNumber}`);
+
     let communityList;
     try {
-      communityList = await this.getUrlWithRetry(
+      communityList = await this.client.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community/list",
         {
           params: {
@@ -104,25 +76,25 @@ export default class CommunityCrawler {
       throw new CrawlError("Failed to get community page");
     }
 
-    try {
-      const communities = communityList.data.communities;
+    const communities = communityList.data.communities;
 
-      let list = [];
-
-      list.push(...communities);
-
-      if (communities.length == 50) {
-        // sleep for 1s between pages
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        const pagenew = await this.crawlCommunityPaginatedList(pageNumber + 1);
-
-        list.push(...pagenew);
-      }
-
-      return list;
-    } catch (e) {
-      console.error(e);
-      throw new CrawlError("Community list not found in api response");
+    //must be an array
+    if (!Array.isArray(communities)) {
+      throw new CrawlError(`Community list not an array: ${communities}`);
     }
+
+    let list = [];
+
+    list.push(...communities);
+
+    if (communities.length == 50) {
+      // sleep for 1s between pages
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const pagenew = await this.crawlCommunityPaginatedList(pageNumber + 1);
+
+      list.push(...pagenew);
+    }
+
+    return list;
   }
 }
