@@ -42,6 +42,15 @@ export async function start(args) {
 
           return process.exit(0);
 
+        //
+        case "--sus":
+          logging.info("Check SUS");
+
+          const outputSus = new CrawlOutput();
+          await outputSus.checkAllSus();
+
+          return process.exit(0);
+
         case "--clean":
           console.log("Cleaning data");
           const failures = new Failures();
