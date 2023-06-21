@@ -8,7 +8,11 @@ import { useWindowSize } from "@react-hook/window-size";
 import InstanceCard from "../components/InstanceCard";
 import CommunityCard from "../components/CommunityCard";
 
-export const InstanceGrid = connect(mapStateToProps)(function ({ items }) {
+// const mapStateToProps = (state) => ({
+//   homeBaseUrl: state.configReducer.homeBaseUrl,
+// });
+
+export const InstanceGrid = function ({ items }) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -32,13 +36,9 @@ export const InstanceGrid = connect(mapStateToProps)(function ({ items }) {
     overscanBy: 2,
     render: CardWithIsScrolling,
   });
-});
+};
 
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-
-export const CommunityGrid = connect(mapStateToProps)(function ({ items, homeBaseUrl }) {
+export const CommunityGrid = function ({ items, homeBaseUrl }) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -62,4 +62,4 @@ export const CommunityGrid = connect(mapStateToProps)(function ({ items, homeBas
     overscanBy: 2,
     render: CardWithIsScrolling,
   });
-});
+};
