@@ -28,6 +28,52 @@ export default class CrawlOutput {
     this.communityList = await storage.community.getAll();
   }
 
+  // https://github.com/db0/lemmy-overseer/blob/main/overseer/observer.py#L56
+  isInstanceSus(instance) {
+    const SUS_LEVEL = 20;
+
+    // ignore instances that have no data
+    if (!instance.nodeData?.usage?.users?.total) {
+      return false;
+    }
+
+    // if less than x, skip
+    if (instance.nodeData.usage.users.total < 1000) {
+      return false;
+    }
+
+    //if total user /local comments+posts >SUS_LEVEL
+    const activityRating =
+      instance.nodeData.usage.localPosts +
+        instance.nodeData.usage.localComments || 1;
+
+    const instanceSus = Math.ceil(
+      instance.nodeData.usage.users.total / activityRating
+    );
+
+    if (instanceSus > SUS_LEVEL) {
+      console.log(
+        `${instance.siteData.site.name} is SUS: ${instance.nodeData.usage.users.total} / ${activityRating} = ${instanceSus}`
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  async checkAllSus() {
+    await this.loadAllData();
+
+    for (const instance of this.instanceList) {
+      // ignore instances that have no data
+      const instanceSus = this.isInstanceSus(instance);
+
+      if (instanceSus) {
+        console.log(`${instance.siteData.site.name} is SUS`);
+      }
+    }
+  }
+
   /// find updatenode for given baseurl
   getBaseUrlUptime(baseUrl) {
     const foundKey = this.uptimeData.nodes.find((k) => k.domain == baseUrl);
@@ -255,6 +301,7 @@ export default class CrawlOutput {
         time: instance.lastCrawled || null,
         score: score,
         uptime: siteUptime,
+        isSuspicious: this.isInstanceSus(instance),
 
         blocks: {
           incoming: incomingBlocks,
@@ -332,6 +379,12 @@ export default class CrawlOutput {
       // also score based subscribers
       score = score * community.counts.subscribers;
 
+      const relatedInstance = this.instanceList.find(
+        (instance) =>
+          instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
+      );
+      const isInstanceSus = this.isInstanceSus(relatedInstance);
+
       return {
         baseurl: siteBaseUrl,
         url: community.community.actor_id,
@@ -346,6 +399,8 @@ export default class CrawlOutput {
         nsfw: community.community.nsfw,
         counts: community.counts,
         time: community.lastCrawled || null,
+
+        isSuspicious: isInstanceSus,
         score: score,
       };
     });

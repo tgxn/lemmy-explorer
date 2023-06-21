@@ -29,7 +29,7 @@ import { PageLoading, PageError, SimpleNumberFormat } from "../components/Displa
 import { InstanceGrid } from "../components/GridView";
 import { InstanceList } from "../components/ListView";
 
-export default function Instances() {
+function Instances({ filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
@@ -73,6 +73,11 @@ export default function Instances() {
       instances = instances.filter((instance) => instance.open);
     }
 
+    // hide sus instances by default
+    if (filterSuspicious) {
+      instances = instances.filter((instance) => !instance.isSuspicious);
+    }
+
     if (debounceFilterText) {
       console.log(`Filtering instances by ${debounceFilterText}`);
 
@@ -98,10 +103,10 @@ export default function Instances() {
         console.log(`Searching for ${include.length} terms`);
         include.forEach((term) => {
           instances = instances.filter((instance) => {
-            return (
+            retinstancesurn(
               (instance.name && instance.name.toLowerCase().includes(term)) ||
-              (instance.title && instance.title.toLowerCase().includes(term)) ||
-              (instance.desc && instance.desc.toLowerCase().includes(term))
+                (instance.title && instance.title.toLowerCase().includes(term)) ||
+                (instance.desc && instance.desc.toLowerCase().includes(term)),
             );
           });
         });
@@ -167,7 +172,7 @@ export default function Instances() {
 
     // return a clone so that it triggers a re-render  on sort
     return [...instances];
-  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes]);
+  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious]);
 
   return (
     <Container maxWidth={false} sx={{}}>
@@ -303,3 +308,8 @@ export default function Instances() {
     </Container>
   );
 }
+
+const mapStateToProps = (state) => ({
+  filterSuspicious: state.configReducer.filterSuspicious,
+});
+export default connect(mapStateToProps)(Instances);

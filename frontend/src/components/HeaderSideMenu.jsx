@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
+
 import Moment from "react-moment";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -21,6 +23,10 @@ import HistoryIcon from "@mui/icons-material/History";
 import PestControlIcon from "@mui/icons-material/PestControl";
 
 import HomeInstanceButton from "./HomeInstanceButton";
+
+import { setFilterSuspicious } from "../reducers/configReducer";
+
+import Face5Icon from "@mui/icons-material/Face5";
 
 function ColorSchemeToggle({ onClick, variant, ...props }) {
   const { mode, setMode } = useColorScheme();
@@ -78,7 +84,7 @@ function ColorSchemeToggle({ onClick, variant, ...props }) {
   );
 }
 
-export default function HeaderSideMenu() {
+function HeaderSideMenu({ filterSuspicious, dispatch }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -193,6 +199,22 @@ export default function HeaderSideMenu() {
           <ColorSchemeToggle variant="menu" />
         </Box>
 
+        <MenuItem
+          color={filterSuspicious ? "warning" : "success"}
+          onClick={() => {
+            if (filterSuspicious) {
+              dispatch(setFilterSuspicious(false));
+            } else {
+              dispatch(setFilterSuspicious(true));
+            }
+          }}
+        >
+          <ListItemDecorator>
+            <Face5Icon />
+          </ListItemDecorator>
+          {filterSuspicious ? "Include" : "Hide"} Suspicious
+        </MenuItem>
+
         <ListDivider sx={showWhenSmall} />
         <Box sx={showWhenSmall}>
           <MenuItem href="https://github.com/tgxn/lemmy-explorer" target="_lv_github" component="a">
@@ -206,3 +228,8 @@ export default function HeaderSideMenu() {
     </>
   );
 }
+
+const mapStateToProps = (state) => ({
+  filterSuspicious: state.configReducer.filterSuspicious,
+});
+export default connect(mapStateToProps)(HeaderSideMenu);
