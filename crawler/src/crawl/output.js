@@ -114,6 +114,83 @@ export default class CrawlOutput {
     return [linkedFederation, allowedFederation, blockedFederation];
   }
 
+  findErrorType(errorMessage) {
+    if (
+      errorMessage.includes("ENOENT") ||
+      errorMessage.includes("ECONNREFUSED") ||
+      errorMessage.includes("ECONNRESET") ||
+      errorMessage.includes("ENOTFOUND") ||
+      errorMessage.includes("EAI_AGAIN") ||
+      errorMessage.includes("socket hang up") ||
+      errorMessage.includes("Client network socket disconnected")
+    ) {
+      return "connectException";
+    }
+
+    if (errorMessage.includes("timeout of")) {
+      return "timeout";
+    }
+
+    if (
+      errorMessage.includes("self-signed certificate") ||
+      errorMessage.includes("does not match certificate's altnames") ||
+      errorMessage.includes("tlsv1 unrecognized name") ||
+      errorMessage.includes("tlsv1 alert internal error") ||
+      errorMessage.includes("ssl3_get_record:wrong version number") ||
+      errorMessage.includes("unable to verify the first certificate") ||
+      errorMessage.includes("unable to get local issuer certificate") ||
+      errorMessage.includes("certificate has expired")
+    ) {
+      return "sslException";
+    }
+
+    if (errorMessage.includes("baseUrl is not a valid domain")) {
+      return "invalidBaseUrl";
+    }
+
+    if (
+      errorMessage.includes("code 300") ||
+      errorMessage.includes("code 400") ||
+      errorMessage.includes("code 403") ||
+      errorMessage.includes("code 404") ||
+      errorMessage.includes("code 406") ||
+      errorMessage.includes("code 410") ||
+      errorMessage.includes("code 500") ||
+      errorMessage.includes("code 502") ||
+      errorMessage.includes("code 503") ||
+      errorMessage.includes("code 520") ||
+      errorMessage.includes("code 521") ||
+      errorMessage.includes("code 523") ||
+      errorMessage.includes("code 525") ||
+      errorMessage.includes("code 526") ||
+      errorMessage.includes("code 530") ||
+      errorMessage.includes("Maximum number of redirects exceeded")
+    ) {
+      return "httpException";
+    }
+
+    if (
+      errorMessage.includes("no diaspora rel in") ||
+      errorMessage.includes("wellKnownInfo.data.links is not iterable") ||
+      errorMessage.includes("missing /.well-known/nodeinfo links")
+    ) {
+      return "httpException";
+    }
+
+    if (errorMessage.includes("not a lemmy instance")) {
+      return "notLemmy";
+    }
+
+    if (
+      errorMessage.includes("invalid actor id") ||
+      errorMessage.includes("actor id does not match instance domain")
+    ) {
+      return "invalidActorId";
+    }
+
+    logging.silly("unhandled error", errorMessage);
+  }
+
   async start() {
     await this.loadAllData();
 
@@ -359,6 +436,49 @@ export default class CrawlOutput {
     await this.writeJsonFile(
       "../frontend/public/meta.json",
       JSON.stringify(metaData)
+    );
+
+    let instanceErrors = [];
+
+    // key value in errors
+    let errorTypes = {};
+    for (const [key, value] of Object.entries(this.instanceErrors)) {
+      if (value.time < Date.now() - OUTPUT_MAX_AGE_MS) {
+        continue;
+      }
+
+      const instanceData = {
+        baseurl: key,
+        error: value.error,
+        time: value.time,
+      };
+      instanceData.type = this.findErrorType(value.error);
+
+      if (errorTypes[instanceData.type] === undefined) {
+        errorTypes[instanceData.type] = 0;
+      } else {
+        errorTypes[instanceData.type]++;
+      }
+
+      instanceErrors.push(instanceData);
+    }
+
+    // count each type
+    // let errorTypes = {};
+    // instanceErrors.forEach((instance) => {
+    //   console.log("instance", instance);
+    //   if (!errorTypes[instance.type]) {
+    //     errorTypes[instance.type] = 0;
+    //   } else {
+    //     errorTypes[instance.type]++;
+    //   }
+    // });
+
+    logging.info("instanceErrors", instanceErrors.length, errorTypes);
+
+    await this.writeJsonFile(
+      "../frontend/public/instanceErrors.json",
+      JSON.stringify(instanceErrors)
     );
 
     // generate overview metrics and stats

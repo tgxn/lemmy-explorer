@@ -1,11 +1,10 @@
 import logging from "../lib/logging.js";
 
 import Queue from "bee-queue";
-import { AxiosError } from "axios";
 
 import storage from "../storage.js";
 
-import { CrawlError, CrawlWarning } from "../lib/error.js";
+import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
 import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import CommunityCrawler from "../crawl/community.js";
@@ -90,7 +89,7 @@ export default class CommunityQueue {
         if (lastCrawlTs) {
           const lastCrawledMsAgo = Date.now() - lastCrawlTs;
           if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlWarning(
+            throw new CrawlTooRecentError(
               `Skipping - Crawled too recently (${
                 lastCrawledMsAgo / 1000
               }s ago)`
@@ -98,11 +97,35 @@ export default class CommunityQueue {
           }
         }
 
+        // check when the latest entry to errors was too recent
+        const lastErrorTs = await storage.tracking.getOneError(
+          "community",
+          instanceBaseUrl
+        );
+        if (lastErrorTs) {
+          const lastErrorMsAgo = Date.now() - lastErrorTs;
+          if (lastErrorMsAgo < MIN_RECRAWL_MS) {
+            throw new CrawlTooRecentError(
+              `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
+            );
+          }
+        }
+
         const crawler = new CommunityCrawler(instanceBaseUrl);
         const communityData = await crawler.crawl();
 
+        // set last successful crawl
+        await storage.tracking.setLastCrawl("community", job.data.baseUrl);
+
         return communityData;
       } catch (error) {
+        if (error instanceof CrawlTooRecentError) {
+          logging.warn(
+            `[Community] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
+          );
+          return true;
+        }
+
         const errorDetail = {
           error: error.message,
           stack: error.stack,
@@ -111,31 +134,31 @@ export default class CommunityQueue {
           time: Date.now(),
         };
 
-        if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.tracking.upsertError(
-            "community",
-            job.data.baseUrl,
-            errorDetail
-          );
+        // if (error instanceof CrawlError || error instanceof AxiosError) {
+        await storage.tracking.upsertError(
+          "community",
+          job.data.baseUrl,
+          errorDetail
+        );
 
-          logging.error(
-            `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-          );
-        }
+        logging.error(
+          `[Community] [${job.data.baseUrl}] Error: ${error.message}`
+        );
+        //   }
 
-        // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
-        else if (error instanceof CrawlWarning) {
-          logging.warn(
-            `[Community] [${job.data.baseUrl}] Warn: ${error.message}`
-          );
-        } else {
-          logging.verbose(
-            `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-          );
-        }
-      } finally {
-        // set last scan time if it was success or failure.
-        await storage.tracking.setLastCrawl("community", job.data.baseUrl);
+        //   // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
+        //   else if (error instanceof CrawlTooRecentError) {
+        //     logging.warn(
+        //       `[Community] [${job.data.baseUrl}] Warn: ${error.message}`
+        //     );
+        //   } else {
+        //     logging.verbose(
+        //       `[Community] [${job.data.baseUrl}] Error: ${error.message}`
+        //     );
+        //   }
+        // } finally {
+        //   // set last scan time if it was success or failure.
+        //   await storage.tracking.setLastCrawl("community", job.data.baseUrl);
       }
       return false;
     });

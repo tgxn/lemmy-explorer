@@ -1,29 +1,17 @@
 import logging from "../lib/logging.js";
 
-import axios from "axios";
+import { CrawlError } from "../lib/error.js";
+import { getActorBaseUrl } from "../lib/validator.js";
 
 import storage from "../storage.js";
 
-import {
-  CRAWLER_USER_AGENT,
-  CRAWLER_ATTRIB_URL,
-  AXIOS_REQUEST_TIMEOUT,
-} from "../lib/const.js";
-
-import { CrawlError, CrawlWarning } from "../lib/error.js";
-import { getActorBaseUrl } from "../lib/validator.js";
+import AxiosClient from "../lib/axios.js";
 
 export default class InstanceCrawler {
   constructor(crawlDomain) {
     this.crawlDomain = crawlDomain;
 
-    this.axios = axios.create({
-      timeout: AXIOS_REQUEST_TIMEOUT,
-      headers: {
-        "User-Agent": CRAWLER_USER_AGENT,
-        "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
-      },
-    });
+    this.client = new AxiosClient();
   }
 
   // fully process the instance crawl, called from bequeue and errors are handled above this
@@ -50,7 +38,7 @@ export default class InstanceCrawler {
   async getNodeInfo() {
     const wellKnownUrl =
       "https://" + this.crawlDomain + "/.well-known/nodeinfo";
-    const wellKnownInfo = await this.axios.get(wellKnownUrl);
+    const wellKnownInfo = await this.client.getUrlWithRetry(wellKnownUrl);
 
     let nodeinfoUrl;
     if (!wellKnownInfo.data.links) {
@@ -66,12 +54,12 @@ export default class InstanceCrawler {
       throw new CrawlError("no diaspora rel in /.well-known/nodeinfo");
     }
 
-    const nodeNodeInfoData = await this.axios.get(nodeinfoUrl);
+    const nodeNodeInfoData = await this.client.getUrlWithRetry(nodeinfoUrl);
     return nodeNodeInfoData.data;
   }
 
   async getSiteInfo() {
-    const siteInfo = await this.axios.get(
+    const siteInfo = await this.client.getUrlWithRetry(
       "https://" + this.crawlDomain + "/api/v3/site"
     );
 
@@ -98,9 +86,7 @@ export default class InstanceCrawler {
       nodeInfo.software.name != "lemmy" &&
       nodeInfo.software.name != "lemmybb"
     ) {
-      throw new CrawlWarning(
-        `not a lemmy instance (${nodeInfo.software.name})`
-      );
+      throw new CrawlError(`not a lemmy instance (${nodeInfo.software.name})`);
     }
 
     const siteInfo = await this.getSiteInfo();

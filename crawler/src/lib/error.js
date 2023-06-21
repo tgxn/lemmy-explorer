@@ -15,3 +15,10 @@ export class CrawlWarning extends Error {
     this.name = "CrawlWarning";
   }
 }
+
+export class CrawlTooRecentError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "CrawlTooRecentError";
+  }
+}
