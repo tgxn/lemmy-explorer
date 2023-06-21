@@ -52,15 +52,52 @@ export default function Instances() {
     }
 
     if (debounceFilterText) {
-      instances = instances.filter((instance) => {
-        if (instance.name && instance.name.toLowerCase().includes(debounceFilterText.toLowerCase()))
-          return true;
-        if (instance.desc && instance.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
-          return true;
-        if (instance.url && instance.url.toLowerCase().includes(debounceFilterText.toLowerCase()))
-          return true;
-        return false;
+      console.log(`Filtering instances by ${debounceFilterText}`);
+
+      // split the value on spaces, look for values starting with "-"
+      // if found, remove the "-" and add to the exclude list
+      // if not found, apend to the search query
+      let exclude = [];
+      let include = [];
+
+      let searchTerms = debounceFilterText.toLowerCase().split(" ");
+      searchTerms.forEach((term) => {
+        if (term.startsWith("-") && term.substring(1) !== "") {
+          exclude.push(term.substring(1));
+        } else if (term !== "") {
+          include.push(term);
+        }
       });
+      console.log(`Include: ${include.join(", ")}`);
+      console.log(`Exclude: ${exclude.join(", ")}`);
+
+      // search for any included terms
+      if (include.length > 0) {
+        console.log(`Searching for ${include.length} terms`);
+        include.forEach((term) => {
+          instances = instances.filter((instance) => {
+            return (
+              (instance.name && instance.name.toLowerCase().includes(term)) ||
+              (instance.title && instance.title.toLowerCase().includes(term)) ||
+              (instance.desc && instance.desc.toLowerCase().includes(term))
+            );
+          });
+        });
+      }
+
+      // search for any excluded terms
+      if (exclude.length > 0) {
+        console.log(`Excluding ${exclude.length} terms`);
+        exclude.forEach((term) => {
+          instances = instances.filter((instance) => {
+            return (
+              (instance.name && !instance.name.toLowerCase().includes(term)) ||
+              (instance.title && !instance.title.toLowerCase().includes(term)) ||
+              (instance.desc && !instance.desc.toLowerCase().includes(term))
+            );
+          });
+        });
+      }
     }
 
     // filter lang codes

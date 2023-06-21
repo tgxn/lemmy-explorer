@@ -79,13 +79,51 @@ function Communities({ homeBaseUrl }) {
     // filter string
     if (debounceFilterText) {
       console.log(`Filtering communities by ${debounceFilterText}`);
-      communties = communties.filter((community) => {
-        return (
-          (community.name && community.name.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
-          (community.title && community.title.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
-          (community.desc && community.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
-        );
+
+      // split the value on spaces, look for values starting with "-"
+      // if found, remove the "-" and add to the exclude list
+      // if not found, apend to the search query
+      let exclude = [];
+      let include = [];
+
+      let searchTerms = debounceFilterText.toLowerCase().split(" ");
+      searchTerms.forEach((term) => {
+        if (term.startsWith("-") && term.substring(1) !== "") {
+          exclude.push(term.substring(1));
+        } else if (term !== "") {
+          include.push(term);
+        }
       });
+      console.log(`Include: ${include.join(", ")}`);
+      console.log(`Exclude: ${exclude.join(", ")}`);
+
+      // search for any included terms
+      if (include.length > 0) {
+        console.log(`Searching for ${include.length} terms`);
+        include.forEach((term) => {
+          communties = communties.filter((community) => {
+            return (
+              (community.name && community.name.toLowerCase().includes(term)) ||
+              (community.title && community.title.toLowerCase().includes(term)) ||
+              (community.desc && community.desc.toLowerCase().includes(term))
+            );
+          });
+        });
+      }
+
+      // filter out every excluded term
+      if (exclude.length > 0) {
+        console.log(`Filtering out ${exclude.length} terms`);
+        exclude.forEach((term) => {
+          communties = communties.filter((community) => {
+            return (
+              (community.name && !community.name.toLowerCase().includes(term)) ||
+              (community.title && !community.title.toLowerCase().includes(term)) ||
+              (community.desc && !community.desc.toLowerCase().includes(term))
+            );
+          });
+        });
+      }
     }
 
     // hide no banner
