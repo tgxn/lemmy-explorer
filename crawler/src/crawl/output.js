@@ -52,9 +52,9 @@ export default class CrawlOutput {
     );
 
     if (instanceSus > SUS_LEVEL) {
-      console.log(
-        `${instance.siteData.site.name} is SUS: ${instance.nodeData.usage.users.total} / ${activityRating} = ${instanceSus}`
-      );
+      // console.log(
+      //   `${instance.siteData.site.name} is SUS: ${instance.nodeData.usage.users.total} / ${activityRating} = ${instanceSus}`
+      // );
       return true;
     }
 

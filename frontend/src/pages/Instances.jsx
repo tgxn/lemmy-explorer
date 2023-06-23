@@ -103,10 +103,10 @@ function Instances({ filterSuspicious }) {
         console.log(`Searching for ${include.length} terms`);
         include.forEach((term) => {
           instances = instances.filter((instance) => {
-            retinstancesurn(
+            return (
               (instance.name && instance.name.toLowerCase().includes(term)) ||
-                (instance.title && instance.title.toLowerCase().includes(term)) ||
-                (instance.desc && instance.desc.toLowerCase().includes(term)),
+              (instance.title && instance.title.toLowerCase().includes(term)) ||
+              (instance.desc && instance.desc.toLowerCase().includes(term))
             );
           });
         });
