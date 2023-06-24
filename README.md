@@ -14,6 +14,12 @@ The project consists of three modules:
 
 [Crawler README](./crawler/README.md)
 
+Static dumps from the last time I ran the dump are stored in [`./frontend/public/`](./frontend/public/).
+
+- `communities.json` - list of all communities
+- `instances.json` - list of all instances
+- `overview.json` - metadata and counts
+
 
 ## 2. Frontend
 
