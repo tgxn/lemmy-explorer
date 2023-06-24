@@ -41,27 +41,21 @@ export default class Instance {
   }
 
   async getAttributeArray(baseUrl, attributeName) {
-    // return client.hgetall(`attributes:instance:${baseUrl}:${attributeName}`);
+    const keys = await this.storage.getAttributeArray(baseUrl, attributeName);
 
-    const start = 0;
-    const end = Date.now();
+    // console.log(baseUrl, "keys", keys);
 
-    return this.storage.client.zrangebyscore(
-      `attributes:instance:${baseUrl}:${attributeName}`,
-      start,
-      end
+    return keys;
+  }
+
+  async getAttributeWithScores(baseUrl, attributeName) {
+    const keys = await this.storage.getAttributesWithScores(
+      baseUrl,
+      attributeName
     );
 
-    // return new Promise((resolve, reject) => {
-    //   client.zrangebyscore(
-    //     `${sensorId}:${attribute}`,
-    //     start,
-    //     end,
-    //     (err, data) => {
-    //       if (err) reject(err);
-    //       resolve(data);
-    //     }
-    //   );
-    // });
+    // console.log(baseUrl, "keys", keys);
+
+    return keys;
   }
 }

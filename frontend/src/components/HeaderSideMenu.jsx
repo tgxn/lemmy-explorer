@@ -21,6 +21,7 @@ import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import HistoryIcon from "@mui/icons-material/History";
 import PestControlIcon from "@mui/icons-material/PestControl";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
 import HomeInstanceButton from "./HomeInstanceButton";
 
@@ -194,7 +195,22 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
           Crawler Info
         </MenuItem>
 
+        <MenuItem
+          color={"info"}
+          onClick={() => {
+            handleClose();
+            navigate("/inspect");
+          }}
+          {...(location.pathname === "/inspect" && { selected: true, variant: "soft" })}
+        >
+          <ListItemDecorator>
+            <TravelExploreIcon />
+          </ListItemDecorator>
+          Network Inspector
+        </MenuItem>
+
         <ListDivider sx={showWhenSmall} />
+
         <Box sx={showWhenSmall}>
           <ColorSchemeToggle variant="menu" />
         </Box>
