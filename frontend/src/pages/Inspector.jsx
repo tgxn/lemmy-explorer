@@ -172,7 +172,7 @@ export default function Inspector() {
               }}
             >
               <NumberStat
-                color="primary"
+                color="info"
                 title="Total Posts"
                 value={totalPosts}
                 description="A total post count for all known instances."
@@ -186,7 +186,7 @@ export default function Inspector() {
               }}
             >
               <NumberStat
-                color="info"
+                color="success"
                 title="Total Communities"
                 value={totalCommunities}
                 description="A total count for all known instances."
