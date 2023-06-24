@@ -29,7 +29,7 @@ export default class CrawlOutput {
   }
 
   // https://github.com/db0/lemmy-overseer/blob/main/overseer/observer.py#L56
-  isInstanceSus(instance) {
+  isInstanceSus(instance, log = true) {
     const SUS_LEVEL = 20;
 
     // ignore instances that have no data
@@ -55,6 +55,22 @@ export default class CrawlOutput {
       // console.log(
       //   `${instance.siteData.site.name} is SUS: ${instance.nodeData.usage.users.total} / ${activityRating} = ${instanceSus}`
       // );
+      return true;
+    }
+
+    // percentage of users to active users (6mo should be >5%)
+    const susMaxPercent = 500;
+
+    const totalUsers = instance.siteData.counts.users || 1;
+    const halfYearUsers = instance.siteData.counts.users_active_month || 1;
+
+    const percentActive = totalUsers / halfYearUsers;
+
+    if (percentActive > susMaxPercent) {
+      if (log)
+        console.log(
+          `${instance.siteData.site.actor_id} is SUS: ${percentActive} active users`
+        );
       return true;
     }
 
@@ -383,7 +399,7 @@ export default class CrawlOutput {
         (instance) =>
           instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
       );
-      const isInstanceSus = this.isInstanceSus(relatedInstance);
+      const isInstanceSus = this.isInstanceSus(relatedInstance, false);
 
       return {
         baseurl: siteBaseUrl,
