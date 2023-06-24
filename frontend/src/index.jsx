@@ -28,6 +28,7 @@ import Instances from "./pages/Instances";
 import Communities from "./pages/Communities";
 import About from "./pages/About";
 import Join from "./pages/Join";
+import Inspector from "./pages/Inspector";
 
 import customTheme from "./theme";
 
@@ -74,6 +75,7 @@ export default function App() {
                     element={<Instances />}
                   />
                   <Route path="/join" element={<Join />} />
+                  <Route path="/inspect" element={<Inspector />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/communities" element={<Communities />} />
                   <Route path="/communities/:instanceBaseUrl" element={<Communities />} />

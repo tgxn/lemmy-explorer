@@ -5,7 +5,8 @@ import cron from "node-cron";
 import InstanceQueue from "./queue/instance.js";
 import CommunityQueue from "./queue/community.js";
 
-import CrawlOutput from "./crawl/output.js";
+import CrawlOutput from "./output/output.js";
+
 import CrawlAged from "./crawl/aged.js";
 import CrawlUptime from "./crawl/uptime.js";
 
@@ -39,15 +40,6 @@ export async function start(args) {
 
           const output = new CrawlOutput();
           await output.start();
-
-          return process.exit(0);
-
-        //
-        case "--sus":
-          logging.info("Check SUS");
-
-          const outputSus = new CrawlOutput();
-          await outputSus.checkAllSus();
 
           return process.exit(0);
 
