@@ -1,5 +1,9 @@
 # Crawler
 
+The crawler is set of nodejs scripts that crawl the Lemmy API and store the data in Redis.
+
+There is a `npm run output` script to output the instances and communities to json for the frontend.
+
 ## Usage
 
 ### Basic Usage
