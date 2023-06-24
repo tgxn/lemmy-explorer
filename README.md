@@ -1,39 +1,51 @@
-# Lemmy Explorer
+# Lemmy Explorer (https://lemmyverse.net/)
 
-This is a project that aims to provide a simple way to explore Lemmy Instances and Communities.
+This project provides a simple way to explore Lemmy Instances and Communities.
 
-# Packages
+![List of Communities](./docs/images/communities.png)
+
+The project consists of three modules:
+1. Crawler (NodeJS, Redis)
+2. Frontend (ReactJS, MUI Joy, TanStack)
+3. Deploy (Amazon CDK v2)
+
 
 ## Crawler
 
-The crawler is set of nodejs scripts that crawl the Lemmy API and store the data in Redis.
-
-There is a `npm run output` script to output the instances and communities to json for the frontend.
+[Crawler README](./crawler/README.md)
 
 
-## Frontend
+## 2. Frontend
 
-The frontend is a React SPA that uses the data from the crawler to display and search the instances and communities.
+[Frontend README](./frontend/README.md)
 
-Data is retrieved using TanStack Query.
+
+
+## Deploy
+
+The deploy is an Amazon CDK v2 project that deploys the crawler and frontend to AWS.
+
+`config.example.json` has the configuration for the deploy.
+
+then run `cdk deploy --all` to deploy the frontend to AWS.
 
 
 ## Thanks
 
-https://github.com/LemmyNet/lemmy-stats-crawler
+- https://github.com/LemmyNet/lemmy-stats-crawler
 
 
 ## Similar Sites
 
-https://browse.feddit.de/
-https://join-lemmy.org/instances
-https://github.com/maltfield/awesome-lemmy-instances
-https://lemmymap.feddit.de/
+- https://browse.feddit.de/
+- https://join-lemmy.org/instances
+- https://github.com/maltfield/awesome-lemmy-instances
+- https://lemmymap.feddit.de/
 
 ## Lemmy Stats Pages
-https://lemmy.fediverse.observer/dailystats
-https://the-federation.info/platform/73
-https://fedidb.org/
+- https://lemmy.fediverse.observer/dailystats
+- https://the-federation.info/platform/73
+- https://fedidb.org/
 
 # Credits
 
