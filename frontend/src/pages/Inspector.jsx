@@ -40,11 +40,10 @@ export default function Inspector() {
     data: dataIns,
   } = useQueryCache("instanceData", "/instances.json");
 
-  const [totalUsers, totalGoodUsers, totalBadUsers] = React.useMemo(() => {
+  const [totalUsers, totalBadUsers] = React.useMemo(() => {
     if (!dataSus || !dataIns) return [0, 0, 0];
 
     let totalUsers = 0;
-    let totalGoodUsers = 0;
     let totalBadUsers = 0;
 
     // instance data
@@ -57,9 +56,24 @@ export default function Inspector() {
       totalBadUsers += instance.users;
     });
 
-    totalGoodUsers = totalUsers - totalBadUsers;
+    return [totalUsers, totalBadUsers];
+  }, [dataIns, dataSus]);
 
-    return [totalUsers, totalGoodUsers, totalBadUsers];
+  const [totalComments, totalPosts, totalCommunities] = React.useMemo(() => {
+    if (!dataSus || !dataIns) return [0, 0];
+
+    let totalComments = 0;
+    let totalPosts = 0;
+    let totalCommunities = 0;
+
+    // instance data
+    dataIns.forEach((instance) => {
+      totalComments += instance.counts.comments;
+      totalPosts += instance.counts.posts;
+      totalCommunities += instance.counts.communities;
+    });
+
+    return [totalComments, totalPosts, totalCommunities];
   }, [dataIns, dataSus]);
 
   if (isLoadingSus || isLoadingIns) return "Loading...";
@@ -105,13 +119,12 @@ export default function Inspector() {
                 color="success"
                 title="Actual Users"
                 value={totalUsers - totalBadUsers}
-                description="A total count for all known instances, bad users removed."
+                description="A total count for all known instances, sus instance users removed."
               />
             </Sheet>
           </Grid>
           <Grid xs={3}>
             <Sheet
-              color="danger"
               sx={{
                 display: "flex",
               }}
@@ -126,7 +139,6 @@ export default function Inspector() {
           </Grid>
           <Grid xs={3}>
             <Sheet
-              color="danger"
               sx={{
                 display: "flex",
               }}
@@ -135,6 +147,48 @@ export default function Inspector() {
                 color="danger"
                 title="Total Bad Users"
                 value={totalBadUsers}
+                description="A total count for all known instances."
+              />
+            </Sheet>
+          </Grid>
+          <Grid xs={4}>
+            <Sheet
+              sx={{
+                display: "flex",
+              }}
+            >
+              <NumberStat
+                color="primary"
+                title="Total Comments"
+                value={totalComments}
+                description="A total comment count for all known instances."
+              />
+            </Sheet>
+          </Grid>
+          <Grid xs={4}>
+            <Sheet
+              sx={{
+                display: "flex",
+              }}
+            >
+              <NumberStat
+                color="primary"
+                title="Total Posts"
+                value={totalPosts}
+                description="A total post count for all known instances."
+              />
+            </Sheet>
+          </Grid>
+          <Grid xs={4}>
+            <Sheet
+              sx={{
+                display: "flex",
+              }}
+            >
+              <NumberStat
+                color="info"
+                title="Total Communities"
+                value={totalCommunities}
                 description="A total count for all known instances."
               />
             </Sheet>
