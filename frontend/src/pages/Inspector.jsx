@@ -88,9 +88,10 @@ export default function Inspector() {
           justifyContent: "space-between",
           alignItems: "center",
           mb: 2,
+          mt: 2,
         }}
       >
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
+        <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
           <Grid xs={6}>
             <NumberStat
               color="primary"
