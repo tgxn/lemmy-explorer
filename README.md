@@ -38,9 +38,6 @@ The deploy is an Amazon CDK v2 project that deploys the crawler and frontend to 
 then run `cdk deploy --all` to deploy the frontend to AWS.
 
 
-## Thanks
-
-- https://github.com/LemmyNet/lemmy-stats-crawler
 
 
 ## Similar Sites
@@ -49,11 +46,17 @@ then run `cdk deploy --all` to deploy the frontend to AWS.
 - https://join-lemmy.org/instances
 - https://github.com/maltfield/awesome-lemmy-instances
 - https://lemmymap.feddit.de/
+- https://browse.toast.ooo/
 
 ## Lemmy Stats Pages
 - https://lemmy.fediverse.observer/dailystats
 - https://the-federation.info/platform/73
 - https://fedidb.org/
+
+## Thanks / Related Lemmy Tools
+
+- https://github.com/db0/fediseer
+- https://github.com/LemmyNet/lemmy-stats-crawler
 
 # Credits
 
