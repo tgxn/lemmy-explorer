@@ -13,7 +13,7 @@ import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Chip from "@mui/joy/Chip";
+import Typography from "@mui/joy/Typography";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
@@ -251,21 +251,22 @@ function Instances({ filterSuspicious }) {
           }}
         >
           {isSuccess && (
-            <Chip
+            <Typography
+              level="body2"
               sx={{
                 borderRadius: "4px",
-                mr: 1,
+                mr: 2,
               }}
-              color="info"
             >
-              Instances:{" "}
+              showing{" "}
               <SimpleNumberFormat
                 value={instancesData.length}
                 displayType={"text"}
                 decimalScale={2}
                 thousandSeparator={","}
-              />
-            </Chip>
+              />{" "}
+              instances
+            </Typography>
           )}
 
           <ButtonGroup
@@ -282,19 +283,23 @@ function Instances({ filterSuspicious }) {
             }}
           >
             <IconButton
-              variant={viewType == "grid" ? "soft" : "plain"}
+              variant={viewType == "grid" ? "solid" : "soft"}
+              color={viewType == "grid" ? "info" : "neutral"}
               onClick={() => setViewType("grid")}
               sx={{
                 p: 1,
+                borderRadius: "8px 0 0 8px",
               }}
             >
               <ViewCompactIcon /> Grid View
             </IconButton>
             <IconButton
-              variant={viewType == "list" ? "soft" : "plain"}
+              variant={viewType == "list" ? "solid" : "soft"}
+              color={viewType == "list" ? "info" : "neutral"}
               onClick={() => setViewType("list")}
               sx={{
                 p: 1,
+                borderRadius: "0 8px 8px 0",
               }}
             >
               <ViewListIcon /> List View

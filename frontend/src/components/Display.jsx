@@ -148,21 +148,29 @@ export const BannerImage = React.memo(function BannerImage({ imageSrc }) {
   );
 });
 
-export function LinearValueLoader({ progress = 0 }) {
+export function LinearValueLoader({ message = "Loading...", progress = 0 }) {
   return (
-    <Box sx={{ p: 1 }}>
+    <Box
+      sx={{
+        p: 0,
+        mt: 5,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <LinearProgress
         determinate
         variant="outlined"
         color="neutral"
-        size="sm"
         thickness={32}
         value={progress}
         sx={{
-          "--LinearProgress-radius": "0px",
+          maxWidth: "80%",
+          "--LinearProgress-radius": "8px",
           "--LinearProgress-progressThickness": "24px",
           boxShadow: "sm",
-          borderColor: "neutral.500",
+          borderColor: "grey.500",
         }}
       >
         <Typography
@@ -171,7 +179,7 @@ export function LinearValueLoader({ progress = 0 }) {
           textColor="common.white"
           sx={{ mixBlendMode: "difference" }}
         >
-          LOADING… {`${Math.round(progress)}%`}
+          {message} {`${Math.round(progress)}%`}
         </Typography>
       </LinearProgress>
     </Box>

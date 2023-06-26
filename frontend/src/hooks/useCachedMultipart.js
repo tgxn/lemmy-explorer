@@ -95,7 +95,7 @@ export default function useCachedMultipart(queryKey, metadataPath) {
       loadingPercent: 100,
       isSuccess: false,
       isError: true,
-      error: results.find((result) => result.isError).error,
+      error: results.find((result) => result.isError).error.message,
       data: null,
     };
   }
