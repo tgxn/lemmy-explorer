@@ -24,7 +24,7 @@ export default function Overview() {
 
   const [filteredInstances, setFilteredInstances] = useState([]);
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "instance");
 
   // filter data
   useEffect(() => {

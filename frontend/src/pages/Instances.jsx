@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import useQueryCache from "../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
 import useStorage from "../hooks/useStorage";
@@ -25,14 +26,17 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/LanguageFilter";
-import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Display";
 import { InstanceGrid } from "../components/GridView";
 import { InstanceList } from "../components/ListView";
 
 function Instances({ filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
+    "instanceData",
+    "instance",
+  );
 
   const [viewType, setViewType] = useStorage("instance.viewType", "grid");
 
@@ -300,7 +304,7 @@ function Instances({ filterSuspicious }) {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {isLoading && !isError && <PageLoading />}
+        {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
         {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
         {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}

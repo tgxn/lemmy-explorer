@@ -23,7 +23,6 @@ const queryClient = new QueryClient();
 
 import Header from "./components/Header";
 
-import Overview from "./pages/Overview";
 import Instances from "./pages/Instances";
 import Communities from "./pages/Communities";
 import About from "./pages/About";

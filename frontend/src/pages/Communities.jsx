@@ -3,7 +3,8 @@ import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
-import useQueryCache from "../hooks/useQueryCache";
+
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
 
 import Chip from "@mui/joy/Chip";
@@ -23,7 +24,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Display";
 import { CommunityGrid } from "../components/GridView";
 import { CommunityList } from "../components/ListView";
 import TriStateCheckbox from "../components/TriStateCheckbox";
@@ -31,9 +32,9 @@ import TriStateCheckbox from "../components/TriStateCheckbox";
 function Communities({ homeBaseUrl, filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
-    "communitiesData",
-    "/communities.json",
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
+    "communityData",
+    "community",
   );
 
   const [viewType, setViewType] = useStorage("community.viewType", "grid");
@@ -323,8 +324,9 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {isLoading && !isError && <PageLoading />}
+        {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
+
         {isSuccess && viewType == "grid" && (
           <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />
         )}

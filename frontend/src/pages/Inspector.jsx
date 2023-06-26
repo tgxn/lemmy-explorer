@@ -30,7 +30,7 @@ export default function Inspector() {
     isError: isErrorSus,
     error: errorSus,
     data: dataSus,
-  } = useQueryCache("susData", "/sus.json");
+  } = useQueryCache("susData", "sus");
 
   const {
     isLoading: isLoadingIns,
@@ -38,7 +38,7 @@ export default function Inspector() {
     isError: isErrorIns,
     error: errorIns,
     data: dataIns,
-  } = useQueryCache("instanceData", "/instances.json");
+  } = useQueryCache("instanceData", "instance");
 
   const [totalUsers, totalBadUsers] = React.useMemo(() => {
     if (!dataSus || !dataIns) return [0, 0, 0];

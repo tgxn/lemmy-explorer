@@ -13,7 +13,7 @@ import { SimpleNumberFormat } from "../components/Display";
 import HeaderSideMenu from "../components/HeaderSideMenu";
 
 export default function Header() {
-  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "/meta.json");
+  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "meta");
 
   const [index, setIndex] = React.useState(0);
 

@@ -89,7 +89,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "/meta.json");
+  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "meta");
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);

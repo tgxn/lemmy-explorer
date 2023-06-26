@@ -122,7 +122,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props, ref) 
 });
 
 function SelectHomeInstance({ homeBaseUrl, dispatch }) {
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "instance");
 
   const onChange = (newValue) => {
     console.log("onChange", newValue);
