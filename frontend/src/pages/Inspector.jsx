@@ -1,5 +1,6 @@
 import React from "react";
 
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import useQueryCache from "../hooks/useQueryCache";
 
 import Table from "@mui/joy/Table";
@@ -30,15 +31,16 @@ export default function Inspector() {
     isError: isErrorSus,
     error: errorSus,
     data: dataSus,
-  } = useQueryCache("susData", "/sus.json");
+  } = useQueryCache("susData", "sus");
 
   const {
     isLoading: isLoadingIns,
     isSuccess: isSuccessIns,
+    loadingPercent: loadingPercentIns,
     isError: isErrorIns,
     error: errorIns,
     data: dataIns,
-  } = useQueryCache("instanceData", "/instances.json");
+  } = useCachedMultipart("instanceData", "instance");
 
   const [totalUsers, totalBadUsers] = React.useMemo(() => {
     if (!dataSus || !dataIns) return [0, 0, 0];

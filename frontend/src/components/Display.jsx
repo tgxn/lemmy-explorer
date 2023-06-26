@@ -1,12 +1,12 @@
 import React from "react";
 
 import { useImage } from "react-image";
-
-import CircularProgress from "@mui/joy/CircularProgress";
-
 import { NumericFormat } from "react-number-format";
 
 import Box from "@mui/joy/Box";
+import Typography from "@mui/joy/Typography";
+import LinearProgress from "@mui/joy/LinearProgress";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 export const ContentSkeleton = React.memo(function ({ radius = "4px" }) {
   return (
@@ -147,3 +147,41 @@ export const BannerImage = React.memo(function BannerImage({ imageSrc }) {
     </React.Fragment>
   );
 });
+
+export function LinearValueLoader({ message = "Loading...", progress = 0 }) {
+  return (
+    <Box
+      sx={{
+        p: 0,
+        mt: 5,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <LinearProgress
+        determinate
+        variant="outlined"
+        color="neutral"
+        thickness={32}
+        value={progress}
+        sx={{
+          maxWidth: "80%",
+          "--LinearProgress-radius": "8px",
+          "--LinearProgress-progressThickness": "24px",
+          boxShadow: "sm",
+          borderColor: "grey.500",
+        }}
+      >
+        <Typography
+          level="body3"
+          fontWeight="xl"
+          textColor="common.white"
+          sx={{ mixBlendMode: "difference" }}
+        >
+          {message} {`${Math.round(progress)}%`}
+        </Typography>
+      </LinearProgress>
+    </Box>
+  );
+}

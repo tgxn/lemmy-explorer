@@ -13,6 +13,8 @@ import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
 
 import { Suspicions } from "./suspicions.js";
 
+import Splitter from "./splitter.js";
+
 export default class CrawlOutput {
   constructor() {
     this.uptimeData = null;
@@ -20,6 +22,8 @@ export default class CrawlOutput {
     this.communityErrors = null;
     this.instanceList = null;
     this.communityList = null;
+
+    this.splitter = new Splitter();
   }
 
   async loadAllData() {
@@ -202,6 +206,8 @@ export default class CrawlOutput {
   async start() {
     await this.loadAllData();
 
+    await this.splitter.cleanData();
+
     const suspiciousInstances = await this.outputSusList();
 
     logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
@@ -319,10 +325,7 @@ export default class CrawlOutput {
       `Instances ${this.instanceList.length} -> ${storeData.length}`
     );
 
-    await this.writeJsonFile(
-      "../frontend/public/instances.json",
-      JSON.stringify(storeData)
-    );
+    await this.splitter.storeInstanceData(storeData);
 
     ///
     /// Lemmy Communities
@@ -359,6 +362,9 @@ export default class CrawlOutput {
         );
         const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
 
+        // if (community.community.nsfw)
+        //   console.log(community.community.name, community.community.nsfw);
+
         return {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
@@ -385,40 +391,60 @@ export default class CrawlOutput {
       const fail = this.findFail(community.baseurl);
       if (fail) {
         if (community.time < fail.time) {
-          // logging.info("filtered due to fail", fail, instance.baseurl);
+          // logging.info("filtered due to fail", fail, community.baseurl);
           return false;
         }
       }
       return true;
     });
 
+    console.log(
+      "22 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
+    );
     // remove communities not updated in 24h
     storeCommunityData = storeCommunityData.filter((community) => {
-      if (!community.time) return false; // record needs time
+      if (!community.time) {
+        console.log("no time", community);
+        return false; // record needs time
+      }
 
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;
-      if (recordAge > OUTPUT_MAX_AGE_MS) {
+
+      // temp fix till lermmy allows querying nsfw on the public api -.-
+      if (recordAge > OUTPUT_MAX_AGE_MS && !community.nsfw) {
+        // console.log("too old", community);
         return false;
       }
 
       return true;
     });
 
+    console.log(
+      "33 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
+    );
     // filter blank
     storeCommunityData = storeCommunityData.filter(
       (community) =>
         community.url !== "" || community.name !== "" || community.title !== ""
     );
 
+    console.log(
+      "44 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
+    );
     logging.info(
       `Communities ${communities.length} -> ${storeCommunityData.length}`
     );
 
-    await this.writeJsonFile(
-      "../frontend/public/communities.json",
-      JSON.stringify(storeCommunityData)
+    console.log(
+      "55 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
     );
+
+    await this.splitter.storeCommunityData(storeCommunityData);
 
     ///
     /// Fediverse Servers
@@ -445,28 +471,7 @@ export default class CrawlOutput {
       }
     });
     logging.info("Fediverse Servers", returnStats.length);
-
-    await this.writeJsonFile(
-      "../frontend/public/fediverse.json",
-      JSON.stringify(returnStats)
-    );
-
-    const packageJson = JSON.parse(
-      await readFile(new URL("../../package.json", import.meta.url))
-    );
-
-    const metaData = {
-      instances: storeData.length,
-      communities: storeCommunityData.length,
-      fediverse: returnStats.length,
-      time: Date.now(),
-      package: packageJson.name,
-      version: packageJson.version,
-    };
-    await this.writeJsonFile(
-      "../frontend/public/meta.json",
-      JSON.stringify(metaData)
-    );
+    await this.splitter.storeFediverseData(returnStats);
 
     let instanceErrors = [];
 
@@ -505,42 +510,29 @@ export default class CrawlOutput {
     // });
 
     logging.info("instanceErrors", instanceErrors.length, errorTypes);
+    await this.splitter.storeInstanceErrors(instanceErrors);
 
-    await this.writeJsonFile(
-      "../frontend/public/instanceErrors.json",
-      JSON.stringify(instanceErrors)
+    const packageJson = JSON.parse(
+      await readFile(new URL("../../package.json", import.meta.url))
     );
 
-    // generate overview metrics and stats
-    const metrics = {
+    const metaData = {
       instances: storeData.length,
       communities: storeCommunityData.length,
+      fediverse: returnStats.length,
+      time: Date.now(),
+      package: packageJson.name,
+      version: packageJson.version,
 
       // top 10 linked, allowed, blocked domains
       // sort by count of times seen on each list
       linked: linkedFederation,
       allowed: allowedFederation,
       blocked: blockedFederation,
-
-      // federation instance software/version
     };
-
-    await this.writeJsonFile(
-      "../frontend/public/overview.json",
-      JSON.stringify(metrics)
-    );
+    await this.splitter.storeMetaData(metaData);
 
     return true;
-  }
-
-  async writeJsonFile(filename, data) {
-    let filehandle = null;
-    try {
-      filehandle = await open(filename, "w");
-      await filehandle.writeFile(data);
-    } finally {
-      await filehandle?.close();
-    }
   }
 
   // generate a list of all the instances that are suspicious and the reasons
@@ -564,10 +556,7 @@ export default class CrawlOutput {
       }
     }
 
-    await this.writeJsonFile(
-      "../frontend/public/sus.json",
-      JSON.stringify(output)
-    );
+    await this.splitter.storeSuspicousData(output);
 
     return output;
   }

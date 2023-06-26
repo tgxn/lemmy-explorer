@@ -3,15 +3,17 @@ import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
-import useQueryCache from "../hooks/useQueryCache";
+
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
 
-import Chip from "@mui/joy/Chip";
+import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
 import Checkbox from "@mui/joy/Checkbox";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
@@ -22,8 +24,9 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
+import NumbersIcon from "@mui/icons-material/Numbers";
 
-import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Display";
 import { CommunityGrid } from "../components/GridView";
 import { CommunityList } from "../components/ListView";
 import TriStateCheckbox from "../components/TriStateCheckbox";
@@ -31,9 +34,9 @@ import TriStateCheckbox from "../components/TriStateCheckbox";
 function Communities({ homeBaseUrl, filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
-    "communitiesData",
-    "/communities.json",
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
+    "communityData",
+    "community",
   );
 
   const [viewType, setViewType] = useStorage("community.viewType", "grid");
@@ -269,14 +272,14 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
           }}
         >
           {isSuccess && (
-            <Chip
+            <Typography
+              level="body2"
               sx={{
                 borderRadius: "4px",
-                mr: 1,
+                mr: 2,
               }}
-              color="neutral"
             >
-              Showing{" "}
+              showing{" "}
               <SimpleNumberFormat
                 value={communitiesData.length}
                 displayType={"text"}
@@ -284,12 +287,12 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
                 thousandSeparator={","}
               />{" "}
               communities
-            </Chip>
+            </Typography>
           )}
 
           <ButtonGroup
             sx={{
-              "--ButtonGroup-radius": "3px",
+              "--ButtonGroup-radius": "8px",
               "--ButtonGroup-separatorSize": "0px",
               "--ButtonGroup-connected": "0",
               "--joy-palette-neutral-plainHoverBg": "transparent",
@@ -301,19 +304,23 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
             }}
           >
             <IconButton
-              variant={viewType == "grid" ? "soft" : "plain"}
+              variant={viewType == "grid" ? "solid" : "soft"}
+              color={viewType == "grid" ? "primary" : "neutral"}
               onClick={() => setViewType("grid")}
               sx={{
                 p: 1,
+                borderRadius: "8px 0 0 8px",
               }}
             >
               <ViewCompactIcon /> Grid View
             </IconButton>
             <IconButton
-              variant={viewType == "list" ? "soft" : "plain"}
+              variant={viewType == "list" ? "solid" : "soft"}
+              color={viewType == "list" ? "primary" : "neutral"}
               onClick={() => setViewType("list")}
               sx={{
                 p: 1,
+                borderRadius: "0 8px 8px 0",
               }}
             >
               <ViewListIcon /> List View
@@ -322,9 +329,10 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
         </Box>
       </Box>
 
-      <Box sx={{ my: 4 }}>
-        {isLoading && !isError && <PageLoading />}
+      <Box sx={{ mt: 2 }}>
+        {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
+
         {isSuccess && viewType == "grid" && (
           <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />
         )}
