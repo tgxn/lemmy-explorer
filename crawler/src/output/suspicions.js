@@ -186,7 +186,7 @@ export class Suspicions {
 
     const SUS_LEVEL_LOW = 0.001;
     if (metrics.userActivityScore < SUS_LEVEL_LOW) {
-      console.log(this.baseUrl, "userActivityScore", metrics.userActivityScore);
+      // console.log(this.baseUrl, "userActivityScore", metrics.userActivityScore);
       reasons.push(
         `user activity is HIGH: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
       );
