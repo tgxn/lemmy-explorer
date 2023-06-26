@@ -62,6 +62,12 @@ export default class PrepareFrontendData {
   }
 
   async storeCommunityData(connunityArray) {
+    // everything, big boi
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/community.full.json`,
+      JSON.stringify(connunityArray)
+    );
+
     // let storeCommunityData = data;
     // .map((community) => {
     //   return {
@@ -100,6 +106,12 @@ export default class PrepareFrontendData {
   }
 
   async storeInstanceData(instanceArray) {
+    // everything, big boi
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/instance.full.json`,
+      JSON.stringify(instanceArray)
+    );
+
     // mapped versions and the metadata
     let fileCount = 0;
     for (let i = 0; i < instanceArray.length; i += this.instancesPerFile) {
@@ -120,18 +132,12 @@ export default class PrepareFrontendData {
     // minified version, just names and base urls
     const minInstanceArray = instanceArray.map((instance) => {
       return {
-        n: instance.name,
-        b: instance.baseurl,
+        name: instance.name,
+        base: instance.baseurl,
       };
     });
     await this.writeJsonFile(
       `${this.publicDataFolder}/instance.min.json`,
-      JSON.stringify(minInstanceArray)
-    );
-
-    // everything, big boi
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/instance.full.json`,
       JSON.stringify(minInstanceArray)
     );
   }

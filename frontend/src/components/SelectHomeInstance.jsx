@@ -3,20 +3,16 @@ import { connect } from "react-redux";
 
 import useQueryCache from "../hooks/useQueryCache";
 
-import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { FixedSizeList } from "react-window";
 
 import Popper from "@mui/base/Popper";
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
 import AutocompleteListbox from "@mui/joy/AutocompleteListbox";
 import AutocompleteOption from "@mui/joy/AutocompleteOption";
 import FormControl from "@mui/joy/FormControl";
-
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
-import ListDivider from "@mui/joy/ListDivider";
 
 import Add from "@mui/icons-material/Add";
-import CottageIcon from "@mui/icons-material/Cottage";
-import HomeIcon from "@mui/icons-material/Home";
 
 import { setHomeInstance } from "../reducers/configReducer";
 
@@ -28,7 +24,7 @@ import { setHomeInstance } from "../reducers/configReducer";
 
 const filterOptions = createFilterOptions({
   //   matchFrom: "start",
-  stringify: (option) => option.baseurl,
+  stringify: (option) => option.base,
   trim: true,
   ignoreCase: true,
 });
@@ -44,16 +40,16 @@ function renderRow(props) {
   };
 
   return (
-    <AutocompleteOption key={dataSet[1].baseurl} {...dataSet[0]} style={inlineStyle}>
+    <AutocompleteOption key={dataSet[1].base} {...dataSet[0]} style={inlineStyle}>
       {dataSet[1].name?.startsWith('Add "') && (
         <ListItemDecorator>
           <Add />
         </ListItemDecorator>
       )}
       {typeof dataSet[1] == "string" && dataSet[1]}
-      {dataSet[1].baseurl && (
+      {dataSet[1].base && (
         <>
-          {dataSet[1].name} ({dataSet[1].baseurl})
+          {dataSet[1].name} ({dataSet[1].base})
         </>
       )}
     </AutocompleteOption>
@@ -122,7 +118,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props, ref) 
 });
 
 function SelectHomeInstance({ homeBaseUrl, dispatch }) {
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "instance");
+  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceMinData", "instance.min");
 
   const onChange = (newValue) => {
     console.log("onChange", newValue);
@@ -133,11 +129,11 @@ function SelectHomeInstance({ homeBaseUrl, dispatch }) {
     }
 
     // send the base url to upstream
-    dispatch(setHomeInstance(newValue.baseurl));
+    dispatch(setHomeInstance(newValue.base));
   };
 
   return (
-    <FormControl id="virtualize-demo">
+    <FormControl>
       <Autocomplete
         sx={{ width: 300, zIndex: 14000 }}
         value={homeBaseUrl || ""}
@@ -161,7 +157,7 @@ function SelectHomeInstance({ homeBaseUrl, dispatch }) {
           const { inputValue } = params;
 
           // Suggest the creation of a new value
-          const isExisting = options.some((option) => inputValue === option.baseurl);
+          const isExisting = options.some((option) => inputValue === option.base);
           if (inputValue !== "" && !isExisting) {
             const cleanedUrl = inputValue
               .replace("http:", "")
@@ -184,7 +180,7 @@ function SelectHomeInstance({ homeBaseUrl, dispatch }) {
           }
 
           // Regular option
-          return option.baseurl;
+          return option.base;
         }}
       />
     </FormControl>
