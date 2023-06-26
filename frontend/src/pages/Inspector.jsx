@@ -1,22 +1,14 @@
 import React from "react";
 
+import Moment from "react-moment";
+
 import useQueryCache from "../hooks/useQueryCache";
 
-import Table from "@mui/joy/Table";
-import Card from "@mui/joy/Card";
 import Container from "@mui/joy/Container";
 import Box from "@mui/joy/Box";
-import CardOverflow from "@mui/joy/CardOverflow";
-import CardCover from "@mui/joy/CardCover";
 import Typography from "@mui/joy/Typography";
-import Link from "@mui/joy/Link";
-import Divider from "@mui/joy/Divider";
-import { styled } from "@mui/joy/styles";
 import Grid from "@mui/joy/Grid";
 import Sheet from "@mui/joy/Sheet";
-
-import GitHubIcon from "@mui/icons-material/GitHub";
-import ForumIcon from "@mui/icons-material/Forum";
 
 import SusTable from "../components/Inspector/SusTable";
 import { ScatterGrid, ScatterGrid1 } from "../components/Inspector/ScatterGrid";
@@ -39,6 +31,14 @@ export default function Inspector() {
     error: errorIns,
     data: dataIns,
   } = useQueryCache("instanceData", "/instances.json");
+
+  const {
+    isLoading: isLoadingInsErr,
+    isSuccess: isSuccessInsErr,
+    isError: isErrorInsErr,
+    error: errorInsErr,
+    data: dataInsErr,
+  } = useQueryCache("instanceErrorData", "/instanceErrors.json");
 
   const [totalUsers, totalBadUsers] = React.useMemo(() => {
     if (!dataSus || !dataIns) return [0, 0, 0];
@@ -217,7 +217,6 @@ export default function Inspector() {
         {isSuccessIns && <VersionDist instances={dataIns} />}
       </Box>
 
-      {/* hgeader */}
       <Box
         sx={{
           display: "flex",
@@ -230,7 +229,6 @@ export default function Inspector() {
           This page lists instances that could be dangerous, it is provided for visibilty.
         </Typography>
       </Box>
-
       {isSuccessSus && (
         <SusTable
           susRows={dataSus}
@@ -289,6 +287,69 @@ export default function Inspector() {
               numeric: false,
               disablePadding: false,
               label: "Reasons",
+            },
+          ]}
+        />
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography color="primary" variant="h4">
+          Instances Scan Failures - Actor ID Mismatch
+        </Typography>
+      </Box>
+      {isSuccessInsErr && (
+        <SusTable
+          susRows={dataInsErr.filter((item) => item.type === "invalidActorId")}
+          renderRow={(row, index) => {
+            return (
+              <tr tabIndex={-1} key={row.baseurl}>
+                <th scope="row">{row.baseurl}</th>
+                <th scope="row">{row.type}</th>
+                <th scope="row">
+                  <Moment fromNow>{row.time}</Moment>
+                </th>
+                <th
+                  scope="row"
+                  sx={{
+                    maxWidth: "300px",
+                  }}
+                >
+                  {row.error}
+                </th>
+              </tr>
+            );
+          }}
+          headCells={[
+            {
+              id: "baseurl",
+              numeric: false,
+              disablePadding: false,
+              label: "Base URL",
+            },
+            {
+              id: "type",
+              numeric: false,
+              disablePadding: false,
+              label: "Type",
+            },
+            {
+              id: "error",
+              numeric: false,
+              disablePadding: false,
+              label: "Error",
+            },
+            {
+              id: "time",
+              numeric: false,
+              disablePadding: false,
+              label: "Time",
             },
           ]}
         />

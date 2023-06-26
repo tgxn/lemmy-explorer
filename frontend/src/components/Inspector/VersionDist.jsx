@@ -46,7 +46,7 @@ class CustomizedContent extends PureComponent {
             {name}
           </text>
         ) : null}
-        {depth === 1 ? (
+        {depth >= 1 ? (
           <text x={x + 4} y={y + 18} fill="#fff" fontSize={16} fillOpacity={0.9}>
             {root.children[index].name}
           </text>
@@ -78,7 +78,7 @@ export function VersionDist({ instances }) {
       });
 
     const unstable = Object.keys(versionsCounts)
-
+      .filter((version) => version !== "" && version !== "unknown version")
       .filter((version) => version.indexOf("-") !== -1 || version.indexOf(".") === -1 || version.length != 6)
       .map((version) => {
         return { name: version, size: versionsCounts[version] };
