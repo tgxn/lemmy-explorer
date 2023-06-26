@@ -72,6 +72,9 @@ export default class Splitter {
     let fileCount = 0;
     for (let i = 0; i < communityArray.length; i += this.communitiesPerFile) {
       let chunk = communityArray.slice(i, i + this.communitiesPerFile);
+
+      console.log("777 storeCommunityData", chunk.filter((c) => c.nsfw).length);
+
       await this.writeJsonFile(
         `${this.communityPath}/${fileCount}.json`,
         JSON.stringify(chunk)

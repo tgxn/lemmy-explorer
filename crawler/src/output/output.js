@@ -398,29 +398,50 @@ export default class CrawlOutput {
       return true;
     });
 
+    console.log(
+      "22 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
+    );
     // remove communities not updated in 24h
     storeCommunityData = storeCommunityData.filter((community) => {
       if (!community.time) {
+        console.log("no time", community);
         return false; // record needs time
       }
 
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;
-      if (recordAge > OUTPUT_MAX_AGE_MS) {
+
+      // temp fix till lermmy allows querying nsfw on the public api -.-
+      if (recordAge > OUTPUT_MAX_AGE_MS && !community.nsfw) {
+        // console.log("too old", community);
         return false;
       }
 
       return true;
     });
 
+    console.log(
+      "33 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
+    );
     // filter blank
     storeCommunityData = storeCommunityData.filter(
       (community) =>
         community.url !== "" || community.name !== "" || community.title !== ""
     );
 
+    console.log(
+      "44 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
+    );
     logging.info(
       `Communities ${communities.length} -> ${storeCommunityData.length}`
+    );
+
+    console.log(
+      "55 storeCommunityData",
+      storeCommunityData.filter((c) => c.nsfw).length
     );
 
     await this.splitter.storeCommunityData(storeCommunityData);
