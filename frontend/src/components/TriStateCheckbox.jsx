@@ -38,7 +38,6 @@ const TriStateCheckbox = ({ checked, onChange, onBlur }, ref) => {
   return (
     <Tooltip title={label} placement="top">
       <Checkbox
-        inputRef={ref}
         label={"Show NSFW"}
         color={localChecked == null ? "warning" : localChecked == true ? "danger" : "neutral"}
         checked={!!localChecked}

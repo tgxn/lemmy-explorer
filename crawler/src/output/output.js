@@ -362,6 +362,9 @@ export default class CrawlOutput {
         );
         const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
 
+        // if (community.community.nsfw)
+        //   console.log(community.community.name, community.community.nsfw);
+
         return {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
@@ -388,7 +391,7 @@ export default class CrawlOutput {
       const fail = this.findFail(community.baseurl);
       if (fail) {
         if (community.time < fail.time) {
-          // logging.info("filtered due to fail", fail, instance.baseurl);
+          // logging.info("filtered due to fail", fail, community.baseurl);
           return false;
         }
       }
@@ -397,7 +400,9 @@ export default class CrawlOutput {
 
     // remove communities not updated in 24h
     storeCommunityData = storeCommunityData.filter((community) => {
-      if (!community.time) return false; // record needs time
+      if (!community.time) {
+        return false; // record needs time
+      }
 
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;

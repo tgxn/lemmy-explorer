@@ -50,7 +50,7 @@ import { rm, mkdir } from "node:fs/promises";
 // instance-index.json
 
 // should do all the things needed to transform the redis data into data for frontend
-export default class PrepareFrontendData {
+export default class Splitter {
   constructor() {
     this.publicDataFolder = `../frontend/public/data`;
 
@@ -61,42 +61,23 @@ export default class PrepareFrontendData {
     this.instancesPerFile = 200;
   }
 
-  async storeCommunityData(connunityArray) {
+  async storeCommunityData(communityArray) {
     // everything, big boi
     await this.writeJsonFile(
       `${this.publicDataFolder}/community.full.json`,
-      JSON.stringify(connunityArray)
+      JSON.stringify(communityArray)
     );
 
-    // let storeCommunityData = data;
-    // .map((community) => {
-    //   return {
-    //     b: community.baseurl,
-    //     t: community.title,
-    //     n: community.name,
-    //     d: community.desc,
-    //     f: community.nsfw,
-    //     s: community.isSuspicious,
-    //     o: {
-    //       s: community.score,
-    //       u: community.counts.subscribers,
-    //       a: community.counts.users_active_week,
-    //       p: community.counts.posts,
-    //       c: community.counts.comments,
-    //     },
-    //   };
-    // });
-
+    // mapped versions and the metadata
     let fileCount = 0;
-    for (let i = 0; i < connunityArray.length; i += this.communitiesPerFile) {
-      let chunk = connunityArray.slice(i, i + this.communitiesPerFile);
+    for (let i = 0; i < communityArray.length; i += this.communitiesPerFile) {
+      let chunk = communityArray.slice(i, i + this.communitiesPerFile);
       await this.writeJsonFile(
         `${this.communityPath}/${fileCount}.json`,
         JSON.stringify(chunk)
       );
       fileCount++;
     }
-
     await this.writeJsonFile(
       `${this.publicDataFolder}/community.json`,
       JSON.stringify({
