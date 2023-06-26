@@ -20,7 +20,7 @@ export class Suspicions {
 
   async getMetrics() {
     const metrics = {
-      usersTotal: this.instance.nodeData.usage.users.total || 1,
+      usersTotal: this.instance.siteData.counts.users || 1,
 
       usersMonth: this.instance.siteData.counts.users_active_month || 1,
       usersWeek: this.instance.siteData.counts.users_active_week || 1,
@@ -35,14 +35,11 @@ export class Suspicions {
     // using the history, calculate how much it increses each crawl
     // and then how many users per minute that is...
     // also calculate how much increase growth % per scan
-
     let instanceUserHistory = await storage.instance.getAttributeWithScores(
       this.baseUrl,
       "users"
     );
-
     // console.log("getAttributeWithScores", instanceUserHistory);
-
     if (instanceUserHistory.length > 0) {
       // used to track as we check the history
       let totalUserCount = 0; // used for average
@@ -59,8 +56,24 @@ export class Suspicions {
         const userIncrease = userCount - Number(lastRecord.value); // 0 for first record
         const timeIncrease = timeScore - Number(lastRecord.score); // 0 for first record
 
+        const percentOfTotalIncrease = userIncrease / metrics.usersTotal || 0;
+
+        // console.log(
+        //   this.baseUrl,
+        //   "userCount",
+        //   userCount,
+        //   "timeScore",
+        //   timeScore,
+        //   "userIncrease",
+        //   userIncrease,
+        //   "timeIncrease",
+        //   timeIncrease,
+        //   "pctTotal",
+        //   percentOfTotalIncrease
+        // );
+
         // add for averaging
-        totalUserCount = Math.ceil(totalUserCount + userCount);
+        totalUserCount = totalUserCount + userCount;
 
         // if this jump is bigger jump than what's stored
         if (userIncrease > biggestJump) {
@@ -74,6 +87,7 @@ export class Suspicions {
           time: timeScore,
           userIncrease,
           timeIncrease,
+          pctTotal: percentOfTotalIncrease,
         });
         // }
 
@@ -131,8 +145,9 @@ export class Suspicions {
     return {
       ...metrics,
 
-      userActivityScore: Math.ceil(metrics.usersTotal / metrics.totalActivity),
-      userActiveMonthScore: Math.ceil(metrics.usersTotal / metrics.usersMonth),
+      userActivityScore: metrics.usersTotal / metrics.totalActivity,
+
+      userActiveMonthScore: metrics.usersTotal / metrics.usersMonth,
     };
   }
 
@@ -140,8 +155,14 @@ export class Suspicions {
     this.metrics = await this.getMetrics();
     let metrics = this.metrics;
 
+    // console.log(this.baseUrl, "metrics", metrics);
+
     // if less than x, skip
-    if (metrics.usersTotal < 1000) {
+    if (
+      metrics.usersTotal < 1000 &&
+      metrics.localPosts < 1000 &&
+      metrics.localComments < 1000
+    ) {
       return [];
     }
 
@@ -163,6 +184,14 @@ export class Suspicions {
       );
     }
 
+    const SUS_LEVEL_LOW = 0.001;
+    if (metrics.userActivityScore < SUS_LEVEL_LOW) {
+      console.log(this.baseUrl, "userActivityScore", metrics.userActivityScore);
+      reasons.push(
+        `user activity is HIGH: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
+      );
+    }
+
     // checks for total users vs. active users metric
     // const userAtivityFail = this.isUserActivityLow();
     const susMaxPercent = 500;
@@ -179,7 +208,7 @@ export class Suspicions {
     // }
 
     if (metrics.averagePerMinute > 9.5) {
-      console.log(this.baseUrl, "averagePerMinute", metrics.averagePerMinute);
+      // console.log(this.baseUrl, "averagePerMinute", metrics.averagePerMinute);
       reasons.push(`averagePerMinute is too high: ${metrics.averagePerMinute}`);
     }
 

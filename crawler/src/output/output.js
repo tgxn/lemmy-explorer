@@ -478,7 +478,7 @@ export default class CrawlOutput {
       }
 
       const instanceData = {
-        baseurl: key,
+        baseurl: key.replace("error:instance:", ""),
         error: value.error,
         time: value.time,
       };
