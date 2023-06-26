@@ -175,6 +175,16 @@ export default class InstanceCrawler {
       );
       await storage.instance.setTrackedAttribute(
         this.crawlDomain,
+        "posts",
+        siteInfo.site_view.counts.posts
+      );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "comments",
+        siteInfo.site_view.counts.comments
+      );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
         "communities",
         siteInfo.site_view.counts.communities
       );
