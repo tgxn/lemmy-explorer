@@ -166,7 +166,7 @@ function SelectHomeInstance({ homeBaseUrl, dispatch }) {
               .replace("/", "");
             filtered.push({
               name: `Add "${cleanedUrl}"`,
-              baseurl: cleanedUrl,
+              base: cleanedUrl,
             });
           }
 
