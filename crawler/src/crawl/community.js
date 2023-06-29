@@ -69,6 +69,7 @@ export default class CommunityCrawler {
             type_: "Local",
             page: pageNumber,
             limit: 50,
+            show_nsfw: true, // Added in 0.18.x? ish...
           },
         }
       );

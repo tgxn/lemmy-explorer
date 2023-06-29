@@ -409,9 +409,17 @@ export default class CrawlOutput {
       const recordAge = Date.now() - community.time;
 
       // temp fix till lermmy allows querying nsfw on the public api -.-
-      if (recordAge > OUTPUT_MAX_AGE_MS && !community.nsfw) {
-        // console.log("too old", community);
+      if (community.nsfw) {
+        return true;
+      }
+
+      if (recordAge > OUTPUT_MAX_AGE_MS) {
         return false;
+      }
+
+      if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
+        console.log("NFSW Updated Recently!!", community);
+        // return false;
       }
 
       return true;
@@ -450,17 +458,16 @@ export default class CrawlOutput {
       // const fediverse = JSON.parse(fediverseString);
       // logging.info("fediverse", fediverse);
       if (fediverse.name) {
-
-        if(!softwareBaseUrls[fediverse.name] ) {
-          softwareBaseUrls[fediverse.name] = [baseUrl]
+        if (!softwareBaseUrls[fediverse.name]) {
+          softwareBaseUrls[fediverse.name] = [baseUrl];
         } else {
-          softwareBaseUrls[fediverse.name].push(baseUrl)
+          softwareBaseUrls[fediverse.name].push(baseUrl);
         }
 
-        if(!softwareNames[fediverse.name] ) {
-          softwareNames[fediverse.name] = 1
+        if (!softwareNames[fediverse.name]) {
+          softwareNames[fediverse.name] = 1;
         } else {
-          softwareNames[fediverse.name] += 1
+          softwareNames[fediverse.name] += 1;
         }
 
         returnStats.push({
@@ -470,8 +477,17 @@ export default class CrawlOutput {
         });
       }
     });
-    logging.info("Fediverse Servers", returnStats.length, softwareNames, softwareBaseUrls);
-    await this.splitter.storeFediverseData(returnStats, softwareNames, softwareBaseUrls);
+    // logging.info(
+    //   "Fediverse Servers",
+    //   returnStats.length,
+    //   softwareNames,
+    //   softwareBaseUrls
+    // );
+    await this.splitter.storeFediverseData(
+      returnStats,
+      softwareNames,
+      softwareBaseUrls
+    );
 
     let instanceErrors = [];
 
