@@ -75,10 +75,16 @@ export default function Inspector() {
           alignItems: "center",
         }}
       >
-        <TabList sx={{}}>
-          <Tab>Overview</Tab>
-          <Tab>Version Distribution</Tab>
-          <Tab>Suspicious Instances</Tab>
+        <TabList variant="outlined" color="neutral">
+          <Tab variant={"soft"} color={tabIndex === 0 ? "primary" : "neutral"}>
+            Overview
+          </Tab>
+          <Tab variant={"soft"} color={tabIndex === 1 ? "primary" : "neutral"}>
+            Version Distribution
+          </Tab>
+          <Tab variant={"soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
+            Suspicious Instances
+          </Tab>
           {/* <Tab>Instance Debugger</Tab> */}
         </TabList>
         <Box
