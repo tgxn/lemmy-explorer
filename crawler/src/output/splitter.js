@@ -73,8 +73,6 @@ export default class Splitter {
     for (let i = 0; i < communityArray.length; i += this.communitiesPerFile) {
       let chunk = communityArray.slice(i, i + this.communitiesPerFile);
 
-      console.log("777 storeCommunityData", chunk.filter((c) => c.nsfw).length);
-
       await this.writeJsonFile(
         `${this.communityPath}/${fileCount}.json`,
         JSON.stringify(chunk)
@@ -126,10 +124,18 @@ export default class Splitter {
     );
   }
 
-  async storeFediverseData(data) {
+  async storeFediverseData(data, softwareData, softwareBaseUrls) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/fediverse.json`,
       JSON.stringify(data)
+    );
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/fediverse_software_counts.json`,
+      JSON.stringify(softwareData)
+    );
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/fediverse_software_sites.json`,
+      JSON.stringify(softwareBaseUrls)
     );
   }
 
