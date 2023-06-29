@@ -1,5 +1,10 @@
-/* eslint-disable max-classes-per-file */
 import React, { PureComponent } from "react";
+
+import useCachedMultipart from "../../hooks/useCachedMultipart";
+
+import Box from "@mui/joy/Box";
+import Typography from "@mui/joy/Typography";
+
 import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = ["#8889DD", "#9597E4", "#8DC77B", "#A5D297", "#E2CF45", "#F8C12D"];
@@ -56,7 +61,7 @@ class CustomizedContent extends PureComponent {
   }
 }
 
-export function VersionDist({ instances }) {
+function VersionDist({ instances }) {
   const data = React.useMemo(() => {
     const versionsCounts = {};
 
@@ -124,5 +129,43 @@ export function VersionDist({ instances }) {
         <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />} />
       </Treemap>
     </ResponsiveContainer>
+  );
+}
+
+export default function InspectorOverview() {
+  const {
+    isLoading: isLoadingIns,
+    isSuccess: isSuccessIns,
+    loadingPercent: loadingPercentIns,
+    isError: isErrorIns,
+    error: errorIns,
+    data: dataIns,
+  } = useCachedMultipart("instanceData", "instance");
+
+  if (isLoadingIns) return "Loading...";
+  if (isErrorIns) return "An error has occurred: " + errorIns.message;
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography color="info" variant="h4">
+          Version Distribution
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          p: 1,
+        }}
+      >
+        {isSuccessIns && <VersionDist instances={dataIns} />}
+      </Box>
+    </Box>
   );
 }

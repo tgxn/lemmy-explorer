@@ -68,7 +68,7 @@ export default function App() {
                   element={<Instances />}
                 />
                 <Route path="/join" element={<Join />} />
-                <Route path="/inspect" element={<Inspector />} />
+                <Route path="/inspect/*" element={<Inspector />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/communities" element={<Communities />} />
                 <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
@@ -81,6 +81,3 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-
-const rootElement = document.getElementById("root");
-ReactDOM.createRoot(rootElement).render(<App />);
