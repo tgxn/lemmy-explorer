@@ -25,10 +25,11 @@ import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
-import LanguageFilter from "../components/LanguageFilter";
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Display";
-import { InstanceGrid } from "../components/GridView";
-import { InstanceList } from "../components/ListView";
+import LanguageFilter from "../components/Shared/LanguageFilter";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+
+import InstanceGrid from "../components/GridView/Instance";
+import InstanceList from "../components/ListView/Instance";
 
 function Instances({ filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();

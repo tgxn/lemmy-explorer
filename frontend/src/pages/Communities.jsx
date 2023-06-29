@@ -26,10 +26,11 @@ import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import NumbersIcon from "@mui/icons-material/Numbers";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Display";
-import { CommunityGrid } from "../components/GridView";
-import { CommunityList } from "../components/ListView";
-import TriStateCheckbox from "../components/TriStateCheckbox";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
+
+import CommunityGrid from "../components/GridView/Community";
+import CommunityList from "../components/ListView/Community";
 
 function Communities({ homeBaseUrl, filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();

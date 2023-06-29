@@ -4,7 +4,7 @@ import Card from "@mui/joy/Card";
 import CardOverflow from "@mui/joy/CardOverflow";
 import Typography from "@mui/joy/Typography";
 
-import { SimpleNumberFormat } from "../Display";
+import { SimpleNumberFormat } from "../Shared/Display";
 
 export function NumberStat({ title, value, color = "primary", description = "", sx = {} }) {
   return (
