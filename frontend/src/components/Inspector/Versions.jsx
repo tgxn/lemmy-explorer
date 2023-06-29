@@ -18,8 +18,8 @@ const CustomTooltip = ({ active, payload, label }) => {
         }}
       >
         {/* <p className="label">ActiveMonth: {payload[0].metrics.userActiveMonthScore}</p> */}
-        <p className="label">{JSON.stringify(payload[0].payload.name)}</p>
-        <p className="label">{JSON.stringify(payload[0].payload.value)}</p>
+        <p className="label">Version: {payload[0].payload.name}</p>
+        <p className="label">Amount: {payload[0].payload.value}</p>
       </div>
     );
   }
@@ -47,15 +47,15 @@ class CustomizedContent extends PureComponent {
           }}
         />
         {depth === 1 ? (
-          <text x={x + width / 2} y={y + height / 2 + 7} textAnchor="middle" fill="#fff" fontSize={14}>
+          <text x={x + width / 2} y={y + height / 2 + 7} textAnchor="middle" fill="#fff" fontSize={20}>
             {name}
           </text>
         ) : null}
-        {depth === 1 ? (
-          <text x={x + 4} y={y + 18} fill="#fff" fontSize={16} fillOpacity={0.9}>
+        {depth === 2 && width > 75 && (
+          <text x={x + 4} y={y + 18} fill="#fff" fontSize={14} fillOpacity={0.9}>
             {root.children[index].name}
           </text>
-        ) : null}
+        )}
       </g>
     );
   }
@@ -75,7 +75,7 @@ function VersionDist({ instances }) {
     });
     console.log("versionsCounts", versionsCounts);
 
-    const mainline = Object.keys(versionsCounts)
+    const stable = Object.keys(versionsCounts)
       .filter((version) => version !== "" && version !== "unknown version")
       .filter((version) => version.indexOf("-") === -1 && version.indexOf(".") !== -1 && version.length == 6)
       .map((version) => {
@@ -83,7 +83,7 @@ function VersionDist({ instances }) {
       });
 
     const unstable = Object.keys(versionsCounts)
-
+      .filter((version) => version !== "" && version !== "unknown version")
       .filter((version) => version.indexOf("-") !== -1 || version.indexOf(".") === -1 || version.length != 6)
       .map((version) => {
         return { name: version, size: versionsCounts[version] };
@@ -97,17 +97,16 @@ function VersionDist({ instances }) {
 
     const data = [
       {
-        name: "unknown",
-        children: unknown,
+        name: "stable",
+        children: stable,
       },
-
       {
         name: "unstable",
         children: unstable,
       },
       {
-        name: "mainline",
-        children: mainline,
+        name: "unknown",
+        children: unknown,
       },
     ];
     console.log("vers data", data);
@@ -118,12 +117,11 @@ function VersionDist({ instances }) {
   return (
     <ResponsiveContainer width="100%" height={600}>
       <Treemap
-        // width={800}
-        // height={500}
         data={data}
         dataKey="size"
         stroke="#fff"
         fill="#8884d8"
+        animationDuration={0}
         content={<CustomizedContent colors={COLORS} />}
       >
         <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />} />
@@ -132,7 +130,7 @@ function VersionDist({ instances }) {
   );
 }
 
-export default function InspectorOverview() {
+export default function VersionDistDataWrapper() {
   const {
     isLoading: isLoadingIns,
     isSuccess: isSuccessIns,
@@ -145,27 +143,5 @@ export default function InspectorOverview() {
   if (isLoadingIns) return "Loading...";
   if (isErrorIns) return "An error has occurred: " + errorIns.message;
 
-  return (
-    <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography color="info" variant="h4">
-          Version Distribution
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          p: 1,
-        }}
-      >
-        {isSuccessIns && <VersionDist instances={dataIns} />}
-      </Box>
-    </Box>
-  );
+  return <Box>{isSuccessIns && <VersionDist instances={dataIns} />}</Box>;
 }

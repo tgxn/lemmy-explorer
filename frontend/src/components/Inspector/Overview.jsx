@@ -78,11 +78,9 @@ export default function InspectorOverview() {
     // instance data
     dataIns.forEach((instance) => {
       totalUsers += instance.counts.users;
-    });
 
-    // sus data
-    dataSus.forEach((instance) => {
-      totalBadUsers += instance.users;
+      const susInstance = dataSus.find((susInstance) => susInstance.base === instance.baseurl);
+      if (susInstance) totalBadUsers += susInstance.users;
     });
 
     return [totalUsers, totalBadUsers];
