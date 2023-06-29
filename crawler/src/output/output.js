@@ -398,10 +398,6 @@ export default class CrawlOutput {
       return true;
     });
 
-    console.log(
-      "22 storeCommunityData",
-      storeCommunityData.filter((c) => c.nsfw).length
-    );
     // remove communities not updated in 24h
     storeCommunityData = storeCommunityData.filter((community) => {
       if (!community.time) {
@@ -413,35 +409,30 @@ export default class CrawlOutput {
       const recordAge = Date.now() - community.time;
 
       // temp fix till lermmy allows querying nsfw on the public api -.-
-      if (recordAge > OUTPUT_MAX_AGE_MS && !community.nsfw) {
-        // console.log("too old", community);
+      if (community.nsfw) {
+        return true;
+      }
+
+      if (recordAge > OUTPUT_MAX_AGE_MS) {
         return false;
+      }
+
+      if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
+        console.log("NFSW Updated Recently!!", community);
+        // return false;
       }
 
       return true;
     });
 
-    console.log(
-      "33 storeCommunityData",
-      storeCommunityData.filter((c) => c.nsfw).length
-    );
     // filter blank
     storeCommunityData = storeCommunityData.filter(
       (community) =>
         community.url !== "" || community.name !== "" || community.title !== ""
     );
 
-    console.log(
-      "44 storeCommunityData",
-      storeCommunityData.filter((c) => c.nsfw).length
-    );
     logging.info(
       `Communities ${communities.length} -> ${storeCommunityData.length}`
-    );
-
-    console.log(
-      "55 storeCommunityData",
-      storeCommunityData.filter((c) => c.nsfw).length
     );
 
     await this.splitter.storeCommunityData(storeCommunityData);
@@ -454,7 +445,11 @@ export default class CrawlOutput {
     // logging.info("Fediverse", fediverseData);
 
     let returnStats = [];
-    let storeFediverseData = Object.keys(fediverseData).forEach((fediKey) => {
+
+    let softwareNames = {};
+    let softwareBaseUrls = {};
+
+    Object.keys(fediverseData).forEach((fediKey) => {
       const fediverse = fediverseData[fediKey];
       // logging.info("fediverseString", fediverseString);
       const baseUrl = fediKey.replace("fediverse:", "");
@@ -463,6 +458,18 @@ export default class CrawlOutput {
       // const fediverse = JSON.parse(fediverseString);
       // logging.info("fediverse", fediverse);
       if (fediverse.name) {
+        if (!softwareBaseUrls[fediverse.name]) {
+          softwareBaseUrls[fediverse.name] = [baseUrl];
+        } else {
+          softwareBaseUrls[fediverse.name].push(baseUrl);
+        }
+
+        if (!softwareNames[fediverse.name]) {
+          softwareNames[fediverse.name] = 1;
+        } else {
+          softwareNames[fediverse.name] += 1;
+        }
+
         returnStats.push({
           url: baseUrl,
           software: fediverse.name,
@@ -470,8 +477,17 @@ export default class CrawlOutput {
         });
       }
     });
-    logging.info("Fediverse Servers", returnStats.length);
-    await this.splitter.storeFediverseData(returnStats);
+    // logging.info(
+    //   "Fediverse Servers",
+    //   returnStats.length,
+    //   softwareNames,
+    //   softwareBaseUrls
+    // );
+    await this.splitter.storeFediverseData(
+      returnStats,
+      softwareNames,
+      softwareBaseUrls
+    );
 
     let instanceErrors = [];
 
