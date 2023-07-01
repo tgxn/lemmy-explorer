@@ -56,6 +56,7 @@ export default class Splitter {
 
     this.communityPath = `${this.publicDataFolder}/community`;
     this.instancePath = `${this.publicDataFolder}/instance`;
+    this.metricsPath = `${this.publicDataFolder}/metrics`;
 
     this.communitiesPerFile = 500;
     this.instancesPerFile = 200;
@@ -139,6 +140,13 @@ export default class Splitter {
     );
   }
 
+  async storeInstanceMetricsData(instanceBaseUrl, data) {
+    await this.writeJsonFile(
+      `${this.metricsPath}/${instanceBaseUrl}.meta.json`,
+      JSON.stringify(data)
+    );
+  }
+
   async storeMetaData(data) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/meta.json`,
@@ -164,6 +172,7 @@ export default class Splitter {
     await rm(this.publicDataFolder, { recursive: true, force: true });
     await mkdir(this.communityPath, { recursive: true });
     await mkdir(this.instancePath, { recursive: true });
+    await mkdir(this.metricsPath, { recursive: true });
   }
 
   async writeJsonFile(filename, data) {

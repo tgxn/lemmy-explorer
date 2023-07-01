@@ -10,6 +10,7 @@ import AxiosClient from "../lib/axios.js";
 export default class InstanceCrawler {
   constructor(crawlDomain) {
     this.crawlDomain = crawlDomain;
+    this.logPrefix = `[Instance] [${this.crawlDomain}]`;
 
     this.client = new AxiosClient();
   }
@@ -26,7 +27,7 @@ export default class InstanceCrawler {
       });
 
       logging.info(
-        `[Instance] [${this.crawlDomain}] Completed OK (Found "${instanceData?.siteData?.site?.name}")`
+        `${this.logPrefix} Completed OK (Found "${instanceData?.siteData?.site?.name}")`
       );
 
       return instanceData;

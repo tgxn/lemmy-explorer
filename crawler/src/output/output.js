@@ -203,12 +203,48 @@ export default class CrawlOutput {
     logging.silly("unhandled error", errorMessage);
   }
 
+  async generateInstanceMetrics(instance, storeCommunityData) {
+    // get timeseries
+    const usersSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users"
+    );
+    const versionSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "version"
+    );
+
+    // generate array with time -> value
+    const users = usersSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    const versions = versionSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    await this.splitter.storeInstanceMetricsData(instance.baseurl, {
+      instance,
+      communityCount: storeCommunityData.filter(
+        (community) => community.baseurl === instance.baseurl
+      ).length,
+      users,
+      versions,
+    });
+  }
+
   async start() {
     await this.loadAllData();
 
     await this.splitter.cleanData();
 
-    const suspiciousInstances = await this.outputSusList();
+    await this.outputSusList();
 
     logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
     logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
@@ -408,6 +444,11 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;
 
+      // if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
+      //   console.log("NFSW Updated Recently!!", community.url);
+      //   // return false;
+      // }
+
       // temp fix till lermmy allows querying nsfw on the public api -.-
       if (community.nsfw) {
         return true;
@@ -417,11 +458,6 @@ export default class CrawlOutput {
         return false;
       }
 
-      if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
-        console.log("NFSW Updated Recently!!", community);
-        // return false;
-      }
-
       return true;
     });
 
@@ -429,6 +465,12 @@ export default class CrawlOutput {
     storeCommunityData = storeCommunityData.filter(
       (community) =>
         community.url !== "" || community.name !== "" || community.title !== ""
+    );
+
+    await Promise.all(
+      storeData.map(async (instance) => {
+        this.generateInstanceMetrics(instance, storeCommunityData);
+      })
     );
 
     logging.info(

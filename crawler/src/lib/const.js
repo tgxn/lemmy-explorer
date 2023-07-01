@@ -15,8 +15,8 @@ export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */2 * * *";
 
 // timeout for the instance and community crawlers
 export const CRAWL_TIMEOUT = {
-  INSTANCE: 2 * 60 * 1000, // 2 minutes in ms
-  COMMUNITY: 5 * 60 * 1000, // 5 minutes in ms
+  INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
+  COMMUNITY: 45 * 60 * 1000, // 45 minutes in ms
 };
 
 // the minimum amount of time between crawling the same instance
@@ -24,7 +24,7 @@ const MIN_RECRAWL_HOURS = 6;
 export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 
 // consider records to be aged after this long (to re-crawl)
-const RECRAWL_AGED_HOURS = 6;
+const RECRAWL_AGED_HOURS = 7;
 export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
 
 // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
@@ -32,17 +32,17 @@ const RECRAWL_FEDIVERSE_HOURS = 24 * 7;
 export const RECRAWL_FEDIVERSE_MS = hoursToMs(RECRAWL_FEDIVERSE_HOURS);
 
 // how often should the cron run with --cron
-export const AGED_CRON_EXPRESSION = "*/5 * * * *"; // every 5 minutes
+export const AGED_CRON_EXPRESSION = "0 * * * *"; // every hour
 
 // how often to hit fediverse.observer to get uptimes with --cron
 export const UPTIME_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
 
 // the maximum age for output items to be included in the json dumps
-const OUTPUT_MAX_AGE_HOURS = 24;
+const OUTPUT_MAX_AGE_HOURS = 12;
 export const OUTPUT_MAX_AGE_MS = OUTPUT_MAX_AGE_HOURS * 60 * 60 * 1000;
 
 // for each request we make, after how much time should axios be configured to timeout
-export const AXIOS_REQUEST_TIMEOUT = 20 * 1000; // 20 seconds in ms
+export const AXIOS_REQUEST_TIMEOUT = 120 * 1000; // 20 seconds in ms
 
 export const FEDDIT_URLS = [
   "0xdd.org.ru",
