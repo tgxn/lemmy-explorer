@@ -18,6 +18,11 @@ module.exports = merge(common, {
     // watchContentBase: true,
     historyApiFallback: { index: "/", disableDotRule: true },
   },
+  optimization: {
+    // Instruct webpack not to obfuscate the resulting code
+    minimize: false,
+    splitChunks: false,
+  },
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
