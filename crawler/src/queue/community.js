@@ -29,38 +29,6 @@ export default class CommunityQueue {
     if (isWorker) this.process();
   }
 
-  // // returns a amount os ms since we last crawled it, false if all good
-  // async getLastCrawlMsAgo(instanceBaseUrl) {
-  //   // // rely on the last crawled time in the instance table.
-  //   // const existingInstance = await storage.instance.getOne(instanceBaseUrl);
-  //   // if (existingInstance?.lastCrawled) {
-  //   //   // logging.info("lastCrawled", existingInstance.lastCrawled);
-
-  //   //   const lastCrawl = existingInstance.lastCrawled;
-  //   //   const now = Date.now();
-
-  //   //   return now - lastCrawl;
-  //   // }
-
-  //   // // check for recent error
-  //   // const lastError = await storage.tracking.getOneError(
-  //   //   "community",
-  //   //   instanceBaseUrl
-  //   // );
-  //   // if (lastError?.time) {
-  //   //   // logging.info("lastError", lastError.time);
-
-  //   //   const lastErrorTime = lastError.time;
-  //   //   const now = Date.now();
-
-  //   //   return now - lastErrorTime;
-  //   // }
-
-  //   const lastCrawlTs = await storage.tracking.getLastCrawl("instance", instanceBaseUrl);
-
-  //   return false;
-  // }
-
   async createJob(instanceBaseUrl, onSuccess = null) {
     const trimmedUrl = instanceBaseUrl.trim();
     const job = this.queue.createJob({ baseUrl: trimmedUrl });
@@ -112,7 +80,7 @@ export default class CommunityQueue {
         }
 
         const crawler = new CommunityCrawler(instanceBaseUrl);
-        const communityData = await crawler.crawl();
+        const communityData = await crawler.crawlList();
 
         // set last successful crawl
         await storage.tracking.setLastCrawl("community", job.data.baseUrl);
@@ -144,21 +112,6 @@ export default class CommunityQueue {
         logging.error(
           `[Community] [${job.data.baseUrl}] Error: ${error.message}`
         );
-        //   }
-
-        //   // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
-        //   else if (error instanceof CrawlTooRecentError) {
-        //     logging.warn(
-        //       `[Community] [${job.data.baseUrl}] Warn: ${error.message}`
-        //     );
-        //   } else {
-        //     logging.verbose(
-        //       `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-        //     );
-        //   }
-        // } finally {
-        //   // set last scan time if it was success or failure.
-        //   await storage.tracking.setLastCrawl("community", job.data.baseUrl);
       }
       return false;
     });

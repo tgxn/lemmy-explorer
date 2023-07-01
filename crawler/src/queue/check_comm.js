@@ -7,7 +7,7 @@ import storage from "../storage.js";
 import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
 import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
 
-import SingleCommunityCrawler from "../crawl/checkonecomm.js";
+import CommunityCrawler from "../crawl/community.js";
 
 export default class SingleCommunityQueue {
   constructor(isWorker = false, queueName = "one_community") {
@@ -53,8 +53,8 @@ export default class SingleCommunityQueue {
         const baseUrl = job.data.baseUrl;
         const communityName = job.data.community;
 
-        const crawler = new SingleCommunityCrawler(baseUrl, communityName);
-        const communityData = await crawler.crawl();
+        const crawler = new CommunityCrawler(baseUrl);
+        const communityData = await crawler.crawlSingle(communityName);
 
         return communityData;
       } catch (error) {
