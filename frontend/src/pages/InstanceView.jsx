@@ -5,6 +5,7 @@ import { Routes, Route } from "react-router-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import useQueryCache from "../hooks/useQueryCache";
 
+import Badge from "@mui/joy/Badge";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
 import Tab from "@mui/joy/Tab";
@@ -15,12 +16,13 @@ import Container from "@mui/joy/Container";
 import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 
-import { LinearValueLoader, PageError } from "../components/Shared/Display";
+import { SimpleNumberFormat, LinearValueLoader, PageError } from "../components/Shared/Display";
 
 import InstanceDetail from "../components/InstanceView/InstanceDetail";
 import InstanceOverview from "../components/InstanceView/InstanceOverview";
 import InstanceUserGrowth from "../components/InstanceView/InstanceUserGrowth";
 import InstanceVersions from "../components/InstanceView/InstanceVersions";
+import InstanceCommunities from "../components/InstanceView/InstanceCommunities";
 
 export default function InstanceView() {
   const params = useParams();
@@ -41,10 +43,12 @@ export default function InstanceView() {
   React.useEffect(() => {
     const path = window.location.pathname;
 
-    if (path.endsWith("user-growth")) {
+    if (path.endsWith("communities")) {
       setTabIndex(1);
     } else if (path.endsWith("version-history")) {
       setTabIndex(2);
+    } else if (path.endsWith("version-history")) {
+      setTabIndex(3);
     }
   }, []);
 
@@ -56,10 +60,14 @@ export default function InstanceView() {
         break;
 
       case 1:
-        navigate("user-growth");
+        navigate("communities");
         break;
 
       case 2:
+        navigate("user-growth");
+        break;
+
+      case 3:
         navigate("version-history");
         break;
     }
@@ -124,17 +132,31 @@ export default function InstanceView() {
             <TabList
               variant="outlined"
               color="neutral"
-              // sx={{
-              //   width: "200px",
-              // }}
+              sx={{
+                width: "auto",
+              }}
             >
               <Tab variant={"soft"} color={tabIndex === 0 ? "primary" : "neutral"}>
                 Overview
               </Tab>
-              <Tab variant={"soft"} color={tabIndex === 1 ? "primary" : "neutral"}>
+              <Badge
+                badgeContent={isSuccess && <SimpleNumberFormat value={metricsData.communityCount} />}
+                max={9999}
+                color="primary"
+                variant={"solid"}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+              >
+                <Tab variant={"soft"} color={tabIndex === 1 ? "primary" : "neutral"}>
+                  Communities
+                </Tab>
+              </Badge>
+              <Tab variant={"soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
                 User Growth
               </Tab>
-              <Tab variant={"soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
+              <Tab variant={"soft"} color={tabIndex === 3 ? "primary" : "neutral"}>
                 Version History
               </Tab>
               {/* <Tab>Instance Debugger</Tab> */}
@@ -156,9 +178,17 @@ export default function InstanceView() {
                   }
                 />
                 <Route
-                  path="/user-growth"
+                  path="/communities"
                   element={
                     <TabPanel value={1}>
+                      <InstanceCommunities instance={metricsData.instance} />
+                    </TabPanel>
+                  }
+                />
+                <Route
+                  path="/user-growth"
+                  element={
+                    <TabPanel value={2}>
                       <InstanceUserGrowth userSeries={metricsData.users} />
                     </TabPanel>
                   }
@@ -166,7 +196,7 @@ export default function InstanceView() {
                 <Route
                   path="/version-history"
                   element={
-                    <TabPanel value={2}>
+                    <TabPanel value={3}>
                       <InstanceVersions
                         instance={metricsData.instance}
                         versionSeries={metricsData.versions}
