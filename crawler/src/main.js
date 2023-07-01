@@ -4,6 +4,7 @@ import cron from "node-cron";
 
 import InstanceQueue from "./queue/instance.js";
 import CommunityQueue from "./queue/community.js";
+import SingleCommunityQueue from "./queue/check_comm.js";
 
 import CrawlOutput from "./output/output.js";
 
@@ -69,6 +70,10 @@ export async function start(args) {
           const commCounts = await communityCrawl.queue.checkHealth();
           logging.info("Community Worker Health:", commCounts);
 
+          const singleCommCrawl = new SingleCommunityQueue(false);
+          const commSingleCounts = await singleCommCrawl.queue.checkHealth();
+          logging.info("Single Community Worker Health:", commSingleCounts);
+
           return process.exit(0);
 
         // adds ages domain jobs immediately
@@ -129,6 +134,11 @@ export async function start(args) {
         new CommunityQueue(true);
 
         return;
+      } else if (args[1] == "single") {
+        logging.info("Starting SingleCommunityQueue Processor");
+        new SingleCommunityQueue(true);
+
+        return;
       }
     }
 
@@ -152,10 +162,25 @@ export async function start(args) {
         process.exit(0);
       });
     }
+
+    // finger one community
+    else if (args.length === 3 && args[0] == "-s") {
+      logging.info(`Running CrawlFinger Crawl for ${args[1]}`);
+      const crawlOneComm = new SingleCommunityQueue(
+        true,
+        "one_community_manual"
+      );
+      await crawlOneComm.createJob(args[1], args[2], (resultData) => {
+        logging.info("CrawlFinger Crawl Complete");
+
+        process.exit(0);
+      });
+    }
   } else {
     logging.info("no args, starting all crawler workers");
     new InstanceQueue(true);
     new CommunityQueue(true);
+    new SingleCommunityQueue(true);
   }
 
   // storage.close();

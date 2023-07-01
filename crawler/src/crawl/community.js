@@ -1,5 +1,7 @@
 import logging from "../lib/logging.js";
 
+import { open } from "node:fs/promises";
+
 import { CrawlError } from "../lib/error.js";
 
 import storage from "../storage.js";
@@ -58,7 +60,7 @@ export default class CommunityCrawler {
   }
 
   async crawlCommunityPaginatedList(pageNumber = 1) {
-    logging.silly(`page number ${pageNumber}`);
+    logging.debug(`${this.crawlDomain} page number ${pageNumber}`);
 
     let communityList;
     try {
@@ -67,8 +69,8 @@ export default class CommunityCrawler {
         {
           params: {
             type_: "Local",
-            page: pageNumber,
             limit: 50,
+            page: pageNumber,
             show_nsfw: true, // Added in 0.18.x? ish...
           },
         }
@@ -79,22 +81,48 @@ export default class CommunityCrawler {
 
     const communities = communityList.data.communities;
 
-    //must be an array
+    // must be an array
     if (!Array.isArray(communities)) {
       throw new CrawlError(`Community list not an array: ${communities}`);
     }
 
+    logging.debug(
+      `${this.crawlDomain} page ${pageNumber} results: ${communities.length}`
+    );
+    // for (var community of communities) {
+    //   logging.debug(`${community.community.actor_id}`);
+    // }
+
     let list = [];
 
-    list.push(...communities);
+    // if this page had non-zero results
+    if (communities.length > 0) {
+      list.push(...communities);
 
-    if (communities.length == 50) {
+      // console.log("pagenew", list[0].community.actor_id);
+
       // sleep for 1s between pages
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const pagenew = await this.crawlCommunityPaginatedList(pageNumber + 1);
 
-      list.push(...pagenew);
+      if (pagenew.length > 0) {
+        console.log("pagenew", pagenew[0].community.actor_id);
+
+        list.push(...pagenew);
+      }
     }
+
+    // const save = async (filename, data) => {
+    //   let filehandle = null;
+    //   try {
+    //     filehandle = await open(filename, "w");
+    //     await filehandle.writeFile(data);
+    //   } finally {
+    //     await filehandle?.close();
+    //   }
+    // };
+
+    // await save(`community-raw-${this.crawlDomain}.json`, JSON.stringify(list));
 
     return list;
   }

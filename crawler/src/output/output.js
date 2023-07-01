@@ -408,6 +408,11 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;
 
+      if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
+        console.log("NFSW Updated Recently!!", community.url);
+        // return false;
+      }
+
       // temp fix till lermmy allows querying nsfw on the public api -.-
       if (community.nsfw) {
         return true;
@@ -415,11 +420,6 @@ export default class CrawlOutput {
 
       if (recordAge > OUTPUT_MAX_AGE_MS) {
         return false;
-      }
-
-      if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
-        console.log("NFSW Updated Recently!!", community);
-        // return false;
       }
 
       return true;
