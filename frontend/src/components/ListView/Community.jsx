@@ -1,7 +1,5 @@
 import React from "react";
 
-import Moment from "react-moment";
-
 import { AutoSizer, Column, Table as VirtualTable, WindowScroller } from "react-virtualized";
 
 import { useTheme } from "@mui/material/styles";
@@ -13,12 +11,7 @@ import Box from "@mui/joy/Box";
 import Link from "@mui/joy/Link";
 import Tooltip from "@mui/joy/Tooltip";
 
-import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
-import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import RestoreIcon from "@mui/icons-material/Restore";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 import { TinyNumber } from "../Shared/Display";
 import CopyLink from "../Shared/CopyLink";
@@ -176,6 +169,7 @@ const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
                 flexGrow={1}
                 flexShrink={1}
                 width={width}
+                minWidth={350}
                 headerStyle={{
                   justifyContent: "left",
                 }}
