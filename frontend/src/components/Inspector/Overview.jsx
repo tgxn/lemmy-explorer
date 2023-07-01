@@ -110,7 +110,7 @@ export default function InspectorOverview() {
   return (
     <Box>
       <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
-        <Grid xs={6}>
+        <Grid xs={12} md={6}>
           <NumberStat
             color="primary"
             title="Total Instances"
@@ -118,7 +118,7 @@ export default function InspectorOverview() {
             description="Total count of all instances scanned in the last 24 hours."
           />
         </Grid>
-        <Grid xs={6}>
+        <Grid xs={12} md={6}>
           <NumberStat
             sx={{
               backgroundColor: "#974904",
@@ -128,7 +128,7 @@ export default function InspectorOverview() {
             description="Total count of all suspicious instances scanned in the last 24 hours."
           />
         </Grid>
-        <Grid xs={6}>
+        <Grid xs={12} md={6}>
           <Sheet
             sx={{
               display: "flex",
@@ -142,7 +142,7 @@ export default function InspectorOverview() {
             />
           </Sheet>
         </Grid>
-        <Grid xs={3}>
+        <Grid xs={12} md={6} xl={3}>
           <Sheet
             sx={{
               display: "flex",
@@ -156,7 +156,7 @@ export default function InspectorOverview() {
             />
           </Sheet>
         </Grid>
-        <Grid xs={3}>
+        <Grid xs={12} md={6} xl={3}>
           <Sheet
             sx={{
               display: "flex",
@@ -170,7 +170,7 @@ export default function InspectorOverview() {
             />
           </Sheet>
         </Grid>
-        <Grid xs={4}>
+        <Grid xs={12} md={6} xl={4}>
           <Sheet
             sx={{
               display: "flex",
@@ -184,7 +184,7 @@ export default function InspectorOverview() {
             />
           </Sheet>
         </Grid>
-        <Grid xs={4}>
+        <Grid xs={12} md={6} xl={4}>
           <Sheet
             sx={{
               display: "flex",
@@ -198,7 +198,7 @@ export default function InspectorOverview() {
             />
           </Sheet>
         </Grid>
-        <Grid xs={4}>
+        <Grid xs={12} md={6} xl={4}>
           <Sheet
             sx={{
               display: "flex",

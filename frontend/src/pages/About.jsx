@@ -43,7 +43,7 @@ export default function About() {
         >
           View Code on GitHub
         </Button>
-        <Button
+        {/* <Button
           startDecorator={<ForumIcon />}
           color="info"
           href="https://github.com/tgxn/lemmy-explorer/discussions"
@@ -51,7 +51,7 @@ export default function About() {
           component="a"
         >
           Discussions on GitHub
-        </Button>
+        </Button> */}
       </Box>
 
       {/* About section */}

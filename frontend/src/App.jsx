@@ -24,8 +24,8 @@ import Communities from "./pages/Communities";
 import About from "./pages/About";
 import Join from "./pages/Join";
 import Inspector from "./pages/Inspector";
+import InstanceView from "./pages/InstanceView";
 
-import customTheme from "./theme";
 import AppStore from "./store";
 
 const queryClient = new QueryClient();
@@ -69,6 +69,7 @@ export default function App() {
                 />
                 <Route path="/join" element={<Join />} />
                 <Route path="/inspect/*" element={<Inspector />} />
+                <Route path="/instance/:baseUrl/*" element={<InstanceView />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/communities" element={<Communities />} />
                 <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
