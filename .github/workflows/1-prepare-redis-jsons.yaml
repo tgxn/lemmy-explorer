@@ -10,11 +10,11 @@ on:
       - github_build
 
 jobs:
-  aws_cdk:
+  prepare_redis_data:
     runs-on: ubuntu-latest
-    #  defaults:
-    #   run:
-    #     working-directory: ./crawler
+    defaults:
+      run:
+        working-directory: ./crawler
 
     steps:
       - uses: actions/checkout@v3
