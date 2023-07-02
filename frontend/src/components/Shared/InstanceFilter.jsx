@@ -22,6 +22,7 @@ import Input from "@mui/joy/Input";
 
 import IconButton from "@mui/joy/IconButton";
 
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
 import { setFilteredInstances } from "../../reducers/configReducer";
@@ -268,21 +269,22 @@ function InstanceFilter({ filteredInstances }) {
     <>
       <ConnectedDialog isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
       <IconButton
-        variant={filteredInstances > 0 ? "soft" : "outlined"}
-        color={filteredInstances > 0 ? "primary" : "neutral"}
+        variant={filteredInstances.length > 0 ? "solid" : "soft"}
+        color={filteredInstances.length > 0 ? "info" : "neutral"}
         onClick={() => setFilterOpen(true)}
         sx={{
-          py: 1,
+          px: 1,
+          py: 0,
+          mr: 1,
           // borderRadius: "8px 0 0 8px",
         }}
       >
-        <FilterAltOffIcon /> Instances
+        {filteredInstances.length > 0 ? <FilterAltOffIcon /> : <FilterAltIcon />} Instances
       </IconButton>
     </>
   );
 }
 const mapStateToProps = (state) => ({
   filteredInstances: state.configReducer.filteredInstances,
-  filterSuspicious: state.configReducer.filterSuspicious,
 });
 export default connect(mapStateToProps)(InstanceFilter);
