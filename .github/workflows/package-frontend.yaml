@@ -150,7 +150,10 @@ jobs:
           path: |
             ./frontend/dist/
 
-
+  # download the artifacts generated from the other jobs
+  # zip the json files
+  # generate a release tag
+  # create a release with artifacts zip attached
   create_release:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -177,7 +180,6 @@ jobs:
           tag_prefix: 'v'
           tag_template: 'yyyy.mm.dd.i'
 
-          
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -187,17 +189,3 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: ./dist-json-bundle.zip
-
-
-
-
-      # - name: Upload Release Asset
-      #   id: upload-release-asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./dist-json-bundle/
-      #     asset_name: dist-json-bundle
-      #     asset_content_type: application/zip

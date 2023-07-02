@@ -27,4 +27,4 @@ jobs:
         with:
           dry: True
           github_token: ${{ github.token }}
-          prettier_options: --check ./crawler/src/**/*.{js}
+          prettier_options: --check ./crawler/src/**/*.js
