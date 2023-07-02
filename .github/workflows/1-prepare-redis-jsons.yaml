@@ -1,0 +1,55 @@
+# download the redis dump from s3
+# create the json files for the redis data
+# upload the json files to github artifacts
+
+name: prepare-redis-data
+
+on:
+  push:
+    branches:
+      - github_build
+
+jobs:
+  aws_cdk:
+    runs-on: ubuntu-latest
+    #  defaults:
+    #   run:
+    #     working-directory: ./crawler
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # download redis db dump from s3
+      - uses: keithweaver/aws-s3-github-action@v1.0.0
+        with:
+          command: cp
+          source: s3://${{ variables.BUILD_S3_BUCKET }}/dump.rdb
+          destination: ./.data/redis/dump.rdb
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ap-southeast-2
+
+      # start redis
+      - name: Start Redis
+        run: docker-compose -f "docker-compose.yaml" up -d redis
+
+      # run Outputs
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+      - run: npm ci
+      - run: node index.js --out
+
+      # store the json files as artifacts
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-json-bundle
+          path: |
+            public/data/**/*.json
+
+      # stop redis
+      - name: Stop Redis
+        if: always()
+        run: docker-compose -f "docker-compose.yaml" down
