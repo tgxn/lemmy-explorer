@@ -157,7 +157,7 @@ jobs:
     needs: [generate_jsons, build_frontend]
 
     steps:
-      # - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       # download the artifacts from the generate_jsons job
       - name: Download the JSON Bundle
@@ -176,7 +176,6 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        # if: startsWith(github.ref, 'refs/head/')
         with:
           tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
           name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
