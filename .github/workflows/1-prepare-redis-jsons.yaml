@@ -45,9 +45,6 @@ jobs:
           aws_region: ap-southeast-2
 
       # start redis
-      - name: Check Redis
-        run: chmod 777 ./.data/redis/dump.rdb
-
       - name: Start Redis
         run: docker-compose -f "docker-compose.github.yaml" up -d redis
 
