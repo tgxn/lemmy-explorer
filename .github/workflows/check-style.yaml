@@ -16,15 +16,15 @@ jobs:
       - name: Check Frontend Style
         uses: creyD/prettier_action@v4.3
         with:
-          working_directory: ./frontend/
-          dry: True
+          working_directory: ${{ github.workspace }}/frontend/
+          dry: true
           github_token: ${{ github.token }}
           prettier_options: --check ./src/**/*.{jsx,js}
 
       - name: Check Crawler Style
         uses: creyD/prettier_action@v4.3
         with:
-          working_directory: ./crawler/
-          dry: True
+          working_directory: ${{ github.workspace }}/crawler/
+          dry: true
           github_token: ${{ github.token }}
           prettier_options: --check ./src/**/*.js
