@@ -9,7 +9,6 @@ import Badge from "@mui/joy/Badge";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
 import Tab from "@mui/joy/Tab";
-import TabPanel from "@mui/joy/TabPanel";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import Link from "@mui/joy/Link";
 import Container from "@mui/joy/Container";
@@ -80,16 +79,7 @@ export default function InstanceView() {
     <Container maxWidth={false}>
       {/* <pre>{JSON.stringify(metricsData, null, 4)}</pre> */}
       <Breadcrumbs separator="›" size="lg" aria-label="breadcrumbs">
-        <Link
-          // `preventDefault` is for demo purposes
-          // and is generally not needed in your app
-          onClick={(event) => event.preventDefault()}
-          underline="hover"
-          color="primary"
-          fontSize="inherit"
-          href="/"
-        >
-          {/* <PublicIcon sx={{ mr: 0.5 }} fontSize="inherit" /> */}
+        <Link underline="hover" color="primary" fontSize="inherit" href="/">
           Instances
         </Link>
 
@@ -133,7 +123,7 @@ export default function InstanceView() {
               variant="outlined"
               color="neutral"
               sx={{
-                width: "fit-content",
+                width: { xs: "100%", md: "fit-content" },
               }}
             >
               <Tab variant={tabIndex === 0 ? "solid" : "soft"} color={tabIndex === 0 ? "primary" : "neutral"}>

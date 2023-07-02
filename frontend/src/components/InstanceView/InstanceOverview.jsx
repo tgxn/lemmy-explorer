@@ -5,6 +5,8 @@ import moment from "moment";
 import Alert from "@mui/joy/Alert";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
+import Grid from "@mui/joy/Grid";
+import Sheet from "@mui/joy/Sheet";
 
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
@@ -14,6 +16,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import InfoIcon from "@mui/icons-material/Info";
 
 import { SimpleNumberFormat, BannerImage } from "../Shared/Display";
+import { NumberStat } from "../Shared/StatGridCards";
 
 export default function InstanceOverview({ instance, userSeries }) {
   const userWeekChange = React.useMemo(() => {
@@ -32,7 +35,7 @@ export default function InstanceOverview({ instance, userSeries }) {
 
   return (
     <Box>
-      <Alert
+      {/* <Alert
         sx={{ alignItems: "flex-start" }}
         startDecorator={<InfoIcon sx={{ mt: "2px", mx: "4px" }} fontSize="xl2" />}
         variant="soft"
@@ -131,7 +134,37 @@ export default function InstanceOverview({ instance, userSeries }) {
             Uptime: <ThumbDownIcon />
           </>
         )}
-      </Typography>
+      </Typography> */}
+
+      <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
+        <Grid xs={12} md={6}>
+          <NumberStat
+            color="primary"
+            title="Users"
+            value={instance.usage.users.total}
+            // description="Total count of all instances scanned in the last 24 hours."
+          />
+        </Grid>
+        <Grid xs={12} md={6}>
+          <NumberStat
+            color="primary"
+            title="User Growth Week"
+            value={userWeekChange}
+            // description="Total count of all instances scanned in the last 24 hours."
+          />
+        </Grid>
+      </Grid>
+
+      <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
+        <Grid xs={12} md={6}>
+          <NumberStat
+            color="primary"
+            title="Current Version"
+            value={instance.version}
+            description="Total count of all instances scanned in the last 24 hours."
+          />
+        </Grid>
+      </Grid>
     </Box>
   );
 }
