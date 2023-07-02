@@ -32,9 +32,8 @@ jobs:
           key: cache-redis
 
       # download redis db dump from s3
-      - if: ${{ steps.cache-redis.cache-hit != 'true' }}
-        name: Download the Redis Dump
-        # continue-on-error: true
+      - name: Download the Redis Dump
+        if: steps.cache-redis.outputs.cache-hit != 'true'
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
