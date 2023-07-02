@@ -141,13 +141,6 @@ jobs:
           name: dist-json-bundle
           path: ./dist-json-bundle/
 
-      # download the artifacts from the build_frontend job
-      - name: Download the Frontend Bundle
-        uses: actions/download-artifact@v2
-        with:
-          name: dist-frontend-bundle
-          path: ./dist-frontend-bundle/
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -168,15 +161,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist-json-bundle/
           asset_name: dist-json-bundle
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist-frontend-bundle/
-          asset_name: dist-frontend-bundle
           asset_content_type: application/zip
