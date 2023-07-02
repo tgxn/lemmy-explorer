@@ -15,7 +15,7 @@ import MenuItem from "@mui/joy/MenuItem";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListDivider from "@mui/joy/ListDivider";
 
-import MoreVert from "@mui/icons-material/MoreVert";
+import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -143,7 +143,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
           onClick={handleClick}
           sx={{ p: 1 }}
         >
-          <MoreVert />
+          <MenuIcon />
         </IconButton>
       </Tooltip>
       <Menu
@@ -181,21 +181,9 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
         </MenuItem>
 
         <ListDivider />
-        <MenuItem
-          onClick={() => {
-            handleClose();
-            navigate("/about");
-          }}
-          {...(location.pathname === "/about" && { selected: true, variant: "soft" })}
-        >
-          <ListItemDecorator>
-            <PestControlIcon />
-          </ListItemDecorator>
-          Crawler Info
-        </MenuItem>
 
         <MenuItem
-          color={"info"}
+          // color={"info"}
           onClick={() => {
             handleClose();
             navigate("/inspect");
@@ -215,7 +203,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
         </Box>
 
         <MenuItem
-          color={filterSuspicious ? "warning" : "success"}
+          color={filterSuspicious ? "danger" : "success"}
           onClick={() => {
             if (filterSuspicious) {
               dispatch(setFilterSuspicious(false));
@@ -230,7 +218,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
           {filterSuspicious ? "Include" : "Hide"} Suspicious
         </MenuItem>
 
-        <ListDivider sx={showWhenSmall} />
+        <ListDivider />
         <Box sx={showWhenSmall}>
           <MenuItem href="https://github.com/tgxn/lemmy-explorer" target="_lv_github" component="a">
             <ListItemDecorator>
@@ -239,6 +227,19 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
             Visit GitHub Project
           </MenuItem>
         </Box>
+
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            navigate("/about");
+          }}
+          {...(location.pathname === "/about" && { selected: true, variant: "soft" })}
+        >
+          <ListItemDecorator>
+            <PestControlIcon />
+          </ListItemDecorator>
+          Crawler Info
+        </MenuItem>
       </Menu>
     </>
   );
