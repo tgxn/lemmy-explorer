@@ -2,7 +2,7 @@
 # create the json files for the redis data
 # upload the json files to github artifacts
 
-name: prepare-redis-data
+name: prepare-jsons
 
 on:
   push:
