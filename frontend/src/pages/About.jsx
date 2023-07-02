@@ -1,7 +1,5 @@
 import React from "react";
 
-import useQueryCache from "../hooks/useQueryCache";
-
 import Card from "@mui/joy/Card";
 import Container from "@mui/joy/Container";
 import Box from "@mui/joy/Box";
@@ -13,18 +11,7 @@ import Divider from "@mui/joy/Divider";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
 
-export default function Overview() {
-  const {
-    isLoading,
-    isSuccess,
-    isError,
-    error,
-    data: overviewData,
-  } = useQueryCache("overviewData", "/overview.json");
-
-  if (isLoading) return "Loading...";
-  if (isError) return "An error has occurred: " + error.message;
-
+export default function About() {
   return (
     <Container maxWidth={"md"} sx={{}}>
       <Typography
@@ -56,7 +43,7 @@ export default function Overview() {
         >
           View Code on GitHub
         </Button>
-        <Button
+        {/* <Button
           startDecorator={<ForumIcon />}
           color="info"
           href="https://github.com/tgxn/lemmy-explorer/discussions"
@@ -64,7 +51,7 @@ export default function Overview() {
           component="a"
         >
           Discussions on GitHub
-        </Button>
+        </Button> */}
       </Box>
 
       {/* About section */}

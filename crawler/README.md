@@ -1,10 +1,14 @@
 # Crawler
 
+The crawler is set of nodejs scripts that crawl the Lemmy API and store the data in Redis.
+
+There is a `npm run output` script to output the instances and communities to json for the frontend.
+
 ## Usage
 
 ### Basic Usage
 
-1. Start redis server (`docker-compose up -d`)
+1. Start redis server (`docker-compose up -d redis`)
  > Redis server config is in `lib/const.js`
 
 2. Start crawler (`npm start`)

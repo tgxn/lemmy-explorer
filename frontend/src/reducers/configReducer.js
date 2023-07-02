@@ -9,8 +9,16 @@ export function setHomeInstance(baseUrl) {
   };
 }
 
+export function setFilterSuspicious(filterSuspicious) {
+  return {
+    type: "setFilterSuspicious",
+    payload: { filterSuspicious },
+  };
+}
+
 const initialState = {
   homeBaseUrl: storage.get("instance"),
+  filterSuspicious: storage.get("config.filterSuspicious", true),
 };
 
 const configReducer = (state = initialState, action = {}) => {
@@ -25,6 +33,13 @@ const configReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         homeBaseUrl: action.payload.baseUrl,
+      };
+
+    case "setFilterSuspicious":
+      storage.set("config.filterSuspicious", action.payload.filterSuspicious);
+      return {
+        ...state,
+        filterSuspicious: action.payload.filterSuspicious,
       };
 
     default:

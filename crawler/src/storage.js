@@ -15,6 +15,8 @@ class Storage {
     this.client = createClient({
       url: REDIS_URL,
     });
+
+    this.attributeMaxAge = 1000 * 60 * 60 * 24 * 7; // 7 days
   }
 
   async connect() {
@@ -84,6 +86,30 @@ class Storage {
 
   async deleteRedis(key) {
     return this.client.del(key);
+  }
+
+  async getAttributeArray(baseUrl, attributeName) {
+    const start = Date.now() - this.attributeMaxAge;
+    const end = Date.now();
+
+    const keys = await this.client.zRangeByScore(
+      `attributes:instance:${baseUrl}:${attributeName}`,
+      start,
+      end
+    );
+    return keys;
+  }
+
+  async getAttributesWithScores(baseUrl, attributeName) {
+    const start = Date.now() - this.attributeMaxAge;
+    const end = Date.now();
+
+    const keys = await this.client.zRangeByScoreWithScores(
+      `attributes:instance:${baseUrl}:${attributeName}`,
+      start,
+      end
+    );
+    return keys;
   }
 }
 const storage = new Storage();

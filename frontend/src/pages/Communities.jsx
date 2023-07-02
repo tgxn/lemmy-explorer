@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 
+import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
-import useQueryCache from "../hooks/useQueryCache";
+
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
 
-import Chip from "@mui/joy/Chip";
+import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
@@ -22,27 +24,52 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
-import { CommunityGrid } from "../components/GridView";
-import { CommunityList } from "../components/ListView";
-import TriStateCheckbox from "../components/TriStateCheckbox";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 
-function Communities({ homeBaseUrl }) {
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache(
-    "communitiesData",
-    "/communities.json",
+import CommunityGrid from "../components/GridView/Community";
+import CommunityList from "../components/ListView/Community";
+
+function Communities({ homeBaseUrl, filterSuspicious }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
+    "communityData",
+    "community",
   );
 
   const [viewType, setViewType] = useStorage("community.viewType", "grid");
 
-  const [orderBy, setOrderBy] = useStorage("community.orderBy", "smart");
-  const [showNSFW, setShowNSFW] = useStorage("community.showNSFW", false);
-
-  const [hideNoBanner, setHideNoBanner] = useStorage("community.hideWithNoBanner", false);
+  const [orderBy, setOrderBy] = React.useState("smart");
+  const [showNSFW, setShowNSFW] = React.useState(false);
+  const [hideNoBanner, setHideNoBanner] = React.useState(false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = useStorage("community.filterText", "");
+  const [filterText, setFilterText] = React.useState("");
   const debounceFilterText = useDebounce(filterText, 500);
+
+  // load query params
+  useEffect(() => {
+    if (searchParams.has("query")) setFilterText(searchParams.get("query"));
+    if (searchParams.has("order")) setOrderBy(searchParams.get("order"));
+    if (searchParams.has("nsfw"))
+      setShowNSFW(
+        searchParams.get("nsfw") == "true" ? true : searchParams.get("nsfw") == "null" ? null : false,
+      );
+    if (searchParams.has("banner")) setHideNoBanner(searchParams.get("banner"));
+  }, []);
+
+  // update query params
+  useEffect(() => {
+    const parms = {};
+
+    if (filterText) parms.query = filterText;
+    if (orderBy != "smart") parms.order = orderBy;
+    if (showNSFW != false) parms.nsfw = showNSFW;
+    if (hideNoBanner != false) parms.banner = hideNoBanner;
+
+    setSearchParams(parms);
+  }, [orderBy, showNSFW, hideNoBanner, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
@@ -53,6 +80,11 @@ function Communities({ homeBaseUrl }) {
     console.log(`Loaded ${data.length} communities`);
 
     let communties = [...data];
+
+    // hide sus instances by default
+    if (filterSuspicious) {
+      communties = communties.filter((community) => !community.isSuspicious);
+    }
 
     // Variable "ShowNSFW" is used to drive this
     //  Default:    Hide NSFW     false
@@ -79,13 +111,51 @@ function Communities({ homeBaseUrl }) {
     // filter string
     if (debounceFilterText) {
       console.log(`Filtering communities by ${debounceFilterText}`);
-      communties = communties.filter((community) => {
-        return (
-          (community.name && community.name.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
-          (community.title && community.title.toLowerCase().includes(debounceFilterText.toLowerCase())) ||
-          (community.desc && community.desc.toLowerCase().includes(debounceFilterText.toLowerCase()))
-        );
+
+      // split the value on spaces, look for values starting with "-"
+      // if found, remove the "-" and add to the exclude list
+      // if not found, apend to the search query
+      let exclude = [];
+      let include = [];
+
+      let searchTerms = debounceFilterText.toLowerCase().split(" ");
+      searchTerms.forEach((term) => {
+        if (term.startsWith("-") && term.substring(1) !== "") {
+          exclude.push(term.substring(1));
+        } else if (term !== "") {
+          include.push(term);
+        }
       });
+      console.log(`Include: ${include.join(", ")}`);
+      console.log(`Exclude: ${exclude.join(", ")}`);
+
+      // search for any included terms
+      if (include.length > 0) {
+        console.log(`Searching for ${include.length} terms`);
+        include.forEach((term) => {
+          communties = communties.filter((community) => {
+            return (
+              (community.name && community.name.toLowerCase().includes(term)) ||
+              (community.title && community.title.toLowerCase().includes(term)) ||
+              (community.desc && community.desc.toLowerCase().includes(term))
+            );
+          });
+        });
+      }
+
+      // filter out every excluded term
+      if (exclude.length > 0) {
+        console.log(`Filtering out ${exclude.length} terms`);
+        exclude.forEach((term) => {
+          communties = communties.filter((community) => {
+            return !(
+              (community.name && community.name.toLowerCase().includes(term)) ||
+              (community.title && community.title.toLowerCase().includes(term)) ||
+              (community.desc && community.desc.toLowerCase().includes(term))
+            );
+          });
+        });
+      }
     }
 
     // hide no banner
@@ -122,7 +192,7 @@ function Communities({ homeBaseUrl }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner]);
+  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner, filterSuspicious]);
 
   return (
     <Container
@@ -201,14 +271,14 @@ function Communities({ homeBaseUrl }) {
           }}
         >
           {isSuccess && (
-            <Chip
+            <Typography
+              level="body2"
               sx={{
                 borderRadius: "4px",
-                mr: 1,
+                mr: 2,
               }}
-              color="neutral"
             >
-              Showing{" "}
+              showing{" "}
               <SimpleNumberFormat
                 value={communitiesData.length}
                 displayType={"text"}
@@ -216,12 +286,12 @@ function Communities({ homeBaseUrl }) {
                 thousandSeparator={","}
               />{" "}
               communities
-            </Chip>
+            </Typography>
           )}
 
           <ButtonGroup
             sx={{
-              "--ButtonGroup-radius": "3px",
+              "--ButtonGroup-radius": "8px",
               "--ButtonGroup-separatorSize": "0px",
               "--ButtonGroup-connected": "0",
               "--joy-palette-neutral-plainHoverBg": "transparent",
@@ -233,19 +303,23 @@ function Communities({ homeBaseUrl }) {
             }}
           >
             <IconButton
-              variant={viewType == "grid" ? "soft" : "plain"}
+              variant={viewType == "grid" ? "solid" : "soft"}
+              color={viewType == "grid" ? "primary" : "neutral"}
               onClick={() => setViewType("grid")}
               sx={{
                 p: 1,
+                borderRadius: "8px 0 0 8px",
               }}
             >
               <ViewCompactIcon /> Grid View
             </IconButton>
             <IconButton
-              variant={viewType == "list" ? "soft" : "plain"}
+              variant={viewType == "list" ? "solid" : "soft"}
+              color={viewType == "list" ? "primary" : "neutral"}
               onClick={() => setViewType("list")}
               sx={{
                 p: 1,
+                borderRadius: "0 8px 8px 0",
               }}
             >
               <ViewListIcon /> List View
@@ -254,9 +328,10 @@ function Communities({ homeBaseUrl }) {
         </Box>
       </Box>
 
-      <Box sx={{ my: 4 }}>
-        {isLoading && !isError && <PageLoading />}
+      <Box sx={{ mt: 2 }}>
+        {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
+
         {isSuccess && viewType == "grid" && (
           <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />
         )}
@@ -269,6 +344,7 @@ function Communities({ homeBaseUrl }) {
 }
 
 const mapStateToProps = (state) => ({
+  filterSuspicious: state.configReducer.filterSuspicious,
   homeBaseUrl: state.configReducer.homeBaseUrl,
 });
 export default connect(mapStateToProps)(Communities);

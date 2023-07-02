@@ -1,12 +1,10 @@
+import Queue from "bee-queue";
 import logging from "../lib/logging.js";
 
-import Queue from "bee-queue";
-import { AxiosError } from "axios";
-
-import storage from "../storage.js";
 import { isValidLemmyDomain } from "../lib/validator.js";
+import storage from "../storage.js";
 
-import { CrawlError, CrawlWarning } from "../lib/error.js";
+import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
 import {
   CRAWL_TIMEOUT,
   MIN_RECRAWL_MS,
@@ -111,6 +109,25 @@ export default class InstanceQueue {
     return false;
   }
 
+  /*
+  main processing loop - should catch all errors
+
+  jobs can fail with three results:
+  - Other Error: something is wrong with the job, but it should be retried later
+  - CrawlError: something is wrong with the job (bad url, invalid json)
+    - removed from the queue (caught by the failed event)
+    - added to the failures table
+    - not re-tried till failues cron runs after 6 hours, added to perm_fail if failed  again
+
+  - CrawlTooRecentError: the job was skipped because it's too recent
+    - doesnt cause error or success timers to reset
+
+  - Success: job completed successfully
+    - removed from the queue
+    - added to the successes table
+    - re-tried every 6 hours
+  */
+
   async process() {
     this.queue.process(async (job) => {
       try {
@@ -134,11 +151,10 @@ export default class InstanceQueue {
 
         logging.debug(`[Instance] [${job.data.baseUrl}] Starting Crawl`);
 
-        // check if it's known to not be running lemmy
+        // check if it's known to not be running lemmy (recan it if it's been a while)
         const knownFediverseServer = await storage.fediverse.getOne(
           instanceBaseUrl
         );
-
         if (knownFediverseServer) {
           if (
             knownFediverseServer.name !== "lemmy" &&
@@ -146,20 +162,13 @@ export default class InstanceQueue {
             knownFediverseServer.time &&
             Date.now() - knownFediverseServer.time < RECRAWL_FEDIVERSE_MS // re-scan fedi servers to check their status
           ) {
-            throw new CrawlWarning(
-              `Skipping - Known non-lemmy server ${knownFediverseServer.name}`
+            throw new CrawlTooRecentError(
+              `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}"`
             );
           }
         }
 
-        // // check if instance has already been crawled within CRAWL_EVERY
-        // const lastCrawledMsAgo = await this.getLastCrawlMsAgo(instanceBaseUrl);
-        // if (lastCrawledMsAgo && lastCrawledMsAgo < MIN_RECRAWL_MS) {
-        //   throw new CrawlWarning(
-        //     `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
-        //   );
-        // }
-
+        //  last crawl if it's been successfully too recently
         const lastCrawlTs = await storage.tracking.getLastCrawl(
           "instance",
           instanceBaseUrl
@@ -167,7 +176,7 @@ export default class InstanceQueue {
         if (lastCrawlTs) {
           const lastCrawledMsAgo = Date.now() - lastCrawlTs;
           if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlWarning(
+            throw new CrawlTooRecentError(
               `Skipping - Crawled too recently (${
                 lastCrawledMsAgo / 1000
               }s ago)`
@@ -175,6 +184,7 @@ export default class InstanceQueue {
           }
         }
 
+        // check when the latest entry to errors was too recent
         const lastErrorTs = await storage.tracking.getOneError(
           "instance",
           instanceBaseUrl
@@ -182,7 +192,7 @@ export default class InstanceQueue {
         if (lastErrorTs) {
           const lastErrorMsAgo = Date.now() - lastErrorTs;
           if (lastErrorMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlWarning(
+            throw new CrawlTooRecentError(
               `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
             );
           }
@@ -204,12 +214,22 @@ export default class InstanceQueue {
 
         // create job to scan the instance for communities once a crawl succeeds
         logging.info(
-          `[Instance] [${job.data.baseUrl}] Creating community crawl job ${instanceBaseUrl}`
+          `[Instance] [${job.data.baseUrl}] Creating community crawl job for ${instanceBaseUrl}`
         );
         await this.crawlCommunity.createJob(instanceBaseUrl);
 
+        // set last successful crawl
+        await storage.tracking.setLastCrawl("instance", job.data.baseUrl);
+
         return instanceData;
       } catch (error) {
+        if (error instanceof CrawlTooRecentError) {
+          logging.warn(
+            `[Instance] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
+          );
+          return true;
+        }
+
         const errorDetail = {
           error: error.message,
           stack: error.stack,
@@ -218,31 +238,35 @@ export default class InstanceQueue {
           time: new Date().getTime(),
         };
 
-        if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.putRedis(
-            `error:instance:${job.data.baseUrl}`,
-            errorDetail
-          );
+        // if (error instanceof CrawlError || error instanceof AxiosError) {
+        await storage.putRedis(
+          `error:instance:${job.data.baseUrl}`,
+          errorDetail
+        );
 
-          logging.error(
-            `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
-          );
-        }
-
-        // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
-        else if (error instanceof CrawlWarning) {
-          logging.warn(
-            `[Instance] [${job.data.baseUrl}] Warn: ${error.message}`
-          );
-        } else {
-          logging.verbose(
-            `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
-          );
-        }
-      } finally {
-        // set last scan time if it was success or error
-        await storage.tracking.setLastCrawl("instance", job.data.baseUrl);
+        logging.error(
+          `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
+        );
       }
+
+      // // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
+      // else if (error instanceof CrawlTooRecentError) {
+      //   logging.warn(
+      //     `[Instance] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
+      //   );
+      // } else {
+      //   // if it's not a known error, put it in the error queue
+
+      //   await storage.putRedis(
+      //     `error:instance:${job.data.baseUrl}`,
+      //     errorDetail
+      //   );
+
+      //   logging.verbose(
+      //     `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
+      //   );
+      // }
+      // }
       return true;
     });
   }

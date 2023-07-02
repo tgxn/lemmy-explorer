@@ -1,4 +1,6 @@
 {
-  "environment": "dev",
-  "domain": "put_aws_domain_here"
+  "account": "ACCOUNT_ID",
+  "environment": "ENVIRONMENT",
+  "base_zone": "R53_DOMAIN",
+  "domain": "SITE_DOMAIN"
 }
