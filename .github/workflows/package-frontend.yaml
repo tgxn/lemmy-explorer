@@ -3,7 +3,7 @@ name: package-frontend
 on:
   push:
     branches:
-      - github_build
+      - main
 
 jobs:
 
