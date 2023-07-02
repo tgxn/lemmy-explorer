@@ -11,7 +11,7 @@ on:
 
 jobs:
   prepare_redis_data:
-    timeout-minutes: 20
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,7 +26,7 @@ jobs:
         env:
           cache-name: cache-redis
         with:
-          path: ./crawler/.data/redis/dump.rdb
+          path: ./.data/redis/dump.rdb
           key: cache-redis
 
       # download redis db dump from s3
