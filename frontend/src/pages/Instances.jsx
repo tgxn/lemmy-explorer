@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useCachedMultipart from "../hooks/useCachedMultipart";
-import useQueryCache from "../hooks/useQueryCache";
+
 import { useDebounce } from "@uidotdev/usehooks";
 import useStorage from "../hooks/useStorage";
 
@@ -27,8 +27,6 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
-
-import InstanceModal from "../components/InstanceModal";
 
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
@@ -184,7 +182,6 @@ function Instances({ filterSuspicious }) {
 
   return (
     <Container maxWidth={false} sx={{}}>
-      <InstanceModal />
       <Box
         component="header"
         sx={{

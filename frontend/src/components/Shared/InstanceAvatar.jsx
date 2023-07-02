@@ -7,7 +7,7 @@ import Badge from "@mui/joy/Badge";
 
 import HomeIcon from "@mui/icons-material/Home";
 
-import { setHomeInstance } from "../reducers/configReducer";
+import { setHomeInstance } from "../../reducers/configReducer";
 
 const InstanceAvatar = React.memo(function ({ instance, homeBaseUrl, dispatch }) {
   const [isHover, setIsHover] = React.useState(false);

@@ -3,6 +3,8 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 
+import { useNavigate } from "react-router-dom";
+
 import Avatar from "@mui/joy/Avatar";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
@@ -34,10 +36,11 @@ import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
-import InstanceAvatar from "./InstanceAvatar";
-import InstanceModal from "./InstanceModal";
+import InstanceAvatar from "../Shared/InstanceAvatar";
 
 function InstanceCard({ instance, dispatch }) {
+  const navigate = useNavigate();
+
   return (
     <Card
       variant="outlined"
@@ -48,11 +51,13 @@ function InstanceCard({ instance, dispatch }) {
     >
       {/* Header */}
       <CardOverflow
-        variant="soft"
+        variant="outlined"
         orientation="horizontal"
         sx={{
           py: 2,
           px: 2,
+          outline: 0,
+          border: 0,
           columnGap: 0,
           flexGrow: 0,
           display: "flex",
@@ -123,7 +128,8 @@ function InstanceCard({ instance, dispatch }) {
               color={"neutral"}
               // sx={{ ml: "auto", alignSelf: "flex-start", flexShrink: 1 }}
               onClick={() => {
-                dispatch(showInstanceModal(instance));
+                // dispatch(showInstanceModal(instance));
+                navigate(`/instance/${instance.baseurl}`);
               }}
             >
               <InfoIcon />

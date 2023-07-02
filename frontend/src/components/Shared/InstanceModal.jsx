@@ -7,7 +7,7 @@ import ModalClose from "@mui/joy/ModalClose";
 import Typography from "@mui/joy/Typography";
 import Sheet from "@mui/joy/Sheet";
 
-import { hideInstanceModal } from "../reducers/modalReducer";
+import { hideInstanceModal } from "../../reducers/modalReducer";
 
 function InstanceModal({ isOpen, setOpen, instance }) {
   return (
