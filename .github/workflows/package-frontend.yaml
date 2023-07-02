@@ -56,8 +56,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
-          
+     
+      # install npm dependencies
+      - name: Cache NPM Modules
+        id: cache-crawler-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-crawler-npm
+        with:
+          path: ./crawler/node_modules/
+          key: cache-crawler-npm-${{ hashFiles('crawler/package-lock.json') }}
+
       - name: Install Dependencies
+        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./crawler
 
@@ -110,6 +121,20 @@ jobs:
         working-directory: ./frontend
 
       - name: Install Dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Cache NPM Modules
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ./frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./frontend
         
