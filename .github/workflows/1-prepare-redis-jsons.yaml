@@ -27,7 +27,9 @@ jobs:
           cache-name: cache-redis
         with:
           path: ./.data/redis/dump.rdb
-          key: ${{ hashFiles('./.data/redis/dump.rdb') }}
+          key: ${{ runner.os }}-${{ hashFiles('./.data/redis/dump.rdb') }}
+          restore-keys: |
+            ${{ runner.os }}-
 
       # download redis db dump from s3
       - if: ${{ steps.cache-redis.cache-hit != 'true' }}
@@ -45,7 +47,7 @@ jobs:
       # start redis
       - name: Check Redis
         run: chmod 777 ./.data/redis/dump.rdb
-        
+
       - name: Start Redis
         run: docker-compose -f "docker-compose.github.yaml" up -d redis
 
