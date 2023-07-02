@@ -169,7 +169,7 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/head/')
+        # if: startsWith(github.ref, 'refs/head/')
         with:
           files: ./dist-json-bundle/**
           generate_release_notes: true
