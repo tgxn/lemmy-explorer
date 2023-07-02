@@ -25,7 +25,7 @@ export function setFilterSuspicious(filterSuspicious) {
 
 const initialState = {
   homeBaseUrl: storage.get("instance"),
-  instanceType: storage.get("type"),
+  instanceType: storage.get("type", "lemmy"),
   filterSuspicious: storage.get("config.filterSuspicious", true),
 };
 
