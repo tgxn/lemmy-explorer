@@ -26,8 +26,8 @@ jobs:
         env:
           cache-name: cache-redis
         with:
-          path: ./.data/redis/dump.rdb
-          key: ${{ runner.os }}-${{ hashFiles('./.data/redis/dump.rdb') }}
+          path: ./crawler/.data/redis/dump.rdb
+          key: ${{ runner.os }}-${{ hashFiles('./crawler/.data/redis/dump.rdb') }}
           # restore-keys: |
           #   ${{ runner.os }}-
 
@@ -67,7 +67,7 @@ jobs:
         with:
           name: dist-json-bundle
           path: |
-            public/data/**/*.json
+            ./frontend/public/data/
 
       # stop redis
       - name: Stop Redis
