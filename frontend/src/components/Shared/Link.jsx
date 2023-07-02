@@ -40,32 +40,33 @@ export function CopyLink({ copyText, linkProps }) {
 }
 
 function CommunityLink({ community, homeBaseUrl, instanceType }) {
-  const instanceLink = React.useMemo(() => {
+  const [instanceLink, tooltipTitle] = React.useMemo(() => {
     let instanceLink = `https://${community.baseurl}/c/${community.name}`;
+    let tooltipTitle = `${community.baseurl}/c/${community.name}`;
 
     // user has a home instance
     if (homeBaseUrl) {
       // if the user is
       if (instanceType == "kbin") {
         instanceLink = `https://${homeBaseUrl}/m/${community.name}`;
+        tooltipTitle = `${homeBaseUrl}/m/${community.name}`;
       } else {
         instanceLink = `https://${homeBaseUrl}/c/${community.name}`;
+        tooltipTitle = `${homeBaseUrl}/c/${community.name}`;
       }
 
       // if this community isn't on their instance, add the qualifier
       if (homeBaseUrl != community.baseurl) {
-        instanceLink = `${instanceLink}@${community.url && community.url.split("/")[2]}`;
+        instanceLink = `${instanceLink}@${community.baseurl}`;
+        tooltipTitle = `${tooltipTitle}@${community.baseurl}`;
       }
     }
-    return instanceLink;
+
+    return [instanceLink, tooltipTitle];
   }, [community, homeBaseUrl, instanceType]);
 
   return (
-    <Tooltip
-      title={"Visit: " + community.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
-      variant="soft"
-      placement="top-start"
-    >
+    <Tooltip title={tooltipTitle} variant="soft" placement="top-start">
       <Link
         level="body1"
         variant="plain"
