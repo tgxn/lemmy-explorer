@@ -111,6 +111,7 @@ function Instances({ filterSuspicious }) {
             return (
               (instance.name && instance.name.toLowerCase().includes(term)) ||
               (instance.title && instance.title.toLowerCase().includes(term)) ||
+              (instance.baseurl && instance.baseurl.toLowerCase().includes(term)) ||
               (instance.desc && instance.desc.toLowerCase().includes(term))
             );
           });
