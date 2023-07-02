@@ -103,10 +103,14 @@ jobs:
         with:
           node-version: 18.15.0
 
-      - run: npm ci
-        working-directory: ./frontend
-      - run: npm run build
-        working-directory: ./frontend
+      - working-directory: ./frontend
+        run: ls -lah ./public/data
+
+      - working-directory: ./frontend
+        run: npm ci
+        
+      - working-directory: ./frontend
+        run: npm run build
 
       # store the frontend bundle as artifact
       - name: Archive production artifacts
