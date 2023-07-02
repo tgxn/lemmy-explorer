@@ -71,3 +71,7 @@ jobs:
       - name: Stop Redis
         if: always()
         run: docker-compose -f "docker-compose.github.yaml" down
+      
+      - name: Set Permissions on Dump
+        run: |
+          chmod -R 777 ./.data/redis/dump.rdb
