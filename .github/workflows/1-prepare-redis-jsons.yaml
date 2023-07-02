@@ -11,6 +11,7 @@ on:
 
 jobs:
   prepare_redis_data:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -19,8 +20,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Cache Redis Dump
+        id: cache-redis
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-redis
+        with:
+          path: ./.data/redis/dump.rdb
+          key: ${{ hashFiles('./.data/redis/dump.rdb') }}
+
       # download redis db dump from s3
-      - uses: keithweaver/aws-s3-github-action@v1.0.0
+      - if: ${{ steps.cache-redis.cache-hit != 'true' }}
+        name: Download the Redis Dump
+        continue-on-error: true
+        uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
           source: s3://${{ vars.BUILD_S3_BUCKET }}/dump.rdb
@@ -30,8 +43,16 @@ jobs:
           aws_region: ap-southeast-2
 
       # start redis
+      - name: Check Redis
+        run: chmod 777 ./.data/redis/dump.rdb
+        
       - name: Start Redis
-        run: docker-compose -f "docker-compose.yaml" up -d redis
+        run: docker-compose -f "docker-compose.github.yaml" up -d redis
+
+      - name: Check Redis
+        run: docker ps -a
+      - name: Check Redis
+        run: docker-compose -f "docker-compose.github.yaml" logs redis
 
       # run Outputs
       - name: Use Node.js 18.15.0
@@ -52,4 +73,4 @@ jobs:
       # stop redis
       - name: Stop Redis
         if: always()
-        run: docker-compose -f "docker-compose.yaml" down
+        run: docker-compose -f "docker-compose.github.yaml" down
