@@ -166,15 +166,24 @@ jobs:
           name: dist-json-bundle
           path: ./dist-json-bundle/
 
+      - name: Generate release tag
+        id: generate_release_tag
+        uses: amitsingh-007/next-release-tag@v4.0.0
+        with:
+          github_token: ${{ github.token }}
+          tag_prefix: 'v'
+          tag_template: 'yyyy.mm.dd.i'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         # if: startsWith(github.ref, 'refs/head/')
         with:
-          files: ./dist-json-bundle/**
-          generate_release_notes: true
+          tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+          name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
           prerelease: false
+          generate_release_notes: true
           fail_on_unmatched_files: true
+          files: ./dist-json-bundle/**
 
 
 
