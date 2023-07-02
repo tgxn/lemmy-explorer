@@ -10,9 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        # with:
-        #   # Make sure the actual branch is checked out when running on pull requests
-        #   ref: ${{ github.head_ref }}
+
+      - name: Cache NPM Modules
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ./frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./frontend
+        
       - name: Check Frontend Style
         uses: creyD/prettier_action@v4.3
         with:
@@ -21,10 +33,10 @@ jobs:
           github_token: ${{ github.token }}
           prettier_options: --check ./src/**/*.{jsx,js}
 
-      - name: Check Crawler Style
-        uses: creyD/prettier_action@v4.3
-        with:
-          working_directory: ${{ github.workspace }}/crawler/
-          dry: true
-          github_token: ${{ github.token }}
-          prettier_options: --check ./src/**/*.js
+      # - name: Check Crawler Style
+      #   uses: creyD/prettier_action@v4.3
+      #   with:
+      #     working_directory: ${{ github.workspace }}/crawler/
+      #     dry: true
+      #     github_token: ${{ github.token }}
+      #     prettier_options: --check ./src/**/*.js

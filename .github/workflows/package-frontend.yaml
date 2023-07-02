@@ -120,10 +120,6 @@ jobs:
         run: ls -lah ./public/data
         working-directory: ./frontend
 
-      - name: Install Dependencies
-        run: npm ci
-        working-directory: ./frontend
-
       - name: Cache NPM Modules
         id: cache-frontend-npm
         uses: actions/cache@v3
