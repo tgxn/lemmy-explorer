@@ -30,11 +30,11 @@ export default class AxiosClient {
         logging.debug(
           `retrying url ${url} attempt ${current + 1}, waiting ${
             current + 1
-          }* 10 seconds`
+          }*2 seconds`
         );
 
         await new Promise((resolve) =>
-          setTimeout(resolve, (current + 1) * 10000)
+          setTimeout(resolve, (current + 1) * 2000)
         );
 
         return await this.getUrlWithRetry(

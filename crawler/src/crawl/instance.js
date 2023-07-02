@@ -39,7 +39,13 @@ export default class InstanceCrawler {
   async getNodeInfo() {
     const wellKnownUrl =
       "https://" + this.crawlDomain + "/.well-known/nodeinfo";
-    const wellKnownInfo = await this.client.getUrlWithRetry(wellKnownUrl);
+    const wellKnownInfo = await this.client.getUrlWithRetry(
+      wellKnownUrl,
+      {
+        timeout: 10000, // smaller for nodeinfo
+      },
+      2
+    );
 
     let nodeinfoUrl;
     if (!wellKnownInfo.data.links) {

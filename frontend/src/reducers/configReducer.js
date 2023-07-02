@@ -16,6 +16,13 @@ export function changeInstanceType(type) {
   };
 }
 
+export function setFilteredInstances(filteredInstances) {
+  return {
+    type: "setFilteredInstances",
+    payload: { filteredInstances },
+  };
+}
+
 export function setFilterSuspicious(filterSuspicious) {
   return {
     type: "setFilterSuspicious",
@@ -25,7 +32,8 @@ export function setFilterSuspicious(filterSuspicious) {
 
 const initialState = {
   homeBaseUrl: storage.get("instance"),
-  instanceType: storage.get("type"),
+  instanceType: storage.get("type", "lemmy"),
+  filteredInstances: storage.get("filteredInstances", []),
   filterSuspicious: storage.get("config.filterSuspicious", true),
 };
 
@@ -51,6 +59,13 @@ const configReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         instanceType: action.payload.type,
+      };
+
+    case "setFilteredInstances":
+      storage.set("filteredInstances", action.payload.filteredInstances);
+      return {
+        ...state,
+        filteredInstances: action.payload.filteredInstances,
       };
 
     case "setFilterSuspicious":

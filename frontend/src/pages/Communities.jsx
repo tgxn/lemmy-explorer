@@ -23,14 +23,16 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
+import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
+import InstanceFilter from "../components/Shared/InstanceFilter";
 
 import CommunityGrid from "../components/GridView/Community";
 import CommunityList from "../components/ListView/Community";
 
-function Communities({ homeBaseUrl, filterSuspicious }) {
+function Communities({ filterSuspicious, filteredInstances }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -46,7 +48,7 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
 
   // debounce the filter text input
   const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const debounceFilterText = useDebounce(filterText, 100);
 
   // load query params
   useEffect(() => {
@@ -84,6 +86,13 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
     // hide sus instances by default
     if (filterSuspicious) {
       communties = communties.filter((community) => !community.isSuspicious);
+    }
+
+    console.log(`Sorting communities by ${orderBy}`, filteredInstances);
+    if (filteredInstances.length > 0) {
+      console.log(`Filtering oucommunities`, filteredInstances);
+
+      communties = communties.filter((community) => !filteredInstances.includes(community.baseurl));
     }
 
     // Variable "ShowNSFW" is used to drive this
@@ -137,6 +146,7 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
             return (
               (community.name && community.name.toLowerCase().includes(term)) ||
               (community.title && community.title.toLowerCase().includes(term)) ||
+              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
               (community.desc && community.desc.toLowerCase().includes(term))
             );
           });
@@ -151,6 +161,7 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
             return !(
               (community.name && community.name.toLowerCase().includes(term)) ||
               (community.title && community.title.toLowerCase().includes(term)) ||
+              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
               (community.desc && community.desc.toLowerCase().includes(term))
             );
           });
@@ -192,7 +203,7 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner, filterSuspicious]);
+  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner, filterSuspicious, filteredInstances]);
 
   return (
     <Container
@@ -251,6 +262,8 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
         </Select>
+
+        <InstanceFilter />
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <TriStateCheckbox checked={showNSFW} onChange={(checked) => setShowNSFW(checked)} />
@@ -332,12 +345,8 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && (
-          <CommunityGrid items={communitiesData} homeBaseUrl={homeBaseUrl} />
-        )}
-        {isSuccess && viewType == "list" && (
-          <CommunityList items={communitiesData} homeBaseUrl={homeBaseUrl} />
-        )}
+        {isSuccess && viewType == "grid" && <CommunityGrid items={communitiesData} />}
+        {isSuccess && viewType == "list" && <CommunityList items={communitiesData} />}
       </Box>
     </Container>
   );
@@ -345,6 +354,6 @@ function Communities({ homeBaseUrl, filterSuspicious }) {
 
 const mapStateToProps = (state) => ({
   filterSuspicious: state.configReducer.filterSuspicious,
-  homeBaseUrl: state.configReducer.homeBaseUrl,
+  filteredInstances: state.configReducer.filteredInstances,
 });
 export default connect(mapStateToProps)(Communities);
