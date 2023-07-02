@@ -135,7 +135,7 @@ export default class CommunityCrawler {
       logging.info(`${this.logPrefix} Starting Crawl List`);
 
       const promisesArray = await this.crawlCommunityPaginatedList();
-      await Promise.all(promisesArray);
+      const resultPromises = await Promise.all(promisesArray);
 
       // const save = async (filename, data) => {
       //   let filehandle = null;
@@ -150,7 +150,7 @@ export default class CommunityCrawler {
       // await save(`community-raw-${this.crawlDomain}.json`, JSON.stringify(list));
 
       logging.info(
-        `${this.logPrefix} Ended Success (${promisesArray} results)`
+        `${this.logPrefix} Ended Success (${resultPromises.length} results)`
       );
     } catch (e) {
       logging.trace(`${this.logPrefix} Ended: Error`, e);
