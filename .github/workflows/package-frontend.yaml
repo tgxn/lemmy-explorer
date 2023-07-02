@@ -124,3 +124,59 @@ jobs:
           name: dist-frontend-bundle
           path: |
             ./frontend/dist/
+
+
+  create_release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [generate_jsons, build_frontend]
+
+    steps:
+      # - uses: actions/checkout@v3
+
+      # download the artifacts from the generate_jsons job
+      - name: Download the JSON Bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-json-bundle
+          path: ./dist-json-bundle/
+
+      # download the artifacts from the build_frontend job
+      - name: Download the Frontend Bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-frontend-bundle
+          path: ./dist-frontend-bundle/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: ${{ github.sha }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist-json-bundle/
+          asset_name: dist-json-bundle
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist-frontend-bundle/
+          asset_name: dist-frontend-bundle
+          asset_content_type: application/zip
