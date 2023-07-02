@@ -90,6 +90,8 @@ jobs:
 
     steps:
 
+      - uses: actions/checkout@v3
+
       # download the artifacts from the generate_jsons job
       - name: Download the JSON Bundle
         uses: actions/download-artifact@v2
@@ -103,14 +105,17 @@ jobs:
         with:
           node-version: 18.15.0
 
-      - working-directory: ./frontend
+      - name: List the JSON Bundle
         run: ls -lah ./public/data
+        working-directory: ./frontend
 
-      - working-directory: ./frontend
+      - name: Install Dependencies
         run: npm ci
+        working-directory: ./frontend
         
-      - working-directory: ./frontend
+      - name: Build the Frontend
         run: npm run build
+        working-directory: ./frontend
 
       # store the frontend bundle as artifact
       - name: Archive production artifacts
