@@ -168,6 +168,13 @@ export default class Splitter {
     );
   }
 
+  async storeKbinInstanceList(data) {
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/kbin.min.json`,
+      JSON.stringify(data)
+    );
+  }
+
   async cleanData() {
     await rm(this.publicDataFolder, { recursive: true, force: true });
     await mkdir(this.communityPath, { recursive: true });
