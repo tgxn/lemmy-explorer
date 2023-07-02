@@ -2,7 +2,7 @@
 # create the json files for the redis data
 # upload the json files to github artifacts
 
-name: prepare-jsons
+name: frontend-bundles
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   prepare_redis_data:
-    timeout-minutes: 5
+    timeout-minutes: 30
     runs-on: ubuntu-latest
 
     steps:
@@ -79,4 +79,23 @@ jobs:
         working-directory: ./crawler
         if: always()
         run: docker-compose -f "docker-compose.github.yaml" down
+
+  build_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+            
+      - name: Download JSON Bundle
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-json-bundle
+          path: ./frontend/public/data/
+
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+
+      - run: npm ci
+      - run: npm run build
       
