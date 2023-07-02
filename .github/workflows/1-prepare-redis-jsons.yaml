@@ -13,9 +13,6 @@ jobs:
   prepare_redis_data:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./crawler
 
     steps:
       - uses: actions/checkout@v3
@@ -26,7 +23,7 @@ jobs:
         env:
           cache-name: cache-redis
         with:
-          path: ./crawler/.data/redis/
+          path: ./.redis/
           key: cache-redis
 
       # download redis db dump from s3
@@ -37,27 +34,32 @@ jobs:
         with:
           command: cp
           source: s3://${{ vars.BUILD_S3_BUCKET }}/dump.rdb
-          destination: ./crawler/.data/redis/dump.rdb
+          destination: ./.redis/dump.rdb
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ap-southeast-2
 
-      # start redis
+      # start redis & check if it is running
       - name: Start Redis
+        working-directory: ./crawler
         run: docker-compose -f "docker-compose.github.yaml" up -d redis
-
-      - name: Check Redis
+      - working-directory: ./crawler
         run: docker ps -a
-      - name: Check Redis
+      - working-directory: ./crawler
         run: docker-compose -f "docker-compose.github.yaml" logs redis
 
-      # run Outputs
       - name: Use Node.js 18.15.0
         uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
-      - run: npm ci
-      - run: node index.js --out
+          
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ./crawler
+
+      - name: Run Output Script
+        run: node index.js --out
+        working-directory: ./crawler
 
       # store the json files as artifacts
       - name: Archive production artifacts
@@ -69,6 +71,7 @@ jobs:
 
       # stop redis
       - name: Stop Redis
+        working-directory: ./crawler
         if: always()
         run: docker-compose -f "docker-compose.github.yaml" down
       
