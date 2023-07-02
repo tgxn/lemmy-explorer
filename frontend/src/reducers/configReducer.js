@@ -2,10 +2,17 @@
 
 import storage from "../lib/storage";
 
-export function setHomeInstance(baseUrl) {
+export function setHomeInstance(baseUrl, type = "lemmy") {
   return {
     type: "setHomeInstance",
-    payload: { baseUrl },
+    payload: { baseUrl, type },
+  };
+}
+
+export function changeInstanceType(type) {
+  return {
+    type: "changeInstanceType",
+    payload: { type },
   };
 }
 
@@ -18,6 +25,7 @@ export function setFilterSuspicious(filterSuspicious) {
 
 const initialState = {
   homeBaseUrl: storage.get("instance"),
+  instanceType: storage.get("type"),
   filterSuspicious: storage.get("config.filterSuspicious", true),
 };
 
@@ -27,12 +35,22 @@ const configReducer = (state = initialState, action = {}) => {
       const baseUrl = action.payload.baseUrl;
       if (baseUrl == null) {
         storage.remove("instance");
+        storage.remove("type");
       } else {
         storage.set("instance", action.payload.baseUrl);
+        storage.set("type", action.payload.type);
       }
       return {
         ...state,
         homeBaseUrl: action.payload.baseUrl,
+        instanceType: action.payload.type,
+      };
+
+    case "changeInstanceType":
+      storage.set("type", action.payload.type);
+      return {
+        ...state,
+        instanceType: action.payload.type,
       };
 
     case "setFilterSuspicious":

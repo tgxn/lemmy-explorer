@@ -23,7 +23,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import HomeIcon from "@mui/icons-material/Home";
 
 import { TinyNumber, BannerImage } from "../Shared/Display";
-import CopyLink from "../Shared/CopyLink";
+import { CopyLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 

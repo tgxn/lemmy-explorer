@@ -32,6 +32,8 @@ export default class CrawlOutput {
     this.communityErrors = await storage.tracking.getAllErrors("community");
     this.instanceList = await storage.instance.getAll();
     this.communityList = await storage.community.getAll();
+
+    this.fediverseData = await storage.fediverse.getAll();
   }
 
   async isInstanceSus(instance, log = true) {
@@ -483,16 +485,16 @@ export default class CrawlOutput {
     /// Fediverse Servers
     ///
 
-    const fediverseData = await storage.fediverse.getAll();
-    // logging.info("Fediverse", fediverseData);
-
     let returnStats = [];
 
     let softwareNames = {};
     let softwareBaseUrls = {};
 
-    Object.keys(fediverseData).forEach((fediKey) => {
-      const fediverse = fediverseData[fediKey];
+    // for the choose instance page
+    let kbinInstances = [];
+
+    Object.keys(this.fediverseData).forEach((fediKey) => {
+      const fediverse = this.fediverseData[fediKey];
       // logging.info("fediverseString", fediverseString);
       const baseUrl = fediKey.replace("fediverse:", "");
       // logging.info("baseUrl", baseUrl);
@@ -500,6 +502,11 @@ export default class CrawlOutput {
       // const fediverse = JSON.parse(fediverseString);
       // logging.info("fediverse", fediverse);
       if (fediverse.name) {
+        // list kbin
+        if (fediverse.name === "kbin") {
+          kbinInstances.push(baseUrl);
+        }
+
         if (!softwareBaseUrls[fediverse.name]) {
           softwareBaseUrls[fediverse.name] = [baseUrl];
         } else {
@@ -525,6 +532,8 @@ export default class CrawlOutput {
     //   softwareNames,
     //   softwareBaseUrls
     // );
+    await this.splitter.storeKbinInstanceList(kbinInstances);
+
     await this.splitter.storeFediverseData(
       returnStats,
       softwareNames,
