@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 
 import Moment from "react-moment";
 
-import { useNavigate } from "react-router-dom";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import useQueryCache from "../hooks/useQueryCache";
+
+import { useNavigate } from "react-router-dom";
 
 import Container from "@mui/joy/Container";
 import Box from "@mui/joy/Box";
@@ -19,12 +21,12 @@ import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrow
 import RestoreIcon from "@mui/icons-material/Restore";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
-export default function Overview() {
+export default function Join() {
   const navigate = useNavigate();
 
   const [filteredInstances, setFilteredInstances] = useState([]);
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+  const { isLoading, isSuccess, isError, error, data } = useCachedMultipart("instanceData", "instance");
 
   // filter data
   useEffect(() => {

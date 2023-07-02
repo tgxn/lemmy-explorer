@@ -20,19 +20,21 @@ export default class AxiosClient {
     });
   }
 
-  async getUrlWithRetry(url, options = {}, maxRetries = 3, current = 0) {
+  async getUrlWithRetry(url, options = {}, maxRetries = 4, current = 0) {
     try {
       return await this.axios.get(url, options);
     } catch (e) {
       if (current < maxRetries) {
+        // logging.error("error in get", e);
+
         logging.debug(
           `retrying url ${url} attempt ${current + 1}, waiting ${
             current + 1
-          } seconds`
+          }* 10 seconds`
         );
 
         await new Promise((resolve) =>
-          setTimeout(resolve, (current + 1) * 1000)
+          setTimeout(resolve, (current + 1) * 10000)
         );
 
         return await this.getUrlWithRetry(
@@ -40,6 +42,13 @@ export default class AxiosClient {
           options,
           maxRetries,
           current + 1
+        );
+      }
+
+      if (e.response.data) {
+        throw new CrawlError(
+          `Failed to get url ${url} after ${maxRetries} attempts: ${e.message}`,
+          e.response.data
         );
       }
 

@@ -13,6 +13,8 @@ import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
 
 import { Suspicions } from "./suspicions.js";
 
+import Splitter from "./splitter.js";
+
 export default class CrawlOutput {
   constructor() {
     this.uptimeData = null;
@@ -20,6 +22,8 @@ export default class CrawlOutput {
     this.communityErrors = null;
     this.instanceList = null;
     this.communityList = null;
+
+    this.splitter = new Splitter();
   }
 
   async loadAllData() {
@@ -199,10 +203,48 @@ export default class CrawlOutput {
     logging.silly("unhandled error", errorMessage);
   }
 
+  async generateInstanceMetrics(instance, storeCommunityData) {
+    // get timeseries
+    const usersSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users"
+    );
+    const versionSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "version"
+    );
+
+    // generate array with time -> value
+    const users = usersSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    const versions = versionSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    await this.splitter.storeInstanceMetricsData(instance.baseurl, {
+      instance,
+      communityCount: storeCommunityData.filter(
+        (community) => community.baseurl === instance.baseurl
+      ).length,
+      users,
+      versions,
+    });
+  }
+
   async start() {
     await this.loadAllData();
 
-    const suspiciousInstances = await this.outputSusList();
+    await this.splitter.cleanData();
+
+    await this.outputSusList();
 
     logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
     logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
@@ -319,10 +361,7 @@ export default class CrawlOutput {
       `Instances ${this.instanceList.length} -> ${storeData.length}`
     );
 
-    await this.writeJsonFile(
-      "../frontend/public/instances.json",
-      JSON.stringify(storeData)
-    );
+    await this.splitter.storeInstanceData(storeData);
 
     ///
     /// Lemmy Communities
@@ -359,6 +398,9 @@ export default class CrawlOutput {
         );
         const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
 
+        // if (community.community.nsfw)
+        //   console.log(community.community.name, community.community.nsfw);
+
         return {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
@@ -385,7 +427,7 @@ export default class CrawlOutput {
       const fail = this.findFail(community.baseurl);
       if (fail) {
         if (community.time < fail.time) {
-          // logging.info("filtered due to fail", fail, instance.baseurl);
+          // logging.info("filtered due to fail", fail, community.baseurl);
           return false;
         }
       }
@@ -394,10 +436,24 @@ export default class CrawlOutput {
 
     // remove communities not updated in 24h
     storeCommunityData = storeCommunityData.filter((community) => {
-      if (!community.time) return false; // record needs time
+      if (!community.time) {
+        console.log("no time", community);
+        return false; // record needs time
+      }
 
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;
+
+      // if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
+      //   console.log("NFSW Updated Recently!!", community.url);
+      //   // return false;
+      // }
+
+      // temp fix till lermmy allows querying nsfw on the public api -.-
+      if (community.nsfw) {
+        return true;
+      }
+
       if (recordAge > OUTPUT_MAX_AGE_MS) {
         return false;
       }
@@ -411,14 +467,17 @@ export default class CrawlOutput {
         community.url !== "" || community.name !== "" || community.title !== ""
     );
 
+    await Promise.all(
+      storeData.map(async (instance) => {
+        this.generateInstanceMetrics(instance, storeCommunityData);
+      })
+    );
+
     logging.info(
       `Communities ${communities.length} -> ${storeCommunityData.length}`
     );
 
-    await this.writeJsonFile(
-      "../frontend/public/communities.json",
-      JSON.stringify(storeCommunityData)
-    );
+    await this.splitter.storeCommunityData(storeCommunityData);
 
     ///
     /// Fediverse Servers
@@ -428,7 +487,11 @@ export default class CrawlOutput {
     // logging.info("Fediverse", fediverseData);
 
     let returnStats = [];
-    let storeFediverseData = Object.keys(fediverseData).forEach((fediKey) => {
+
+    let softwareNames = {};
+    let softwareBaseUrls = {};
+
+    Object.keys(fediverseData).forEach((fediKey) => {
       const fediverse = fediverseData[fediKey];
       // logging.info("fediverseString", fediverseString);
       const baseUrl = fediKey.replace("fediverse:", "");
@@ -437,6 +500,18 @@ export default class CrawlOutput {
       // const fediverse = JSON.parse(fediverseString);
       // logging.info("fediverse", fediverse);
       if (fediverse.name) {
+        if (!softwareBaseUrls[fediverse.name]) {
+          softwareBaseUrls[fediverse.name] = [baseUrl];
+        } else {
+          softwareBaseUrls[fediverse.name].push(baseUrl);
+        }
+
+        if (!softwareNames[fediverse.name]) {
+          softwareNames[fediverse.name] = 1;
+        } else {
+          softwareNames[fediverse.name] += 1;
+        }
+
         returnStats.push({
           url: baseUrl,
           software: fediverse.name,
@@ -444,28 +519,16 @@ export default class CrawlOutput {
         });
       }
     });
-    logging.info("Fediverse Servers", returnStats.length);
-
-    await this.writeJsonFile(
-      "../frontend/public/fediverse.json",
-      JSON.stringify(returnStats)
-    );
-
-    const packageJson = JSON.parse(
-      await readFile(new URL("../../package.json", import.meta.url))
-    );
-
-    const metaData = {
-      instances: storeData.length,
-      communities: storeCommunityData.length,
-      fediverse: returnStats.length,
-      time: Date.now(),
-      package: packageJson.name,
-      version: packageJson.version,
-    };
-    await this.writeJsonFile(
-      "../frontend/public/meta.json",
-      JSON.stringify(metaData)
+    // logging.info(
+    //   "Fediverse Servers",
+    //   returnStats.length,
+    //   softwareNames,
+    //   softwareBaseUrls
+    // );
+    await this.splitter.storeFediverseData(
+      returnStats,
+      softwareNames,
+      softwareBaseUrls
     );
 
     let instanceErrors = [];
@@ -505,42 +568,29 @@ export default class CrawlOutput {
     // });
 
     logging.info("instanceErrors", instanceErrors.length, errorTypes);
+    await this.splitter.storeInstanceErrors(instanceErrors);
 
-    await this.writeJsonFile(
-      "../frontend/public/instanceErrors.json",
-      JSON.stringify(instanceErrors)
+    const packageJson = JSON.parse(
+      await readFile(new URL("../../package.json", import.meta.url))
     );
 
-    // generate overview metrics and stats
-    const metrics = {
+    const metaData = {
       instances: storeData.length,
       communities: storeCommunityData.length,
+      fediverse: returnStats.length,
+      time: Date.now(),
+      package: packageJson.name,
+      version: packageJson.version,
 
       // top 10 linked, allowed, blocked domains
       // sort by count of times seen on each list
       linked: linkedFederation,
       allowed: allowedFederation,
       blocked: blockedFederation,
-
-      // federation instance software/version
     };
-
-    await this.writeJsonFile(
-      "../frontend/public/overview.json",
-      JSON.stringify(metrics)
-    );
+    await this.splitter.storeMetaData(metaData);
 
     return true;
-  }
-
-  async writeJsonFile(filename, data) {
-    let filehandle = null;
-    try {
-      filehandle = await open(filename, "w");
-      await filehandle.writeFile(data);
-    } finally {
-      await filehandle?.close();
-    }
   }
 
   // generate a list of all the instances that are suspicious and the reasons
@@ -564,10 +614,7 @@ export default class CrawlOutput {
       }
     }
 
-    await this.writeJsonFile(
-      "../frontend/public/sus.json",
-      JSON.stringify(output)
-    );
+    await this.splitter.storeSuspicousData(output);
 
     return output;
   }

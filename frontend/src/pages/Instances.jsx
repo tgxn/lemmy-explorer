@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 import useQueryCache from "../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
 import useStorage from "../hooks/useStorage";
@@ -12,7 +13,7 @@ import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
-import Chip from "@mui/joy/Chip";
+import Typography from "@mui/joy/Typography";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
@@ -24,15 +25,19 @@ import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
-import LanguageFilter from "../components/LanguageFilter";
-import { PageLoading, PageError, SimpleNumberFormat } from "../components/Display";
-import { InstanceGrid } from "../components/GridView";
-import { InstanceList } from "../components/ListView";
+import LanguageFilter from "../components/Shared/LanguageFilter";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+
+import InstanceGrid from "../components/GridView/Instance";
+import InstanceList from "../components/ListView/Instance";
 
 function Instances({ filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceData", "/instances.json");
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
+    "instanceData",
+    "instance",
+  );
 
   const [viewType, setViewType] = useStorage("instance.viewType", "grid");
 
@@ -106,6 +111,7 @@ function Instances({ filterSuspicious }) {
             return (
               (instance.name && instance.name.toLowerCase().includes(term)) ||
               (instance.title && instance.title.toLowerCase().includes(term)) ||
+              (instance.baseurl && instance.baseurl.toLowerCase().includes(term)) ||
               (instance.desc && instance.desc.toLowerCase().includes(term))
             );
           });
@@ -247,21 +253,22 @@ function Instances({ filterSuspicious }) {
           }}
         >
           {isSuccess && (
-            <Chip
+            <Typography
+              level="body2"
               sx={{
                 borderRadius: "4px",
-                mr: 1,
+                mr: 2,
               }}
-              color="info"
             >
-              Instances:{" "}
+              showing{" "}
               <SimpleNumberFormat
                 value={instancesData.length}
                 displayType={"text"}
                 decimalScale={2}
                 thousandSeparator={","}
-              />
-            </Chip>
+              />{" "}
+              instances
+            </Typography>
           )}
 
           <ButtonGroup
@@ -278,19 +285,23 @@ function Instances({ filterSuspicious }) {
             }}
           >
             <IconButton
-              variant={viewType == "grid" ? "soft" : "plain"}
+              variant={viewType == "grid" ? "solid" : "soft"}
+              color={viewType == "grid" ? "info" : "neutral"}
               onClick={() => setViewType("grid")}
               sx={{
                 p: 1,
+                borderRadius: "8px 0 0 8px",
               }}
             >
               <ViewCompactIcon /> Grid View
             </IconButton>
             <IconButton
-              variant={viewType == "list" ? "soft" : "plain"}
+              variant={viewType == "list" ? "solid" : "soft"}
+              color={viewType == "list" ? "info" : "neutral"}
               onClick={() => setViewType("list")}
               sx={{
                 p: 1,
+                borderRadius: "0 8px 8px 0",
               }}
             >
               <ViewListIcon /> List View
@@ -300,7 +311,7 @@ function Instances({ filterSuspicious }) {
       </Box>
 
       <Box sx={{ my: 4 }}>
-        {isLoading && !isError && <PageLoading />}
+        {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
         {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
         {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}
