@@ -17,7 +17,8 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { TinyNumber, BannerImage } from "../Shared/Display";
-import CopyLink from "../Shared/CopyLink";
+
+import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 export default function ({ community, homeBaseUrl, ...rest }) {
   // console.log("CommunityCard", community, rest);
@@ -71,29 +72,7 @@ export default function ({ community, homeBaseUrl, ...rest }) {
               textOverflow: "ellipsis",
             }}
           >
-            <Tooltip
-              title={"Visit: " + community.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
-              variant="soft"
-              placement="top-start"
-            >
-              <Link
-                level="body1"
-                variant="plain"
-                alt={community.title}
-                color="neutral"
-                href={
-                  homeBaseUrl
-                    ? `https://${homeBaseUrl}/c/${community.name}@${
-                        community.url && community.url.split("/")[2]
-                      }`
-                    : community.url
-                }
-                target="_blank"
-              >
-                {community.title}
-                <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-              </Link>
-            </Tooltip>
+            <ExtCommunityLink community={community} />
           </Typography>
 
           <Typography level="body3">

@@ -13,9 +13,9 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import VirtualTable from "./VirtualTable";
 
 import { TinyNumber } from "../Shared/Display";
-import CopyLink from "../Shared/CopyLink";
+import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
+const CommunityList = React.memo(function ({ items }) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -68,7 +68,8 @@ const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
                       textOverflow: "ellipsis",
                     }}
                   >
-                    <Tooltip
+                    <ExtCommunityLink community={rowData} />
+                    {/* <Tooltip
                       title={"Visit: " + rowData.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
                       variant="soft"
                       placement="top-start"
@@ -92,7 +93,7 @@ const CommunityList = React.memo(function ({ items, homeBaseUrl }) {
                       >
                         {rowData.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
                       </Link>
-                    </Tooltip>
+                    </Tooltip> */}
                   </Typography>
 
                   <Typography level="body3">

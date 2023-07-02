@@ -20,7 +20,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import VirtualTable from "./VirtualTable";
 
 import { TinyNumber } from "../Shared/Display";
-import CopyLink from "../Shared/CopyLink";
+import { CopyLink } from "../Shared/Link";
 
 const InstanceList = React.memo(function ({ items }) {
   return (
