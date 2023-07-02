@@ -37,6 +37,9 @@ function renderRow(props) {
   const inlineStyle = {
     ...style,
     top: style.top + LISTBOX_PADDING,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   };
 
   return (
@@ -117,11 +120,52 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props, ref) 
   );
 });
 
-function SelectHomeInstance({ homeBaseUrl, dispatch }) {
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("instanceMinData", "instance.min");
+function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
+  const {
+    isLoading: loadingIns,
+    error: errorIns,
+    data: dataIns,
+  } = useQueryCache("instanceMinData", "instance.min");
+
+  const {
+    isLoading: loadingKbin,
+    error: errorKbin,
+    data: dataKbin,
+  } = useQueryCache("kbinMinData", "kbin.min");
+
+  const data = React.useMemo(() => {
+    if (loadingIns || loadingKbin) {
+      return null;
+    }
+
+    if (errorIns || errorKbin) {
+      return null;
+    }
+
+    let data = [];
+
+    data = data.concat(dataIns.map((item) => ({ ...item, type: "lemmy" })));
+
+    for (const item of dataKbin) {
+      data.push({
+        base: item,
+        name: item,
+        type: "kbin",
+      });
+    }
+
+    return data;
+  }, [dataIns, dataKbin]);
 
   const onChange = (newValue) => {
     console.log("onChange", newValue);
+
+    if (newValue?.type === "kbin") {
+      onSetKBin(true);
+      // return;
+    } else if (newValue?.type === "lemmy") {
+      onSetKBin(false);
+    }
 
     if (newValue == null) {
       dispatch(setHomeInstance(null));
@@ -129,7 +173,7 @@ function SelectHomeInstance({ homeBaseUrl, dispatch }) {
     }
 
     // send the base url to upstream
-    dispatch(setHomeInstance(newValue.base));
+    dispatch(setHomeInstance(newValue.base, newValue.type));
   };
 
   return (
@@ -146,8 +190,8 @@ function SelectHomeInstance({ homeBaseUrl, dispatch }) {
         slots={{
           listbox: ListboxComponent,
         }}
-        options={data || null}
-        loading={isLoading}
+        options={data || []}
+        loading={data == null}
         renderOption={(props, option) => [props, option]}
         // TODO: Post React 18 update - validate this conversion, look like a hidden bug
         // renderGroup={(params) => params}
