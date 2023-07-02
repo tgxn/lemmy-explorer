@@ -26,13 +26,13 @@ jobs:
         env:
           cache-name: cache-redis
         with:
-          path: ./crawler/.data/redis/dump.rdb
+          path: ./crawler/.data/redis/
           key: cache-redis
 
       # download redis db dump from s3
       - if: ${{ steps.cache-redis.cache-hit != 'true' }}
         name: Download the Redis Dump
-        continue-on-error: true
+        # continue-on-error: true
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
@@ -72,6 +72,3 @@ jobs:
         if: always()
         run: docker-compose -f "docker-compose.github.yaml" down
       
-      - name: Set Permissions on Dump
-        run: |
-          chmod -R 777 ./.data/redis/dump.rdb
