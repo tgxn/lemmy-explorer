@@ -1,7 +1,6 @@
 import React from "react";
 
 import Avatar from "@mui/joy/Avatar";
-import Link from "@mui/joy/Link";
 import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
@@ -14,14 +13,12 @@ import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { TinyNumber, BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-export default function ({ community, homeBaseUrl, ...rest }) {
-  // console.log("CommunityCard", community, rest);
+export default function CommunityCard({ community }) {
   return (
     <Card
       variant="outlined"

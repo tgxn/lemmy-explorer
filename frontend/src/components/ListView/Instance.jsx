@@ -20,7 +20,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import VirtualTable from "./VirtualTable";
 
 import { TinyNumber } from "../Shared/Display";
-import { CopyLink } from "../Shared/Link";
+import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 const InstanceList = React.memo(function ({ items }) {
   return (
@@ -75,19 +75,7 @@ const InstanceList = React.memo(function ({ items }) {
                       textOverflow: "ellipsis",
                     }}
                   >
-                    <Link
-                      level="body1"
-                      variant="plain"
-                      alt={rowData.name}
-                      color="neutral"
-                      href={rowData.url}
-                      target="_blank"
-                      sx={{
-                        color: "var(--joy-palette-primary-50)",
-                      }}
-                    >
-                      {rowData.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-                    </Link>
+                    <ExtInstanceLink instance={rowData} />
                   </Typography>
 
                   <Typography level="body3">

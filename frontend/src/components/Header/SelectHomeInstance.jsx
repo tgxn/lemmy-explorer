@@ -37,6 +37,9 @@ function renderRow(props) {
   const inlineStyle = {
     ...style,
     top: style.top + LISTBOX_PADDING,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   };
 
   return (

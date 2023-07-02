@@ -23,7 +23,8 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import HomeIcon from "@mui/icons-material/Home";
 
 import { TinyNumber, BannerImage } from "../Shared/Display";
-import { CopyLink } from "../Shared/Link";
+
+import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
@@ -78,21 +79,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
               textOverflow: "ellipsis",
             }}
           >
-            <Link
-              level="body1"
-              variant="plain"
-              alt={instance.name}
-              color="neutral"
-              href={instance.url}
-              target="_blank"
-              // sx={{
-              //   fontWeight: "bold",
-              //   fontSize: "16px",
-              //   textOverflow: "ellipsis",
-              // }}
-            >
-              {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-            </Link>
+            <ExtInstanceLink instance={instance} />
           </Typography>
 
           <Typography level="body3">

@@ -85,29 +85,31 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
           <SelectHomeInstance onSetKBin={(isKbin) => setIsKbinInstance(isKbin)} />
         </Box>
 
-        <ListItem
-          sx={{
-            px: 2,
-            py: 1,
-            fontSize: "0.75rem",
-            color: "text.secondary",
-          }}
-        >
-          <ListItemDecorator sx={{ p: 1, alignSelf: "center" }}>
-            <Switch
-              color={isKbinInstance ? "warning" : "success"}
-              checked={isKbinInstance}
-              onChange={(event) => setIsKbinInstance(event.target.checked)}
-              labelPlacement="end"
-            />
-          </ListItemDecorator>
-          <Box sx={{ px: 2 }}>
-            {!isKbinInstance && <FormLabel>Lemmy Instance</FormLabel>}
-            {isKbinInstance && <FormLabel>KBin Instance</FormLabel>}
-            {!isKbinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>}
-            {isKbinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /m/</FormHelperText>}
-          </Box>{" "}
-        </ListItem>
+        {homeBaseUrl && (
+          <ListItem
+            sx={{
+              px: 2,
+              py: 1,
+              fontSize: "0.75rem",
+              color: "text.secondary",
+            }}
+          >
+            <ListItemDecorator sx={{ p: 1, alignSelf: "center" }}>
+              <Switch
+                color={isKbinInstance ? "warning" : "success"}
+                checked={isKbinInstance}
+                onChange={(event) => setIsKbinInstance(event.target.checked)}
+                labelPlacement="end"
+              />
+            </ListItemDecorator>
+            <Box sx={{ px: 2 }}>
+              {!isKbinInstance && <FormLabel>Lemmy Instance</FormLabel>}
+              {isKbinInstance && <FormLabel>KBin Instance</FormLabel>}
+              {!isKbinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>}
+              {isKbinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /m/</FormHelperText>}
+            </Box>
+          </ListItem>
+        )}
       </Menu>
     </>
   );

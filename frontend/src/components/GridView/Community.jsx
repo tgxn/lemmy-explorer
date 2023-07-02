@@ -7,7 +7,7 @@ import { useWindowSize } from "@react-hook/window-size";
 
 import CommunityCard from "./CommunityCard";
 
-const CommunityGrid = function ({ items, homeBaseUrl }) {
+const CommunityGrid = function ({ items }) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -18,8 +18,8 @@ const CommunityGrid = function ({ items, homeBaseUrl }) {
   const { scrollTop, isScrolling } = useScroller(offset);
 
   const CardWithIsScrolling = React.useCallback(
-    (props) => <CommunityCard community={props.data} homeBaseUrl={homeBaseUrl} />,
-    [isScrolling, homeBaseUrl],
+    (props) => <CommunityCard community={props.data} />,
+    [isScrolling],
   );
 
   return useMasonry({

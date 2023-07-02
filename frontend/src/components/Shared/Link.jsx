@@ -85,3 +85,23 @@ const mapStateToProps = (state) => ({
   instanceType: state.configReducer.instanceType,
 });
 export const ExtCommunityLink = connect(mapStateToProps)(CommunityLink);
+
+export function ExtInstanceLink({ instance }) {
+  return (
+    <Link
+      level="body1"
+      variant="plain"
+      alt={instance.name}
+      color="neutral"
+      href={instance.url}
+      target="_blank"
+      // sx={{
+      //   fontWeight: "bold",
+      //   fontSize: "16px",
+      //   textOverflow: "ellipsis",
+      // }}
+    >
+      {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+    </Link>
+  );
+}
