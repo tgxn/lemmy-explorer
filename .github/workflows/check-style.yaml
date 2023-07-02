@@ -1,0 +1,26 @@
+name: check-style
+
+on:
+  push:
+    branches:
+      - check_style
+
+jobs:
+  check_style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check Frontend Style
+        uses: creyD/prettier_action@v4.3
+        with:
+          dry: True
+          github_token: ${{ github.token }}
+          prettier_options: --check fontend/**/*.{jsx,js}
+
+      - name: Check Crawler Style
+        uses: creyD/prettier_action@v4.3
+        with:
+          dry: True
+          github_token: ${{ github.token }}
+          prettier_options: --check crawler/**/*.{js}
