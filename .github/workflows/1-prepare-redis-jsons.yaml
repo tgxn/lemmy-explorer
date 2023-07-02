@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
+      - name: root suid tar
+        run: sudo chown root:wheel /bin/tar && sudo chmod u+s /bin/tar
+
       - uses: actions/checkout@v3
 
       - name: Cache Redis Dump
