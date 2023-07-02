@@ -18,7 +18,7 @@ jobs:
       - name: Check Frontend Style
         uses: creyD/prettier_action@v4.3
         with:
-          working_directory: ./frontend
+          working_directory: frontend/
           dry: True
           github_token: ${{ github.token }}
           prettier_options: --check ./src/**/*.{jsx,js}
@@ -26,7 +26,7 @@ jobs:
       - name: Check Crawler Style
         uses: creyD/prettier_action@v4.3
         with:
-          working_directory: ./crawler
+          working_directory: crawler/
           dry: True
           github_token: ${{ github.token }}
           prettier_options: --check ./src/**/*.js
