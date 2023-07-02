@@ -117,6 +117,7 @@ export default class Splitter {
       return {
         name: instance.name,
         base: instance.baseurl,
+        score: instance.score,
       };
     });
     await this.writeJsonFile(
