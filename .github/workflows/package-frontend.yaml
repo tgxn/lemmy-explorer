@@ -1,0 +1,203 @@
+name: package-frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  # download the redis dump from s3
+  # create the json files for the redis data
+  # upload the json files to github artifacts
+  generate_jsons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+
+      # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
+      - name: root suid tar
+        run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
+
+      - uses: actions/checkout@v3
+
+      - name: Cache Redis Dump
+        id: cache-redis
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-redis
+        with:
+          path: ./.redis/
+          key: cache-redis
+
+      # download redis db dump from s3
+      - name: Download the Redis Dump
+        if: steps.cache-redis.outputs.cache-hit != 'true'
+        uses: keithweaver/aws-s3-github-action@v1.0.0
+        with:
+          command: cp
+          source: s3://${{ vars.BUILD_S3_BUCKET }}/dump.rdb
+          destination: ./.redis/dump.rdb
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ap-southeast-2
+
+      # start redis & check if it is running
+      - name: Start Redis
+        working-directory: ./crawler
+        run: docker-compose -f "docker-compose.github.yaml" up -d redis
+      - working-directory: ./crawler
+        run: docker ps -a
+      - working-directory: ./crawler
+        run: docker-compose -f "docker-compose.github.yaml" logs redis
+
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+     
+      # install npm dependencies
+      - name: Cache NPM Modules
+        id: cache-crawler-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-crawler-npm
+        with:
+          path: ./crawler/node_modules/
+          key: cache-crawler-npm-${{ hashFiles('crawler/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./crawler
+
+      - name: Run Output Script
+        run: node index.js --out
+        working-directory: ./crawler
+
+      # store the json files as artifacts
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-json-bundle
+          path: |
+            ./frontend/public/data/
+
+      # stop redis
+      - name: Stop Redis
+        working-directory: ./crawler
+        if: always()
+        run: docker-compose -f "docker-compose.github.yaml" down
+
+  # download the json files from the generate_jsons job
+  # install npm dependencies
+  # build the frontend
+  # store the frontend bundle as artifact
+  build_frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: generate_jsons
+
+    steps:
+
+      - uses: actions/checkout@v3
+
+      # download the artifacts from the generate_jsons job
+      - name: Download the JSON Bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-json-bundle
+          path: ./frontend/public/data/
+
+      # bundle the frontend
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+
+      - name: List the JSON Bundle
+        run: ls -lah ./public/data
+        working-directory: ./frontend
+
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Cache NPM Modules
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ./frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./frontend
+        
+      - name: Build the Frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      # store the frontend bundle as artifact
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-frontend-bundle
+          path: |
+            ./frontend/dist/
+
+
+  create_release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [generate_jsons, build_frontend]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # download the artifacts from the generate_jsons job
+      - name: Download the JSON Bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-json-bundle
+          path: ./dist-json-bundle/
+
+      - name: Zip artifact for deployment
+        run: zip dist-json-bundle.zip ./dist-json-bundle/* -r
+
+      - name: Generate release tag
+        id: generate_release_tag
+        uses: amitsingh-007/next-release-tag@v4.0.0
+        with:
+          github_token: ${{ github.token }}
+          tag_prefix: 'v'
+          tag_template: 'yyyy.mm.dd.i'
+
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+          name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
+          prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: ./dist-json-bundle.zip
+
+
+
+
+      # - name: Upload Release Asset
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./dist-json-bundle/
+      #     asset_name: dist-json-bundle
+      #     asset_content_type: application/zip
