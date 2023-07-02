@@ -48,7 +48,7 @@ function Instances({ filterSuspicious }) {
 
   // debounce the filter text input
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const debounceFilterText = useDebounce(filterText, 100);
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
 

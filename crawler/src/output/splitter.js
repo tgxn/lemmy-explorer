@@ -117,6 +117,7 @@ export default class Splitter {
       return {
         name: instance.name,
         base: instance.baseurl,
+        score: instance.score,
       };
     });
     await this.writeJsonFile(
@@ -164,6 +165,13 @@ export default class Splitter {
   async storeSuspicousData(data) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/sus.json`,
+      JSON.stringify(data)
+    );
+  }
+
+  async storeKbinInstanceList(data) {
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/kbin.min.json`,
       JSON.stringify(data)
     );
   }

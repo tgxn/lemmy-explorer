@@ -29,7 +29,8 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import InfoIcon from "@mui/icons-material/Info";
 
 import { TinyNumber, BannerImage } from "../Shared/Display";
-import CopyLink from "../Shared/CopyLink";
+
+import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
@@ -90,22 +91,7 @@ function InstanceCard({ instance, dispatch }) {
               pb: 0.5,
             }}
           >
-            <Link
-              level="body1"
-              // variant="outlined"
-              alt={instance.name}
-              color="neutral"
-              href={instance.url}
-              target="_blank"
-              sx={{
-                fontWeight: "bold",
-                fontSize: "16px",
-                textOverflow: "ellipsis",
-                ml: 0.5,
-              }}
-            >
-              {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-            </Link>
+            <ExtInstanceLink instance={instance} />
           </Typography>
 
           <Typography level="body3">
