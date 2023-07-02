@@ -27,9 +27,7 @@ jobs:
           cache-name: cache-redis
         with:
           path: ./crawler/.data/redis/dump.rdb
-          key: ${{ runner.os }}-${{ hashFiles('./crawler/.data/redis/dump.rdb') }}
-          # restore-keys: |
-          #   ${{ runner.os }}-
+          key: cache-redis
 
       # download redis db dump from s3
       - if: ${{ steps.cache-redis.cache-hit != 'true' }}
