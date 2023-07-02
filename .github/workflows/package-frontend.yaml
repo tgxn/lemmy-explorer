@@ -166,6 +166,9 @@ jobs:
           name: dist-json-bundle
           path: ./dist-json-bundle/
 
+      - name: Zip artifact for deployment
+        run: zip dist-json-bundle.zip ./dist-json-bundle/* -r
+
       - name: Generate release tag
         id: generate_release_tag
         uses: amitsingh-007/next-release-tag@v4.0.0
@@ -174,6 +177,7 @@ jobs:
           tag_prefix: 'v'
           tag_template: 'yyyy.mm.dd.i'
 
+          
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -182,7 +186,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           fail_on_unmatched_files: true
-          files: ./dist-json-bundle/**
+          files: ./dist-json-bundle.zip
 
 
 
