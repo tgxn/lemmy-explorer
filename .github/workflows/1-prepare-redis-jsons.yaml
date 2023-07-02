@@ -18,7 +18,7 @@ jobs:
 
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
       - name: root suid tar
-        run: sudo chown root:wheel /bin/tar && sudo chmod u+s /bin/tar
+        run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
 
       - uses: actions/checkout@v3
 
