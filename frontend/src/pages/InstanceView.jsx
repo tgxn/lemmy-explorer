@@ -117,7 +117,7 @@ export default function InstanceView() {
           <InstanceDetail instance={metricsData.instance} />
         </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, width: "100%" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
           <Tabs
             value={tabIndex}
             onChange={(event, value) => changeView(value)}
@@ -125,7 +125,7 @@ export default function InstanceView() {
             defaultValue={0}
             sx={{
               bgcolor: "background.body",
-              width: "100%",
+              // width: "100%",
               // alignItems: "center",
             }}
           >
@@ -133,10 +133,10 @@ export default function InstanceView() {
               variant="outlined"
               color="neutral"
               sx={{
-                width: "auto",
+                width: "fit-content",
               }}
             >
-              <Tab variant={"soft"} color={tabIndex === 0 ? "primary" : "neutral"}>
+              <Tab variant={tabIndex === 0 ? "solid" : "soft"} color={tabIndex === 0 ? "primary" : "neutral"}>
                 Overview
               </Tab>
               <Badge
@@ -149,65 +149,46 @@ export default function InstanceView() {
                   horizontal: "right",
                 }}
               >
-                <Tab variant={"soft"} color={tabIndex === 1 ? "primary" : "neutral"}>
+                <Tab
+                  variant={tabIndex === 1 ? "solid" : "soft"}
+                  color={tabIndex === 1 ? "primary" : "neutral"}
+                >
                   Communities
                 </Tab>
               </Badge>
-              <Tab variant={"soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
+              <Tab variant={tabIndex === 2 ? "solid" : "soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
                 User Growth
               </Tab>
-              <Tab variant={"soft"} color={tabIndex === 3 ? "primary" : "neutral"}>
+              <Tab variant={tabIndex === 3 ? "solid" : "soft"} color={tabIndex === 3 ? "primary" : "neutral"}>
                 Version History
               </Tab>
               {/* <Tab>Instance Debugger</Tab> */}
             </TabList>
-            <Box
-              sx={(theme) => ({
-                bgcolor: "background.body",
-                width: "100%",
-                p: 2,
-              })}
-            >
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <TabPanel value={0}>
-                      <InstanceOverview instance={metricsData.instance} userSeries={metricsData.users} />
-                    </TabPanel>
-                  }
-                />
-                <Route
-                  path="/communities"
-                  element={
-                    <TabPanel value={1}>
-                      <InstanceCommunities instance={metricsData.instance} />
-                    </TabPanel>
-                  }
-                />
-                <Route
-                  path="/user-growth"
-                  element={
-                    <TabPanel value={2}>
-                      <InstanceUserGrowth userSeries={metricsData.users} />
-                    </TabPanel>
-                  }
-                />
-                <Route
-                  path="/version-history"
-                  element={
-                    <TabPanel value={3}>
-                      <InstanceVersions
-                        instance={metricsData.instance}
-                        versionSeries={metricsData.versions}
-                      />
-                    </TabPanel>
-                  }
-                />
-                {/* <Route path="/debug" element={<Overview />} /> */}
-              </Routes>
-            </Box>
           </Tabs>
+          <Box
+            sx={(theme) => ({
+              //   width: "100%",
+              py: 2,
+              px: 1,
+              //   display: "flex",
+              //   // flexDirection: "row",
+            })}
+          >
+            <Routes>
+              <Route
+                path="/"
+                element={<InstanceOverview instance={metricsData.instance} userSeries={metricsData.users} />}
+              />
+              <Route path="/communities" element={<InstanceCommunities instance={metricsData.instance} />} />
+              <Route path="/user-growth" element={<InstanceUserGrowth userSeries={metricsData.users} />} />
+              <Route
+                path="/version-history"
+                element={
+                  <InstanceVersions instance={metricsData.instance} versionSeries={metricsData.versions} />
+                }
+              />
+            </Routes>
+          </Box>
         </Box>
       </Box>
     </Container>
