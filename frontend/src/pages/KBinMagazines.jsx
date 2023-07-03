@@ -41,7 +41,10 @@ function KBinMagazines({}) {
   //   "community",
   // );
 
-  const { isLoading, isSuccess, isError, error, data } = useQueryCache("kbinMagazineData", "kbin.magazines");
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
+    "magazinesData",
+    "magazines",
+  );
 
   const [viewType, setViewType] = useStorage("kbin.viewType", "grid");
 
@@ -331,7 +334,7 @@ function KBinMagazines({}) {
       </Box>
 
       <Box sx={{ mt: 2 }}>
-        {isLoading && !isError && <LinearValueLoader />}
+        {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
         {isSuccess && viewType == "grid" && <KBinGrid items={magazinesData} />}
