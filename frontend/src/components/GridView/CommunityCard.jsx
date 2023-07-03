@@ -18,55 +18,61 @@ import { TinyNumber, BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
+import { IconAvatar } from "../Shared/Avatar";
+
 export default function CommunityCard({ community }) {
   return (
     <Card
       variant="outlined"
       sx={{
-        pt: 1,
-        height: "350px",
-        "& .MuiIconButton-root": {
-          mt: 1,
-        },
+        height: "365px",
+        gap: 0,
       }}
     >
       {/* Community Title */}
-      <CardContent
+      <CardOverflow
+        variant="outlined"
         orientation="horizontal"
-        sx={{ columnGap: 0, flexGrow: 0, justifyContent: "space-between" }}
+        sx={{
+          py: 1.75,
+          px: 2,
+          outline: 0,
+          border: 0,
+          columnGap: 0,
+          flexGrow: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         <Box
           sx={{
             flexShrink: 0,
-            pt: 1.5,
-            px: 0.25,
-            pr: 1,
+            mr: 0.5,
           }}
         >
-          <Avatar
-            alt={community.title}
-            src={community.icon}
-            sx={{
-              display: "flex",
-            }}
-          />
+          <IconAvatar alt={community.title} src={community.icon} />
         </Box>
 
+        {/* Title & Base URL */}
         <Box
           sx={{
-            p: 0.5,
             flexGrow: 1,
+            flexShrink: 1,
             overflow: "hidden",
+            mx: 1,
           }}
         >
           <Typography
             level="body3"
             sx={{
               fontWeight: "bold",
-              fontSize: "16px",
+              fontSize: "14px",
               overflow: "hidden",
               whiteSpace: "nowrap",
+
               textOverflow: "ellipsis",
+              pb: 0.5,
             }}
           >
             <ExtCommunityLink community={community} />
@@ -74,7 +80,7 @@ export default function CommunityCard({ community }) {
 
           <Typography level="body3">
             <CopyLink
-              copyText={`!${community.name}@${community.url && community.url.split("/")[2]}`}
+              copyText={`!${community.name}@${community.baseurl}`}
               linkProps={{
                 variant: "plain",
                 color: "neutral",
@@ -82,25 +88,33 @@ export default function CommunityCard({ community }) {
             />
           </Typography>
         </Box>
-      </CardContent>
+      </CardOverflow>
 
       {/* Community Banner */}
       <CardOverflow
-        sx={() => ({
-          background: "linear-gradient(15deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.40) 100%)",
+        sx={(theme) => ({
+          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
           p: 0,
-          height: "150px",
+          minHeight: "125px",
+          maxHeight: "150px",
           overflow: "hidden",
           borderRadius: 0,
         })}
       >
         <BannerImage imageSrc={community.banner || false} />
+        <Divider inset="context" />
       </CardOverflow>
 
-      <CardContent orientation="horizontal">
+      <CardContent
+        orientation="horizontal"
+        sx={{
+          py: 1,
+        }}
+      >
         <Typography
           level="body3"
           sx={{
+            height: "90px",
             maxHeight: "90px",
             overflow: "hidden",
           }}

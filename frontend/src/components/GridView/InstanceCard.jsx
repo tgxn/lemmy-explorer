@@ -36,7 +36,7 @@ import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
-import InstanceAvatar from "../Shared/InstanceAvatar";
+import { InstanceAvatar } from "../Shared/Avatar";
 
 function InstanceCard({ instance, dispatch }) {
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ function InstanceCard({ instance, dispatch }) {
         variant="outlined"
         orientation="horizontal"
         sx={{
-          py: 2,
+          py: 1.75,
           px: 2,
           outline: 0,
           border: 0,
@@ -65,7 +65,6 @@ function InstanceCard({ instance, dispatch }) {
           alignItems: "center",
         }}
       >
-        {/* Avatar */}
         <Box
           sx={{
             flexShrink: 0,
@@ -81,7 +80,6 @@ function InstanceCard({ instance, dispatch }) {
             flexShrink: 1,
             overflow: "hidden",
             mx: 1,
-            // ml: 2,
           }}
         >
           <Typography
@@ -141,7 +139,7 @@ function InstanceCard({ instance, dispatch }) {
       {/* Banner */}
       <CardOverflow
         sx={(theme) => ({
-          background: "linear-gradient(15deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.40) 100%)",
+          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
           p: 0,
           minHeight: "125px",
           maxHeight: "150px",
@@ -163,6 +161,7 @@ function InstanceCard({ instance, dispatch }) {
         <Typography
           level="body3"
           sx={{
+            height: "90px",
             maxHeight: "90px",
             overflow: "hidden",
           }}

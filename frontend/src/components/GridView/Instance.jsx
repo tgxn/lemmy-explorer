@@ -16,10 +16,7 @@ const InstanceGrid = function ({ items }) {
   const positioner = usePositioner({ width, columnGutter: 16, maxColumnCount: 6, columnWidth: 280 }, [items]);
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardWithIsScrolling = React.useCallback(
-    (props) => <InstanceCard instance={props.data} />,
-    [isScrolling],
-  );
+  const CardAsCallback = React.useCallback((props) => <InstanceCard instance={props.data} />);
 
   return useMasonry({
     containerRef,
@@ -28,8 +25,8 @@ const InstanceGrid = function ({ items }) {
     isScrolling,
     height,
     items,
-    overscanBy: 4,
-    render: CardWithIsScrolling,
+    overscanBy: 6,
+    render: CardAsCallback,
   });
 };
 export default InstanceGrid;
