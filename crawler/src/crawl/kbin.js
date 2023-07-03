@@ -2,9 +2,10 @@ import logging from "../lib/logging.js";
 
 import storage from "../storage.js";
 
-import { CrawlError } from "../lib/error.js";
+import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
+import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
 
-import { RECRAWL_AGED_MS } from "../lib/const.js";
+import KBinQueue from "../queue/kbin.js";
 
 import AxiosClient from "../lib/axios.js";
 
@@ -26,117 +27,119 @@ export default class CrawlKBin {
     this.client = new AxiosClient();
   }
 
-  async scanAllKBin() {
+  // scan the full list of fediverse marked instances with "kbin"
+  async createJobsAllKBin() {
     try {
       // get all fedi kbin servers
       const kbinServers = await this.getKBin();
       logging.info(`KBin Instances Total: ${kbinServers.length}`);
 
-      const discoveredOthers = {};
-      function dedupAdd(base, mag) {
-        if (!discoveredOthers[base]) {
-          discoveredOthers[base] = [mag];
-        } else {
-          if (discoveredOthers[base].indexOf(mag) === -1) {
-            discoveredOthers[base].push(mag);
-          }
-        }
-      }
-
+      const kbinQueue = new KBinQueue(false);
       for (const kbinServer of kbinServers) {
         this.logPrefix = `[CrawlKBin] [${kbinServer.base}]`;
+        console.log(`${this.logPrefix} create job ${kbinServer.base}`);
 
-        const sketchyList = await this.getSketch(kbinServer.base);
-        console.log(
-          `${this.logPrefix} ver:${kbinServer.version} got magz: ${sketchyList.length}`
-        );
-        // return;
-
-        await Promise.all(
-          sketchyList.map(async (mag) => {
-            if (mag == "") {
-              console.log(`${this.logPrefix} BLANK`, mag);
-              return;
-            }
-
-            // if belongs to another instance
-            if (mag.indexOf("@") !== -1) {
-              const split = mag.split("@");
-              // console.log(`${this.logPrefix} split`, split);
-
-              if (split.length === 2) {
-                // must have two parts
-                dedupAdd(split[1], split[0]);
-              }
-              return;
-            }
-
-            const magazineInfo = await this.getMagazineInfo(
-              kbinServer.base,
-              mag
-            );
-
-            if (magazineInfo.type === "Group") {
-              console.log(
-                `${this.logPrefix} ver:${kbinServer.version} mag: ${mag}`
-                // magazineInfo
-              );
-
-              // save group
-              const saveGroup = {
-                title: magazineInfo.name,
-                ...magazineInfo,
-                name: mag,
-              };
-
-              await storage.kbin.upsert(kbinServer.base, saveGroup);
-            } else {
-              console.log(
-                `${this.logPrefix} ver:${kbinServer.version} mag: ${mag} is not a group`,
-                magazineInfo
-              );
-            }
-
-            return;
-          })
-        );
-
-        // await this.scanKBinInstance(kbinServer.base);
-        // try {
-        //   const pageData = await this.getPageData(kbinServer.base);
-        //   console.log(
-        //     `${this.logPrefix} Version: ${kbinServer.version} got page`,
-        //     pageData
-        //   );
-        // } catch (e) {
-        //   if (
-        //     e &&
-        //     e.data &&
-        //     e.data["@type"] &&
-        //     e.data["@type"].indexOf("hydra") !== -1
-        //   ) {
-        //     // remove trace
-        //     delete e.data.trace;
-        //     console.error(
-        //       `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
-        //       e.data
-        //     );
-        //   } else {
-        //     console.error(
-        //       `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
-        //       e.data.message
-        //     );
-        //   }
-        // }
+        await kbinQueue.createJob(kbinServer.base);
       }
-      this.logPrefix = `[CrawlKBin]`;
-
-      // scan instance
-
-      // create scan job for magazines
     } catch (e) {
       console.error(`${this.logPrefix} error scanning kbin instance`, e);
     }
+  }
+
+  // scan a single kbin instance's magazines
+  async processOneInstance(kbinBaseUrl) {
+    let sketchyList = await this.getSketch(kbinBaseUrl);
+    sketchyList = sketchyList.filter((mag) => mag != "");
+
+    const localMagazines = sketchyList.filter((mag) => {
+      if (mag.indexOf("@") !== -1) {
+        return false;
+      }
+      return true;
+    });
+
+    const nonLocalMagazines = sketchyList.filter((mag) => {
+      if (mag.indexOf("@") !== -1) {
+        return true;
+      }
+      return false;
+    });
+
+    console.log(
+      `${this.logPrefix} [${kbinBaseUrl}] local: ${localMagazines.length} others: ${nonLocalMagazines.length} `
+    );
+
+    if (localMagazines.length > 0) {
+      for (const mag of localMagazines) {
+        try {
+          // check for recent scan of this magazine
+          const lastCrawlTs = await storage.tracking.getLastCrawl(
+            "magazine",
+            `${kbinBaseUrl}:${mag}`
+          );
+          if (lastCrawlTs) {
+            const lastCrawledMsAgo = Date.now() - lastCrawlTs;
+            if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
+              throw new CrawlTooRecentError(
+                `Skipping - Crawled too recently (${
+                  lastCrawledMsAgo / 1000
+                }s ago)`
+              );
+            }
+          }
+
+          await this.getStoreMag(kbinBaseUrl, mag);
+        } catch (e) {
+          console.error(
+            `${this.logPrefix} error scanning kbin MAG`,
+            kbinBaseUrl,
+            mag,
+            e.message
+          );
+        }
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    // create kbin job to scan non-local baseurls
+    if (nonLocalMagazines.length > 0) {
+      const kbinQueue = new KBinQueue(false);
+      for (const otherName of nonLocalMagazines) {
+        // console.log(`${this.logPrefix} otherName`, otherName);
+
+        const split = otherName.split("@");
+        // console.log(`${this.logPrefix} split`, split);
+
+        if (split.length === 2) {
+          // must have two parts, we only want the second bit after the @
+          // console.log(`${this.logPrefix} adding to queue`, split[1]);
+          kbinQueue.createJob(split[1]);
+        }
+      }
+    }
+
+    return;
+  }
+
+  async getStoreMag(kbinBaseUrl, mag) {
+    const magazineInfo = await this.getMagazineInfo(kbinBaseUrl, mag);
+
+    if (magazineInfo.type === "Group") {
+      // save group
+      const saveGroup = {
+        title: magazineInfo.name,
+        ...magazineInfo,
+        name: mag,
+      };
+      await storage.kbin.upsert(kbinBaseUrl, saveGroup);
+      await storage.tracking.setLastCrawl("magazine", `${kbinBaseUrl}:${mag}`);
+
+      logging.info(`${this.logPrefix} mag: ${mag} Saved KBin Magazine`);
+    } else {
+      console.log(`${this.logPrefix} mag: ${mag} is not a group`, magazineInfo);
+    }
+
+    return;
   }
 
   // this calls the current method from here https://github.com/tgxn/lemmy-explorer/issues/100#issuecomment-1617444934
@@ -160,6 +163,7 @@ export default class CrawlKBin {
     return mappedArray;
   }
 
+  // uses non-documented api on instances to get a json list of all kbin magazine data
   async getMagazineInfo(baseUrl, magazineName) {
     console.log(
       `${this.logPrefix} getMagazineInfo`,
@@ -172,45 +176,12 @@ export default class CrawlKBin {
           "Content-Type": "application/ld+json",
           Accept: "application/ld+json",
         },
-      }
+      },
+      1
     );
 
     return magazineInfo.data;
   }
-
-  // async getPageData(kbinServerBase, pageNumber = 1) {
-  //   // logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
-
-  //   let communityList;
-  //   try {
-  //     communityList = await this.client.getUrlWithRetry(
-  //       "https://" + kbinServerBase + "/api/magazines",
-  //       {
-  //         timeout: 3000, // smaller for nodeinfo
-  //         // params: {
-  //         //   type_: "Local",
-  //         //   limit: 50,
-  //         //   page: pageNumber,
-  //         //   show_nsfw: true, // Added in 0.18.x? ish...
-  //         // },
-  //       },
-  //       0
-  //     );
-
-  //     const communities = communityList.data;
-  //     return communities;
-  //   } catch (e) {
-  //     throw new CrawlError("failed to get magazine list", e);
-  //   }
-
-  //   // // must be an array
-  //   // if (!Array.isArray(communities)) {
-  //   //   logging.trace(`${this.logPrefix}`, communityList.data);
-  //   //   throw new CrawlError(`Community list not an array: ${communities}`);
-  //   // }
-
-  //   // return communities;
-  // }
 
   // scan and check if the instance iteself is alive
   // async scanKBinInstance(kbinServerBase) {

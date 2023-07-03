@@ -17,6 +17,7 @@ export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */2 * * *";
 export const CRAWL_TIMEOUT = {
   INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
   COMMUNITY: 45 * 60 * 1000, // 45 minutes in ms
+  KBIN: 30 * 60 * 1000, // 45 minutes in ms
 };
 
 // the minimum amount of time between crawling the same instance

@@ -5,6 +5,7 @@ import cron from "node-cron";
 import InstanceQueue from "./queue/instance.js";
 import CommunityQueue from "./queue/community.js";
 import SingleCommunityQueue from "./queue/check_comm.js";
+import KBinQueue from "./queue/kbin.js";
 
 import CrawlOutput from "./output/output.js";
 
@@ -84,11 +85,10 @@ export async function start(args) {
 
           return process.exit(0);
 
-        // test scan for kbin jobs?
+        // create jobs for all known kbin instances
         case "--kbin":
           const kbinScan = new CrawlKBin();
-          await kbinScan.scanAllKBin();
-
+          await kbinScan.createJobsAllKBin();
           return process.exit(0);
 
         // crawl the fediverse uptime immediately
@@ -134,18 +134,20 @@ export async function start(args) {
     // start specific queue workers
     else if (args.length === 2 && args[0] == "-q") {
       if (args[1] == "instance") {
-        logging.info("Starting Instance Processor");
+        logging.info("Starting InstanceQueue Processor");
         new InstanceQueue(true);
         return;
       } else if (args[1] == "community") {
-        logging.info("Starting Community Processor");
+        logging.info("Starting CommunityQueue Processor");
         new CommunityQueue(true);
-
         return;
       } else if (args[1] == "single") {
         logging.info("Starting SingleCommunityQueue Processor");
         new SingleCommunityQueue(true);
-
+        return;
+      } else if (args[1] == "kbin") {
+        logging.info("Starting KBinQueue Processor");
+        new KBinQueue(true);
         return;
       }
     }
@@ -184,11 +186,22 @@ export async function start(args) {
         process.exit(0);
       });
     }
+
+    // scan one kbin
+    else if (args.length === 2 && args[0] == "-k") {
+      logging.info(`Running Singel Q Scan KBIN Crawl for ${args[1]}`);
+      const crawlKBinManual = new KBinQueue(true, "kbin_manual");
+      await crawlKBinManual.createJob(args[1], (resultData) => {
+        logging.info("KBIN Crawl Complete");
+        process.exit(0);
+      });
+    }
   } else {
     logging.info("no args, starting all crawler workers");
     new InstanceQueue(true);
     new CommunityQueue(true);
     new SingleCommunityQueue(true);
+    new KBinQueue(true);
   }
 
   // storage.close();

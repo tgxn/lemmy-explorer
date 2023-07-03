@@ -9,7 +9,6 @@ export default class KBinStore {
   async getAllWithKeys() {
     return this.storage.listRedisWithKeys(`magazine:*`);
   }
-
   async getOne(baseUrl, magazineName) {
     return this.storage.getRedis(`magazine:${baseUrl}:${magazineName}`);
   }
