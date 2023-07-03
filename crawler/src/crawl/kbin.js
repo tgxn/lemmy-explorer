@@ -32,47 +32,74 @@ export default class CrawlKBin {
       const kbinServers = await this.getKBin();
       logging.info(`KBin Instances Total: ${kbinServers.length}`);
 
+      const discoveredOthers = {};
+      function dedupAdd(base, mag) {
+        if (!discoveredOthers[base]) {
+          discoveredOthers[base] = [mag];
+        } else {
+          if (discoveredOthers[base].indexOf(mag) === -1) {
+            discoveredOthers[base].push(mag);
+          }
+        }
+      }
+
       for (const kbinServer of kbinServers) {
         this.logPrefix = `[CrawlKBin] [${kbinServer.base}]`;
 
-        const reults = await this.getSketch(kbinServer.base);
+        const sketchyList = await this.getSketch(kbinServer.base);
         console.log(
-          `${this.logPrefix} ver:${kbinServer.version} got magz: ${reults.length}`
+          `${this.logPrefix} ver:${kbinServer.version} got magz: ${sketchyList.length}`
         );
         // return;
 
-        for (const mag of reults) {
-          const magazineInfo = await this.getMagazineInfo(kbinServer.base, mag);
+        await Promise.all(
+          sketchyList.map(async (mag) => {
+            if (mag == "") {
+              console.log(`${this.logPrefix} BLANK`, mag);
+              return;
+            }
 
-          if (magazineInfo.type === "Group") {
-            console.log(
-              `${this.logPrefix} ver:${kbinServer.version} mag: ${mag}`
-              // magazineInfo
+            // if belongs to another instance
+            if (mag.indexOf("@") !== -1) {
+              const split = mag.split("@");
+              // console.log(`${this.logPrefix} split`, split);
+
+              if (split.length === 2) {
+                // must have two parts
+                dedupAdd(split[1], split[0]);
+              }
+              return;
+            }
+
+            const magazineInfo = await this.getMagazineInfo(
+              kbinServer.base,
+              mag
             );
 
-            // save group
-            const saveGroup = {
-              id: magazineInfo.id,
-              name: magazineInfo.name,
-              preferred: magazineInfo.preferredUsername,
-              summary: magazineInfo.summary,
-              sensitive: magazineInfo.sensitive,
-              postingRestrictedToMods: magazineInfo.postingRestrictedToMods,
-              published: magazineInfo.published,
-              updated: magazineInfo.updated,
-              raw: magazineInfo,
-            };
+            if (magazineInfo.type === "Group") {
+              console.log(
+                `${this.logPrefix} ver:${kbinServer.version} mag: ${mag}`
+                // magazineInfo
+              );
 
-            await storage.kbin.upsert(kbinServer.base, saveGroup);
-          } else {
-            console.log(
-              `${this.logPrefix} ver:${kbinServer.version} mag: ${mag} is not a group`,
-              magazineInfo
-            );
-          }
+              // save group
+              const saveGroup = {
+                title: magazineInfo.name,
+                ...magazineInfo,
+                name: mag,
+              };
 
-          // return;
-        }
+              await storage.kbin.upsert(kbinServer.base, saveGroup);
+            } else {
+              console.log(
+                `${this.logPrefix} ver:${kbinServer.version} mag: ${mag} is not a group`,
+                magazineInfo
+              );
+            }
+
+            return;
+          })
+        );
 
         // await this.scanKBinInstance(kbinServer.base);
         // try {
