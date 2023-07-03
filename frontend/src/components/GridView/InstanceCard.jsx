@@ -121,7 +121,7 @@ function InstanceCard({ instance, dispatch }) {
             flexShrink: 0,
           }}
         >
-          <Tooltip title="Instance Menu">
+          <Tooltip title="View Instance" placement="top">
             <IconButton
               size="md"
               variant="outlined"

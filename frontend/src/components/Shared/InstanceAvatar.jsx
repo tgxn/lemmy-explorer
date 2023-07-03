@@ -17,7 +17,7 @@ const InstanceAvatar = React.memo(function ({ instance, homeBaseUrl, dispatch })
     let style = {
       display: "flex",
       borderRadius: 8,
-      background: "rgba(0,0,0,0.15)",
+      bgcolor: "background.level1",
     };
 
     if (isHomeUrl) {

@@ -179,7 +179,8 @@ function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
   return (
     <FormControl>
       <Autocomplete
-        sx={{ width: 300, zIndex: 14000 }}
+        sx={{ zIndex: 14000 }}
+        fullWidth
         value={homeBaseUrl || ""}
         onChange={(event, newValue) => onChange(newValue)}
         selectOnFocus //to help the user clear the selected value.

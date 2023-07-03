@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
 import Box from "@mui/joy/Box";
@@ -8,9 +8,11 @@ import Menu from "@mui/joy/Menu";
 import MenuItem from "@mui/joy/MenuItem";
 import ListItem from "@mui/joy/ListItem";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
+import ListItemContent from "@mui/joy/ListItemContent";
 import ListDivider from "@mui/joy/ListDivider";
 import FormLabel from "@mui/joy/FormLabel";
 import FormHelperText from "@mui/joy/FormHelperText";
+import Typography from "@mui/joy/Typography";
 import Switch, { switchClasses } from "@mui/joy/Switch";
 
 import CottageIcon from "@mui/icons-material/Cottage";
@@ -29,6 +31,10 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
     _setIsKbinInstance(isKbin);
     dispatch(changeInstanceType(isKbin ? "kbin" : "lemmy"));
   };
+
+  useEffect(() => {
+    setIsKbinInstance(instanceType === "kbin");
+  }, [instanceType]);
 
   const handleClick = (event) => {
     if (isOpen) setOpen(false);
@@ -68,9 +74,14 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
           }}
         >
           <ListItemDecorator sx={{ p: 1, alignSelf: "center" }}>
-            <CottageIcon />
+            {homeBaseUrl ? <CottageIcon color={"success"} /> : <HomeIcon color={"neutral"} />}
           </ListItemDecorator>
-          Choose Home Instance
+          <ListItemContent>
+            <Typography>Choose Home Instance</Typography>
+            <Typography level="body2" noWrap>
+              Community links will open on this instance.
+            </Typography>
+          </ListItemContent>
         </ListItem>
 
         <ListDivider />
