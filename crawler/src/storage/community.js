@@ -50,7 +50,7 @@ export default class Community {
   async delete(baseUrl, communityName, reason = "unknown") {
     const oldRecord = await this.getOne(baseUrl, communityName);
     await this.storage.putRedis(
-      `deleted_community:${baseUrl}:${communityName}`,
+      `deleted:community:${baseUrl}:${communityName}`,
       {
         ...oldRecord,
         deletedAt: Date.now(),

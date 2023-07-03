@@ -7,10 +7,13 @@ import storage from "../storage.js";
 import { CrawlTooRecentError } from "../lib/error.js";
 import { CRAWL_TIMEOUT } from "../lib/const.js";
 
-import CommunityCrawler from "../crawl/community.js";
+export default class BaseQueue {
+  constructor(isWorker = false, queueName, jobProcessor) {
+    this.queueName = queueName;
+    this.jobProcessor = jobProcessor;
 
-export default class SingleCommunityQueue {
-  constructor(isWorker = false, queueName = "one_community") {
+    this.logPrefix = `[Queue] [${this.queueName}]`;
+
     this.queue = new Queue(queueName, {
       removeOnSuccess: true,
       removeOnFailure: true,
@@ -20,7 +23,7 @@ export default class SingleCommunityQueue {
     // report failures!
     this.queue.on("failed", (job, err) => {
       logging.error(
-        `SingleCommunityQueue Job ${job.id} failed with error ${err.message}`,
+        `${this.logPrefix} job:${job.id} failed with error: ${err.message}`,
         job,
         err
       );
@@ -29,20 +32,12 @@ export default class SingleCommunityQueue {
     if (isWorker) this.process();
   }
 
-  async createJob(baseUrl, communityName, onSuccess = null) {
-    const trimmedUrl = baseUrl.trim();
-    const job = this.queue.createJob({
-      baseUrl: trimmedUrl,
-      community: communityName,
-    });
+  async createJob(jobId, jobData, onSuccess = null) {
+    const job = this.queue.createJob(jobData);
+    logging.silly(`${this.logPrefix} createJob`, jobData);
 
-    logging.silly("one_CommunityQueue createJob", trimmedUrl);
-    await job
-      .timeout(CRAWL_TIMEOUT.COMMUNITY)
-      .setId(`${trimmedUrl}-${communityName}`) // deduplicate
-      .save();
+    await job.timeout(CRAWL_TIMEOUT.KBIN).setId(jobId).save();
     job.on("succeeded", (result) => {
-      // logging.info(`Completed communityQueue ${job.id}`, instanceBaseUrl);
       onSuccess && onSuccess(result);
     });
   }
@@ -50,17 +45,16 @@ export default class SingleCommunityQueue {
   async process() {
     this.queue.process(async (job) => {
       try {
-        const baseUrl = job.data.baseUrl;
-        const communityName = job.data.community;
+        logging.info(
+          `${this.logPrefix} [${job.data.baseUrl}] Running Processor`
+        );
 
-        const crawler = new CommunityCrawler(baseUrl);
-        const communityData = await crawler.crawlSingle(communityName);
-
-        return communityData;
+        const resultData = await this.jobProcessor(job.data);
+        return resultData;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
-            `[OneCommunity] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
+            `${this.logPrefix} [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
           );
           return true;
         }
@@ -75,13 +69,14 @@ export default class SingleCommunityQueue {
 
         // if (error instanceof CrawlError || error instanceof AxiosError) {
         await storage.tracking.upsertError(
-          "one_community",
+          this.queueName,
           job.data.baseUrl,
           errorDetail
         );
 
         logging.error(
-          `[OneCommunity] [${job.data.baseUrl}] Error: ${error.message}`
+          `${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`,
+          error
         );
         //   }
 

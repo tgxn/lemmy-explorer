@@ -7,10 +7,14 @@ import storage from "../storage.js";
 
 import AxiosClient from "../lib/axios.js";
 
+import KBinQueue from "../queue/kbin.js";
+
 export default class InstanceCrawler {
   constructor(crawlDomain) {
     this.crawlDomain = crawlDomain;
     this.logPrefix = `[Instance] [${this.crawlDomain}]`;
+
+    this.kbinQueue = new KBinQueue(false);
 
     this.client = new AxiosClient();
   }
@@ -87,6 +91,12 @@ export default class InstanceCrawler {
 
     // store all fediverse instance software for easy metrics
     await storage.fediverse.upsert(this.crawlDomain, nodeInfo.software);
+
+    // scan kbin instances that are found
+    if (nodeInfo.software.name == "kbin") {
+      console.log(`${this.crawlDomain}: found kbin instance  - creating job`);
+      await this.kbinQueue.createJob(this.crawlDomain);
+    }
 
     // only allow lemmy instances
     if (

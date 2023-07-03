@@ -34,6 +34,7 @@ export default class CrawlOutput {
     this.communityList = await storage.community.getAll();
 
     this.fediverseData = await storage.fediverse.getAll();
+    this.kbinData = await storage.kbin.getAll();
   }
 
   async isInstanceSus(instance, log = true) {
@@ -247,6 +248,8 @@ export default class CrawlOutput {
     await this.splitter.cleanData();
 
     await this.outputSusList();
+
+    const kbinMagazineCount = await this.outputKBinList();
 
     logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
     logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
@@ -586,6 +589,7 @@ export default class CrawlOutput {
     const metaData = {
       instances: storeData.length,
       communities: storeCommunityData.length,
+      magazines: kbinMagazineCount,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -626,5 +630,48 @@ export default class CrawlOutput {
     await this.splitter.storeSuspicousData(output);
 
     return output;
+  }
+
+  // generate a list of all the instances that are suspicious and the reasons
+  async outputKBinList() {
+    const output = [];
+
+    // filter old data
+    const filteredKBins = this.kbinData.filter((kbin) => {
+      return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE_MS;
+    });
+
+    logging.info(
+      "KBin Magazines filteredKBins",
+      this.kbinData.length,
+      filteredKBins.length
+    );
+
+    for (const kbin of filteredKBins) {
+      output.push({
+        actor_id: kbin.id,
+
+        title: kbin.title, // display name
+        name: kbin.name, // key username
+        preferred: kbin.preferredUsername, // username ??
+
+        baseurl: kbin.id.split("/")[2],
+
+        summary: this.stripMarkdown(kbin.summary),
+        sensitive: kbin.sensitive,
+        postingRestrictedToMods: kbin.postingRestrictedToMods,
+
+        icon: kbin.icon ? kbin.icon.url : null,
+        published: kbin.published,
+        updated: kbin.updated,
+        followers: kbin.followerCount,
+
+        time: kbin.lastCrawled,
+      });
+    }
+
+    await this.splitter.storeKBinMagazineData(output);
+
+    return filteredKBins.length;
   }
 }

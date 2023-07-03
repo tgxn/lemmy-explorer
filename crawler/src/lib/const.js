@@ -17,6 +17,7 @@ export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */2 * * *";
 export const CRAWL_TIMEOUT = {
   INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
   COMMUNITY: 45 * 60 * 1000, // 45 minutes in ms
+  KBIN: 30 * 60 * 1000, // 45 minutes in ms
 };
 
 // the minimum amount of time between crawling the same instance
@@ -26,6 +27,10 @@ export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 // consider records to be aged after this long (to re-crawl)
 const RECRAWL_AGED_HOURS = 7;
 export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
+
+// consider communities for deletion after they haven't been seen for this long
+const DELETE_AGED_HOURS = 13; // more than
+export const DELETE_AGED_MS = hoursToMs(DELETE_AGED_HOURS);
 
 // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
 const RECRAWL_FEDIVERSE_HOURS = 24 * 7;

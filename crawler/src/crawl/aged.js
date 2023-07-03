@@ -6,7 +6,7 @@ import SingleCommunityQueue from "../queue/check_comm.js";
 
 import storage from "../storage.js";
 
-import { RECRAWL_AGED_MS } from "../lib/const.js";
+import { RECRAWL_AGED_MS, DELETE_AGED_MS } from "../lib/const.js";
 
 export default class CrawlAged {
   constructor() {
@@ -56,7 +56,14 @@ export default class CrawlAged {
     const setByBase = (community) => {
       const base = community.community.actor_id.split("/")[2];
 
-      this.communityCrawler.createJob(base, community.community.name);
+      // this should only happen is the entry is older than a certain amount of time
+      // pick up really old ones
+      if (
+        community.lastCrawled &&
+        Date.now() - community.lastCrawled > DELETE_AGED_MS
+      ) {
+        this.communityCrawler.createJob(base, community.community.name);
+      }
 
       if (!byBase[base]) {
         byBase[base] = [community.community.name];

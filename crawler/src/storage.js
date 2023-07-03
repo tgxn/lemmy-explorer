@@ -6,6 +6,7 @@ import InstanceStore from "./storage/instance.js";
 import CommunityStore from "./storage/community.js";
 
 import FediverseStore from "./storage/fediverse.js";
+import KBinStore from "./storage/kbin.js";
 import UptimeStore from "./storage/uptime.js";
 
 import TrackingStore from "./storage/tracking.js";
@@ -30,6 +31,7 @@ class Storage {
     this.fediverse = new FediverseStore(this);
 
     this.tracking = new TrackingStore(this);
+    this.kbin = new KBinStore(this);
   }
 
   close() {

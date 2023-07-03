@@ -26,6 +26,8 @@ import Join from "./pages/Join";
 import Inspector from "./pages/Inspector";
 import InstanceView from "./pages/InstanceView";
 
+import KBinMagazines from "./pages/KBinMagazines";
+
 import AppStore from "./store";
 
 const queryClient = new QueryClient();
@@ -73,6 +75,8 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/communities" element={<Communities />} />
                 <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
+
+                <Route path="/kbin/magazines" element={<KBinMagazines />} />
                 {/* <Route path="*" element={<NoMatch />} /> */}
               </Routes>
             </Box>
