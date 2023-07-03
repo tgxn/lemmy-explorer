@@ -15,6 +15,9 @@ import MenuItem from "@mui/joy/MenuItem";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListDivider from "@mui/joy/ListDivider";
 
+import SvgIcon from "@mui/material/SvgIcon";
+import KBinLogo from "./KBinIcon";
+
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
@@ -178,6 +181,20 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
               </Box>
             </Box>
           )}
+        </MenuItem>
+
+        <MenuItem
+          // color={"info"}
+          onClick={() => {
+            handleClose();
+            navigate("/kbin/magazines");
+          }}
+          {...(location.pathname === "/kbin/magazines" && { selected: true, variant: "soft" })}
+        >
+          <ListItemDecorator>
+            <SvgIcon inheritViewBox={true} viewBox="0 0 8.467 8.467" component={KBinLogo} />
+          </ListItemDecorator>
+          KBin Magazines
         </MenuItem>
 
         <ListDivider />
