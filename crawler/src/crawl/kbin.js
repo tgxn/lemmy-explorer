@@ -6,6 +6,7 @@ import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
 import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import KBinQueue from "../queue/kbin.js";
+import InstanceQueue from "../queue/instance.js";
 
 import AxiosClient from "../lib/axios.js";
 
@@ -23,6 +24,8 @@ export default class CrawlKBin {
   constructor() {
     this.fediverseData = null;
     this.logPrefix = `[CrawlKBin]`;
+
+    this.instanceQueue = new InstanceQueue(false);
 
     this.client = new AxiosClient();
   }
@@ -50,6 +53,13 @@ export default class CrawlKBin {
   async processOneInstance(kbinBaseUrl) {
     let sketchyList = await this.getSketch(kbinBaseUrl);
     sketchyList = sketchyList.filter((mag) => mag != "");
+    // fix spaces
+    sketchyList = sketchyList.map((mag) => {
+      if (mag.indexOf(" ") !== -1) {
+        return mag.split(" ")[0];
+      }
+      return mag;
+    });
 
     const localMagazines = sketchyList.filter((mag) => {
       if (mag.indexOf("@") !== -1) {
@@ -103,7 +113,7 @@ export default class CrawlKBin {
 
     // create kbin job to scan non-local baseurls
     if (nonLocalMagazines.length > 0) {
-      const kbinQueue = new KBinQueue(false);
+      // const kbinQueue = new KBinQueue(false);
       for (const otherName of nonLocalMagazines) {
         // console.log(`${this.logPrefix} otherName`, otherName);
 
@@ -112,8 +122,8 @@ export default class CrawlKBin {
 
         if (split.length === 2) {
           // must have two parts, we only want the second bit after the @
-          // console.log(`${this.logPrefix} adding to queue`, split[1]);
-          kbinQueue.createJob(split[1]);
+          // add to the instance queue to validate it is a kbin instance
+          await this.instanceQueue.createJob(split[1]);
         }
       }
     }
@@ -125,9 +135,17 @@ export default class CrawlKBin {
     const magazineInfo = await this.getMagazineInfo(kbinBaseUrl, mag);
 
     if (magazineInfo.type === "Group") {
+      const followerData = await this.getFollowupData(magazineInfo.followers);
+      const followers = followerData.totalItems;
+
+      console.log(`got followers`, followers);
+
       // save group
       const saveGroup = {
+        followerCount: followers,
         title: magazineInfo.name,
+
+        // name must overide the name from the api
         ...magazineInfo,
         name: mag,
       };
@@ -183,22 +201,19 @@ export default class CrawlKBin {
     return magazineInfo.data;
   }
 
-  // scan and check if the instance iteself is alive
-  // async scanKBinInstance(kbinServerBase) {
-  //   const wellKnownUrl = "https://" + kbinServerBase + "/.well-known/nodeinfo";
-
-  //   const wellKnownInfo = await this.client.getUrlWithRetry(
-  //     wellKnownUrl,
-  //     {
-  //       timeout: 10000, // smaller for nodeinfo
-  //     },
-  //     0
-  //   );
-
-  //   // logging.info("wellKnownInfo", wellKnownInfo.data);
-
-  //   return wellKnownInfo.data;
-  // }
+  async getFollowupData(wellKnownUrl) {
+    const wellKnownInfo = await this.client.getUrlWithRetry(
+      wellKnownUrl,
+      {
+        headers: {
+          "Content-Type": "application/ld+json",
+          Accept: "application/ld+json",
+        },
+      },
+      3
+    );
+    return wellKnownInfo.data;
+  }
 
   // get list of all known kbin servers
   async getKBin() {
