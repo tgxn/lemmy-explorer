@@ -12,6 +12,7 @@ import CrawlAged from "./crawl/aged.js";
 import CrawlUptime from "./crawl/uptime.js";
 
 import Failures from "./crawl/failures.js";
+import CrawlKBin from "./crawl/kbin.js";
 
 import storage from "./storage.js";
 
@@ -80,6 +81,13 @@ export async function start(args) {
         case "--aged":
           const aged = new CrawlAged();
           await aged.createJobs();
+
+          return process.exit(0);
+
+        // test scan for kbin jobs?
+        case "--kbin":
+          const kbinScan = new CrawlKBin();
+          await kbinScan.scanAllKBin();
 
           return process.exit(0);
 
