@@ -8,6 +8,16 @@ import { RECRAWL_AGED_MS } from "../lib/const.js";
 
 import AxiosClient from "../lib/axios.js";
 
+// const util = require("util");
+// const execAsync = util.promisify(require("child_process").exec);
+
+import path from "path";
+
+import util from "util";
+import { exec } from "child_process";
+
+const execAsync = util.promisify(exec);
+
 export default class CrawlKBin {
   constructor() {
     this.fediverseData = null;
@@ -25,33 +35,72 @@ export default class CrawlKBin {
       for (const kbinServer of kbinServers) {
         this.logPrefix = `[CrawlKBin] [${kbinServer.base}]`;
 
-        // await this.scanKBinInstance(kbinServer.base);
-        try {
-          const pageData = await this.getPageData(kbinServer.base);
-          console.log(
-            `${this.logPrefix} Version: ${kbinServer.version} got page`,
-            pageData
-          );
-        } catch (e) {
-          if (
-            e &&
-            e.data &&
-            e.data["@type"] &&
-            e.data["@type"].indexOf("hydra") !== -1
-          ) {
-            // remove trace
-            delete e.data.trace;
-            console.error(
-              `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
-              e.data
+        const reults = await this.getSketch(kbinServer.base);
+        console.log(
+          `${this.logPrefix} ver:${kbinServer.version} got magz: ${reults.length}`
+        );
+        // return;
+
+        for (const mag of reults) {
+          const magazineInfo = await this.getMagazineInfo(kbinServer.base, mag);
+
+          if (magazineInfo.type === "Group") {
+            console.log(
+              `${this.logPrefix} ver:${kbinServer.version} mag: ${mag}`
+              // magazineInfo
             );
+
+            // save group
+            const saveGroup = {
+              id: magazineInfo.id,
+              name: magazineInfo.name,
+              preferred: magazineInfo.preferredUsername,
+              summary: magazineInfo.summary,
+              sensitive: magazineInfo.sensitive,
+              postingRestrictedToMods: magazineInfo.postingRestrictedToMods,
+              published: magazineInfo.published,
+              updated: magazineInfo.updated,
+              raw: magazineInfo,
+            };
+
+            await storage.kbin.upsert(kbinServer.base, saveGroup);
           } else {
-            console.error(
-              `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
-              e.data.message
+            console.log(
+              `${this.logPrefix} ver:${kbinServer.version} mag: ${mag} is not a group`,
+              magazineInfo
             );
           }
+
+          // return;
         }
+
+        // await this.scanKBinInstance(kbinServer.base);
+        // try {
+        //   const pageData = await this.getPageData(kbinServer.base);
+        //   console.log(
+        //     `${this.logPrefix} Version: ${kbinServer.version} got page`,
+        //     pageData
+        //   );
+        // } catch (e) {
+        //   if (
+        //     e &&
+        //     e.data &&
+        //     e.data["@type"] &&
+        //     e.data["@type"].indexOf("hydra") !== -1
+        //   ) {
+        //     // remove trace
+        //     delete e.data.trace;
+        //     console.error(
+        //       `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
+        //       e.data
+        //     );
+        //   } else {
+        //     console.error(
+        //       `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
+        //       e.data.message
+        //     );
+        //   }
+        // }
       }
       this.logPrefix = `[CrawlKBin]`;
 
@@ -63,57 +112,95 @@ export default class CrawlKBin {
     }
   }
 
-  // paginated scan of magazines
-  async getPageData(kbinServerBase, pageNumber = 1) {
-    // logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
+  // this calls the current method from here https://github.com/tgxn/lemmy-explorer/issues/100#issuecomment-1617444934
+  async getSketch(baseUrl) {
+    var currentPath = process.cwd();
+    const printHelloCommand = `sh ${path.join(
+      currentPath,
+      "src",
+      "crawl",
+      "sketch.sh"
+    )} ${baseUrl}`;
+    const results = await execAsync(printHelloCommand);
+    // console.log(results.stdout);
 
-    let communityList;
-    try {
-      communityList = await this.client.getUrlWithRetry(
-        "https://" + kbinServerBase + "/api/magazines",
-        {
-          timeout: 3000, // smaller for nodeinfo
-          // params: {
-          //   type_: "Local",
-          //   limit: 50,
-          //   page: pageNumber,
-          //   show_nsfw: true, // Added in 0.18.x? ish...
-          // },
-        },
-        0
-      );
+    const mappedArray = results.stdout.split("\n");
 
-      const communities = communityList.data;
-      return communities;
-    } catch (e) {
-      throw new CrawlError("failed to get magazine list", e);
+    if (!Array.isArray(mappedArray)) {
+      throw new CrawlError("failed to get sketch", e);
     }
 
-    // // must be an array
-    // if (!Array.isArray(communities)) {
-    //   logging.trace(`${this.logPrefix}`, communityList.data);
-    //   throw new CrawlError(`Community list not an array: ${communities}`);
-    // }
-
-    // return communities;
+    return mappedArray;
   }
 
-  // scan and check if the instance iteself is alive
-  async scanKBinInstance(kbinServerBase) {
-    const wellKnownUrl = "https://" + kbinServerBase + "/.well-known/nodeinfo";
-
-    const wellKnownInfo = await this.client.getUrlWithRetry(
-      wellKnownUrl,
+  async getMagazineInfo(baseUrl, magazineName) {
+    console.log(
+      `${this.logPrefix} getMagazineInfo`,
+      "https://" + baseUrl + "/m/" + magazineName
+    );
+    const magazineInfo = await this.client.getUrlWithRetry(
+      "https://" + baseUrl + "/m/" + magazineName,
       {
-        timeout: 10000, // smaller for nodeinfo
-      },
-      0
+        headers: {
+          "Content-Type": "application/ld+json",
+          Accept: "application/ld+json",
+        },
+      }
     );
 
-    // logging.info("wellKnownInfo", wellKnownInfo.data);
-
-    return wellKnownInfo.data;
+    return magazineInfo.data;
   }
+
+  // async getPageData(kbinServerBase, pageNumber = 1) {
+  //   // logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
+
+  //   let communityList;
+  //   try {
+  //     communityList = await this.client.getUrlWithRetry(
+  //       "https://" + kbinServerBase + "/api/magazines",
+  //       {
+  //         timeout: 3000, // smaller for nodeinfo
+  //         // params: {
+  //         //   type_: "Local",
+  //         //   limit: 50,
+  //         //   page: pageNumber,
+  //         //   show_nsfw: true, // Added in 0.18.x? ish...
+  //         // },
+  //       },
+  //       0
+  //     );
+
+  //     const communities = communityList.data;
+  //     return communities;
+  //   } catch (e) {
+  //     throw new CrawlError("failed to get magazine list", e);
+  //   }
+
+  //   // // must be an array
+  //   // if (!Array.isArray(communities)) {
+  //   //   logging.trace(`${this.logPrefix}`, communityList.data);
+  //   //   throw new CrawlError(`Community list not an array: ${communities}`);
+  //   // }
+
+  //   // return communities;
+  // }
+
+  // scan and check if the instance iteself is alive
+  // async scanKBinInstance(kbinServerBase) {
+  //   const wellKnownUrl = "https://" + kbinServerBase + "/.well-known/nodeinfo";
+
+  //   const wellKnownInfo = await this.client.getUrlWithRetry(
+  //     wellKnownUrl,
+  //     {
+  //       timeout: 10000, // smaller for nodeinfo
+  //     },
+  //     0
+  //   );
+
+  //   // logging.info("wellKnownInfo", wellKnownInfo.data);
+
+  //   return wellKnownInfo.data;
+  // }
 
   // get list of all known kbin servers
   async getKBin() {
