@@ -1,7 +1,7 @@
 ---
 name: Something's Broken
 about: Report an issue
-title: 'Bug: '
+title: 'Bug:'
 labels: bug
 assignees: ''
 
@@ -21,4 +21,4 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+Add any other context or screenshots about the issue here.
