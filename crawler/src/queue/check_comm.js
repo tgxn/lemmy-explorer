@@ -4,8 +4,8 @@ import Queue from "bee-queue";
 
 import storage from "../storage.js";
 
-import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
-import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
+import { CrawlTooRecentError } from "../lib/error.js";
+import { CRAWL_TIMEOUT } from "../lib/const.js";
 
 import CommunityCrawler from "../crawl/community.js";
 

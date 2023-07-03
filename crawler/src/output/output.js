@@ -635,9 +635,18 @@ export default class CrawlOutput {
   async outputKBinList() {
     const output = [];
 
-    logging.info("KBin Magazines", this.kbinData.length);
+    // filter old data
+    const filteredKBins = this.kbinData.filter((kbin) => {
+      return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE_MS;
+    });
 
-    for (const kbin of this.kbinData) {
+    logging.info(
+      "KBin Magazines filteredKBins",
+      this.kbinData.length,
+      filteredKBins.length
+    );
+
+    for (const kbin of filteredKBins) {
       output.push({
         actor_id: kbin.actor_id,
         title: kbin.title,

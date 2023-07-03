@@ -3,7 +3,7 @@ import logging from "../lib/logging.js";
 import storage from "../storage.js";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
-import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
+import { MIN_RECRAWL_MS } from "../lib/const.js";
 
 import KBinQueue from "../queue/kbin.js";
 import InstanceQueue from "../queue/instance.js";
@@ -142,6 +142,7 @@ export default class CrawlKBin {
 
       // save group
       const saveGroup = {
+        baseurl: kbinBaseUrl,
         followerCount: followers,
         title: magazineInfo.name,
 

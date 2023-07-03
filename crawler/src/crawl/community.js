@@ -97,7 +97,7 @@ export default class CommunityCrawler {
       }
     } catch (e) {
       // dont retry if the community doesnt exist
-      if (e.data.error == "couldnt_find_community") {
+      if (e.data && e.data.error == "couldnt_find_community") {
         logging.warn("DELETE community error", e.data.error);
 
         await storage.community.delete(
@@ -106,9 +106,7 @@ export default class CommunityCrawler {
           e.data.error
         );
         return;
-      }
-
-      if (e.data) {
+      } else if (e.data) {
         logging.warn("OTHER community error");
 
         // only delete unless explicit
@@ -154,8 +152,8 @@ export default class CommunityCrawler {
         `${this.logPrefix} Ended Success (${resultPromises.length} results)`
       );
     } catch (e) {
-      logging.trace(`${this.logPrefix} Ended: Error`, e);
-      throw new CrawlError(e);
+      logging.error(`${this.logPrefix} Ended: Error`, e);
+      throw new CrawlError("Ended: Error", e);
     }
   }
 

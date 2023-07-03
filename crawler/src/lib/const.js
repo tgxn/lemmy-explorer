@@ -28,6 +28,10 @@ export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
 const RECRAWL_AGED_HOURS = 7;
 export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
 
+// consider communities for deletion after they haven't been seen for this long
+const DELETE_AGED_HOURS = 13; // more than
+export const DELETE_AGED_MS = hoursToMs(DELETE_AGED_HOURS);
+
 // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
 const RECRAWL_FEDIVERSE_HOURS = 24 * 7;
 export const RECRAWL_FEDIVERSE_MS = hoursToMs(RECRAWL_FEDIVERSE_HOURS);
