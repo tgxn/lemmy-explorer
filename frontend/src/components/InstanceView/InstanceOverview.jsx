@@ -21,20 +21,41 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import { SimpleNumberFormat, BannerImage } from "../Shared/Display";
 import { StringStat, NumberStat } from "../Shared/StatGridCards";
 
-export default function InstanceOverview({ instance, userSeries }) {
-  const userWeekChange = React.useMemo(() => {
-    const sortedUsers = userSeries.sort((a, b) => a.time - b.time);
+function getChangeOverTime(attributeArray, oldestTimeTs) {
+  // sort oldest first
+  const sortedArray = attributeArray.sort((a, b) => a.time - b.time);
 
-    const latestValue = sortedUsers[sortedUsers.length - 1].value;
+  // get newest item
+  const latestValue = sortedArray[sortedArray.length - 1].value;
 
-    const tsWeekAgo = moment().subtract(7, "days").unix();
+  // filter results before cutoff
+  let filteredResults = sortedArray.filter((u) => u.time >= oldestTimeTs);
 
-    let users = sortedUsers.filter((u) => u.time >= tsWeekAgo);
+  // get oldest item within cutoff
+  const maxOneWeekValue = filteredResults[0];
 
-    const maxOneWeekValue = users[0];
+  // return difference
+  return latestValue - maxOneWeekValue.value;
+}
 
-    return latestValue - maxOneWeekValue.value;
-  }, [userSeries]);
+function plusMinusIndicator(value) {
+  return value > 0 ? "+" : value < 0 ? "-" : "";
+}
+
+export default function InstanceOverview({ metricsData }) {
+  const { instance, users, comments, posts } = metricsData;
+
+  const usersWeekChange = React.useMemo(() => {
+    return getChangeOverTime(users, moment().subtract(1, "week").unix());
+  }, [users]);
+
+  const commentsWeekChange = React.useMemo(() => {
+    return getChangeOverTime(comments, moment().subtract(1, "week").unix());
+  }, [comments]);
+
+  const postsWeekChange = React.useMemo(() => {
+    return getChangeOverTime(posts, moment().subtract(1, "week").unix());
+  }, [posts]);
 
   // generate uptime card
   let uptimeCard = <StringStat color="danger" icon={<ThumbDownIcon />} title="Uptime" value={"Not Found"} />;
@@ -63,17 +84,23 @@ export default function InstanceOverview({ instance, userSeries }) {
             icon={<PersonIcon />}
             title="Users"
             value={instance.usage.users.total}
+            description={
+              <>
+                Weekly Change: {plusMinusIndicator(usersWeekChange)}
+                <SimpleNumberFormat value={usersWeekChange} />
+              </>
+            }
           />
         </Grid>
-
+        {/* 
         <Grid xs={12} md={6}>
           <NumberStat
             color="success"
             icon={<PersonAddAltIcon />}
             title="User Growth Week"
-            value={userWeekChange}
+            value={usersWeekChange}
           />
-        </Grid>
+        </Grid> */}
 
         <Grid xs={12} md={6}>
           <NumberStat
@@ -81,6 +108,12 @@ export default function InstanceOverview({ instance, userSeries }) {
             icon={<MessageIcon />}
             title="Posts"
             value={instance.usage.localPosts}
+            description={
+              <>
+                Weekly Change: {plusMinusIndicator(postsWeekChange)}
+                <SimpleNumberFormat value={postsWeekChange} />
+              </>
+            }
           />
         </Grid>
 
@@ -90,6 +123,12 @@ export default function InstanceOverview({ instance, userSeries }) {
             icon={<ForumIcon />}
             title="Comments"
             value={instance.usage.localComments}
+            description={
+              <>
+                Weekly Change: {plusMinusIndicator(commentsWeekChange)}
+                <SimpleNumberFormat value={commentsWeekChange} />
+              </>
+            }
           />
         </Grid>
 

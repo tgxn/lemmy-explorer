@@ -211,6 +211,14 @@ export default class CrawlOutput {
       instance.baseurl,
       "users"
     );
+    const postsSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "posts"
+    );
+    const commentsSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "comments"
+    );
     const versionSeries = await storage.instance.getAttributeWithScores(
       instance.baseurl,
       "version"
@@ -223,7 +231,18 @@ export default class CrawlOutput {
         value: item.value,
       };
     });
-
+    const posts = postsSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+    const comments = commentsSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
     const versions = versionSeries.map((item) => {
       return {
         time: item.score,
@@ -237,6 +256,8 @@ export default class CrawlOutput {
         (community) => community.baseurl === instance.baseurl
       ).length,
       users,
+      posts,
+      comments,
       versions,
     });
   }
