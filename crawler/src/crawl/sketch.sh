@@ -11,7 +11,7 @@ fi
 
 function parse() {
     PAGE=$1
-    curl --fail -s https://${INSTANCE}/magazines?p=$PAGE | grep form | grep '/subscribe' | sed 's/.*="\/m\/\(.*\)\/subscribe"/\1/g'
+    curl -m 10 --fail -s https://${INSTANCE}/magazines?p=$PAGE | grep form | grep '/subscribe' | sed 's/.*="\/m\/\(.*\)\/subscribe"/\1/g'
     return ${PIPESTATUS[0]}
 }
 
