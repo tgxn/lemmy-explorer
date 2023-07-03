@@ -20,7 +20,7 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-export default function KBinCard({ magazine }) {
+export default React.memo(function KBinCard({ magazine }) {
   return (
     <Card
       variant="outlined"
@@ -208,4 +208,4 @@ export default function KBinCard({ magazine }) {
     </Card>
     // </Grid>
   );
-}
+});

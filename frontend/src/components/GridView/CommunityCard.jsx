@@ -20,7 +20,7 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-export default function CommunityCard({ community }) {
+export default React.memo(function CommunityCard({ community }) {
   return (
     <Card
       variant="outlined"
@@ -211,4 +211,4 @@ export default function CommunityCard({ community }) {
     </Card>
     // </Grid>
   );
-}
+});

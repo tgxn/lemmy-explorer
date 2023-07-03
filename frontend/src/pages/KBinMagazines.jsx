@@ -213,7 +213,7 @@ function KBinMagazines({}) {
           p: 0,
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
           flexWrap: "wrap",
           gap: 1,
         }}
@@ -223,7 +223,7 @@ function KBinMagazines({}) {
           placeholder="Filter Magazines"
           value={filterText}
           sx={{
-            width: { xs: "100%", sm: 240 },
+            width: { xs: "100%", sm: 285 },
             flexShrink: 0,
           }}
           onChange={(event) => setFilterText(event.target.value)}

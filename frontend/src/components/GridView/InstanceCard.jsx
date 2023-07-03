@@ -286,4 +286,4 @@ function InstanceCard({ instance, dispatch }) {
   );
 }
 
-export default connect()(InstanceCard);
+export default React.memo(connect()(InstanceCard));
