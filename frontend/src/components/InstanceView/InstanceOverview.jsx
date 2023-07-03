@@ -1,6 +1,7 @@
 import React from "react";
 
 import moment from "moment";
+import Moment from "react-moment";
 
 import Alert from "@mui/joy/Alert";
 import Typography from "@mui/joy/Typography";
@@ -14,9 +15,11 @@ import ForumIcon from "@mui/icons-material/Forum";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import InfoIcon from "@mui/icons-material/Info";
+import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 
 import { SimpleNumberFormat, BannerImage } from "../Shared/Display";
-import { NumberStat } from "../Shared/StatGridCards";
+import { StringStat, NumberStat } from "../Shared/StatGridCards";
 
 export default function InstanceOverview({ instance, userSeries }) {
   const userWeekChange = React.useMemo(() => {
@@ -33,135 +36,80 @@ export default function InstanceOverview({ instance, userSeries }) {
     return latestValue - maxOneWeekValue.value;
   }, [userSeries]);
 
+  // generate uptime card
+  let uptimeCard = <StringStat color="danger" icon={<ThumbDownIcon />} title="Uptime" value={"Not Found"} />;
+  if (instance.uptime?.uptime_alltime) {
+    uptimeCard = (
+      <StringStat
+        color="success"
+        icon={<TrendingUpIcon />}
+        title="Uptime"
+        value={instance.uptime?.uptime_alltime + "%"}
+        description={
+          <>
+            First seen <Moment fromNow>{instance.uptime?.date_created}</Moment>
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <Box>
-      {/* <Alert
-        sx={{ alignItems: "flex-start" }}
-        startDecorator={<InfoIcon sx={{ mt: "2px", mx: "4px" }} fontSize="xl2" />}
-        variant="soft"
-        color={"primary"}
-      >
-        <Typography fontSize="sm" sx={{ opacity: 0.8 }}>
-          Current Version: {instance.version}
-        </Typography>
-      </Alert>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <PersonIcon />
-        Users <SimpleNumberFormat value={instance.usage.users.total} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <PersonIcon />
-        Week Change: <SimpleNumberFormat value={userWeekChange} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <MessageIcon />
-        Posts: <SimpleNumberFormat value={instance.usage.localPosts} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <ForumIcon />
-        Comments: <SimpleNumberFormat value={instance.usage.localComments} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        {instance.uptime?.uptime_alltime && (
-          <>
-            <TrendingUpIcon />
-            Uptime: {instance.uptime?.uptime_alltime}%
-          </>
-        )}
-
-        {!instance.uptime?.uptime_alltime && (
-          <>
-            Uptime: <ThumbDownIcon />
-          </>
-        )}
-      </Typography> */}
-
       <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
         <Grid xs={12} md={6}>
           <NumberStat
             color="primary"
+            icon={<PersonIcon />}
             title="Users"
             value={instance.usage.users.total}
-            // description="Total count of all instances scanned in the last 24 hours."
           />
         </Grid>
+
         <Grid xs={12} md={6}>
           <NumberStat
-            color="primary"
+            color="success"
+            icon={<PersonAddAltIcon />}
             title="User Growth Week"
             value={userWeekChange}
-            // description="Total count of all instances scanned in the last 24 hours."
           />
         </Grid>
-      </Grid>
 
-      <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
         <Grid xs={12} md={6}>
           <NumberStat
             color="primary"
+            icon={<MessageIcon />}
+            title="Posts"
+            value={instance.usage.localPosts}
+          />
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          <NumberStat
+            color="primary"
+            icon={<ForumIcon />}
+            title="Comments"
+            value={instance.usage.localComments}
+          />
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          {uptimeCard}
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          <StringStat
+            icon={
+              <SystemUpdateAltIcon
+                sx={{
+                  //rotate 180 degrees
+                  transform: "rotate(180deg)",
+                }}
+              />
+            }
+            color="info"
             title="Current Version"
             value={instance.version}
-            description="Total count of all instances scanned in the last 24 hours."
           />
         </Grid>
       </Grid>
