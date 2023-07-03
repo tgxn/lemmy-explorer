@@ -34,6 +34,7 @@ export default class CrawlOutput {
     this.communityList = await storage.community.getAll();
 
     this.fediverseData = await storage.fediverse.getAll();
+    this.kbinData = await storage.kbin.getAll();
   }
 
   async isInstanceSus(instance, log = true) {
@@ -247,6 +248,8 @@ export default class CrawlOutput {
     await this.splitter.cleanData();
 
     await this.outputSusList();
+
+    await this.outputKBinList();
 
     logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
     logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
@@ -624,6 +627,37 @@ export default class CrawlOutput {
     }
 
     await this.splitter.storeSuspicousData(output);
+
+    return output;
+  }
+
+  // generate a list of all the instances that are suspicious and the reasons
+  async outputKBinList() {
+    const output = [];
+
+    logging.info("KBin Magazines", this.kbinData.length);
+
+    for (const kbin of this.kbinData) {
+      output.push({
+        actor_id: kbin.actor_id,
+        title: kbin.title,
+        name: kbin.name,
+        baseurl: kbin.baseurl,
+        preferred: kbin.preferredUsername,
+        summary: kbin.summary,
+        sensitive: kbin.sensitive,
+        postingRestrictedToMods: kbin.postingRestrictedToMods,
+
+        // users: instance.nodeData.usage.users.total,
+        // name: instance.siteData.site.name,
+        // base: instance.siteData.site.actor_id.split("/")[2],
+        // actor_id: instance.siteData.site.actor_id,
+        // metrics: instanceSus.metrics,
+        // reasons: susReason,
+      });
+    }
+
+    await this.splitter.storeKBinMagazineData(output);
 
     return output;
   }

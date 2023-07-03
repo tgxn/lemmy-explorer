@@ -112,6 +112,12 @@ export async function start(args) {
             uptime.crawl();
           });
 
+          // shares AGED_CRON_EXPRESSION since it should happen at the same time (hourly check if they need a re-scan)
+          const kbinTask = cron.schedule(AGED_CRON_EXPRESSION, async () => {
+            const kbinScan = new CrawlKBin();
+            await kbinScan.createJobsAllKBin();
+          });
+
           if (AUTO_UPLOAD_S3) {
             console.log("Creating S3 Publish Cron Task", PUBLISH_S3_CRON);
             const outputTask = cron.schedule(

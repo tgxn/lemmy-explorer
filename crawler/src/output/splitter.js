@@ -176,6 +176,13 @@ export default class Splitter {
     );
   }
 
+  async storeKBinMagazineData(data) {
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/kbin.magazines.json`,
+      JSON.stringify(data)
+    );
+  }
+
   async cleanData() {
     await rm(this.publicDataFolder, { recursive: true, force: true });
     await mkdir(this.communityPath, { recursive: true });
