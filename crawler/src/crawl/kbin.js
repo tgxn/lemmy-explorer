@@ -28,18 +28,27 @@ export default class CrawlKBin {
         // await this.scanKBinInstance(kbinServer.base);
         try {
           const pageData = await this.getPageData(kbinServer.base);
-          console.log(`${this.logPrefix} got page`, pageData);
+          console.log(
+            `${this.logPrefix} Version: ${kbinServer.version} got page`,
+            pageData
+          );
         } catch (e) {
-          if (e.data["@type"]) {
+          if (
+            e &&
+            e.data &&
+            e.data["@type"] &&
+            e.data["@type"].indexOf("hydra") !== -1
+          ) {
+            // remove trace
+            delete e.data.trace;
             console.error(
-              `${this.logPrefix} error getting page`,
-              e.data["@type"],
-              e.data["hydra:description"]
+              `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
+              e.data
             );
           } else {
             console.error(
-              `${this.logPrefix} error getting page`,
-              e.data.status
+              `${this.logPrefix} Version: ${kbinServer.version} error getting page /api/magazines`,
+              e.data.message
             );
           }
         }
@@ -50,7 +59,7 @@ export default class CrawlKBin {
 
       // create scan job for magazines
     } catch (e) {
-      console.error(`${this.logPrefix} error scanning kbin instance`, e.data);
+      console.error(`${this.logPrefix} error scanning kbin instance`, e);
     }
   }
 
@@ -63,6 +72,7 @@ export default class CrawlKBin {
       communityList = await this.client.getUrlWithRetry(
         "https://" + kbinServerBase + "/api/magazines",
         {
+          timeout: 3000, // smaller for nodeinfo
           // params: {
           //   type_: "Local",
           //   limit: 50,
@@ -72,11 +82,12 @@ export default class CrawlKBin {
         },
         0
       );
-    } catch (e) {
-      throw new CrawlError("failed to get magazine list", e.data);
-    }
 
-    const communities = communityList.data;
+      const communities = communityList.data;
+      return communities;
+    } catch (e) {
+      throw new CrawlError("failed to get magazine list", e);
+    }
 
     // // must be an array
     // if (!Array.isArray(communities)) {
@@ -84,7 +95,7 @@ export default class CrawlKBin {
     //   throw new CrawlError(`Community list not an array: ${communities}`);
     // }
 
-    return communities;
+    // return communities;
   }
 
   // scan and check if the instance iteself is alive
