@@ -159,6 +159,7 @@ export default class InstanceQueue {
           if (
             knownFediverseServer.name !== "lemmy" &&
             knownFediverseServer.name !== "lemmybb" &&
+            knownFediverseServer.name !== "kbin" &&
             knownFediverseServer.time &&
             Date.now() - knownFediverseServer.time < RECRAWL_FEDIVERSE_MS // re-scan fedi servers to check their status
           ) {

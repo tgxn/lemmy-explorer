@@ -53,7 +53,8 @@ export default class AxiosClient {
       }
 
       throw new CrawlError(
-        `Failed to get url ${url} after ${maxRetries} attempts: ${e.message}`
+        `Failed to get url ${url} after ${maxRetries} attempts: ${e.message}`,
+        e.response
       );
     }
   }

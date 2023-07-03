@@ -1,6 +1,9 @@
 import { open } from "node:fs/promises";
+import path from "node:path";
 
 import { rm, mkdir } from "node:fs/promises";
+
+// love you all
 
 // split communities.json and instances.json into smaller files for easier loading
 
@@ -54,62 +57,18 @@ export default class Splitter {
   constructor() {
     this.publicDataFolder = `../frontend/public/data`;
 
-    this.communityPath = `${this.publicDataFolder}/community`;
-    this.instancePath = `${this.publicDataFolder}/instance`;
     this.metricsPath = `${this.publicDataFolder}/metrics`;
 
     this.communitiesPerFile = 500;
     this.instancesPerFile = 200;
-  }
-
-  async storeCommunityData(communityArray) {
-    // everything, big boi
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/community.full.json`,
-      JSON.stringify(communityArray)
-    );
-
-    // mapped versions and the metadata
-    let fileCount = 0;
-    for (let i = 0; i < communityArray.length; i += this.communitiesPerFile) {
-      let chunk = communityArray.slice(i, i + this.communitiesPerFile);
-
-      await this.writeJsonFile(
-        `${this.communityPath}/${fileCount}.json`,
-        JSON.stringify(chunk)
-      );
-      fileCount++;
-    }
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/community.json`,
-      JSON.stringify({
-        count: fileCount,
-      })
-    );
+    this.magazinesPerFile = 500;
   }
 
   async storeInstanceData(instanceArray) {
-    // everything, big boi
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/instance.full.json`,
-      JSON.stringify(instanceArray)
-    );
-
-    // mapped versions and the metadata
-    let fileCount = 0;
-    for (let i = 0; i < instanceArray.length; i += this.instancesPerFile) {
-      let chunk = instanceArray.slice(i, i + this.instancesPerFile);
-      await this.writeJsonFile(
-        `${this.instancePath}/${fileCount}.json`,
-        JSON.stringify(chunk)
-      );
-      fileCount++;
-    }
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/instance.json`,
-      JSON.stringify({
-        count: fileCount,
-      })
+    await this.storeChunkedData(
+      "instance",
+      this.instancesPerFile,
+      instanceArray
     );
 
     // minified version, just names and base urls
@@ -123,6 +82,44 @@ export default class Splitter {
     await this.writeJsonFile(
       `${this.publicDataFolder}/instance.min.json`,
       JSON.stringify(minInstanceArray)
+    );
+  }
+
+  async storeCommunityData(communityArray) {
+    await this.storeChunkedData(
+      "community",
+      this.communitiesPerFile,
+      communityArray
+    );
+  }
+
+  async storeChunkedData(chunkName, perFile, communityArray) {
+    // everything, big boi
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/${chunkName}.full.json`,
+      JSON.stringify(communityArray)
+    );
+
+    // mapped versions and the metadata
+    await mkdir(path.join(this.publicDataFolder, chunkName), {
+      recursive: true,
+    });
+    let fileCount = 0;
+    for (let i = 0; i < communityArray.length; i += perFile) {
+      let chunk = communityArray.slice(i, i + perFile);
+
+      await this.writeJsonFile(
+        `${this.publicDataFolder}/${chunkName}/${fileCount}.json`,
+        JSON.stringify(chunk)
+      );
+      fileCount++;
+    }
+
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/${chunkName}.json`,
+      JSON.stringify({
+        count: fileCount,
+      })
     );
   }
 
@@ -142,6 +139,9 @@ export default class Splitter {
   }
 
   async storeInstanceMetricsData(instanceBaseUrl, data) {
+    await mkdir(this.metricsPath, {
+      recursive: true,
+    });
     await this.writeJsonFile(
       `${this.metricsPath}/${instanceBaseUrl}.meta.json`,
       JSON.stringify(data)
@@ -176,11 +176,13 @@ export default class Splitter {
     );
   }
 
+  async storeKBinMagazineData(data) {
+    await this.storeChunkedData("magazines", this.magazinesPerFile, data);
+  }
+
   async cleanData() {
     await rm(this.publicDataFolder, { recursive: true, force: true });
-    await mkdir(this.communityPath, { recursive: true });
-    await mkdir(this.instancePath, { recursive: true });
-    await mkdir(this.metricsPath, { recursive: true });
+    await mkdir(this.publicDataFolder, { recursive: true });
   }
 
   async writeJsonFile(filename, data) {

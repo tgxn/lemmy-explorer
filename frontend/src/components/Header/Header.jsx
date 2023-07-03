@@ -12,6 +12,45 @@ import Typography from "@mui/joy/Typography";
 import { SimpleNumberFormat } from "../Shared/Display";
 import HeaderSideMenu from "./HeaderSideMenu";
 
+// export default function MobileMenu() {
+//   const buttonRef = React.useRef(null);
+//   const [open, setOpen] = React.useState(false);
+
+//   const handleClose = () => {
+//     setOpen(false);
+//   };
+
+//   return (
+//     <div>
+//       <Button
+//         ref={buttonRef}
+//         id="basic-demo-button"
+//         aria-controls={'basic-menu'}
+//         aria-haspopup="true"
+//         aria-expanded={open ? 'true' : undefined}
+//         variant="outlined"
+//         color="neutral"
+//         onClick={() => {
+//           setOpen(!open);
+//         }}
+//       >
+//         Dashboard
+//       </Button>
+//       <Menu
+//         id="basic-menu"
+//         anchorEl={buttonRef.current}
+//         open={open}
+//         onClose={handleClose}
+//         aria-labelledby="basic-demo-button"
+//       >
+//         <MenuItem onClick={handleClose}>Profile</MenuItem>
+//         <MenuItem onClick={handleClose}>My account</MenuItem>
+//         <MenuItem onClick={handleClose}>Logout</MenuItem>
+//       </Menu>
+//     </div>
+//   );
+// }
+
 export default function Header() {
   const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "meta");
 
@@ -27,6 +66,8 @@ export default function Header() {
       setIndex(0);
     } else if (location.pathname == "/communities") {
       setIndex(1);
+    } else if (location.pathname == "/kbin/magazines") {
+      setIndex(2);
     } else {
       setIndex(null);
     }
@@ -79,10 +120,17 @@ export default function Header() {
           if (value === 1) {
             navigate("/communities");
           }
+          if (value === 2) {
+            navigate("/kbin/magazines");
+          }
         }}
         sx={{ borderRadius: "lg" }}
       >
         <TabList variant="soft">
+          {/* <Box>
+            <MobileMenu />
+          </Box> */}
+
           <Badge
             badgeContent={isSuccess && <SimpleNumberFormat value={metaData.instances} />}
             max={999}
@@ -111,6 +159,21 @@ export default function Header() {
               Communities
             </Tab>
           </Badge>
+
+          {/* <Badge
+            badgeContent={isSuccess && <SimpleNumberFormat value={metaData.magazines} />}
+            max={9999}
+            variant={"solid"}
+            color="warning"
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <Tab variant={index === 2 ? "solid" : "soft"} color={index === 2 ? "warning" : "neutral"}>
+              Magazines
+            </Tab>
+          </Badge> */}
         </TabList>
       </Tabs>
       <Box sx={{ flexGrow: 1 }} />

@@ -5,6 +5,7 @@ import cron from "node-cron";
 import InstanceQueue from "./queue/instance.js";
 import CommunityQueue from "./queue/community.js";
 import SingleCommunityQueue from "./queue/check_comm.js";
+import KBinQueue from "./queue/kbin.js";
 
 import CrawlOutput from "./output/output.js";
 
@@ -12,6 +13,7 @@ import CrawlAged from "./crawl/aged.js";
 import CrawlUptime from "./crawl/uptime.js";
 
 import Failures from "./crawl/failures.js";
+import CrawlKBin from "./crawl/kbin.js";
 
 import storage from "./storage.js";
 
@@ -64,15 +66,19 @@ export async function start(args) {
         case "--health":
           const instanceCrawl = new InstanceQueue(false);
           const counts = await instanceCrawl.queue.checkHealth();
-          logging.info("Instance Worker Health:", counts);
+          logging.info("InstanceQueue:", counts);
 
           const communityCrawl = new CommunityQueue(false);
           const commCounts = await communityCrawl.queue.checkHealth();
-          logging.info("Community Worker Health:", commCounts);
+          logging.info("CommunityQueue:", commCounts);
 
           const singleCommCrawl = new SingleCommunityQueue(false);
           const commSingleCounts = await singleCommCrawl.queue.checkHealth();
-          logging.info("Single Community Worker Health:", commSingleCounts);
+          logging.info("SingleCommunityQueue:", commSingleCounts);
+
+          const kbinQHealthCrawl = new KBinQueue(false);
+          const kbinQHeCounts = await kbinQHealthCrawl.queue.checkHealth();
+          logging.info("KBinQueue:", kbinQHeCounts);
 
           return process.exit(0);
 
@@ -81,6 +87,12 @@ export async function start(args) {
           const aged = new CrawlAged();
           await aged.createJobs();
 
+          return process.exit(0);
+
+        // create jobs for all known kbin instances
+        case "--kbin":
+          const kbinScan = new CrawlKBin();
+          await kbinScan.createJobsAllKBin();
           return process.exit(0);
 
         // crawl the fediverse uptime immediately
@@ -102,6 +114,12 @@ export async function start(args) {
           const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, async () => {
             const uptime = new CrawlUptime();
             uptime.crawl();
+          });
+
+          // shares AGED_CRON_EXPRESSION since it should happen at the same time (hourly check if they need a re-scan)
+          const kbinTask = cron.schedule(AGED_CRON_EXPRESSION, async () => {
+            const kbinScan = new CrawlKBin();
+            await kbinScan.createJobsAllKBin();
           });
 
           if (AUTO_UPLOAD_S3) {
@@ -126,18 +144,20 @@ export async function start(args) {
     // start specific queue workers
     else if (args.length === 2 && args[0] == "-q") {
       if (args[1] == "instance") {
-        logging.info("Starting Instance Processor");
+        logging.info("Starting InstanceQueue Processor");
         new InstanceQueue(true);
         return;
       } else if (args[1] == "community") {
-        logging.info("Starting Community Processor");
+        logging.info("Starting CommunityQueue Processor");
         new CommunityQueue(true);
-
         return;
       } else if (args[1] == "single") {
         logging.info("Starting SingleCommunityQueue Processor");
         new SingleCommunityQueue(true);
-
+        return;
+      } else if (args[1] == "kbin") {
+        logging.info("Starting KBinQueue Processor");
+        new KBinQueue(true);
         return;
       }
     }
@@ -176,11 +196,22 @@ export async function start(args) {
         process.exit(0);
       });
     }
+
+    // scan one kbin
+    else if (args.length === 2 && args[0] == "-k") {
+      logging.info(`Running Singel Q Scan KBIN Crawl for ${args[1]}`);
+      const crawlKBinManual = new KBinQueue(true, "kbin_manual");
+      await crawlKBinManual.createJob(args[1], (resultData) => {
+        logging.info("KBIN Crawl Complete");
+        process.exit(0);
+      });
+    }
   } else {
     logging.info("no args, starting all crawler workers");
     new InstanceQueue(true);
     new CommunityQueue(true);
     new SingleCommunityQueue(true);
+    new KBinQueue(true);
   }
 
   // storage.close();
