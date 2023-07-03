@@ -648,12 +648,12 @@ export default class CrawlOutput {
         sensitive: kbin.sensitive,
         postingRestrictedToMods: kbin.postingRestrictedToMods,
 
-        // users: instance.nodeData.usage.users.total,
-        // name: instance.siteData.site.name,
-        // base: instance.siteData.site.actor_id.split("/")[2],
-        // actor_id: instance.siteData.site.actor_id,
-        // metrics: instanceSus.metrics,
-        // reasons: susReason,
+        icon: kbin.icon ? kbin.icon.url : null,
+        published: kbin.published,
+        updated: kbin.updated,
+        followers: kbin.followerCount,
+
+        time: kbin.lastCrawled,
       });
     }
 
