@@ -3,24 +3,32 @@ import { connect } from "react-redux";
 
 import Moment from "react-moment";
 
+import { useNavigate } from "react-router-dom";
+
 import Avatar from "@mui/joy/Avatar";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
+import CardCover from "@mui/joy/CardCover";
 import CardOverflow from "@mui/joy/CardOverflow";
 import Box from "@mui/joy/Box";
 import Tooltip from "@mui/joy/Tooltip";
 import Link from "@mui/joy/Link";
 import IconButton from "@mui/joy/IconButton";
+import ButtonGroup from "@mui/joy/ButtonGroup";
+import Badge from "@mui/joy/Badge";
+import Menu from "@mui/joy/Menu";
+import MenuItem from "@mui/joy/MenuItem";
 
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
-import HomeIcon from "@mui/icons-material/Home";
+import InfoIcon from "@mui/icons-material/Info";
 
 import { TinyNumber, BannerImage } from "../Shared/Display";
 
@@ -28,55 +36,62 @@ import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
-function InstanceCard({ instance, homeBaseUrl, dispatch }) {
+import { InstanceAvatar } from "../Shared/Avatar";
+
+function InstanceCard({ instance, dispatch }) {
+  const navigate = useNavigate();
+
   return (
     <Card
       variant="outlined"
       sx={{
-        pt: 1,
         height: "350px",
-        "& .MuiIconButton-root": {
-          mt: 1,
-        },
+        gap: 0,
       }}
     >
-      {/* Instance Name */}
-      <CardContent
+      {/* Header */}
+      <CardOverflow
+        variant="outlined"
         orientation="horizontal"
-        sx={{ columnGap: 0, flexGrow: 0, justifyContent: "space-between" }}
+        sx={{
+          py: 1.75,
+          px: 2,
+          outline: 0,
+          border: 0,
+          columnGap: 0,
+          flexGrow: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         <Box
           sx={{
             flexShrink: 0,
-            pt: 1.5,
-            px: 0.25,
-            pr: 1,
           }}
         >
-          <Avatar
-            alt={instance.name}
-            src={instance.icon}
-            sx={{
-              display: "flex",
-            }}
-          />
+          <InstanceAvatar instance={instance} />
         </Box>
 
+        {/* Title & Base URL */}
         <Box
           sx={{
-            p: 0.5,
             flexGrow: 1,
+            flexShrink: 1,
             overflow: "hidden",
+            mx: 1,
           }}
         >
           <Typography
             level="body3"
             sx={{
               fontWeight: "bold",
-              fontSize: "16px",
+              fontSize: "14px",
               overflow: "hidden",
               whiteSpace: "nowrap",
+
               textOverflow: "ellipsis",
+              pb: 0.5,
             }}
           >
             <ExtInstanceLink instance={instance} />
@@ -95,43 +110,58 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
 
         <Box
           sx={{
+            flexShrink: 1,
+            flexGrow: 1,
+          }}
+        />
+        <Box
+          sx={{
             flexShrink: 0,
-            pt: 0.5,
           }}
         >
-          <Tooltip title="Set home instance" variant="soft">
+          <Tooltip title="View Instance" placement="top">
             <IconButton
               size="md"
               variant="outlined"
-              color={homeBaseUrl == instance.url.split("/")[2] ? "success" : "neutral"}
-              sx={{ ml: "auto", alignSelf: "flex-start", flexShrink: 1 }}
+              color={"neutral"}
+              // sx={{ ml: "auto", alignSelf: "flex-start", flexShrink: 1 }}
               onClick={() => {
-                dispatch(setHomeInstance(instance.url.split("/")[2]));
+                // dispatch(showInstanceModal(instance));
+                navigate(`/instance/${instance.baseurl}`);
               }}
             >
-              <HomeIcon />
+              <InfoIcon />
             </IconButton>
           </Tooltip>
         </Box>
-      </CardContent>
+      </CardOverflow>
 
-      {/* Instance Banner */}
+      {/* Banner */}
       <CardOverflow
-        sx={() => ({
-          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)",
+        sx={(theme) => ({
+          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
           p: 0,
-          height: "150px",
+          minHeight: "125px",
+          maxHeight: "150px",
           overflow: "hidden",
           borderRadius: 0,
         })}
       >
         <BannerImage imageSrc={instance.banner || false} />
+        <Divider inset="context" />
       </CardOverflow>
 
-      <CardContent orientation="horizontal">
+      {/* Description */}
+      <CardContent
+        orientation="horizontal"
+        sx={{
+          py: 1,
+        }}
+      >
         <Typography
           level="body3"
           sx={{
+            height: "90px",
             maxHeight: "90px",
             overflow: "hidden",
           }}
@@ -140,6 +170,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
         </Typography>
       </CardContent>
 
+      {/* Stats */}
       <CardOverflow
         variant="soft"
         sx={{
@@ -255,7 +286,4 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
   );
 }
 
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-export default connect(mapStateToProps)(InstanceCard);
+export default React.memo(connect()(InstanceCard));

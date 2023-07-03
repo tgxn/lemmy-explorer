@@ -64,6 +64,8 @@ then run `cdk deploy --all` to deploy the frontend to AWS.
 - https://github.com/maltfield/awesome-lemmy-instances
 - https://lemmymap.feddit.de/
 - https://browse.toast.ooo/
+- https://lemmyfind.quex.cc/
+
 
 ## Lemmy Stats Pages
 - https://lemmy.fediverse.observer/dailystats

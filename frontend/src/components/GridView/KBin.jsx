@@ -17,7 +17,7 @@ const KBinGrid = function ({ items }) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardWithIsScrolling = React.useCallback((props) => <KBinCard magazine={props.data} />, [isScrolling]);
+  const CardAsCallback = React.useCallback((props) => <KBinCard magazine={props.data} />);
 
   return useMasonry({
     containerRef,
@@ -26,8 +26,8 @@ const KBinGrid = function ({ items }) {
     isScrolling,
     height,
     items,
-    overscanBy: 4,
-    render: CardWithIsScrolling,
+    overscanBy: 6,
+    render: CardAsCallback,
   });
 };
 export default KBinGrid;

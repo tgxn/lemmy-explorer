@@ -1,167 +1,140 @@
 import React from "react";
 
 import moment from "moment";
+import Moment from "react-moment";
 
-import Alert from "@mui/joy/Alert";
-import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
-import Sheet from "@mui/joy/Sheet";
 
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
-import InfoIcon from "@mui/icons-material/Info";
+import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 
-import { SimpleNumberFormat, BannerImage } from "../Shared/Display";
-import { NumberStat } from "../Shared/StatGridCards";
+import { SimpleNumberFormat } from "../Shared/Display";
+import { StringStat, NumberStat } from "../Shared/StatGridCards";
 
-export default function InstanceOverview({ instance, userSeries }) {
-  const userWeekChange = React.useMemo(() => {
-    const sortedUsers = userSeries.sort((a, b) => a.time - b.time);
+// for a given attribute stats array, get the change over time
+function getChangeOverTime(attributeArray, oldestTimeTs) {
+  // sort oldest first
+  const sortedArray = attributeArray.sort((a, b) => a.time - b.time);
 
-    const latestValue = sortedUsers[sortedUsers.length - 1].value;
+  // get newest item
+  const latestValue = sortedArray[sortedArray.length - 1].value;
 
-    const tsWeekAgo = moment().subtract(7, "days").unix();
+  // filter results before cutoff
+  let filteredResults = sortedArray.filter((u) => u.time >= oldestTimeTs);
 
-    let users = sortedUsers.filter((u) => u.time >= tsWeekAgo);
+  // get oldest item within cutoff
+  const maxOneWeekValue = filteredResults[0];
 
-    const maxOneWeekValue = users[0];
+  // return difference
+  return latestValue - maxOneWeekValue.value;
+}
 
-    return latestValue - maxOneWeekValue.value;
-  }, [userSeries]);
+// get "+", "-", or "" depending on value
+function plusMinusIndicator(value) {
+  return value > 0 ? "+" : value < 0 ? "-" : "";
+}
+
+export default function InstanceOverview({ metricsData }) {
+  const { instance, users, comments, posts } = metricsData;
+
+  const usersWeekChange = React.useMemo(() => {
+    return getChangeOverTime(users, moment().subtract(1, "week").unix());
+  }, [users]);
+  const commentsWeekChange = React.useMemo(() => {
+    return getChangeOverTime(comments, moment().subtract(1, "week").unix());
+  }, [comments]);
+  const postsWeekChange = React.useMemo(() => {
+    return getChangeOverTime(posts, moment().subtract(1, "week").unix());
+  }, [posts]);
+
+  // generate uptime card
+  let uptimeCard = <StringStat color="danger" icon={<ThumbDownIcon />} title="Uptime" value={"Not Found"} />;
+  if (instance.uptime?.uptime_alltime) {
+    uptimeCard = (
+      <StringStat
+        color="success"
+        icon={<TrendingUpIcon />}
+        title="Uptime"
+        value={instance.uptime?.uptime_alltime + "%"}
+        description={
+          <>
+            First seen <Moment fromNow>{instance.uptime?.date_created}</Moment>
+          </>
+        }
+      />
+    );
+  }
 
   return (
     <Box>
-      {/* <Alert
-        sx={{ alignItems: "flex-start" }}
-        startDecorator={<InfoIcon sx={{ mt: "2px", mx: "4px" }} fontSize="xl2" />}
-        variant="soft"
-        color={"primary"}
-      >
-        <Typography fontSize="sm" sx={{ opacity: 0.8 }}>
-          Current Version: {instance.version}
-        </Typography>
-      </Alert>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <PersonIcon />
-        Users <SimpleNumberFormat value={instance.usage.users.total} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <PersonIcon />
-        Week Change: <SimpleNumberFormat value={userWeekChange} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <MessageIcon />
-        Posts: <SimpleNumberFormat value={instance.usage.localPosts} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        <ForumIcon />
-        Comments: <SimpleNumberFormat value={instance.usage.localComments} />
-      </Typography>
-
-      <Typography
-        level="body1"
-        fontWeight="md"
-        textColor="text.secondary"
-        sx={{
-          cursor: "default",
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 0.5,
-        }}
-      >
-        {instance.uptime?.uptime_alltime && (
-          <>
-            <TrendingUpIcon />
-            Uptime: {instance.uptime?.uptime_alltime}%
-          </>
-        )}
-
-        {!instance.uptime?.uptime_alltime && (
-          <>
-            Uptime: <ThumbDownIcon />
-          </>
-        )}
-      </Typography> */}
-
       <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
         <Grid xs={12} md={6}>
           <NumberStat
             color="primary"
+            icon={<PersonIcon />}
             title="Users"
             value={instance.usage.users.total}
-            // description="Total count of all instances scanned in the last 24 hours."
+            description={
+              <>
+                Weekly Change: {plusMinusIndicator(usersWeekChange)}
+                <SimpleNumberFormat value={usersWeekChange} />
+              </>
+            }
           />
         </Grid>
-        <Grid xs={12} md={6}>
-          <NumberStat
-            color="primary"
-            title="User Growth Week"
-            value={userWeekChange}
-            // description="Total count of all instances scanned in the last 24 hours."
-          />
-        </Grid>
-      </Grid>
 
-      <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
         <Grid xs={12} md={6}>
           <NumberStat
             color="primary"
+            icon={<MessageIcon />}
+            title="Posts"
+            value={instance.usage.localPosts}
+            description={
+              <>
+                Weekly Change: {plusMinusIndicator(postsWeekChange)}
+                <SimpleNumberFormat value={postsWeekChange} />
+              </>
+            }
+          />
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          <NumberStat
+            color="primary"
+            icon={<ForumIcon />}
+            title="Comments"
+            value={instance.usage.localComments}
+            description={
+              <>
+                Weekly Change: {plusMinusIndicator(commentsWeekChange)}
+                <SimpleNumberFormat value={commentsWeekChange} />
+              </>
+            }
+          />
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          {uptimeCard}
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          <StringStat
+            icon={
+              <SystemUpdateAltIcon
+                sx={{
+                  //rotate 180 degrees
+                  transform: "rotate(180deg)",
+                }}
+              />
+            }
+            color="info"
             title="Current Version"
             value={instance.version}
-            description="Total count of all instances scanned in the last 24 hours."
           />
         </Grid>
       </Grid>

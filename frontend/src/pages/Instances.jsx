@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useCachedMultipart from "../hooks/useCachedMultipart";
-import useQueryCache from "../hooks/useQueryCache";
+
 import { useDebounce } from "@uidotdev/usehooks";
 import useStorage from "../hooks/useStorage";
 
@@ -188,7 +188,7 @@ function Instances({ filterSuspicious }) {
           p: 0,
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
           flexWrap: "wrap",
           gap: 1,
         }}
@@ -198,8 +198,9 @@ function Instances({ filterSuspicious }) {
           placeholder="Filter Instances"
           value={filterText}
           sx={{
-            width: { xs: "100%", sm: 240 },
+            width: { xs: "100%", sm: 285 },
             flexShrink: 0,
+            //position at flex start
           }}
           onChange={(event) => setFilterText(event.target.value)}
         />

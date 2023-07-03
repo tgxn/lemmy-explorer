@@ -165,10 +165,7 @@ export default function InstanceView() {
             })}
           >
             <Routes>
-              <Route
-                path="/"
-                element={<InstanceOverview instance={metricsData.instance} userSeries={metricsData.users} />}
-              />
+              <Route path="/" element={<InstanceOverview metricsData={metricsData} />} />
               <Route path="/communities" element={<InstanceCommunities instance={metricsData.instance} />} />
               <Route path="/user-growth" element={<InstanceUserGrowth userSeries={metricsData.users} />} />
               <Route

@@ -17,10 +17,7 @@ const CommunityGrid = function ({ items }) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardWithIsScrolling = React.useCallback(
-    (props) => <CommunityCard community={props.data} />,
-    [isScrolling],
-  );
+  const CardAsCallback = React.useCallback((props) => <CommunityCard community={props.data} />);
 
   return useMasonry({
     containerRef,
@@ -29,8 +26,8 @@ const CommunityGrid = function ({ items }) {
     isScrolling,
     height,
     items,
-    overscanBy: 4,
-    render: CardWithIsScrolling,
+    overscanBy: 6,
+    render: CardAsCallback,
   });
 };
 export default CommunityGrid;

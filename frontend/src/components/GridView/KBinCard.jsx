@@ -18,55 +18,60 @@ import { TinyNumber, BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-export default function KBinCard({ magazine }) {
+import { IconAvatar } from "../Shared/Avatar";
+
+export default React.memo(function KBinCard({ magazine }) {
   return (
     <Card
       variant="outlined"
       sx={{
-        pt: 1,
-        height: "250px",
-        "& .MuiIconButton-root": {
-          mt: 1,
-        },
+        height: "265px",
+        gap: 0,
       }}
     >
       {/* Community Title */}
-      <CardContent
+      <CardOverflow
+        variant="outlined"
         orientation="horizontal"
-        sx={{ columnGap: 0, flexGrow: 0, justifyContent: "space-between" }}
+        sx={{
+          py: 1.75,
+          px: 2,
+          outline: 0,
+          border: 0,
+          columnGap: 0,
+          flexGrow: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         <Box
           sx={{
             flexShrink: 0,
-            pt: 1.5,
-            px: 0.25,
-            pr: 1,
+            mr: 0.5,
           }}
         >
-          <Avatar
-            alt={magazine.title}
-            src={magazine.icon}
-            sx={{
-              display: "flex",
-            }}
-          />
+          <IconAvatar alt={magazine.title} src={magazine.icon} />
         </Box>
 
         <Box
           sx={{
-            p: 0.5,
             flexGrow: 1,
+            flexShrink: 1,
             overflow: "hidden",
+            mx: 1,
           }}
         >
           <Typography
             level="body3"
             sx={{
               fontWeight: "bold",
-              fontSize: "16px",
+              fontSize: "14px",
               overflow: "hidden",
               whiteSpace: "nowrap",
+
               textOverflow: "ellipsis",
+              pb: 0.5,
             }}
           >
             <ExtCommunityLink
@@ -88,7 +93,7 @@ export default function KBinCard({ magazine }) {
             />
           </Typography>
         </Box>
-      </CardContent>
+      </CardOverflow>
 
       {/* Community Banner */}
       {/* <CardOverflow
@@ -203,4 +208,4 @@ export default function KBinCard({ magazine }) {
     </Card>
     // </Grid>
   );
-}
+});
