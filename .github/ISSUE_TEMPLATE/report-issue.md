@@ -1,6 +1,6 @@
 ---
-name: Something's Broken
-about: Report an issue
+name: Report Issue
+about: Something is broken!
 title: 'Bug:'
 labels: bug
 assignees: ''
