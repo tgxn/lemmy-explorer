@@ -249,7 +249,7 @@ export default class CrawlOutput {
 
     await this.outputSusList();
 
-    await this.outputKBinList();
+    const kbinMagazineCount = await this.outputKBinList();
 
     logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
     logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
@@ -589,6 +589,7 @@ export default class CrawlOutput {
     const metaData = {
       instances: storeData.length,
       communities: storeCommunityData.length,
+      magazines: kbinMagazineCount,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -648,12 +649,15 @@ export default class CrawlOutput {
 
     for (const kbin of filteredKBins) {
       output.push({
-        actor_id: kbin.actor_id,
-        title: kbin.title,
-        name: kbin.name,
-        baseurl: kbin.baseurl,
-        preferred: kbin.preferredUsername,
-        summary: kbin.summary,
+        actor_id: kbin.id,
+
+        title: kbin.title, // display name
+        name: kbin.name, // key username
+        preferred: kbin.preferredUsername, // username ??
+
+        baseurl: kbin.id.split("/")[2],
+
+        summary: this.stripMarkdown(kbin.summary),
         sensitive: kbin.sensitive,
         postingRestrictedToMods: kbin.postingRestrictedToMods,
 
@@ -668,6 +672,6 @@ export default class CrawlOutput {
 
     await this.splitter.storeKBinMagazineData(output);
 
-    return output;
+    return filteredKBins.length;
   }
 }
