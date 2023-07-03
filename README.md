@@ -70,7 +70,8 @@ then run `cdk deploy --all` to deploy the frontend to AWS.
 ## Lemmy Stats Pages
 - https://lemmy.fediverse.observer/dailystats
 - https://the-federation.info/platform/73
-- https://fedidb.org/
+- https://fedidb.org/software/lemmy
+- https://fedidb.org/current-events/threadiverse
 
 ## Thanks / Related Lemmy Tools
 
