@@ -140,8 +140,8 @@ function InstanceCard({ instance, dispatch }) {
 
       {/* Banner */}
       <CardOverflow
-        sx={() => ({
-          background: "linear-gradient(15deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%)",
+        sx={(theme) => ({
+          background: "linear-gradient(15deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.40) 100%)",
           p: 0,
           minHeight: "125px",
           maxHeight: "150px",

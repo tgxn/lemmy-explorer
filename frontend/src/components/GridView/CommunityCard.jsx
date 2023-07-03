@@ -87,7 +87,7 @@ export default function CommunityCard({ community }) {
       {/* Community Banner */}
       <CardOverflow
         sx={() => ({
-          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)",
+          background: "linear-gradient(15deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.40) 100%)",
           p: 0,
           height: "150px",
           overflow: "hidden",
