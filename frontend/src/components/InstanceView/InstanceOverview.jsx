@@ -3,24 +3,20 @@ import React from "react";
 import moment from "moment";
 import Moment from "react-moment";
 
-import Alert from "@mui/joy/Alert";
-import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
-import Sheet from "@mui/joy/Sheet";
 
 import PersonIcon from "@mui/icons-material/Person";
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
-import InfoIcon from "@mui/icons-material/Info";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
-import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 
-import { SimpleNumberFormat, BannerImage } from "../Shared/Display";
+import { SimpleNumberFormat } from "../Shared/Display";
 import { StringStat, NumberStat } from "../Shared/StatGridCards";
 
+// for a given attribute stats array, get the change over time
 function getChangeOverTime(attributeArray, oldestTimeTs) {
   // sort oldest first
   const sortedArray = attributeArray.sort((a, b) => a.time - b.time);
@@ -38,6 +34,7 @@ function getChangeOverTime(attributeArray, oldestTimeTs) {
   return latestValue - maxOneWeekValue.value;
 }
 
+// get "+", "-", or "" depending on value
 function plusMinusIndicator(value) {
   return value > 0 ? "+" : value < 0 ? "-" : "";
 }
@@ -48,11 +45,9 @@ export default function InstanceOverview({ metricsData }) {
   const usersWeekChange = React.useMemo(() => {
     return getChangeOverTime(users, moment().subtract(1, "week").unix());
   }, [users]);
-
   const commentsWeekChange = React.useMemo(() => {
     return getChangeOverTime(comments, moment().subtract(1, "week").unix());
   }, [comments]);
-
   const postsWeekChange = React.useMemo(() => {
     return getChangeOverTime(posts, moment().subtract(1, "week").unix());
   }, [posts]);
@@ -92,15 +87,6 @@ export default function InstanceOverview({ metricsData }) {
             }
           />
         </Grid>
-        {/* 
-        <Grid xs={12} md={6}>
-          <NumberStat
-            color="success"
-            icon={<PersonAddAltIcon />}
-            title="User Growth Week"
-            value={usersWeekChange}
-          />
-        </Grid> */}
 
         <Grid xs={12} md={6}>
           <NumberStat
