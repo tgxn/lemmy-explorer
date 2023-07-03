@@ -94,6 +94,7 @@ export default class InstanceCrawler {
 
     // scan kbin instances that are found
     if (nodeInfo.software.name == "kbin") {
+      console.log(`${this.crawlDomain}: found kbin instance  - creating job`);
       await this.kbinQueue.createJob(this.crawlDomain);
     }
 

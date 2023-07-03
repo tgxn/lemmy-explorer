@@ -100,23 +100,24 @@ export default class CommunityCrawler {
       if (e.data.error == "couldnt_find_community") {
         logging.warn("DELETE community error", e.data.error);
 
-        // await storage.community.delete(
-        //   this.crawlDomain,
-        //   this.crawlCommunity,
-        //   e.data.error
-        // );
-        // return;
+        await storage.community.delete(
+          this.crawlDomain,
+          communityName,
+          e.data.error
+        );
+        return;
       }
 
       if (e.data) {
-        logging.warn("OTHER community error", e.data);
+        logging.warn("OTHER community error");
 
+        // only delete unless explicit
         // await storage.community.delete(
         //   this.crawlDomain,
-        //   this.crawlCommunity,
+        //   communityName,
         //   e.data.error
         // );
-        // return;
+        return;
       }
 
       // re-try 3 times

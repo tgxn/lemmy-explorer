@@ -66,15 +66,19 @@ export async function start(args) {
         case "--health":
           const instanceCrawl = new InstanceQueue(false);
           const counts = await instanceCrawl.queue.checkHealth();
-          logging.info("Instance Worker Health:", counts);
+          logging.info("InstanceQueue:", counts);
 
           const communityCrawl = new CommunityQueue(false);
           const commCounts = await communityCrawl.queue.checkHealth();
-          logging.info("Community Worker Health:", commCounts);
+          logging.info("CommunityQueue:", commCounts);
 
           const singleCommCrawl = new SingleCommunityQueue(false);
           const commSingleCounts = await singleCommCrawl.queue.checkHealth();
-          logging.info("Single Community Worker Health:", commSingleCounts);
+          logging.info("SingleCommunityQueue:", commSingleCounts);
+
+          const kbinQHealthCrawl = new KBinQueue(false);
+          const kbinQHeCounts = await kbinQHealthCrawl.queue.checkHealth();
+          logging.info("KBinQueue:", kbinQHeCounts);
 
           return process.exit(0);
 
