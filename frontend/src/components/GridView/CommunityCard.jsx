@@ -95,8 +95,7 @@ export default React.memo(function CommunityCard({ community }) {
         sx={(theme) => ({
           background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
           p: 0,
-          minHeight: "125px",
-          maxHeight: "150px",
+          height: "125px",
           overflow: "hidden",
           borderRadius: 0,
         })}
@@ -114,7 +113,7 @@ export default React.memo(function CommunityCard({ community }) {
         <Typography
           level="body3"
           sx={{
-            height: "90px",
+            height: "50px",
             maxHeight: "90px",
             overflow: "hidden",
           }}
