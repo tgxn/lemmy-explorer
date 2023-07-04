@@ -75,6 +75,7 @@ export default React.memo(function KBinCard({ magazine }) {
             }}
           >
             <ExtCommunityLink
+              baseType="kbin"
               community={{
                 baseurl: magazine.baseurl, // for link
                 name: magazine.preferred, // for link
