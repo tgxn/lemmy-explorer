@@ -46,6 +46,9 @@ export default class CommunityQueue {
 
   async process() {
     this.queue.process(async (job) => {
+      await storage.connect();
+
+      let communityData = null;
       try {
         const instanceBaseUrl = job.data.baseUrl;
 
@@ -84,36 +87,36 @@ export default class CommunityQueue {
 
         // set last successful crawl
         await storage.tracking.setLastCrawl("community", job.data.baseUrl);
-
-        return communityData;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
             `[Community] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
           );
-          return true;
+        } else {
+          const errorDetail = {
+            error: error.message,
+            stack: error.stack,
+            isAxiosError: error.isAxiosError,
+            requestUrl: error.isAxiosError ? error.request.url : null,
+            time: Date.now(),
+          };
+
+          // if (error instanceof CrawlError || error instanceof AxiosError) {
+          await storage.tracking.upsertError(
+            "community",
+            job.data.baseUrl,
+            errorDetail
+          );
+
+          logging.error(
+            `[Community] [${job.data.baseUrl}] Error: ${error.message}`
+          );
         }
-
-        const errorDetail = {
-          error: error.message,
-          stack: error.stack,
-          isAxiosError: error.isAxiosError,
-          requestUrl: error.isAxiosError ? error.request.url : null,
-          time: Date.now(),
-        };
-
-        // if (error instanceof CrawlError || error instanceof AxiosError) {
-        await storage.tracking.upsertError(
-          "community",
-          job.data.baseUrl,
-          errorDetail
-        );
-
-        logging.error(
-          `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-        );
       }
-      return false;
+
+      // close redis connection on end of job
+      storage.close();
+      return communityData;
     });
   }
 }

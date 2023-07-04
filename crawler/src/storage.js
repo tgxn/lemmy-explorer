@@ -1,3 +1,5 @@
+import logging from "./lib/logging.js";
+
 import { createClient } from "redis";
 
 import { REDIS_URL } from "./lib/const.js";
@@ -18,12 +20,6 @@ class Storage {
     });
 
     this.attributeMaxAge = 1000 * 60 * 60 * 24 * 7; // 7 days
-  }
-
-  async connect() {
-    if (!this.client.isOpen) {
-      await this.client.connect();
-    }
 
     this.instance = new InstanceStore(this);
     this.community = new CommunityStore(this);
@@ -34,7 +30,15 @@ class Storage {
     this.kbin = new KBinStore(this);
   }
 
+  async connect() {
+    if (!this.client.isOpen) {
+      // logging.warn("12341234 Redis client not open, opening...");
+      await this.client.connect();
+    }
+  }
+
   close() {
+    // logging.warn("12341234 Closing Redis client");
     this.client.quit();
   }
 

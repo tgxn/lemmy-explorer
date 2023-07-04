@@ -1,0 +1,110 @@
+import logging from "../lib/logging.js";
+
+import InstanceQueue from "../queue/instance.js";
+import CommunityQueue from "../queue/community.js";
+import SingleCommunityQueue from "../queue/check_comm.js";
+import KBinQueue from "../queue/kbin.js";
+
+import CrawlOutput from "../output/output.js";
+
+import CrawlAged from "../crawl/aged.js";
+import CrawlUptime from "../crawl/uptime.js";
+
+import Failures from "../crawl/failures.js";
+import CrawlKBin from "../crawl/kbin.js";
+
+import storage from "../storage.js";
+
+import { START_URLS } from "../lib/const.js";
+
+// used to run tasks against db that exist after they are complete
+export default async function runTask(taskName = null) {
+  logging.info("Running Task:", taskName);
+
+  if (taskName == null) {
+    logging.error("taskName is null");
+    throw new Error("taskName is null");
+  }
+
+  await storage.connect();
+
+  switch (taskName) {
+    case "help":
+      logging.info("Help");
+      break;
+
+    // generate output .json files from data stored in redis
+    case "out":
+      logging.info("Generate JSON Output");
+
+      const output = new CrawlOutput();
+      await output.start();
+
+      break;
+
+    case "clean":
+      console.log("Cleaning data");
+
+      const failures = new Failures();
+      await failures.clean();
+
+      break;
+
+    // should we initialize the workers with a starter list of lemmy's?
+    case "init":
+      logging.warn("--init passed, creating seed jobs");
+
+      // await crawler.createJob("lemmy.tgxn.net");
+      const crawler = new InstanceQueue();
+      for (var baseUrl of START_URLS) {
+        await crawler.createJob(baseUrl);
+      }
+
+      break;
+
+    // get redis bb queue health from redis
+    case "health":
+      const instanceCrawl = new InstanceQueue(false);
+      const counts = await instanceCrawl.queue.checkHealth();
+      logging.info("InstanceQueue:", counts);
+
+      const communityCrawl = new CommunityQueue(false);
+      const commCounts = await communityCrawl.queue.checkHealth();
+      logging.info("CommunityQueue:", commCounts);
+
+      const singleCommCrawl = new SingleCommunityQueue(false);
+      const commSingleCounts = await singleCommCrawl.queue.checkHealth();
+      logging.info("SingleCommunityQueue:", commSingleCounts);
+
+      const kbinQHealthCrawl = new KBinQueue(false);
+      const kbinQHeCounts = await kbinQHealthCrawl.queue.checkHealth();
+      logging.info("KBinQueue:", kbinQHeCounts);
+
+      break;
+
+    // adds ages domain jobs immediately
+    case "aged":
+      const aged = new CrawlAged();
+      await aged.createJobs();
+
+      break;
+
+    // create jobs for all known kbin instances
+    case "kbin":
+      const kbinScan = new CrawlKBin();
+      await kbinScan.createJobsAllKBin();
+
+      break;
+
+    // crawl the fediverse uptime immediately
+    case "uptime":
+      const uptime = new CrawlUptime();
+      await uptime.crawl();
+
+      break;
+  }
+
+  logging.info("Task Complete:", taskName);
+  storage.close();
+  return process.exit(0);
+}

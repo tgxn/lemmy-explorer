@@ -130,6 +130,9 @@ export default class InstanceQueue {
 
   async process() {
     this.queue.process(async (job) => {
+      await storage.connect();
+
+      let instanceData = null;
       try {
         // if it's not a string
         if (typeof job.data.baseUrl !== "string") {
@@ -221,54 +224,35 @@ export default class InstanceQueue {
 
         // set last successful crawl
         await storage.tracking.setLastCrawl("instance", job.data.baseUrl);
-
-        return instanceData;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
             `[Instance] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
           );
-          return true;
+        } else {
+          const errorDetail = {
+            error: error.message,
+            stack: error.stack,
+            isAxiosError: error.isAxiosError,
+            requestUrl: error.isAxiosError ? error.request.url : null,
+            time: new Date().getTime(),
+          };
+
+          // if (error instanceof CrawlError || error instanceof AxiosError) {
+          await storage.putRedis(
+            `error:instance:${job.data.baseUrl}`,
+            errorDetail
+          );
+
+          logging.error(
+            `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
+          );
         }
-
-        const errorDetail = {
-          error: error.message,
-          stack: error.stack,
-          isAxiosError: error.isAxiosError,
-          requestUrl: error.isAxiosError ? error.request.url : null,
-          time: new Date().getTime(),
-        };
-
-        // if (error instanceof CrawlError || error instanceof AxiosError) {
-        await storage.putRedis(
-          `error:instance:${job.data.baseUrl}`,
-          errorDetail
-        );
-
-        logging.error(
-          `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
-        );
       }
 
-      // // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
-      // else if (error instanceof CrawlTooRecentError) {
-      //   logging.warn(
-      //     `[Instance] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
-      //   );
-      // } else {
-      //   // if it's not a known error, put it in the error queue
-
-      //   await storage.putRedis(
-      //     `error:instance:${job.data.baseUrl}`,
-      //     errorDetail
-      //   );
-
-      //   logging.verbose(
-      //     `[Instance] [${job.data.baseUrl}] Error: ${error.message}`
-      //   );
-      // }
-      // }
-      return true;
+      // close redis connection on end of job
+      storage.close();
+      return instanceData;
     });
   }
 }

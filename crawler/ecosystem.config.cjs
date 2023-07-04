@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "scheduler",
       script: "index.js",
-      args: ["--cron"],
+      args: ["-w cron"],
       instances: 1,
       env_production: {
         NODE_ENV: "production",
@@ -15,7 +15,7 @@ module.exports = {
     {
       name: "crawl-instance",
       script: "index.js",
-      args: ["-q", "instance"],
+      args: ["-w", "instance"],
       instances: 8,
       env_production: {
         NODE_ENV: "production",
@@ -27,7 +27,7 @@ module.exports = {
     {
       name: "crawl-community",
       script: "index.js",
-      args: ["-q", "community"],
+      args: ["-w", "community"],
       instances: 6,
       env_production: {
         NODE_ENV: "production",
@@ -39,7 +39,7 @@ module.exports = {
     {
       name: "crawl-one-community",
       script: "index.js",
-      args: ["-q", "single"],
+      args: ["-w", "single"],
       instances: 4,
       env_production: {
         NODE_ENV: "production",
@@ -51,7 +51,7 @@ module.exports = {
     {
       name: "crawl-kbin",
       script: "index.js",
-      args: ["-q", "kbin"],
+      args: ["-w", "kbin"],
       instances: 4,
       env_production: {
         NODE_ENV: "production",

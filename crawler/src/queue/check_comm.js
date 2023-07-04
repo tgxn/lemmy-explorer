@@ -49,57 +49,46 @@ export default class SingleCommunityQueue {
 
   async process() {
     this.queue.process(async (job) => {
+      await storage.connect();
+
+      let communityData = null;
       try {
         const baseUrl = job.data.baseUrl;
         const communityName = job.data.community;
 
         const crawler = new CommunityCrawler(baseUrl);
-        const communityData = await crawler.crawlSingle(communityName);
 
-        return communityData;
+        communityData = await crawler.crawlSingle(communityName);
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
             `[OneCommunity] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
           );
-          return true;
+        } else {
+          const errorDetail = {
+            error: error.message,
+            stack: error.stack,
+            isAxiosError: error.isAxiosError,
+            requestUrl: error.isAxiosError ? error.request.url : null,
+            time: Date.now(),
+          };
+
+          // if (error instanceof CrawlError || error instanceof AxiosError) {
+          await storage.tracking.upsertError(
+            "one_community",
+            job.data.baseUrl,
+            errorDetail
+          );
+
+          logging.error(
+            `[OneCommunity] [${job.data.baseUrl}] Error: ${error.message}`
+          );
         }
-
-        const errorDetail = {
-          error: error.message,
-          stack: error.stack,
-          isAxiosError: error.isAxiosError,
-          requestUrl: error.isAxiosError ? error.request.url : null,
-          time: Date.now(),
-        };
-
-        // if (error instanceof CrawlError || error instanceof AxiosError) {
-        await storage.tracking.upsertError(
-          "one_community",
-          job.data.baseUrl,
-          errorDetail
-        );
-
-        logging.error(
-          `[OneCommunity] [${job.data.baseUrl}] Error: ${error.message}`
-        );
-        //   }
-
-        //   // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
-        //   else if (error instanceof CrawlTooRecentError) {
-        //     logging.warn(
-        //       `[Community] [${job.data.baseUrl}] Warn: ${error.message}`
-        //     );
-        //   } else {
-        //     logging.verbose(
-        //       `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-        //     );
-        //   }
-        // } finally {
-        //   // set last scan time if it was success or failure.
-        //   await storage.tracking.setLastCrawl("community", job.data.baseUrl);
       }
-      return false;
+
+      // close redis connection on end of job
+      storage.close();
+      return communityData;
     });
   }
 }
