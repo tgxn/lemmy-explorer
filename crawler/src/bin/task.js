@@ -29,10 +29,6 @@ export default async function runTask(taskName = null) {
   await storage.connect();
 
   switch (taskName) {
-    case "help":
-      logging.info("Help");
-      break;
-
     // generate output .json files from data stored in redis
     case "out":
       logging.info("Generate JSON Output");
