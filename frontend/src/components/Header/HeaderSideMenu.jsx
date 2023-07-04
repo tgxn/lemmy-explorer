@@ -138,7 +138,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
 
       <Tooltip title="Show Menu" variant="soft">
         <IconButton
-          aria-controls={menuOpen ? "positioned-demo-menu" : undefined}
+          aria-controls={menuOpen ? "right-side-menu" : undefined}
           aria-haspopup="true"
           aria-expanded={menuOpen ? "true" : undefined}
           variant="outlined"
@@ -150,19 +150,11 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
         </IconButton>
       </Tooltip>
       <Menu
-        id="positioned-demo-menu"
+        id="right-side-menu"
         anchorEl={anchorEl}
         open={menuOpen}
         onClose={handleClose}
-        aria-labelledby="positioned-demo-button"
         placement="bottom-end"
-        // MenuListProps={{
-        //   sx: {
-        //     "& .MuiMenuItem-root": {
-        //       whiteSpace: "unset",
-        //     },
-        //   },
-        // }}
       >
         <MenuItem disabled>
           <ListItemDecorator>
@@ -213,7 +205,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
           Network Inspector
         </MenuItem>
 
-        <ListDivider sx={showWhenSmall} />
+        <ListDivider />
 
         <Box sx={showWhenSmall}>
           <ColorSchemeToggle variant="menu" />
