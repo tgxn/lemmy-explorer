@@ -11,7 +11,10 @@ import { RECRAWL_AGED_MS, DELETE_AGED_MS } from "../lib/const.js";
 export default class CrawlAged {
   constructor() {
     this.agedInstanceBaseUrls = [];
-    this.communityCrawler = new SingleCommunityQueue(false);
+
+    this.instanceCrawler = new InstanceQueue(false);
+    this.communityCrawler = new CommunityQueue(false);
+    this.singleCommunityCrawler = new SingleCommunityQueue(false);
   }
 
   addInstance(instanceBaseUrl) {
@@ -62,7 +65,7 @@ export default class CrawlAged {
         community.lastCrawled &&
         Date.now() - community.lastCrawled > DELETE_AGED_MS
       ) {
-        this.communityCrawler.createJob(base, community.community.name);
+        this.singleCommunityCrawler.createJob(base, community.community.name);
       }
 
       if (!byBase[base]) {
@@ -118,11 +121,9 @@ export default class CrawlAged {
   async createJobs() {
     await this.getAged();
 
-    const instanceCrawler = new InstanceQueue(false);
-    const communityCrawler = new CommunityQueue(false);
     for (const baseUrl of this.agedInstanceBaseUrls) {
-      await instanceCrawler.createJob(baseUrl);
-      await communityCrawler.createJob(baseUrl);
+      await this.instanceCrawler.createJob(baseUrl);
+      await this.communityCrawler.createJob(baseUrl);
     }
 
     logging.info("Done Creating Aged Jobs");

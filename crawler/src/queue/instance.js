@@ -37,6 +37,7 @@ export default class InstanceQueue extends BaseQueue {
       - re-tried every 6 hours
     */
     const crawlCommunity = new CommunityQueue();
+
     const processor = async ({ baseUrl }) => {
       let instanceData = null;
       try {

@@ -6,7 +6,13 @@ There is a `npm run output` script to output the instances and communities to js
 
 ## Usage
 
+
+
+
+
 ### Basic Usage
+
+#### How to Start Crawling
 
 1. Start redis server (`docker-compose up -d redis`)
  > Redis server config is in `lib/const.js`
@@ -17,6 +23,45 @@ There is a `npm run output` script to output the instances and communities to js
 
 3. Put some jobs into the queue (`node index.js --init`)
  > This will put some jobs into the queue based off the lists in `lib/const.js`
+
+
+### CLI Commands
+
+#### Tasks
+
+`node index.js [options]`
+
+| Option | Description |
+| --- | --- |
+| --help | output this usage information |
+| --version | output the version number |
+| --out | Output JSON files for frontend |
+
+
+#### Start Workers
+
+`node index.js -w [worker_name]`
+
+| Worker | Description |
+| --- | --- |
+| -w instance | Crawl instances from the queue |
+| -w community | Crawl communities from the queue |
+| -w single | Crawl single communities from the queue |
+| -w kbin | Crawl kbin communities from the queue |
+| -w cron | Schedule all CRON jobs for aged instances and communities, etc |
+
+
+#### Start Manual Jobs
+
+`node index.js -m [worker] [base_url] [community_url]?`
+
+| Worker | Description |
+| --- | --- |
+| -m [i|instance] <base_url> | Crawl a single instance |
+| -m [c|community] <base_url> | Crawl a single instance's community list |
+| -m [s|single] <base_url> <community_name> | Crawl a single community, delete if not exists |
+| -m [k|kbin] <base_url> | Crawl a single community |
+
 
 
 ### Output for Frontend
@@ -41,6 +86,10 @@ Community Job: `node index.js -c instance.example.com`
 
 **Immediately Crawl Uptime Data**
 `node index.js --uptime`
+
+
+
+
 
 
 

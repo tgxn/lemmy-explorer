@@ -16,7 +16,7 @@ function start(args) {
   }
 
   // run manual processing job for one item `-m i <instance>` / `-s single <instance> <community>`
-  if (args.length >= 3 && args[0] == "-m") {
+  else if (args.length >= 3 && args[0] == "-m") {
     manual(args[1], args[2], args[3]);
   }
 }
