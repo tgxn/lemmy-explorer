@@ -14,7 +14,9 @@ export default class SingleCommunityQueue {
     this.queue = new Queue(queueName, {
       removeOnSuccess: true,
       removeOnFailure: true,
-      isWorker,
+      storeJobs: false,
+      isWorker: isWorker,
+      getEvents: isWorker,
     });
 
     // report failures!
