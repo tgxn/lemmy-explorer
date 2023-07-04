@@ -78,15 +78,15 @@ export default class CommunityCrawler {
     await storage.community.setTrackedAttribute(
       this.crawlDomain,
       communityPart,
-      "users_active_week",
-      community.counts.users_active_week
+      "users_active_day",
+      community.counts.users_active_day
     );
 
     await storage.community.setTrackedAttribute(
       this.crawlDomain,
       communityPart,
-      "users_active_day",
-      community.counts.users_active_day
+      "users_active_week",
+      community.counts.users_active_week
     );
 
     await storage.community.setTrackedAttribute(
