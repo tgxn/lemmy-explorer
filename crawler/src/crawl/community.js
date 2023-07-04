@@ -54,47 +54,59 @@ export default class CommunityCrawler {
       community.counts.subscribers
     );
 
-    await storage.community.setTrackedAttribute(
-      this.crawlDomain,
-      communityPart,
-      "hot_rank",
-      community.counts.hot_rank
-    );
+    if (community.counts.hot_rank) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "hot_rank",
+        community.counts.hot_rank
+      );
+    }
 
-    await storage.community.setTrackedAttribute(
-      this.crawlDomain,
-      communityPart,
-      "posts",
-      community.counts.posts
-    );
+    if (community.counts.posts) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "posts",
+        community.counts.posts
+      );
+    }
 
-    await storage.community.setTrackedAttribute(
-      this.crawlDomain,
-      communityPart,
-      "comments",
-      community.counts.comments
-    );
+    if (community.counts.comments) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "comments",
+        community.counts.comments
+      );
+    }
 
-    await storage.community.setTrackedAttribute(
-      this.crawlDomain,
-      communityPart,
-      "users_active_day",
-      community.counts.users_active_day
-    );
+    if (community.counts.users_active_day) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "users_active_day",
+        community.counts.users_active_day
+      );
+    }
 
-    await storage.community.setTrackedAttribute(
-      this.crawlDomain,
-      communityPart,
-      "users_active_week",
-      community.counts.users_active_week
-    );
+    if (community.counts.users_active_week) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "users_active_week",
+        community.counts.users_active_week
+      );
+    }
 
-    await storage.community.setTrackedAttribute(
-      this.crawlDomain,
-      communityPart,
-      "users_active_month",
-      community.counts.users_active_month
-    );
+    if (community.counts.users_active_month) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "users_active_month",
+        community.counts.users_active_month
+      );
+    }
 
     await storage.community.upsert(this.crawlDomain, community);
 

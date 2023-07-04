@@ -35,12 +35,118 @@ export default class CrawlOutput {
 
     this.fediverseData = await storage.fediverse.getAll();
     this.kbinData = await storage.kbin.getAll();
+
+    // parse all federated instance data
+    const [linkedFederation, allowedFederation, blockedFederation] =
+      this.getFederationLists(this.instanceList);
+
+    this.linkedFederation = linkedFederation;
+    this.allowedFederation = allowedFederation;
+    this.blockedFederation = blockedFederation;
   }
 
   async isInstanceSus(instance, log = true) {
     const instanceSus = new Suspicions(instance, log);
 
     return await instanceSus.isSuspicious();
+  }
+
+  /**
+   * Main Output Generation Script
+   *
+   */
+  async start() {
+    await this.loadAllData();
+
+    // delete existing data from the output directory
+    await this.splitter.cleanData();
+
+    const susSiteList = await this.outputSusList();
+
+    const returnStats = await this.outputFediverseData();
+
+    const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
+
+    const kbinMagazineArray = await this.outputKBinMagazineList();
+
+    const returnInstanceArray = await this.getInstanceArray();
+
+    const returnCommunityArray = await this.getCommunityArray();
+
+    // generate instance-level metrics for every instance
+    await Promise.all(
+      returnInstanceArray.map(async (instance) => {
+        return this.generateInstanceMetrics(instance, returnCommunityArray);
+      })
+    );
+
+    const instanceErrors = await this.outputClassifiedErrors();
+
+    // STORE RUN METADATA
+    const packageJson = JSON.parse(
+      await readFile(new URL("../../package.json", import.meta.url))
+    );
+
+    const metaData = {
+      instances: returnInstanceArray.length,
+      communities: returnCommunityArray.length,
+      magazines: kbinMagazineArray.length,
+      fediverse: returnStats.length,
+      time: Date.now(),
+      package: packageJson.name,
+      version: packageJson.version,
+
+      // top 10 linked, allowed, blocked domains
+      // sort by count of times seen on each list
+      linked: this.linkedFederation,
+      allowed: this.allowedFederation,
+      blocked: this.blockedFederation,
+    };
+    await this.splitter.storeMetaData(metaData);
+
+    console.log("Done; Total vs. Output");
+    console.table(
+      {
+        Instances: {
+          ExportName: "Instances",
+          Total: this.instanceList.length,
+          Output: returnInstanceArray.length,
+        },
+        Communities: {
+          ExportName: "Communities",
+          Total: this.communityList.length,
+          Output: returnCommunityArray.length,
+        },
+        KBinInstances: {
+          ExportName: "KBin Instances",
+          Total: "N/A",
+          Output: kbinInstanceArray.length,
+        },
+        Magazines: {
+          ExportName: "Magazines",
+          Total: this.kbinData.length,
+          Output: kbinMagazineArray.length,
+        },
+        Fediverse: {
+          ExportName: "Fediverse Servers",
+          Total: "N/A",
+          Output: returnStats.length,
+        },
+        ErrorData: {
+          ExportName: "Error Data",
+          Total: "N/A",
+          Output: instanceErrors.length,
+        },
+        SusSites: {
+          ExportName: "Sus Sites",
+          Total: "N/A",
+          Output: susSiteList.length,
+        },
+      },
+      ["Total", "Output"]
+    );
+
+    return true;
   }
 
   /// find updatenode for given baseurl
@@ -99,10 +205,10 @@ export default class CrawlOutput {
 
       const { linked, allowed, blocked } = instance.siteData.federated;
 
-      logging.silly(
-        `federated instances: ${instance.siteData.site.actor_id}`,
-        instance.siteData.federated.linked.length
-      );
+      // logging.silly(
+      //   `federated instances: ${instance.siteData.site.actor_id}`,
+      //   instance.siteData.federated.linked.length
+      // );
 
       if (linked.length > 0) {
         for (const baseUrl of linked) {
@@ -121,11 +227,19 @@ export default class CrawlOutput {
       }
     });
 
-    logging.info(
-      `Federation Linked: ${Object.keys(linkedFederation).length} Allowed: ${
-        Object.keys(allowedFederation).length
-      } Blocked: ${Object.keys(blockedFederation).length}`
-    );
+    // logging.info(
+    //   `Federation Linked: ${Object.keys(linkedFederation).length} Allowed: ${
+    //     Object.keys(allowedFederation).length
+    //   } Blocked: ${Object.keys(blockedFederation).length}`
+    // );
+
+    console.log("Global Federation Counts (counts of urls in merged lists)");
+    console.table({
+      linked: Object.keys(linkedFederation).length,
+      allowed: Object.keys(allowedFederation).length,
+      blocked: Object.keys(blockedFederation).length,
+    });
+
     return [linkedFederation, allowedFederation, blockedFederation];
   }
 
@@ -263,21 +377,7 @@ export default class CrawlOutput {
     });
   }
 
-  async start() {
-    await this.loadAllData();
-
-    await this.splitter.cleanData();
-
-    await this.outputSusList();
-
-    const kbinMagazineCount = await this.outputKBinList();
-
-    logging.info(`Uptime: ${this.uptimeData.nodes.length}`);
-    logging.info(`Failures: ${Object.keys(this.instanceErrors).length}`);
-
-    const [linkedFederation, allowedFederation, blockedFederation] =
-      this.getFederationLists(this.instanceList);
-
+  async getInstanceArray() {
     let storeData = await Promise.all(
       this.instanceList.map(async (instance) => {
         if (!instance.siteData?.site?.actor_id) {
@@ -288,24 +388,24 @@ export default class CrawlOutput {
 
         const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
 
-        const incomingBlocks = blockedFederation[siteBaseUrl] || 0;
+        const incomingBlocks = this.blockedFederation[siteBaseUrl] || 0;
         const outgoingBlocks =
           instance.siteData.federated?.blocked?.length || 0;
 
         let score = 0;
         // having a linked instance gives you a point for each link
-        if (linkedFederation[siteBaseUrl]) {
-          score += linkedFederation[siteBaseUrl];
+        if (this.linkedFederation[siteBaseUrl]) {
+          score += this.linkedFederation[siteBaseUrl];
         }
 
         // each allowed instance gives you points
-        if (allowedFederation[siteBaseUrl]) {
-          score += allowedFederation[siteBaseUrl] * 2;
+        if (this.allowedFederation[siteBaseUrl]) {
+          score += this.allowedFederation[siteBaseUrl] * 2;
         }
 
         // each blocked instance takes away points
-        if (blockedFederation[siteBaseUrl]) {
-          score -= blockedFederation[siteBaseUrl] * 10;
+        if (this.blockedFederation[siteBaseUrl]) {
+          score -= this.blockedFederation[siteBaseUrl] * 10;
         }
 
         // ignore instances that have no data
@@ -383,36 +483,34 @@ export default class CrawlOutput {
       (instance) => instance.url !== "" || instance.name !== ""
     );
 
-    logging.info(
-      `Instances ${this.instanceList.length} -> ${storeData.length}`
-    );
+    // logging.info(
+    //   `Instances ${this.instanceList.length} -> ${storeData.length}`
+    // );
 
     await this.splitter.storeInstanceData(storeData);
 
-    ///
-    /// Lemmy Communities
-    ///
+    return storeData;
+  }
 
-    const communities = await storage.community.getAll();
-
+  async getCommunityArray() {
     let storeCommunityData = await Promise.all(
-      communities.map(async (community) => {
+      this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
         let score = 0;
         // having a linked instance gives you a point for each link
-        if (linkedFederation[siteBaseUrl]) {
-          score += linkedFederation[siteBaseUrl];
+        if (this.linkedFederation[siteBaseUrl]) {
+          score += this.linkedFederation[siteBaseUrl];
         }
 
         // each allowed instance gives you points
-        if (allowedFederation[siteBaseUrl]) {
-          score += allowedFederation[siteBaseUrl] * 2;
+        if (this.allowedFederation[siteBaseUrl]) {
+          score += this.allowedFederation[siteBaseUrl] * 2;
         }
 
         // each blocked instance takes away points
-        if (blockedFederation[siteBaseUrl]) {
-          score -= blockedFederation[siteBaseUrl] * 10;
+        if (this.blockedFederation[siteBaseUrl]) {
+          score -= this.blockedFederation[siteBaseUrl] * 10;
         }
 
         // also score based subscribers
@@ -493,44 +591,25 @@ export default class CrawlOutput {
         community.url !== "" || community.name !== "" || community.title !== ""
     );
 
-    await Promise.all(
-      storeData.map(async (instance) => {
-        this.generateInstanceMetrics(instance, storeCommunityData);
-      })
-    );
-
-    logging.info(
-      `Communities ${communities.length} -> ${storeCommunityData.length}`
-    );
+    // logging.info(
+    //   `Communities ${this.communityList.length} -> ${storeCommunityData.length}`
+    // );
 
     await this.splitter.storeCommunityData(storeCommunityData);
 
-    ///
-    /// Fediverse Servers
-    ///
+    return storeCommunityData;
+  }
 
+  async outputFediverseData() {
     let returnStats = [];
 
     let softwareNames = {};
     let softwareBaseUrls = {};
 
-    // for the choose instance page
-    let kbinInstances = [];
-
     Object.keys(this.fediverseData).forEach((fediKey) => {
       const fediverse = this.fediverseData[fediKey];
-      // logging.info("fediverseString", fediverseString);
       const baseUrl = fediKey.replace("fediverse:", "");
-      // logging.info("baseUrl", baseUrl);
-
-      // const fediverse = JSON.parse(fediverseString);
-      // logging.info("fediverse", fediverse);
       if (fediverse.name) {
-        // list kbin
-        if (fediverse.name === "kbin") {
-          kbinInstances.push(baseUrl);
-        }
-
         if (!softwareBaseUrls[fediverse.name]) {
           softwareBaseUrls[fediverse.name] = [baseUrl];
         } else {
@@ -550,13 +629,6 @@ export default class CrawlOutput {
         });
       }
     });
-    // logging.info(
-    //   "Fediverse Servers",
-    //   returnStats.length,
-    //   softwareNames,
-    //   softwareBaseUrls
-    // );
-    await this.splitter.storeKbinInstanceList(kbinInstances);
 
     await this.splitter.storeFediverseData(
       returnStats,
@@ -564,6 +636,27 @@ export default class CrawlOutput {
       softwareBaseUrls
     );
 
+    return returnStats;
+  }
+
+  async outputKBinInstanceList(returnStats) {
+    let kbinInstances = returnStats
+      .map((fediverse) => {
+        // const fediverse = this.fediverseData[fediKey];
+
+        if (fediverse.software && fediverse.software === "kbin") {
+          return fediverse.url;
+        }
+        return null;
+      })
+      .filter((instance) => instance !== null);
+
+    await this.splitter.storeKbinInstanceList(kbinInstances);
+
+    return kbinInstances;
+  }
+
+  async outputClassifiedErrors() {
     let instanceErrors = [];
 
     // key value in errors
@@ -600,31 +693,14 @@ export default class CrawlOutput {
     //   }
     // });
 
-    logging.info("instanceErrors", instanceErrors.length, errorTypes);
+    console.log("Error Types by Count");
+    console.table(errorTypes);
+
+    // logging.info("instanceErrors", instanceErrors.length, errorTypes);
+
     await this.splitter.storeInstanceErrors(instanceErrors);
 
-    const packageJson = JSON.parse(
-      await readFile(new URL("../../package.json", import.meta.url))
-    );
-
-    const metaData = {
-      instances: storeData.length,
-      communities: storeCommunityData.length,
-      magazines: kbinMagazineCount,
-      fediverse: returnStats.length,
-      time: Date.now(),
-      package: packageJson.name,
-      version: packageJson.version,
-
-      // top 10 linked, allowed, blocked domains
-      // sort by count of times seen on each list
-      linked: linkedFederation,
-      allowed: allowedFederation,
-      blocked: blockedFederation,
-    };
-    await this.splitter.storeMetaData(metaData);
-
-    return true;
+    return instanceErrors;
   }
 
   // generate a list of all the instances that are suspicious and the reasons
@@ -654,7 +730,7 @@ export default class CrawlOutput {
   }
 
   // generate a list of all the instances that are suspicious and the reasons
-  async outputKBinList() {
+  async outputKBinMagazineList() {
     const output = [];
 
     // filter old data
@@ -662,11 +738,11 @@ export default class CrawlOutput {
       return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE_MS;
     });
 
-    logging.info(
-      "KBin Magazines filteredKBins",
-      this.kbinData.length,
-      filteredKBins.length
-    );
+    // logging.info(
+    //   "KBin Magazines filteredKBins",
+    //   this.kbinData.length,
+    //   filteredKBins.length
+    // );
 
     for (const kbin of filteredKBins) {
       output.push({
@@ -693,6 +769,6 @@ export default class CrawlOutput {
 
     await this.splitter.storeKBinMagazineData(output);
 
-    return filteredKBins.length;
+    return filteredKBins;
   }
 }
