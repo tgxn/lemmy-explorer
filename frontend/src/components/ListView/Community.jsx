@@ -20,6 +20,7 @@ const CommunityList = React.memo(function ({ items }) {
     <VirtualTable items={items}>
       {({ width }) => [
         <Column
+          key="title"
           label="Title"
           dataKey="title"
           flexGrow={1}
@@ -115,6 +116,7 @@ const CommunityList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="counts"
           label="Active Users"
           dataKey="counts"
           width={width}
@@ -131,6 +133,7 @@ const CommunityList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="subscribers"
           label="Subscribers"
           dataKey="subscribers"
           width={width}
@@ -142,6 +145,7 @@ const CommunityList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="posts"
           label="Posts"
           dataKey="posts"
           width={width}
@@ -153,6 +157,7 @@ const CommunityList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="comments"
           label="Comments"
           dataKey="comments"
           width={width}
