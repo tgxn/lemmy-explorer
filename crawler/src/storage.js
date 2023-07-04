@@ -32,14 +32,14 @@ class Storage {
 
   async connect() {
     if (!this.client.isOpen) {
-      // logging.warn("12341234 Redis client not open, opening...");
       await this.client.connect();
     }
   }
 
-  close() {
-    // logging.warn("12341234 Closing Redis client");
-    this.client.quit();
+  async close() {
+    if (this.client.isOpen) {
+      await this.client.quit();
+    }
   }
 
   async putRedis(key, value) {
@@ -118,5 +118,6 @@ class Storage {
     return keys;
   }
 }
+
 const storage = new Storage();
 export default storage;

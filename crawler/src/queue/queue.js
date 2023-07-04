@@ -8,7 +8,7 @@ import { CrawlTooRecentError } from "../lib/error.js";
 import { CRAWL_TIMEOUT } from "../lib/const.js";
 
 export default class BaseQueue {
-  constructor(isWorker = false, queueName, jobProcessor) {
+  constructor(isWorker, queueName, jobProcessor) {
     this.queueName = queueName;
     this.jobProcessor = jobProcessor;
 
@@ -17,7 +17,8 @@ export default class BaseQueue {
     this.queue = new Queue(queueName, {
       removeOnSuccess: true,
       removeOnFailure: true,
-      isWorker,
+      isWorker: isWorker,
+      getEvents: isWorker,
     });
 
     // report failures!
@@ -36,13 +37,15 @@ export default class BaseQueue {
     const job = this.queue.createJob(jobData);
     logging.silly(`${this.logPrefix} createJob`, jobData);
 
-    await job.timeout(CRAWL_TIMEOUT.KBIN).setId(jobId).save();
     job.on("succeeded", (result) => {
+      logging.silly(`${this.logPrefix} ${job.id} succeeded`, jobData);
       onSuccess && onSuccess(result);
     });
+
+    await job.timeout(CRAWL_TIMEOUT.KBIN).setId(jobId).save();
   }
 
-  async process() {
+  process() {
     this.queue.process(async (job) => {
       await storage.connect();
 
@@ -83,7 +86,7 @@ export default class BaseQueue {
       }
 
       // close redis connection on end of job
-      storage.close();
+      await storage.close();
       return resultData;
     });
   }

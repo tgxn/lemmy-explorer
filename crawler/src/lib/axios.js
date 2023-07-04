@@ -45,7 +45,7 @@ export default class AxiosClient {
         );
       }
 
-      if (e.response.data) {
+      if (e.response && e.response.data) {
         throw new CrawlError(
           `Failed to get url ${url} after ${maxRetries} attempts: ${e.message}`,
           e.response.data

@@ -9,53 +9,19 @@ import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
 
 import CommunityCrawler from "../crawl/community.js";
 
-export default class CommunityQueue {
+import BaseQueue from "./queue.js";
+
+export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
-    this.queue = new Queue(queueName, {
-      removeOnSuccess: true,
-      removeOnFailure: true,
-      isWorker,
-    });
-
-    // report failures!
-    this.queue.on("failed", (job, err) => {
-      logging.error(
-        `CommunityQueue Job ${job.id} failed with error ${err.message}`,
-        job,
-        err
-      );
-    });
-
-    if (isWorker) this.process();
-  }
-
-  async createJob(instanceBaseUrl, onSuccess = null) {
-    const trimmedUrl = instanceBaseUrl.trim();
-    const job = this.queue.createJob({ baseUrl: trimmedUrl });
-
-    logging.silly("CommunityQueue createJob", trimmedUrl);
-    await job
-      .timeout(CRAWL_TIMEOUT.COMMUNITY)
-      .setId(trimmedUrl) // deduplicate
-      .save();
-    job.on("succeeded", (result) => {
-      // logging.info(`Completed communityQueue ${job.id}`, instanceBaseUrl);
-      onSuccess && onSuccess(result);
-    });
-  }
-
-  async process() {
-    this.queue.process(async (job) => {
+    const processor = async ({ baseUrl }) => {
       await storage.connect();
 
       let communityData = null;
       try {
-        const instanceBaseUrl = job.data.baseUrl;
-
         // check if community's instance has already been crawled within MIN_RECRAWL_MS
         const lastCrawlTs = await storage.tracking.getLastCrawl(
           "community",
-          instanceBaseUrl
+          baseUrl
         );
         if (lastCrawlTs) {
           const lastCrawledMsAgo = Date.now() - lastCrawlTs;
@@ -71,7 +37,7 @@ export default class CommunityQueue {
         // check when the latest entry to errors was too recent
         const lastErrorTs = await storage.tracking.getOneError(
           "community",
-          instanceBaseUrl
+          baseUrl
         );
         if (lastErrorTs) {
           const lastErrorMsAgo = Date.now() - lastErrorTs;
@@ -82,15 +48,15 @@ export default class CommunityQueue {
           }
         }
 
-        const crawler = new CommunityCrawler(instanceBaseUrl);
+        const crawler = new CommunityCrawler(baseUrl);
         const communityData = await crawler.crawlList();
 
         // set last successful crawl
-        await storage.tracking.setLastCrawl("community", job.data.baseUrl);
+        await storage.tracking.setLastCrawl("community", baseUrl);
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
-            `[Community] [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
+            `[Community] [${baseUrl}] CrawlTooRecentError: ${error.message}`
           );
         } else {
           const errorDetail = {
@@ -102,21 +68,29 @@ export default class CommunityQueue {
           };
 
           // if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.tracking.upsertError(
-            "community",
-            job.data.baseUrl,
-            errorDetail
-          );
+          await storage.tracking.upsertError("community", baseUrl, errorDetail);
 
-          logging.error(
-            `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-          );
+          logging.error(`[Community] [${baseUrl}] Error: ${error.message}`);
         }
       }
 
       // close redis connection on end of job
-      storage.close();
+      await storage.close();
       return communityData;
-    });
+    };
+
+    super(isWorker, queueName, processor);
+  }
+
+  async createJob(instanceBaseUrl, onSuccess = null) {
+    const trimmedUrl = instanceBaseUrl.trim();
+
+    return await super.createJob(
+      trimmedUrl,
+      {
+        baseUrl: trimmedUrl,
+      },
+      onSuccess
+    );
   }
 }

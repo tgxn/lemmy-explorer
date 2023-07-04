@@ -19,7 +19,7 @@ import { START_URLS } from "../lib/const.js";
 
 // used to run tasks against db that exist after they are complete
 export default async function runTask(taskName = null) {
-  logging.info("Running Task:", taskName);
+  logging.silly("Running Task:", taskName);
 
   if (taskName == null) {
     logging.error("taskName is null");
@@ -64,21 +64,44 @@ export default async function runTask(taskName = null) {
 
     // get redis bb queue health from redis
     case "health":
+      const healthData = [];
+
       const instanceCrawl = new InstanceQueue(false);
       const counts = await instanceCrawl.queue.checkHealth();
-      logging.info("InstanceQueue:", counts);
+      healthData.push({
+        queue: "InstanceQueue",
+        ...counts,
+      });
 
       const communityCrawl = new CommunityQueue(false);
       const commCounts = await communityCrawl.queue.checkHealth();
-      logging.info("CommunityQueue:", commCounts);
+      healthData.push({
+        queue: "CommunityQueue",
+        ...commCounts,
+      });
 
       const singleCommCrawl = new SingleCommunityQueue(false);
       const commSingleCounts = await singleCommCrawl.queue.checkHealth();
-      logging.info("SingleCommunityQueue:", commSingleCounts);
+      healthData.push({
+        queue: "SingleCommunityQueue",
+        ...commSingleCounts,
+      });
 
       const kbinQHealthCrawl = new KBinQueue(false);
       const kbinQHeCounts = await kbinQHealthCrawl.queue.checkHealth();
-      logging.info("KBinQueue:", kbinQHeCounts);
+      healthData.push({
+        queue: "KBinQueue",
+        ...kbinQHeCounts,
+      });
+
+      console.info("Queue Health Metrics");
+      console.table(healthData, [
+        "queue",
+        "waiting",
+        "active",
+        "succeeded",
+        "failed",
+      ]);
 
       break;
 
@@ -104,7 +127,7 @@ export default async function runTask(taskName = null) {
       break;
   }
 
-  logging.info("Task Complete:", taskName);
-  storage.close();
+  logging.silly("Task Complete:", taskName);
+  await storage.close();
   return process.exit(0);
 }

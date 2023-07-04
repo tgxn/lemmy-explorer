@@ -55,6 +55,7 @@ export default class CommunityCrawler {
     );
 
     await storage.community.upsert(this.crawlDomain, community);
+
     return true;
   }
 
@@ -135,18 +136,6 @@ export default class CommunityCrawler {
 
       const promisesArray = await this.crawlCommunityPaginatedList();
       const resultPromises = await Promise.all(promisesArray);
-
-      // const save = async (filename, data) => {
-      //   let filehandle = null;
-      //   try {
-      //     filehandle = await open(filename, "w");
-      //     await filehandle.writeFile(data);
-      //   } finally {
-      //     await filehandle?.close();
-      //   }
-      // };
-
-      // await save(`community-raw-${this.crawlDomain}.json`, JSON.stringify(list));
 
       logging.info(
         `${this.logPrefix} Ended Success (${resultPromises.length} results)`
