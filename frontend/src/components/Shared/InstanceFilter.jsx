@@ -29,16 +29,14 @@ import { setFilteredInstances } from "../../reducers/configReducer";
 
 const LISTBOX_PADDING = 6; // px
 
-const ConnectedSwitch = connect((state) => ({
-  filteredInstances: state.configReducer.filteredInstances,
-}))(function ConnectedSwitch(props) {
+const CustomSwitch = React.memo((props) => {
   const { baseUrl, filteredInstances, dispatch, ...other } = props;
 
   const filtered = filteredInstances.indexOf(baseUrl) !== -1;
 
   const changeValue = (event) => {
     console.log("event.target.checked", baseUrl, event.target.checked);
-    // dispatch(setFilteredInstances({ ...excludedInstances, [dataSet.base]: !event.target.checked }));
+
     const removeIndex = filteredInstances.filter((instance) => instance != baseUrl);
     console.log("removeIndex", removeIndex, removeIndex.indexOf(baseUrl));
     if (event.target.checked) {
@@ -49,19 +47,12 @@ const ConnectedSwitch = connect((state) => ({
   };
 
   return (
-    <Switch
-      {...other}
-      checked={!filtered}
-      onChange={(event) => changeValue(event)}
-      // onChange={(event) => {
-      //   const newExcludedInstances = { ...excludedInstances };
-      //   newExcludedInstances[item.base] = !event.target.checked;
-      //   setExcludedInstances(newExcludedInstances);
-      // }}
-      sx={{ ml: "auto" }}
-    />
+    <Switch {...other} checked={!filtered} onChange={(event) => changeValue(event)} sx={{ ml: "auto" }} />
   );
 });
+const ConnectedSwitch = connect((state) => ({
+  filteredInstances: state.configReducer.filteredInstances,
+}))(CustomSwitch);
 
 function renderRow(props) {
   const { data, index, style } = props;
@@ -111,15 +102,7 @@ function renderRow(props) {
   );
 }
 
-const ConnectedDialog = connect((state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-}))(function DialogVerticalScroll({ isOpen, onClose, filterSuspicious, dispatch }) {
-  //   const [excludedInstances, setExcludedInstances] = React.useState(filteredInstances);
-
-  // debounce the filter text input
-  const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 100);
-
+const InstanceDialog = React.memo(({ isOpen, onClose, filterSuspicious, dispatch }) => {
   const {
     isLoading: loadingIns,
     error: errorIns,
@@ -127,6 +110,10 @@ const ConnectedDialog = connect((state) => ({
   } = useQueryCache("instanceMinData", "instance.min");
 
   const { isLoading: isLoadingSus, error: errorSus, data: dataSus } = useQueryCache("susData", "sus");
+
+  // debounce the filter text input
+  const [filterText, setFilterText] = React.useState("");
+  const debounceFilterText = useDebounce(filterText, 100);
 
   const filteredData = React.useMemo(() => {
     if (!dataIns || !dataSus) {
@@ -153,7 +140,7 @@ const ConnectedDialog = connect((state) => ({
     console.log("filteredData", filteredData);
 
     return filteredData.sort((a, b) => b.score - a.score);
-  }, [dataIns, debounceFilterText]);
+  }, [dataIns, dataSus, debounceFilterText]);
 
   if (loadingIns || isLoadingSus) {
     return null;
@@ -188,46 +175,16 @@ const ConnectedDialog = connect((state) => ({
         <FixedSizeList
           itemData={filteredData}
           height={itemSize * 10}
-          //   width="100%"
-          //   outerElementType={(props) => (
-          //     <List
-          //       {...props}
-          //       sx={{
-          //         // overflow: scroll ? "scroll" : "initial",
-          //         // width: "100%",
-          //         // pl: 0,
-          //         // pr: 0,
-          //         // mx: "calc(-1 * var(--ModalDialog-padding))",
-          //         // px: "var(--ModalDialog-padding)",
-          //         "& ul": {
-          //           padding: 0,
-          //           // zIndex: 1300,
-          //           margin: 0,
-          //           flexShrink: 0,
-          //         },
-          //       }}
-          //     />
-          //   )}
           innerElementType={(props) => <List {...props} />}
           itemSize={itemSize}
           overscanCount={5}
           itemCount={dataCount}
-          //   sx={
-          //     {
-          //       // overflow: scroll ? "scroll" : "initial",
-          //       // mx: "calc(-1 * var(--ModalDialog-padding))",
-          //       // px: "var(--ModalDialog-padding)",
-          //     }
-          //   }
         >
           {renderRow}
         </FixedSizeList>
-        {/* </List> */}
 
         <ButtonGroup
           variant={"outlined"}
-          //   size="md"
-
           buttonFlex={1}
           aria-label="flex button group"
           sx={{
@@ -261,6 +218,9 @@ const ConnectedDialog = connect((state) => ({
     </Modal>
   );
 });
+const ConnectedDialog = connect((state) => ({
+  filterSuspicious: state.configReducer.filterSuspicious,
+}))(InstanceDialog);
 
 function InstanceFilter({ filteredInstances }) {
   const [filterOpen, setFilterOpen] = React.useState(false);
