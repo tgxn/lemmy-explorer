@@ -18,7 +18,7 @@ export const IconAvatar = React.memo(function ({ src, alt }) {
   return <Avatar alt={alt} src={src} size="lg" sx={style} />;
 });
 
-const InstanceAvatarBase = React.memo(function ({ instance, homeBaseUrl, dispatch }) {
+const InstanceAvatarBase = function ({ instance, homeBaseUrl, dispatch }) {
   const [isHover, setIsHover] = React.useState(false);
   const isHomeUrl = homeBaseUrl == instance.baseurl;
 
@@ -85,9 +85,9 @@ const InstanceAvatarBase = React.memo(function ({ instance, homeBaseUrl, dispatc
       </Tooltip>
     </Badge>
   );
-});
+};
 
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
 });
-export const InstanceAvatar = connect(mapStateToProps)(InstanceAvatarBase);
+export const InstanceAvatar = React.memo(connect(mapStateToProps)(InstanceAvatarBase));

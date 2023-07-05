@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 
 import { useMasonry, usePositioner, useContainerPosition, useScroller } from "masonic";
 
@@ -16,7 +15,7 @@ const InstanceGrid = function ({ items }) {
   const positioner = usePositioner({ width, columnGutter: 16, maxColumnCount: 6, columnWidth: 280 }, [items]);
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardAsCallback = React.useCallback((props) => <InstanceCard instance={props.data} />);
+  const CardAsCallback = React.useCallback((props) => <InstanceCard instance={props.data} />, [isScrolling]);
 
   return useMasonry({
     containerRef,
@@ -25,8 +24,8 @@ const InstanceGrid = function ({ items }) {
     isScrolling,
     height,
     items,
-    overscanBy: 6,
+    overscanBy: 4,
     render: CardAsCallback,
   });
 };
-export default InstanceGrid;
+export default React.memo(InstanceGrid);

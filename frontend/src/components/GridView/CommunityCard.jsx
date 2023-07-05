@@ -1,6 +1,5 @@
 import React from "react";
 
-import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
@@ -20,7 +19,7 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-export default React.memo(function CommunityCard({ community }) {
+function CommunityCard({ community }) {
   return (
     <Card
       variant="outlined"
@@ -210,4 +209,5 @@ export default React.memo(function CommunityCard({ community }) {
     </Card>
     // </Grid>
   );
-});
+}
+export default CommunityCard;
