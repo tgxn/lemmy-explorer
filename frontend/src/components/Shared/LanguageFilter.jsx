@@ -7,7 +7,7 @@ import LanguageIcon from "@mui/icons-material/Language";
 
 import { DEFAULT_LANGS, BETTER_LANGS_LIST } from "../../lib/const";
 
-export default function LanguageFilter({ languageCodes, setLanguageCodes }) {
+const LanguageFilter = React.memo(({ languageCodes, setLanguageCodes }) => {
   console.log("LanguageFilter", DEFAULT_LANGS, languageCodes, setLanguageCodes);
   return (
     <Autocomplete
@@ -39,4 +39,5 @@ export default function LanguageFilter({ languageCodes, setLanguageCodes }) {
       }}
     />
   );
-}
+});
+export default LanguageFilter;
