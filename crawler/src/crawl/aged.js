@@ -24,7 +24,7 @@ export default class CrawlAged {
   }
 
   async getAged() {
-    logging.info("Fetching Aged Instances", new Date().toLocaleString());
+    logging.info("Fetching Aged Instances");
 
     const instances = await storage.instance.getAll();
 

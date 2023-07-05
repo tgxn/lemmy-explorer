@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "scheduler",
       script: "index.js",
-      args: ["-w cron"],
+      args: ["-w", "cron"],
       instances: 1,
       env_production: {
         NODE_ENV: "production",

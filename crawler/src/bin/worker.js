@@ -11,7 +11,11 @@ import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
 import CrawlKBin from "../crawl/kbin.js";
 
-import { AGED_CRON_EXPRESSION, UPTIME_CRON_EXPRESSION } from "../lib/const.js";
+import {
+  AGED_CRON_EXPRESSION,
+  KBIN_CRON_EXPRESSION,
+  UPTIME_CRON_EXPRESSION,
+} from "../lib/const.js";
 
 import storage from "../storage.js";
 
@@ -43,33 +47,51 @@ export default async function startWorker(startWorkerName = null) {
   else if (startWorkerName == "cron") {
     logging.info("Creating Cron Tasks (Aged/Uptime)");
 
-    const agedTask = cron.schedule(
+    logging.info("Creating Aged Cron Task", AGED_CRON_EXPRESSION);
+    cron.schedule(
       AGED_CRON_EXPRESSION,
-      async () => {
-        await storage.connect();
-        const aged = new CrawlAged();
-        await aged.createJobs();
-        await storage.close();
+      async (time) => {
+        try {
+          console.log("Running Aged Cron Task", time);
+          await storage.connect();
+
+          const aged = new CrawlAged();
+          await aged.createJobs();
+
+          await storage.close();
+        } catch (e) {
+          console.log("Error in Aged Cron Task", e);
+        }
       },
       {
         runOnInit: true,
       }
     );
 
-    const uptimeTask = cron.schedule(UPTIME_CRON_EXPRESSION, async () => {
+    // shares KBIN_CRON_EXPRESSION
+    logging.info("Creating KBin Cron Task", KBIN_CRON_EXPRESSION);
+    cron.schedule(KBIN_CRON_EXPRESSION, async (time) => {
+      console.log("Running KBin Cron Task", time);
       await storage.connect();
-      const uptime = new CrawlUptime();
-      await uptime.crawl();
+
+      const kbinScan = new CrawlKBin();
+      await kbinScan.createJobsAllKBin();
+
       await storage.close();
     });
 
-    // shares AGED_CRON_EXPRESSION since it should happen at the same time (hourly check if they need a re-scan)
-    const kbinTask = cron.schedule(AGED_CRON_EXPRESSION, async () => {
+    logging.info("Creating Uptime Cron Task", UPTIME_CRON_EXPRESSION);
+    cron.schedule(UPTIME_CRON_EXPRESSION, async (time) => {
+      console.log("Running Uptime Cron Task", time);
       await storage.connect();
-      const kbinScan = new CrawlKBin();
-      await kbinScan.createJobsAllKBin();
+
+      const uptime = new CrawlUptime();
+      await uptime.crawl();
+
       await storage.close();
     });
+
+    logging.info("Cron Tasks Created");
 
     // if (AUTO_UPLOAD_S3) {
     //   console.log("Creating S3 Publish Cron Task", PUBLISH_S3_CRON);
