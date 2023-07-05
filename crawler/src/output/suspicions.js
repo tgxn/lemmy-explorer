@@ -181,15 +181,15 @@ export class Suspicions {
     const SUS_LEVEL = 20;
     if (metrics.userActivityScore > SUS_LEVEL) {
       reasons.push(
-        `user activity is low: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
+        `Total Users vs. Total Activity is LOW: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
       );
     }
 
-    const SUS_LEVEL_LOW = 400;
+    const SUS_LEVEL_LOW = 900;
     if (metrics.activityUserScore > SUS_LEVEL_LOW) {
       // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
       reasons.push(
-        `user activity is HIGH: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
+        `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
       );
     }
 
@@ -198,7 +198,7 @@ export class Suspicions {
     const susMaxPercent = 500;
     if (metrics.userActiveMonthScore > susMaxPercent) {
       reasons.push(
-        `monthly active user count is low: ${metrics.usersTotal} / ${metrics.usersMonth} = ${metrics.userActiveMonthScore}`
+        `MAU Count is LOW: ${metrics.usersTotal} / ${metrics.usersMonth} = ${metrics.userActiveMonthScore}`
       );
     }
 
