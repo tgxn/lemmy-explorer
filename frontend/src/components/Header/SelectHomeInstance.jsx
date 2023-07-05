@@ -192,6 +192,7 @@ function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
         }}
         options={data || []}
         loading={data == null}
+        getOptionSelected={(option, value) => option.code === value.code}
         renderOption={(props, option) => [props, option]}
         // TODO: Post React 18 update - validate this conversion, look like a hidden bug
         // renderGroup={(params) => params}
