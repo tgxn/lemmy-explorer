@@ -235,7 +235,7 @@ function KBinMagazines() {
         >
           {/* <Option value="smart">Smart Sort</Option> */}
           <Option value="followers">Followers</Option>
-          <Option value="active">Name</Option>
+          <Option value="name">Name</Option>
         </Select>
 
         {/* <InstanceFilter /> */}
