@@ -54,7 +54,62 @@ export default class CommunityCrawler {
       community.counts.subscribers
     );
 
+    if (community.counts.hot_rank) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "hot_rank",
+        community.counts.hot_rank
+      );
+    }
+
+    if (community.counts.posts) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "posts",
+        community.counts.posts
+      );
+    }
+
+    if (community.counts.comments) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "comments",
+        community.counts.comments
+      );
+    }
+
+    if (community.counts.users_active_day) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "users_active_day",
+        community.counts.users_active_day
+      );
+    }
+
+    if (community.counts.users_active_week) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "users_active_week",
+        community.counts.users_active_week
+      );
+    }
+
+    if (community.counts.users_active_month) {
+      await storage.community.setTrackedAttribute(
+        this.crawlDomain,
+        communityPart,
+        "users_active_month",
+        community.counts.users_active_month
+      );
+    }
+
     await storage.community.upsert(this.crawlDomain, community);
+
     return true;
   }
 
@@ -135,18 +190,6 @@ export default class CommunityCrawler {
 
       const promisesArray = await this.crawlCommunityPaginatedList();
       const resultPromises = await Promise.all(promisesArray);
-
-      // const save = async (filename, data) => {
-      //   let filehandle = null;
-      //   try {
-      //     filehandle = await open(filename, "w");
-      //     await filehandle.writeFile(data);
-      //   } finally {
-      //     await filehandle?.close();
-      //   }
-      // };
-
-      // await save(`community-raw-${this.crawlDomain}.json`, JSON.stringify(list));
 
       logging.info(
         `${this.logPrefix} Ended Success (${resultPromises.length} results)`

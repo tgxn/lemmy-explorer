@@ -205,6 +205,21 @@ export default class InstanceCrawler {
         "communities",
         siteInfo.site_view.counts.communities
       );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "users_active_day",
+        siteInfo.site_view.counts.users_active_day
+      );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "users_active_week",
+        siteInfo.site_view.counts.users_active_week
+      );
+      await storage.instance.setTrackedAttribute(
+        this.crawlDomain,
+        "users_active_month",
+        siteInfo.site_view.counts.users_active_month
+      );
     } catch (e) {
       console.error(e);
     }

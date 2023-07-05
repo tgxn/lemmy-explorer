@@ -59,6 +59,7 @@ export default class KBinQueue extends BaseQueue {
           error
         );
       }
+
       return false;
     };
 

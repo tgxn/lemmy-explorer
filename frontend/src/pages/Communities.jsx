@@ -48,7 +48,7 @@ function Communities({ filterSuspicious, filteredInstances }) {
 
   // debounce the filter text input
   const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 100);
+  const debounceFilterText = useDebounce(filterText, 250);
 
   // load query params
   useEffect(() => {

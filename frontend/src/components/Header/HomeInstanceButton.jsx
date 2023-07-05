@@ -23,30 +23,38 @@ import { changeInstanceType } from "../../reducers/configReducer";
 import SelectHomeInstance from "./SelectHomeInstance";
 
 function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
-  const [isOpen, setOpen] = React.useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
   const [isKbinInstance, _setIsKbinInstance] = React.useState(instanceType === "kbin");
+
   const setIsKbinInstance = (isKbin) => {
     _setIsKbinInstance(isKbin);
     dispatch(changeInstanceType(isKbin ? "kbin" : "lemmy"));
   };
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   useEffect(() => {
     setIsKbinInstance(instanceType === "kbin");
   }, [instanceType]);
 
   const handleClick = (event) => {
-    if (isOpen) setOpen(false);
-    else setOpen(true);
+    if (menuOpen) return handleClose();
 
     setAnchorEl(event.currentTarget);
+    setMenuOpen(true);
+  };
+  const handleClose = () => {
+    setMenuOpen(false);
+    setAnchorEl(null);
   };
 
   return (
     <>
       <Tooltip title={homeBaseUrl ? `Home instance: ${homeBaseUrl}` : "Set Home Instance"} variant="soft">
         <IconButton
+          aria-controls={menuOpen ? "home-instance-menu" : undefined}
+          aria-haspopup="true"
+          aria-expanded={menuOpen ? "true" : undefined}
           variant="outlined"
           color={homeBaseUrl ? "success" : "neutral"}
           sx={{ mr: 2, p: 1 }}
@@ -57,17 +65,13 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
         </IconButton>
       </Tooltip>
       <Menu
-        id="positioned-demo-menu"
+        id="home-instance-menu"
         anchorEl={anchorEl}
-        open={isOpen}
-        onClose={() => {
-          setOpen(false);
-          setAnchorEl(null);
-        }}
-        aria-labelledby="positioned-demo-button"
+        open={menuOpen}
+        onClose={handleClose}
         placement="bottom-end"
       >
-        <ListItem
+        <MenuItem
           disabled
           sx={{
             color: "text.body",
@@ -82,7 +86,7 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
               Community links will open on this instance.
             </Typography>
           </ListItemContent>
-        </ListItem>
+        </MenuItem>
 
         <ListDivider />
         <Box
@@ -110,7 +114,7 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
                 color={isKbinInstance ? "warning" : "success"}
                 checked={isKbinInstance}
                 onChange={(event) => setIsKbinInstance(event.target.checked)}
-                labelPlacement="end"
+                // labelPlacement="end"
               />
             </ListItemDecorator>
             <Box sx={{ px: 2 }}>

@@ -39,10 +39,15 @@ export function CopyLink({ copyText, linkProps }) {
   );
 }
 
-function CommunityLink({ community, homeBaseUrl, instanceType }) {
+const CommunityLink = React.memo(({ baseType, community, homeBaseUrl, instanceType }) => {
   const [instanceLink, tooltipTitle] = React.useMemo(() => {
     let instanceLink = `https://${community.baseurl}/c/${community.name}`;
     let tooltipTitle = `${community.baseurl}/c/${community.name}`;
+
+    if (baseType == "kbin") {
+      instanceLink = `https://${community.baseurl}/m/${community.name}`;
+      tooltipTitle = `${community.baseurl}/m/${community.name}`;
+    }
 
     // user has a home instance
     if (homeBaseUrl) {
@@ -80,7 +85,7 @@ function CommunityLink({ community, homeBaseUrl, instanceType }) {
       </Link>
     </Tooltip>
   );
-}
+});
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
   instanceType: state.configReducer.instanceType,

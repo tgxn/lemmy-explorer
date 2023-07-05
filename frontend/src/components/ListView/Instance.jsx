@@ -27,6 +27,7 @@ const InstanceList = React.memo(function ({ items }) {
     <VirtualTable items={items}>
       {({ width }) => [
         <Column
+          key="title"
           label="Title"
           dataKey="title"
           flexGrow={1}
@@ -97,6 +98,7 @@ const InstanceList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="users"
           label="Active Users"
           dataKey="counts"
           width={width}
@@ -113,6 +115,7 @@ const InstanceList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="posts"
           label="Posts"
           dataKey="posts"
           width={width}
@@ -124,6 +127,7 @@ const InstanceList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="comments"
           label="Comments"
           dataKey="comments"
           width={width}
@@ -135,6 +139,7 @@ const InstanceList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="blocks"
           label="Blocks"
           dataKey="blocks"
           width={width}
@@ -182,6 +187,7 @@ const InstanceList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="version"
           label="Version"
           dataKey="version"
           width={width}
@@ -193,6 +199,7 @@ const InstanceList = React.memo(function ({ items }) {
         />,
 
         <Column
+          key="first_seen"
           label="First Seen"
           dataKey="first_seen"
           width={width}

@@ -44,7 +44,7 @@ export default function InstanceView() {
 
     if (path.endsWith("communities")) {
       setTabIndex(1);
-    } else if (path.endsWith("version-history")) {
+    } else if (path.endsWith("user-growth")) {
       setTabIndex(2);
     } else if (path.endsWith("version-history")) {
       setTabIndex(3);

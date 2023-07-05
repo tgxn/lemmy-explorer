@@ -69,37 +69,13 @@ const KBin = React.memo(function ({ items }) {
                     }}
                   >
                     <ExtCommunityLink
+                      baseType="kbin"
                       community={{
                         baseurl: rowData.baseurl, // for link
                         name: rowData.preferred, // for link
                         title: rowData.name, // for display
                       }}
                     />
-                    {/* <Tooltip
-                      title={"Visit: " + rowData.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
-                      variant="soft"
-                      placement="top-start"
-                    >
-                      <Link
-                        level="body1"
-                        variant="plain"
-                        alt={rowData.name}
-                        color="neutral"
-                        href={
-                          homeBaseUrl
-                            ? `https://${homeBaseUrl}/c/${rowData.name}@${
-                                rowData.url && rowData.url.split("/")[2]
-                              }`
-                            : rowData.url
-                        }
-                        target="_blank"
-                        sx={{
-                          color: "var(--joy-palette-primary-50)",
-                        }}
-                      >
-                        {rowData.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-                      </Link>
-                    </Tooltip> */}
                   </Typography>
 
                   <Typography level="body3">

@@ -1,3 +1,5 @@
+import logging from "./lib/logging.js";
+
 import { createClient } from "redis";
 
 import { REDIS_URL } from "./lib/const.js";
@@ -18,12 +20,6 @@ class Storage {
     });
 
     this.attributeMaxAge = 1000 * 60 * 60 * 24 * 7; // 7 days
-  }
-
-  async connect() {
-    if (!this.client.isOpen) {
-      await this.client.connect();
-    }
 
     this.instance = new InstanceStore(this);
     this.community = new CommunityStore(this);
@@ -34,8 +30,16 @@ class Storage {
     this.kbin = new KBinStore(this);
   }
 
-  close() {
-    this.client.quit();
+  async connect() {
+    if (!this.client.isOpen) {
+      await this.client.connect();
+    }
+  }
+
+  async close() {
+    if (this.client.isOpen) {
+      await this.client.quit();
+    }
   }
 
   async putRedis(key, value) {
@@ -114,5 +118,6 @@ class Storage {
     return keys;
   }
 }
+
 const storage = new Storage();
 export default storage;

@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 
 import { useMasonry, usePositioner, useContainerPosition, useScroller } from "masonic";
 
@@ -7,7 +6,7 @@ import { useWindowSize } from "@react-hook/window-size";
 
 import KBinCard from "./KBinCard";
 
-const KBinGrid = function ({ items }) {
+const KBinGrid = React.memo(function ({ items }) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -17,7 +16,7 @@ const KBinGrid = function ({ items }) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardAsCallback = React.useCallback((props) => <KBinCard magazine={props.data} />);
+  const CardAsCallback = React.useCallback((props) => <KBinCard magazine={props.data} />, [isScrolling]);
 
   return useMasonry({
     containerRef,
@@ -29,5 +28,5 @@ const KBinGrid = function ({ items }) {
     overscanBy: 6,
     render: CardAsCallback,
   });
-};
+});
 export default KBinGrid;

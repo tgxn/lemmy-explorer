@@ -37,10 +37,12 @@ const RECRAWL_FEDIVERSE_HOURS = 24 * 7;
 export const RECRAWL_FEDIVERSE_MS = hoursToMs(RECRAWL_FEDIVERSE_HOURS);
 
 // how often should the cron run with --cron
-export const AGED_CRON_EXPRESSION = "0 * * * *"; // every hour
+export const AGED_CRON_EXPRESSION = "*/15 * * * *"; // every 15 minutes
 
 // how often to hit fediverse.observer to get uptimes with --cron
 export const UPTIME_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
+
+export const KBIN_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
 
 // the maximum age for output items to be included in the json dumps
 const OUTPUT_MAX_AGE_HOURS = 12;

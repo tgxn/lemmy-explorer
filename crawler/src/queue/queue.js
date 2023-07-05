@@ -8,7 +8,7 @@ import { CrawlTooRecentError } from "../lib/error.js";
 import { CRAWL_TIMEOUT } from "../lib/const.js";
 
 export default class BaseQueue {
-  constructor(isWorker = false, queueName, jobProcessor) {
+  constructor(isWorker, queueName, jobProcessor) {
     this.queueName = queueName;
     this.jobProcessor = jobProcessor;
 
@@ -17,7 +17,8 @@ export default class BaseQueue {
     this.queue = new Queue(queueName, {
       removeOnSuccess: true,
       removeOnFailure: true,
-      isWorker,
+      isWorker: isWorker,
+      getEvents: isWorker,
     });
 
     // report failures!
@@ -36,65 +37,57 @@ export default class BaseQueue {
     const job = this.queue.createJob(jobData);
     logging.silly(`${this.logPrefix} createJob`, jobData);
 
-    await job.timeout(CRAWL_TIMEOUT.KBIN).setId(jobId).save();
     job.on("succeeded", (result) => {
+      logging.silly(`${this.logPrefix} ${job.id} succeeded`, jobData);
       onSuccess && onSuccess(result);
     });
+
+    await job.timeout(CRAWL_TIMEOUT.KBIN).setId(jobId).save();
   }
 
-  async process() {
+  process() {
     this.queue.process(async (job) => {
+      await storage.connect();
+
+      let resultData = null;
       try {
         logging.info(
           `${this.logPrefix} [${job.data.baseUrl}] Running Processor`
         );
 
-        const resultData = await this.jobProcessor(job.data);
-        return resultData;
+        resultData = await this.jobProcessor(job.data);
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
             `${this.logPrefix} [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
           );
-          return true;
+        } else {
+          // store all other errors
+          const errorDetail = {
+            error: error.message,
+            stack: error.stack,
+            isAxiosError: error.isAxiosError,
+            requestUrl: error.isAxiosError ? error.request.url : null,
+            time: Date.now(),
+          };
+
+          // if (error instanceof CrawlError || error instanceof AxiosError) {
+          await storage.tracking.upsertError(
+            this.queueName,
+            job.data.baseUrl,
+            errorDetail
+          );
+
+          logging.error(
+            `${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`,
+            error
+          );
         }
-
-        const errorDetail = {
-          error: error.message,
-          stack: error.stack,
-          isAxiosError: error.isAxiosError,
-          requestUrl: error.isAxiosError ? error.request.url : null,
-          time: Date.now(),
-        };
-
-        // if (error instanceof CrawlError || error instanceof AxiosError) {
-        await storage.tracking.upsertError(
-          this.queueName,
-          job.data.baseUrl,
-          errorDetail
-        );
-
-        logging.error(
-          `${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`,
-          error
-        );
-        //   }
-
-        //   // warning causes the job to leave the queue and no error to be created (it will be retried next time we add the job)
-        //   else if (error instanceof CrawlTooRecentError) {
-        //     logging.warn(
-        //       `[Community] [${job.data.baseUrl}] Warn: ${error.message}`
-        //     );
-        //   } else {
-        //     logging.verbose(
-        //       `[Community] [${job.data.baseUrl}] Error: ${error.message}`
-        //     );
-        //   }
-        // } finally {
-        //   // set last scan time if it was success or failure.
-        //   await storage.tracking.setLastCrawl("community", job.data.baseUrl);
       }
-      return false;
+
+      // close redis connection on end of job
+      await storage.close();
+      return resultData;
     });
   }
 }

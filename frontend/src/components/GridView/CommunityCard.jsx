@@ -1,6 +1,5 @@
 import React from "react";
 
-import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
@@ -20,7 +19,7 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-export default React.memo(function CommunityCard({ community }) {
+function CommunityCard({ community }) {
   return (
     <Card
       variant="outlined"
@@ -95,8 +94,7 @@ export default React.memo(function CommunityCard({ community }) {
         sx={(theme) => ({
           background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
           p: 0,
-          minHeight: "125px",
-          maxHeight: "150px",
+          height: "125px",
           overflow: "hidden",
           borderRadius: 0,
         })}
@@ -114,7 +112,7 @@ export default React.memo(function CommunityCard({ community }) {
         <Typography
           level="body3"
           sx={{
-            height: "90px",
+            height: "50px",
             maxHeight: "90px",
             overflow: "hidden",
           }}
@@ -211,4 +209,5 @@ export default React.memo(function CommunityCard({ community }) {
     </Card>
     // </Grid>
   );
-});
+}
+export default CommunityCard;

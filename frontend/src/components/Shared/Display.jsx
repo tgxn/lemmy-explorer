@@ -110,11 +110,11 @@ export const PageError = React.memo(function () {
   );
 });
 
-export const SimpleNumberFormat = React.memo(function SimpleNumberFormat({ value }) {
+export const SimpleNumberFormat = React.memo(({ value }) => {
   return <NumericFormat displayType="text" value={value} allowLeadingZeros thousandSeparator="," />;
 });
 
-export function TinyNumber({ value }) {
+export const TinyNumber = React.memo(({ value }) => {
   const number = React.useMemo(() => {
     if (value >= 1000000) {
       return (value / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
@@ -126,9 +126,9 @@ export function TinyNumber({ value }) {
   }, [value]);
 
   return <React.Fragment>{number}</React.Fragment>;
-}
+});
 
-export const BannerImage = React.memo(function BannerImage({ imageSrc }) {
+export const BannerImage = React.memo(({ imageSrc }) => {
   const { src, isLoading, error } = useImage({
     srcList: imageSrc,
     useSuspense: false,
@@ -161,7 +161,7 @@ export const BannerImage = React.memo(function BannerImage({ imageSrc }) {
   );
 });
 
-export function LinearValueLoader({ message = "Loading...", progress = 0 }) {
+export const LinearValueLoader = React.memo(({ message = "Loading...", progress = 0 }) => {
   return (
     <Box
       sx={{
@@ -197,4 +197,4 @@ export function LinearValueLoader({ message = "Loading...", progress = 0 }) {
       </LinearProgress>
     </Box>
   );
-}
+});

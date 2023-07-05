@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
 
-import useQueryCache from "../hooks/useQueryCache";
 import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
 
@@ -14,7 +12,6 @@ import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-import Checkbox from "@mui/joy/Checkbox";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
@@ -24,22 +21,15 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
-import InstanceFilter from "../components/Shared/InstanceFilter";
 
 import KBinGrid from "../components/GridView/KBin";
 import KBinList from "../components/ListView/KBin";
 
-function KBinMagazines({}) {
+function KBinMagazines() {
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
-  //   "communityData",
-  //   "community",
-  // );
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
     "magazinesData",
@@ -53,7 +43,7 @@ function KBinMagazines({}) {
 
   // debounce the filter text input
   const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 100);
+  const debounceFilterText = useDebounce(filterText, 500);
 
   // load query params
   useEffect(() => {
@@ -172,19 +162,12 @@ function KBinMagazines({}) {
     console.log(`Filtered ${communties.length} magazines`);
 
     // sorting
-
     if (orderBy === "followers") {
       communties = communties.sort((a, b) => b.followers - a.followers);
+    } else if (orderBy === "name") {
+      communties = communties.sort((a, b) => b.name - a.name);
     }
-    // else if (orderBy === "subscribers") {
-    //   communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
-    // } else if (orderBy === "active") {
-    //   communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
-    // } else if (orderBy === "posts") {
-    //   communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
-    // } else if (orderBy === "comments") {
-    //   communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
-    // }
+
     console.log(`Sorted ${communties.length} magazines`);
 
     console.log(
@@ -197,7 +180,7 @@ function KBinMagazines({}) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNSFW, orderBy, debounceFilterText]);
+  }, [data]);
 
   return (
     <Container
@@ -252,7 +235,7 @@ function KBinMagazines({}) {
         >
           {/* <Option value="smart">Smart Sort</Option> */}
           <Option value="followers">Followers</Option>
-          <Option value="active">Name</Option>
+          <Option value="name">Name</Option>
         </Select>
 
         {/* <InstanceFilter /> */}
@@ -343,9 +326,4 @@ function KBinMagazines({}) {
     </Container>
   );
 }
-
-const mapStateToProps = (state) => ({
-  // filterSuspicious: state.configReducer.filterSuspicious,
-  // filteredInstances: state.configReducer.filteredInstances,
-});
-export default connect(mapStateToProps)(KBinMagazines);
+export default React.memo(KBinMagazines);

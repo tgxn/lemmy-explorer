@@ -46,7 +46,7 @@ function Instances({ filterSuspicious }) {
 
   // debounce the filter text input
   const [filterText, setFilterText] = useStorage("instance.filterText", "");
-  const debounceFilterText = useDebounce(filterText, 100);
+  const debounceFilterText = useDebounce(filterText, 500);
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
 
@@ -66,7 +66,7 @@ function Instances({ filterSuspicious }) {
     if (showOpenOnly) parms.open = showOpenOnly;
 
     setSearchParams(parms);
-  }, [showOpenOnly, orderBy, filterText]);
+  }, [showOpenOnly, orderBy, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const instancesData = React.useMemo(() => {

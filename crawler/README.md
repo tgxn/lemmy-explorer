@@ -1,12 +1,15 @@
 # Crawler
 
-The crawler is set of nodejs scripts that crawl the Lemmy API and store the data in Redis.
+This is set of nodejs scripts that crawl the Lemmy API and store the data to Redis.
+They are also able to generate JSON output bundles for the frontend.
 
-There is a `npm run output` script to output the instances and communities to json for the frontend.
+A redis instance must be running on `localhost:6379` for the crawler to store data.
+There is a `node index.js --out` script to output the instances and communities to json for the frontend.
 
-## Usage
 
-### Basic Usage
+## Basic usage
+
+### How to start crawling
 
 1. Start redis server (`docker-compose up -d redis`)
  > Redis server config is in `lib/const.js`
@@ -19,28 +22,72 @@ There is a `npm run output` script to output the instances and communities to js
  > This will put some jobs into the queue based off the lists in `lib/const.js`
 
 
-### Output for Frontend
+## CLI Commands
 
-Generate output JSON files:
-`node index.js --out`
+### Tasks
 
-### Advanced
+`node index.js [options]`
 
-**Init Queue with Seed jobs**
-`node index.js --init`
+| Option | Description |
+| --- | --- |
+| `--out` | Output JSON files for frontend |
+| `--clean` | Clean up old jobs |
+| `--init` | Initialize queue with seed jobs |
+| `--health` | Check worker health |
+| `--aged` | Create jobs for aged instances and communities |
+| `--kbin` | Create jobs for kbin communities |
+| `--uptime` | Immediately crawl uptime data |
 
-**Run in single-job mode**
-Instance Job: `node index.js -i instance.example.com`
-Community Job: `node index.js -c instance.example.com`
 
-**Worker Health**
-`node index.js --health`
+#### **Examples**
 
-**Create Jobs for Aged Instances and Communities**
-`node index.js --aged`
+| Action | Command |
+| --- | --- |
+| Output json output bundles for frontend | `node index.js --out` |
+| Initialize queue with seed jobs | `node index.js --init` |
+| View worker health | `node index.js --health` |
+| Create jobs for aged instances and communities | `node index.js --aged` |
+| Immediately crawl uptime data | `node index.js --uptime` |
 
-**Immediately Crawl Uptime Data**
-`node index.js --uptime`
+
+### Start Workers
+
+`node index.js -w [worker_name]`
+
+| Worker | Description |
+| --- | --- |
+| `-w instance` | Crawl instances from the queue |
+| `-w community` | Crawl communities from the queue |
+| `-w single` | Crawl single communities from the queue |
+| `-w kbin` | Crawl kbin communities from the queue |
+| `-w cron` | Schedule all CRON jobs for aged instances and communities, etc |
+
+#### **Examples**
+
+| Action | Command |
+| --- | --- |
+| Start Instance Worker | `node index.js -w instance` |
+| Start CRON Worker | `node index.js -w cron` |
+
+
+
+### Start Manual Jobs
+
+`node index.js -m [worker] [base_url] [community_url]?`
+
+| Worker | Description |
+| --- | --- |
+| `-m [i\|instance] <base_url>` | Crawl a single instance |
+| `-m [c\|community] <base_url>` | Crawl a single instance's community list |
+| `-m [s\|single] <base_url> <community_name>` | Crawl a single community, delete if not exists |
+| `-m [k\|kbin] <base_url>` | Crawl a single community |
+
+#### **Examples**
+
+| Action | Command |
+| --- | --- |
+| Crawl a single instance | `node index.js -m i instance.example.com` |
+| Crawl a single instance's community list | `node index.js -m c instance.example.com` |
 
 
 
@@ -51,16 +98,18 @@ Redis is used to store crawled data.
 You can use `docker-compose up -d` to start a local redis server.
 Data is persisted to a `.data/redis` directory.
 
-## Instance
-key: `instance:<instance_id>`
+| Redis Key | Description |
+| --- | --- |
+| `attributes:*` | Tracked attribute sets _(change over time)_ |
+| `community:*` | Community details |
+| `deleted:*` | Deleted data _(recycle bin if something broken)_ |
+| `error:*` | Exception details |
+| `fediverse:*` | Fediverse data |
+| `instance:*` | Instance details |
+| `last_crawl:*` | Last crawl time for instances and communities |
+| `magazine:*` | Magazine data _(kbin magazines)_ |
+| `uptime:*` | Uptime data _(fetched from `api.fediverse.observer`)_ |
 
-stores details returned by the instance-level crawler. 
+Most of the keys have sub keys for the instance `base_url` or community `base_url:community_name`.
 
-### Community
-
-### Fediverse
-
-### Failure
-
-### Uptime
 
