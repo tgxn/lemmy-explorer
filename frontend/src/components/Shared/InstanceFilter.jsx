@@ -222,7 +222,7 @@ const ConnectedDialog = connect((state) => ({
   filterSuspicious: state.configReducer.filterSuspicious,
 }))(InstanceDialog);
 
-function InstanceFilter({ filteredInstances }) {
+const InstanceFilter = React.memo(({ filteredInstances }) => {
   const [filterOpen, setFilterOpen] = React.useState(false);
 
   return (
@@ -243,7 +243,7 @@ function InstanceFilter({ filteredInstances }) {
       </IconButton>
     </>
   );
-}
+});
 const mapStateToProps = (state) => ({
   filteredInstances: state.configReducer.filteredInstances,
 });
