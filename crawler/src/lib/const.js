@@ -354,6 +354,7 @@ export const START_URLS = [
   "lemmy.tgxn.net",
   "lemmygrad.ml",
   "lemmynsfw.com",
+  "lemmy.mods4ever.com",
   ...FEDDIT_URLS,
 ];
 
