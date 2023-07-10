@@ -29,7 +29,7 @@
 
         let htmlString = "";
         for (let file of fullFiles) {
-          htmlString += `<li><a href="${file.path}">${file.name}</a></li>`;
+          htmlString += `<li><a href="data/${file.path}">${file.name}</a></li>`;
         }
 
         document.getElementById("ulFull").innerHTML = htmlString;
@@ -62,7 +62,7 @@
 
         let htmlString = "";
         for (let file of fullFiles) {
-          htmlString += `<li><a href="${file.path}">${file.name}</a></li>`;
+          htmlString += `<li><a href="data/${file.path}">${file.name}</a></li>`;
         }
 
         document.getElementById("ulPartial").innerHTML = htmlString;
