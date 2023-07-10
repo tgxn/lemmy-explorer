@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - develop
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -62,6 +63,7 @@ jobs:
         with:
           path: ./.redis/
           key: cache-redis
+          cache-max-age: 3600
 
       # download redis db dump from s3
       - name: Download the Redis Dump
