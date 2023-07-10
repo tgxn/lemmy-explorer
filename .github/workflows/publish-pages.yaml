@@ -1,26 +1,55 @@
-name: package-frontend
+name: publish-pages
 
 on:
+  # Runs on pushes targeting the default branch
   push:
     branches:
       - main
+      - develop
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 
 jobs:
-
+   
   # download the redis dump from s3
   # create the json files for the redis data
   # upload the json files to github artifacts
-  generate_jsons:
+  publish_pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # environment: github-pages
 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # runs-on: ubuntu-latest
     steps:
+      # - name: Checkout
+      #   uses: actions/checkout@v3
 
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
       - name: root suid tar
         run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
 
       - uses: actions/checkout@v3
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
 
       - name: Cache Redis Dump
         id: cache-redis
@@ -83,6 +112,15 @@ jobs:
           name: dist-json-bundle
           path: |
             ./frontend/public/data/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: './pages/'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
 
       # stop redis
       - name: Stop Redis
@@ -185,3 +223,4 @@ jobs:
   #         generate_release_notes: true
   #         fail_on_unmatched_files: true
   #         files: ./dist-json-bundle.zip
+
