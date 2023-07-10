@@ -1,8 +1,12 @@
 FROM node:18
 
-ENV NPM_CONFIG_LOGLEVEL info
+RUN apt-get update
+RUN apt-get install bash
+
+ENV NPM_CONFIG_LOGLEVEL trace
 
 # Create app directory
+RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Install App

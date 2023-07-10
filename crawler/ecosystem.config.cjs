@@ -1,64 +1,53 @@
+const defaultOptions = {
+  // log_type: "raw",
+
+  // log_file: "/logs/combined.log",
+  combine_logs: true,
+
+  output: "/logs/out.log",
+  error: "/logs/error.log",
+  log: "/logs/combined.outerr.log",
+
+  // autorestart: true,
+  script: "index.js",
+};
+
 module.exports = {
   apps: [
     {
+      ...defaultOptions,
       name: "scheduler",
-      script: "index.js",
       args: ["-w", "cron"],
+      exec_mode: "fork",
       instances: 1,
-      env_production: {
-        NODE_ENV: "production",
-      },
-      env_development: {
-        NODE_ENV: "development",
-      },
     },
     {
+      ...defaultOptions,
       name: "crawl-instance",
-      script: "index.js",
       args: ["-w", "instance"],
-      instances: 8,
-      env_production: {
-        NODE_ENV: "production",
-      },
-      env_development: {
-        NODE_ENV: "development",
-      },
+      exec_mode: "fork",
+      instances: 4,
     },
     {
+      ...defaultOptions,
       name: "crawl-community",
-      script: "index.js",
       args: ["-w", "community"],
-      instances: 6,
-      env_production: {
-        NODE_ENV: "production",
-      },
-      env_development: {
-        NODE_ENV: "development",
-      },
+      exec_mode: "fork",
+      instances: 4,
     },
     {
+      ...defaultOptions,
       name: "crawl-one-community",
-      script: "index.js",
       args: ["-w", "single"],
-      instances: 4,
-      env_production: {
-        NODE_ENV: "production",
-      },
-      env_development: {
-        NODE_ENV: "development",
-      },
+      exec_mode: "fork",
+      instances: 2,
     },
     {
+      ...defaultOptions,
       name: "crawl-kbin",
-      script: "index.js",
       args: ["-w", "kbin"],
-      instances: 4,
-      env_production: {
-        NODE_ENV: "production",
-      },
-      env_development: {
-        NODE_ENV: "development",
-      },
+      exec_mode: "fork",
+      instances: 2,
     },
   ],
 };

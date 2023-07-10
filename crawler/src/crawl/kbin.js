@@ -164,7 +164,7 @@ export default class CrawlKBin {
   // this calls the current method from here https://github.com/tgxn/lemmy-explorer/issues/100#issuecomment-1617444934
   async getSketch(baseUrl) {
     var currentPath = process.cwd();
-    const printHelloCommand = `sh ${path.join(
+    const printHelloCommand = `/bin/bash ${path.join(
       currentPath,
       "src",
       "crawl",

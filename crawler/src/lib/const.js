@@ -8,10 +8,17 @@ export const LOG_LEVEL = process.env.LOG_PATH || "debug";
 
 // should there be a cron job to upload the exported data to s3 automatically?
 export const AUTO_UPLOAD_S3 = process.env.AUTO_UPLOAD_S3 || false;
-export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || "";
 
-// every 2 hours by default
-export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */2 * * *";
+export const REDIS_DUMP_FILE =
+  process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
+export const CHECKPOINT_DIR = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
+
+export const AWS_REGION = process.env.AWS_REGION || "ap-southeast-2";
+export const PUBLISH_S3_BUCKET =
+  process.env.PUBLISH_S3_BUCKET || "lemmyexplorer-build-bucket";
+
+// every 4 hours by default
+export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */4 * * *";
 
 // timeout for the instance and community crawlers
 export const CRAWL_TIMEOUT = {
@@ -354,6 +361,7 @@ export const START_URLS = [
   "lemmy.tgxn.net",
   "lemmygrad.ml",
   "lemmynsfw.com",
+  "lemmy.mods4ever.com",
   ...FEDDIT_URLS,
 ];
 

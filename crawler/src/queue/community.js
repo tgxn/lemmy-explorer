@@ -14,7 +14,7 @@ import BaseQueue from "./queue.js";
 export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
     const processor = async ({ baseUrl }) => {
-      await storage.connect();
+      // await storage.connect();
 
       let communityData = null;
       try {
@@ -75,7 +75,7 @@ export default class CommunityQueue extends BaseQueue {
       }
 
       // close redis connection on end of job
-      await storage.close();
+      // await storage.close();
       return communityData;
     };
 

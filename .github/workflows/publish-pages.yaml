@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - develop
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -54,6 +55,10 @@ jobs:
         with:
           node-version: 18.15.0
      
+      - name: get current hour for cache busting
+        id: cache-hour
+        run: echo "hour=$(date +'%Y-%m-%d-%H')" >>$GITHUB_OUTPUT
+
       - name: Cache Redis Dump
         id: cache-redis
         uses: actions/cache@v3
@@ -61,7 +66,7 @@ jobs:
           cache-name: cache-redis
         with:
           path: ./.redis/
-          key: cache-redis
+          key: cache-redis-${{ steps.cache-hour.outputs.hour }}
 
       # download redis db dump from s3
       - name: Download the Redis Dump
@@ -69,7 +74,7 @@ jobs:
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
-          source: s3://${{ vars.BUILD_S3_BUCKET }}/dump.rdb
+          source: s3://${{ vars.BUILD_S3_BUCKET }}/checkpoint/dump.rdb
           destination: ./.redis/dump.rdb
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -104,7 +109,7 @@ jobs:
         working-directory: ./crawler
 
       # store the json files as artifacts
-      - name: archivew json artifacts
+      - name: archive json artifacts
         uses: actions/upload-artifact@v3
         with:
           name: dist-json-bundle
