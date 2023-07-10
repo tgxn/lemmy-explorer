@@ -188,27 +188,27 @@ jobs:
   #       with:
   #         node-version: 18.15.0
 
-      - name: List the JSON Bundle
-        run: ls -lah ./public/data
-        working-directory: ./frontend
+      # - name: List the JSON Bundle
+      #   run: ls -lah ./public/data
+      #   working-directory: ./frontend
 
-      - name: Cache NPM Modules
-        id: cache-frontend-npm
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-frontend-npm
-        with:
-          path: ./frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+      # - name: Cache NPM Modules
+      #   id: cache-frontend-npm
+      #   uses: actions/cache@v3
+      #   env:
+      #     cache-name: cache-frontend-npm
+      #   with:
+      #     path: ./frontend/node_modules/
+      #     key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install Dependencies
-        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ./frontend
+      # - name: Install Dependencies
+      #   if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+      #   run: npm ci
+      #   working-directory: ./frontend
         
-      - name: Build the Frontend
-        run: npm run build
-        working-directory: ./frontend
+      # - name: Build the Frontend
+      #   run: npm run build
+      #   working-directory: ./frontend
 
   #     # store the frontend bundle as artifact
   #     - name: Archive production artifacts
