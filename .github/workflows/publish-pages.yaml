@@ -10,6 +10,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # run every 6 hours
+  schedule:
+    - cron: "0 */6 * * *"
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
@@ -21,7 +25,6 @@ permissions:
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 
 jobs:
    
@@ -51,6 +54,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+     
       - name: Cache Redis Dump
         id: cache-redis
         uses: actions/cache@v3
@@ -81,11 +89,6 @@ jobs:
       - working-directory: ./crawler
         run: docker-compose -f "docker-compose.github.yaml" logs redis
 
-      - name: Use Node.js 18.15.0
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.15.0
-     
       # install npm dependencies
       - name: Cache NPM Modules
         id: cache-crawler-npm

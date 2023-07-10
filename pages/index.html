@@ -71,8 +71,9 @@
       async function getMeta() {
         const response = await fetch("data/meta.json");
         const data = await response.json();
-
         console.log(data);
+
+        document.getElementById("ulPartial").innerHTML = htmlString;
       }
 
       window.addEventListener("DOMContentLoaded", (event) => {
@@ -85,6 +86,8 @@
 
   <body>
     <h2>Main (Full) Files</h2>
+
+    <h3 id="updated"></h3>
 
     <ul id="ulFull"></ul>
 
