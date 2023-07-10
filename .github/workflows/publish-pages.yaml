@@ -1,18 +1,42 @@
-name: package-frontend
+name: publish-pages
 
 on:
+  # Runs on pushes targeting the default branch
   push:
     branches:
       - main
 
-jobs:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
+  # run every 6 hours
+  schedule:
+    - cron: "0 */6 * * *"
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+   
   # download the redis dump from s3
   # create the json files for the redis data
   # upload the json files to github artifacts
-  generate_jsons:
+  publish_pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
 
@@ -22,6 +46,14 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+     
       - name: Cache Redis Dump
         id: cache-redis
         uses: actions/cache@v3
@@ -52,11 +84,6 @@ jobs:
       - working-directory: ./crawler
         run: docker-compose -f "docker-compose.github.yaml" logs redis
 
-      - name: Use Node.js 18.15.0
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.15.0
-     
       # install npm dependencies
       - name: Cache NPM Modules
         id: cache-crawler-npm
@@ -77,12 +104,45 @@ jobs:
         working-directory: ./crawler
 
       # store the json files as artifacts
-      - name: Archive production artifacts
+      - name: archivew json artifacts
         uses: actions/upload-artifact@v3
         with:
           name: dist-json-bundle
           path: |
             ./frontend/public/data/
+
+      - name: copy the json files to github pages
+        working-directory: ./
+        run: cp -r ./frontend/public/data/ ./pages/public/
+
+      # build pages frontend
+      - name: Cache NPM Modules
+        id: cache-pages-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-pages-npm
+        with:
+          path: ./pages/node_modules/
+          key: cache-pages-npm-${{ hashFiles('pages/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-pages-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./pages
+        
+      - name: Build the Frontend for Pages
+        run: npm run build
+        working-directory: ./pages
+
+      # upload pages
+      - name: upload github pages artifacts
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./pages/dist/
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
 
       # stop redis
       - name: Stop Redis
@@ -116,27 +176,27 @@ jobs:
   #       with:
   #         node-version: 18.15.0
 
-  #     - name: List the JSON Bundle
-  #       run: ls -lah ./public/data
-  #       working-directory: ./frontend
+      # - name: List the JSON Bundle
+      #   run: ls -lah ./public/data
+      #   working-directory: ./frontend
 
-  #     - name: Cache NPM Modules
-  #       id: cache-frontend-npm
-  #       uses: actions/cache@v3
-  #       env:
-  #         cache-name: cache-frontend-npm
-  #       with:
-  #         path: ./frontend/node_modules/
-  #         key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+      # - name: Cache NPM Modules
+      #   id: cache-frontend-npm
+      #   uses: actions/cache@v3
+      #   env:
+      #     cache-name: cache-frontend-npm
+      #   with:
+      #     path: ./frontend/node_modules/
+      #     key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
 
-  #     - name: Install Dependencies
-  #       if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-  #       run: npm ci
-  #       working-directory: ./frontend
+      # - name: Install Dependencies
+      #   if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+      #   run: npm ci
+      #   working-directory: ./frontend
         
-  #     - name: Build the Frontend
-  #       run: npm run build
-  #       working-directory: ./frontend
+      # - name: Build the Frontend
+      #   run: npm run build
+      #   working-directory: ./frontend
 
   #     # store the frontend bundle as artifact
   #     - name: Archive production artifacts
@@ -185,3 +245,4 @@ jobs:
   #         generate_release_notes: true
   #         fail_on_unmatched_files: true
   #         files: ./dist-json-bundle.zip
+
