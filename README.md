@@ -1,4 +1,7 @@
-# Lemmy Explorer (https://lemmyverse.net/)
+[![publish-pages](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml)
+
+# Lemmy Explorer https://lemmyverse.net/
+Data Dumps: https://data.lemmyverse.net/
 
 This project provides a simple way to explore Lemmy Instances and Communities.
 
