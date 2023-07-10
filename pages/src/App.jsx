@@ -11,6 +11,9 @@ import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
 import Chip from "@mui/joy/Chip";
+import Button from "@mui/joy/Button";
+
+import GitHubIcon from "@mui/icons-material/GitHub";
 
 import useQueryCache from "./hooks/useQueryCache";
 
@@ -219,6 +222,21 @@ export default function App() {
           );
         })}
       </List>
+      <Box
+        sx={{
+          p: 2,
+          textAlign: "center",
+        }}
+      >
+        <Button
+          startDecorator={<GitHubIcon />}
+          href="https://github.com/tgxn/lemmy-explorer"
+          target="_lv_github"
+          component="a"
+        >
+          View Code on GitHub
+        </Button>
+      </Box>
     </Container>
   );
 }
