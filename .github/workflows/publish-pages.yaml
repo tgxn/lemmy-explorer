@@ -69,7 +69,7 @@ jobs:
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
-          source: s3://${{ vars.BUILD_S3_BUCKET }}/dump.rdb
+          source: s3://${{ vars.BUILD_S3_BUCKET }}/checkpoint/dump.rdb
           destination: ./.redis/dump.rdb
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

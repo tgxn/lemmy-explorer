@@ -22,6 +22,17 @@ There is a `node index.js --out` script to output the instances and communities 
  > This will put some jobs into the queue based off the lists in `lib/const.js`
 
 
+### Using Docker Compose
+
+The crawler can be run in docker-compose with the following commands.
+
+1. Start redis server in background (`docker-compose up -d redis`)
+
+2. Start crawler in foreground (`docker-compose up crawler --build`)
+ > You can also use `docker-compose up -d crawler --build` and then use `docker-compose logs -f crawler` to monitor it.
+
+If you want to configure auto-upload to s3 or anything, you need to copy the `.env.example` to `.env` and edit it.
+
 ## CLI Commands
 
 ### Tasks

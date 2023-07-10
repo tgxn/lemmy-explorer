@@ -5,7 +5,7 @@ import Queue from "bee-queue";
 import storage from "../storage.js";
 
 import { CrawlTooRecentError } from "../lib/error.js";
-import { CRAWL_TIMEOUT } from "../lib/const.js";
+import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const.js";
 
 export default class BaseQueue {
   constructor(isWorker, queueName, jobProcessor) {
@@ -15,6 +15,7 @@ export default class BaseQueue {
     this.logPrefix = `[Queue] [${this.queueName}]`;
 
     this.queue = new Queue(queueName, {
+      redis: REDIS_URL,
       removeOnSuccess: true,
       removeOnFailure: true,
       isWorker: isWorker,

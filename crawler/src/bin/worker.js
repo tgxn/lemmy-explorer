@@ -11,7 +11,11 @@ import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
 import CrawlKBin from "../crawl/kbin.js";
 
+import dumpRedis from "../output/dumpredis.js";
+
 import {
+  AUTO_UPLOAD_S3,
+  PUBLISH_S3_CRON,
   AGED_CRON_EXPRESSION,
   KBIN_CRON_EXPRESSION,
   UPTIME_CRON_EXPRESSION,
@@ -48,25 +52,36 @@ export default async function startWorker(startWorkerName = null) {
     logging.info("Creating Cron Tasks (Aged/Uptime)");
 
     logging.info("Creating Aged Cron Task", AGED_CRON_EXPRESSION);
-    cron.schedule(
-      AGED_CRON_EXPRESSION,
-      async (time) => {
-        try {
-          console.log("Running Aged Cron Task", time);
-          await storage.connect();
+    cron.schedule(AGED_CRON_EXPRESSION, async (time) => {
+      try {
+        console.log("Running Aged Cron Task", time);
+        await storage.connect();
 
-          const aged = new CrawlAged();
-          await aged.createJobs();
+        const aged = new CrawlAged();
+        await aged.createJobs();
 
-          await storage.close();
-        } catch (e) {
-          console.log("Error in Aged Cron Task", e);
-        }
-      },
-      {
-        runOnInit: true,
+        await storage.close();
+      } catch (e) {
+        console.log("Error in Aged Cron Task", e);
       }
-    );
+    });
+
+    if (AUTO_UPLOAD_S3) {
+      logging.info("Creating DUMP Task", AGED_CRON_EXPRESSION);
+      cron.schedule(
+        PUBLISH_S3_CRON,
+        async (time) => {
+          try {
+            await dumpRedis();
+          } catch (e) {
+            console.log("Error in DUMP Task", e);
+          }
+        },
+        {
+          runOnInit: true,
+        }
+      );
+    }
 
     // shares KBIN_CRON_EXPRESSION
     logging.info("Creating KBin Cron Task", KBIN_CRON_EXPRESSION);
@@ -92,18 +107,5 @@ export default async function startWorker(startWorkerName = null) {
     });
 
     logging.info("Cron Tasks Created");
-
-    // if (AUTO_UPLOAD_S3) {
-    //   console.log("Creating S3 Publish Cron Task", PUBLISH_S3_CRON);
-    //   const outputTask = cron.schedule(UPTIME_CRON_EXPRESSION, async () => {
-    //     const output = new CrawlOutput();
-    //     const outputResult = await output.start();
-
-    //     // push to s3 if successful
-    //     if (outputResult) {
-    //       console.log("Should Push to S3", PUBLISH_S3_BUCKET);
-    //     }
-    //   });
-    // }
   }
 }

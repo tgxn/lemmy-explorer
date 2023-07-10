@@ -1,22 +1,39 @@
 version: '3.8'
+
+networks:
+  crawler:
+    name: crawler
+
 services:
   redis:
     image: redis:6.2-alpine
     restart: always
+    networks:
+      - crawler
     ports:
       - '6379:6379'
     volumes: 
       - ./.data/redis:/data
 
-  # crawler:
-  #   build: .
-  #   image: crawler:local
-  #   restart: always
-  #   depends_on:
-  #     - redis
-  #   volumes:
-  #     - ./.data/crawler:/data 
-  #   environment:
-  #     REDIS_URL: redis://redis:6379
-  #     # AUTO_UPLOAD_S3: true
-      # PUBLISH_S3_BUCKET: lemmyexplorer-frontend-prod-sitebucket397a1860-cb3zfohjrbqb
+  crawler:
+    image: crawler:local
+    build: .
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - crawler
+    volumes:
+      - ./.data/logs:/logs:rw 
+      - ./.data/redis:/redis:ro
+    environment:
+      REDIS_URL: redis://redis:6379
+
+      # s3 upload
+      AUTO_UPLOAD_S3: true
+      REDIS_DUMP_FILE: /redis/dump.rdb
+
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      PUBLISH_S3_BUCKET: ${PUBLISH_S3_BUCKET}
