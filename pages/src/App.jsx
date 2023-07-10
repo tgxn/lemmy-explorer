@@ -10,6 +10,7 @@ import Link from "@mui/joy/Link";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
+import Chip from "@mui/joy/Chip";
 
 import useQueryCache from "./hooks/useQueryCache";
 
@@ -24,7 +25,7 @@ const SimpleNumberFormat = React.memo(({ value }) => {
   );
 });
 
-function LinkLine({ file, count }) {
+function LinkLine({ file, count = null, chip = null }) {
   return (
     <ListItem
       key={file.path}
@@ -35,9 +36,26 @@ function LinkLine({ file, count }) {
       }}
     >
       <ListItemContent>
-        <Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {chip && (
+            <Chip
+              size={"sm"}
+              color={chip === "Full" ? "info" : "warning"}
+              sx={{
+                borderRadius: 0,
+                marginRight: 1,
+              }}
+            >
+              {chip}
+            </Chip>
+          )}
           <Link href={`data/${file.path}`}>{file.name}</Link>
-        </Typography>
+        </Box>
         {file.desc && (
           <Typography level="body2" noWrap>
             {file.desc}
@@ -54,31 +72,36 @@ function LinkLine({ file, count }) {
 export default function App() {
   const fullFiles = [
     {
-      name: "Instance - Full",
+      name: "Instance",
+      chip: "Full",
       desc: "all known instances, with all fields",
       path: "instance.full.json",
       count: "instances",
     },
     {
-      name: "Instance - Min",
+      name: "Instance",
+      chip: "Min",
       desc: "only name, baseurl, score",
       path: "instance.min.json",
       count: "instances",
     },
     {
-      name: "Community - Full",
+      name: "Community",
+      chip: "Full",
       desc: "an array of known communities, with all fields",
       path: "community.full.json",
       count: "communities",
     },
     {
-      name: "KBin Instances - Min",
+      name: "KBin Instances",
+      chip: "Min",
       desc: "an array of known kbin instances",
       path: "kbin.min.json",
       count: "instances",
     },
     {
-      name: "KBin Magazines - Full",
+      name: "KBin Magazines",
+      chip: "Full",
       desc: "an array of known kbin magazines",
       path: "magazines.full.json",
       count: "magazines",
@@ -144,8 +167,18 @@ export default function App() {
         </h1>
       </Box>
 
-      <Box>
-        <Box>Data Last Updated</Box>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Box
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
+          Data Last Updated
+        </Box>
         {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
       </Box>
 
@@ -157,7 +190,14 @@ export default function App() {
           if (file.count && metaData) {
             count = metaData[file.count];
           }
-          return <LinkLine file={file} count={count} key={file.path} />;
+          return (
+            <LinkLine
+              file={file}
+              count={count}
+              key={file.path}
+              chip={file.chip}
+            />
+          );
         })}
       </List>
 
@@ -169,7 +209,14 @@ export default function App() {
           if (file.count && metaData) {
             count = metaData[file.count];
           }
-          return <LinkLine file={file} count={count} key={file.path} />;
+          return (
+            <LinkLine
+              file={file}
+              count={count}
+              key={file.path}
+              chip={file.chip}
+            />
+          );
         })}
       </List>
     </Container>
