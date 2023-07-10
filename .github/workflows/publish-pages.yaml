@@ -105,18 +105,43 @@ jobs:
         run: node index.js --out
         working-directory: ./crawler
 
-      # store the json files as artifacts
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+
+      - name: List the JSON Bundle
+        run: ls -lah ./public/data
+        working-directory: ./frontend
+
+      - name: Cache NPM Modules
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
         with:
-          name: dist-json-bundle
-          path: |
-            ./frontend/public/data/
+          path: ./frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./frontend
+        
+      - name: Build the Frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      # store the json files as artifacts
+      # - name: Archive production artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: dist-json-bundle
+      #     path: |
+      #       ./frontend/public/data/
 
       - name: Run Output Script
         working-directory: ./
         run: |
           mkdir pagesDist
+          cp -r ./frontend/dist/ ./pagesDist/site/
+
           # copy the json files to github pages
           cp -r ./frontend/public/data/ ./pagesDist/
           # copy the index.html to github pages
@@ -163,27 +188,27 @@ jobs:
   #       with:
   #         node-version: 18.15.0
 
-  #     - name: List the JSON Bundle
-  #       run: ls -lah ./public/data
-  #       working-directory: ./frontend
+      - name: List the JSON Bundle
+        run: ls -lah ./public/data
+        working-directory: ./frontend
 
-  #     - name: Cache NPM Modules
-  #       id: cache-frontend-npm
-  #       uses: actions/cache@v3
-  #       env:
-  #         cache-name: cache-frontend-npm
-  #       with:
-  #         path: ./frontend/node_modules/
-  #         key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+      - name: Cache NPM Modules
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ./frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
 
-  #     - name: Install Dependencies
-  #       if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-  #       run: npm ci
-  #       working-directory: ./frontend
+      - name: Install Dependencies
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./frontend
         
-  #     - name: Build the Frontend
-  #       run: npm run build
-  #       working-directory: ./frontend
+      - name: Build the Frontend
+        run: npm run build
+        working-directory: ./frontend
 
   #     # store the frontend bundle as artifact
   #     - name: Archive production artifacts
