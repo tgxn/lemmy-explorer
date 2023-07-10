@@ -113,10 +113,19 @@ jobs:
           path: |
             ./frontend/public/data/
 
-      - name: Upload artifact
+      - name: Run Output Script
+        working-directory: ./
+        run: |
+          mkdir pagesDist
+          # copy the json files to github pages
+          cp -r ./frontend/public/data/ ./pagesDist/
+          # copy the index.html to github pages
+          cp ./pages/index.html ./pagesDist/
+
+      - name: upload github pages artifacts
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './pages/'
+          path: ./pagesDist/
           
       - name: Deploy to GitHub Pages
         id: deployment
