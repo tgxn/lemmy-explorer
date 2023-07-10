@@ -34,16 +34,12 @@ jobs:
   publish_pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # environment: github-pages
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # runs-on: ubuntu-latest
     steps:
-      # - name: Checkout
-      #   uses: actions/checkout@v3
 
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
       - name: root suid tar
@@ -108,52 +104,42 @@ jobs:
         run: node index.js --out
         working-directory: ./crawler
 
+      # store the json files as artifacts
+      - name: archivew json artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-json-bundle
+          path: |
+            ./frontend/public/data/
 
-      - name: List the JSON Bundle
-        run: ls -lah ./public/data
-        working-directory: ./frontend
+      - name: copy the json files to github pages
+        working-directory: ./
+        run: cp -r ./frontend/public/data/ ./pages/public/
 
+      # build pages frontend
       - name: Cache NPM Modules
-        id: cache-frontend-npm
+        id: cache-pages-npm
         uses: actions/cache@v3
         env:
-          cache-name: cache-frontend-npm
+          cache-name: cache-pages-npm
         with:
-          path: ./frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+          path: ./pages/node_modules/
+          key: cache-pages-npm-${{ hashFiles('pages/package-lock.json') }}
 
       - name: Install Dependencies
-        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        if: steps.cache-pages-npm.outputs.cache-hit != 'true'
         run: npm ci
-        working-directory: ./frontend
+        working-directory: ./pages
         
       - name: Build the Frontend for Pages
-        run: npm run build:pages
-        working-directory: ./frontend
+        run: npm run build
+        working-directory: ./pages
 
-      # store the json files as artifacts
-      # - name: Archive production artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist-json-bundle
-      #     path: |
-      #       ./frontend/public/data/
-
-      - name: Run Output Script
-        working-directory: ./
-        run: |
-          mkdir pagesDist
-          cp -r ./frontend/dist/ ./pagesDist/site/
-
-          # copy the json files to github pages
-          cp -r ./frontend/public/data/ ./pagesDist/
-          # copy the index.html to github pages
-          cp ./pages/index.html ./pagesDist/
-
+      # upload pages
       - name: upload github pages artifacts
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./pagesDist/
+          path: ./pages/dist/
           
       - name: Deploy to GitHub Pages
         id: deployment
