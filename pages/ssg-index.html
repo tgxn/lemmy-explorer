@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      async function fullData() {
+        console.log("test");
+        const fullFiles = [
+          {
+            name: "Instance Full",
+            path: "instance.full.json",
+          },
+          {
+            name: "Instance Min (contains only name, baseurl, score)",
+            path: "instance.min.json",
+          },
+          {
+            name: "Community Full",
+            path: "community.full.json",
+          },
+          {
+            name: "KBin Instances Min List",
+            path: "kbin.min.json",
+          },
+          {
+            name: "KBin Magazines Full",
+            path: "magazines.full.json",
+          },
+        ];
+
+        let htmlString = "";
+        for (let file of fullFiles) {
+          htmlString += `<li><a href="data/${file.path}">${file.name}</a></li>`;
+        }
+
+        document.getElementById("ulFull").innerHTML = htmlString;
+      }
+
+      async function partialData() {
+        console.log("test");
+        const fullFiles = [
+          {
+            name: "Overall Lemmy metadata - federated servers, counts, etc",
+            path: "meta.json",
+          },
+          {
+            name: "Suspicious sites metadata",
+            path: "sus.json",
+          },
+          {
+            name: "All known fediverse servers & versions",
+            path: "fediverse.json",
+          },
+          {
+            name: "Fediverse software instances by software",
+            path: "fediverse_software_sites.json",
+          },
+          {
+            name: "Fediverse software by count",
+            path: "fediverse_software_counts.json",
+          },
+        ];
+
+        let htmlString = "";
+        for (let file of fullFiles) {
+          htmlString += `<li><a href="data/${file.path}">${file.name}</a></li>`;
+        }
+
+        document.getElementById("ulPartial").innerHTML = htmlString;
+      }
+
+      async function getMeta() {
+        const response = await fetch("data/meta.json");
+        const data = await response.json();
+        console.log(data);
+
+        document.getElementById("ulPartial").innerHTML = htmlString;
+      }
+
+      window.addEventListener("DOMContentLoaded", (event) => {
+        getMeta();
+        fullData();
+        partialData();
+      });
+    </script>
+  </head>
+
+  <body>
+    <h2>Main (Full) Files</h2>
+
+    <h3 id="updated"></h3>
+
+    <ul id="ulFull"></ul>
+
+    <h2>Secondary (Partial, Supporting) Files</h2>
+
+    <ul id="ulPartial"></ul>
+  </body>
+</html>
