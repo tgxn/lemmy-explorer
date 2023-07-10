@@ -68,19 +68,13 @@ export default async function startWorker(startWorkerName = null) {
 
     if (AUTO_UPLOAD_S3) {
       logging.info("Creating DUMP Task", AGED_CRON_EXPRESSION);
-      cron.schedule(
-        PUBLISH_S3_CRON,
-        async (time) => {
-          try {
-            await dumpRedis();
-          } catch (e) {
-            console.log("Error in DUMP Task", e);
-          }
-        },
-        {
-          runOnInit: true,
+      cron.schedule(PUBLISH_S3_CRON, async (time) => {
+        try {
+          await dumpRedis();
+        } catch (e) {
+          console.log("Error in DUMP Task", e);
         }
-      );
+      });
     }
 
     // shares KBIN_CRON_EXPRESSION
