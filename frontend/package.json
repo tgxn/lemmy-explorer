@@ -9,6 +9,7 @@
     "start": "webpack serve --config webpack.dev.config.js",
     "build:dev": "webpack --config webpack.dev.config.js",
     "build": "webpack --config webpack.prod.config.js",
+    "build:pages": "webpack --config webpack.pages.config.js",
     "fcheck": "prettier --check .",
     "fwrite": "prettier --write .",
     "test": "mocha --require @babel/register --require @babel/polyfill ./tests/api.mjs"

@@ -124,8 +124,8 @@ jobs:
         run: npm ci
         working-directory: ./frontend
         
-      - name: Build the Frontend
-        run: npm run build
+      - name: Build the Frontend for Pages
+        run: npm run build:pages
         working-directory: ./frontend
 
       # store the json files as artifacts
