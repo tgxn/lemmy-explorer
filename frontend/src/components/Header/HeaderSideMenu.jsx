@@ -26,6 +26,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import PestControlIcon from "@mui/icons-material/PestControl";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import Face5Icon from "@mui/icons-material/Face5";
+import DataObjectIcon from "@mui/icons-material/DataObject";
 
 import HomeInstanceButton from "./HomeInstanceButton";
 
@@ -248,6 +249,13 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
             <PestControlIcon />
           </ListItemDecorator>
           Crawler Info
+        </MenuItem>
+
+        <MenuItem href="https://data.lemmyverse.net" target="_lv_data" component="a">
+          <ListItemDecorator>
+            <DataObjectIcon />
+          </ListItemDecorator>
+          Data Access
         </MenuItem>
       </Menu>
     </>
