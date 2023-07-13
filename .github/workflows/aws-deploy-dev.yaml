@@ -1,0 +1,172 @@
+name: deploy-aws-dev
+
+on:
+  push:
+    branches:
+      - aws_deploy
+
+jobs:
+  aws_cdk:
+    runs-on: ubuntu-latest
+    #  defaults:
+    #   run:
+    #     working-directory: ./cdk
+
+    steps:
+
+      # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
+      - name: root suid tar
+        run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
+
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18.15.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.15.0
+     
+      # download latest redis database
+      - name: get current hour for cache busting
+        id: cache-hour
+        run: echo "hour=$(date +'%Y-%m-%d-%H')" >>$GITHUB_OUTPUT
+
+      - name: Cache Redis Dump
+        id: cache-redis
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-redis
+        with:
+          path: ./.redis/
+          key: cache-redis-${{ steps.cache-hour.outputs.hour }}
+
+      # download redis db dump from s3
+      - name: Download the Redis Dump
+        if: steps.cache-redis.outputs.cache-hit != 'true'
+        uses: keithweaver/aws-s3-github-action@v1.0.0
+        with:
+          command: cp
+          source: s3://${{ vars.BUILD_S3_BUCKET }}/checkpoint/dump.rdb
+          destination: ./.redis/dump.rdb
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ap-southeast-2
+
+
+      # start redis & check if it is running
+      - name: Start Redis
+        working-directory: ./crawler
+        run: docker-compose -f "docker-compose.github.yaml" up -d redis
+      - working-directory: ./crawler
+        run: docker ps -a
+      - working-directory: ./crawler
+        run: docker-compose -f "docker-compose.github.yaml" logs redis
+
+
+      # install npm dependencies
+      - name: Cache NPM Modules
+        id: cache-crawler-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-crawler-npm
+        with:
+          path: ./crawler/node_modules/
+          key: cache-crawler-npm-${{ hashFiles('crawler/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./crawler
+
+      - name: Run Output Script
+        run: node index.js --out
+        working-directory: ./crawler
+
+
+      # install npm dependencies
+      - name: Cache NPM Modules
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ./frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build the Frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: archive frontend bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-frontend-bundle
+          path: |
+            ./frontend/dist/
+
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          working-directory: ./cdk
+          name: "config.json"
+          json: ${{ secrets.DEV_CONFIG }}
+
+      # install npm dependencies
+      - name: Cache NPM Modules
+        id: cache-cdk-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-cdk-npm
+        with:
+          path: ./cdk/node_modules/
+          key: cache-cdk-npm-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Dependencies
+        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ./cdk
+
+      # - name: CDK Diff
+      #   if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
+      #   run: cdk diff
+      #   working-directory: ./cdk
+
+
+
+      # - name: cdk diff
+      #   uses: youyo/aws-cdk-github-actions@v2
+      #   with:
+      #     working-directory: ./cdk
+      #     cdk_subcommand: 'diff'
+      #     actions_comment: true
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # - name: cdk deploy
+      #   uses: youyo/aws-cdk-github-actions@v2
+      #   working-directory: ./cdk
+      #   with:
+      #     cdk_subcommand: 'deploy'
+      #     cdk_stack: 'stack1'
+      #     cdk_args: '--require-approval never'
+      #     actions_comment: false
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # - name: cdk synth
+      #   uses: youyo/aws-cdk-github-actions@v2
+      #   working-directory: ./cdk
+      #   with:
+      #     cdk_subcommand: 'synth'
+      #     cdk_version: '1.16.2'
+      #     working_dir: 'src'
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
