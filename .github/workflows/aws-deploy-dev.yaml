@@ -112,7 +112,7 @@ jobs:
         id: create-json
         uses: jsdaniell/create-json@v1.2.2
         with:
-          working-directory: ./cdk
+          dir: ./cdk
           name: "config.json"
           json: ${{ secrets.DEV_CONFIG }}
 
@@ -126,15 +126,15 @@ jobs:
           path: ./cdk/node_modules/
           key: cache-cdk-npm-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install Dependencies
+      - name: Install CDK Dependencies
         if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./cdk
 
-      # - name: CDK Diff
-      #   if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
-      #   run: cdk diff
-      #   working-directory: ./cdk
+      - name: CDK Diff
+        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
+        run: cdk diff
+        working-directory: ./cdk
 
 
 
