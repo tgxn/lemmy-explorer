@@ -157,43 +157,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Deploy
-        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
-        run: cdk deploy --all
+        run: ./node_modules/.bin/cdk deploy --all
         working-directory: ./cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
-      # - name: cdk diff
-      #   uses: youyo/aws-cdk-github-actions@v2
-      #   with:
-      #     working-directory: ./cdk
-      #     cdk_subcommand: 'diff'
-      #     actions_comment: true
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      # - name: cdk deploy
-      #   uses: youyo/aws-cdk-github-actions@v2
-      #   working-directory: ./cdk
-      #   with:
-      #     cdk_subcommand: 'deploy'
-      #     cdk_stack: 'stack1'
-      #     cdk_args: '--require-approval never'
-      #     actions_comment: false
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      # - name: cdk synth
-      #   uses: youyo/aws-cdk-github-actions@v2
-      #   working-directory: ./cdk
-      #   with:
-      #     cdk_subcommand: 'synth'
-      #     cdk_version: '1.16.2'
-      #     working_dir: 'src'
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
