@@ -157,7 +157,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Deploy
-        run: ./node_modules/.bin/cdk deploy --all
+        run: ./node_modules/.bin/cdk deploy --all --require-approval never
         working-directory: ./cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
