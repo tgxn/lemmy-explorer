@@ -116,6 +116,10 @@ jobs:
           name: "config.json"
           json: ${{ secrets.DEV_CONFIG }}
 
+      # print json
+      - name: print-json
+        run: cat ./cdk/config.json
+
       # install npm dependencies
       - name: Cache NPM Modules
         id: cache-cdk-npm
@@ -131,10 +135,26 @@ jobs:
         run: npm ci
         working-directory: ./cdk
 
+      - name: CDK Bootstrap
+        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
+        run: cdk bootstrap
+        working-directory: ./cdk
+
+      - name: CDK Synth
+        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
+        run: cdk synthesize --all
+        working-directory: ./cdk
+
       - name: CDK Diff
         if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
-        run: cdk diff
+        run: cdk diff --all
         working-directory: ./cdk
+
+
+      # - name: CDK Diff
+      #   if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
+      #   run: cdk deploy --all
+      #   working-directory: ./cdk
 
 
 
