@@ -13,6 +13,10 @@ export default class Trust {
     - total allowed/blocked federation instances. (1 point per allowed, -10 per blocked)
     - total linked federation instances. (1 point per linked)
 
+    - does a guarantee exist on fediseer? (1 point)
+    - how many endorsements does this instance have? (1 point per endorsement)
+
+    
 
 
   */
@@ -51,26 +55,16 @@ export default class Trust {
   }
 
   async scoreCommunity(baseUrl, community) {
-    let score = 0;
-    // having a linked instance gives you a point for each link
-    if (this.linkedFederation[baseUrl]) {
-      score += this.linkedFederation[baseUrl];
-    }
+    let score = await this.scoreInstance(baseUrl);
 
-    // each allowed instance gives you points
-    if (this.allowedFederation[baseUrl]) {
-      score += this.allowedFederation[baseUrl] * 2;
-    }
-
-    // each blocked instance takes away points
-    if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 10;
-    }
-
-    // also score based subscribers
+    // multiply score based subscribers
     score = score * community.counts.subscribers;
 
     return score;
+
+    // return {
+    //   score: score,
+    // }
   }
 
   // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
