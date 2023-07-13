@@ -14,6 +14,7 @@ import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
 import { Suspicions } from "./suspicions.js";
 
 import Splitter from "./splitter.js";
+import Trust from "./trust.js";
 
 export default class CrawlOutput {
   constructor() {
@@ -24,6 +25,7 @@ export default class CrawlOutput {
     this.communityList = null;
 
     this.splitter = new Splitter();
+    this.trust = new Trust();
   }
 
   async loadAllData() {
@@ -36,13 +38,8 @@ export default class CrawlOutput {
     this.fediverseData = await storage.fediverse.getAll();
     this.kbinData = await storage.kbin.getAll();
 
-    // parse all federated instance data
-    const [linkedFederation, allowedFederation, blockedFederation] =
-      this.getFederationLists(this.instanceList);
-
-    this.linkedFederation = linkedFederation;
-    this.allowedFederation = allowedFederation;
-    this.blockedFederation = blockedFederation;
+    // setup trust data
+    await this.trust.setupSources(this.instanceList);
   }
 
   async isInstanceSus(instance, log = true) {
@@ -90,6 +87,7 @@ export default class CrawlOutput {
     const metaData = {
       instances: returnInstanceArray.length,
       communities: returnCommunityArray.length,
+      kbin_instances: kbinInstanceArray.length,
       magazines: kbinMagazineArray.length,
       fediverse: returnStats.length,
       time: Date.now(),
@@ -98,9 +96,9 @@ export default class CrawlOutput {
 
       // top 10 linked, allowed, blocked domains
       // sort by count of times seen on each list
-      linked: this.linkedFederation,
-      allowed: this.allowedFederation,
-      blocked: this.blockedFederation,
+      linked: this.trust.linkedFederation,
+      allowed: this.trust.allowedFederation,
+      blocked: this.trust.blockedFederation,
     };
     await this.splitter.storeMetaData(metaData);
 
@@ -174,73 +172,6 @@ export default class CrawlOutput {
   stripMarkdown(text) {
     // strip markdown
     return removeMd(text);
-  }
-
-  // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
-  getFederationLists(instances) {
-    // count instances by list
-    let linkedFederation = {};
-    let allowedFederation = {};
-    let blockedFederation = {};
-
-    function dedupAddItem(list, baseUrl) {
-      // only add strings
-      if (typeof baseUrl !== "string") {
-        return;
-      }
-
-      if (!list[baseUrl]) {
-        list[baseUrl] = 1;
-      } else {
-        list[baseUrl]++;
-      }
-    }
-
-    // start crawler jobs for all of the instances this one is federated with
-    instances.forEach((instance) => {
-      if (!instance.siteData?.federated) {
-        // logging.debug("no federated data", instance.siteData.site.actor_id);
-        return;
-      }
-
-      const { linked, allowed, blocked } = instance.siteData.federated;
-
-      // logging.silly(
-      //   `federated instances: ${instance.siteData.site.actor_id}`,
-      //   instance.siteData.federated.linked.length
-      // );
-
-      if (linked.length > 0) {
-        for (const baseUrl of linked) {
-          dedupAddItem(linkedFederation, baseUrl);
-        }
-      }
-      if (allowed && allowed.length > 0) {
-        for (const baseUrl of allowed) {
-          dedupAddItem(allowedFederation, baseUrl);
-        }
-      }
-      if (blocked && blocked.length > 0) {
-        for (const baseUrl of blocked) {
-          dedupAddItem(blockedFederation, baseUrl);
-        }
-      }
-    });
-
-    // logging.info(
-    //   `Federation Linked: ${Object.keys(linkedFederation).length} Allowed: ${
-    //     Object.keys(allowedFederation).length
-    //   } Blocked: ${Object.keys(blockedFederation).length}`
-    // );
-
-    console.log("Global Federation Counts (counts of urls in merged lists)");
-    console.table({
-      linked: Object.keys(linkedFederation).length,
-      allowed: Object.keys(allowedFederation).length,
-      blocked: Object.keys(blockedFederation).length,
-    });
-
-    return [linkedFederation, allowedFederation, blockedFederation];
   }
 
   findErrorType(errorMessage) {
@@ -388,25 +319,11 @@ export default class CrawlOutput {
 
         const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
 
-        const incomingBlocks = this.blockedFederation[siteBaseUrl] || 0;
+        const incomingBlocks = this.trust.blockedFederation[siteBaseUrl] || 0;
         const outgoingBlocks =
           instance.siteData.federated?.blocked?.length || 0;
 
-        let score = 0;
-        // having a linked instance gives you a point for each link
-        if (this.linkedFederation[siteBaseUrl]) {
-          score += this.linkedFederation[siteBaseUrl];
-        }
-
-        // each allowed instance gives you points
-        if (this.allowedFederation[siteBaseUrl]) {
-          score += this.allowedFederation[siteBaseUrl] * 2;
-        }
-
-        // each blocked instance takes away points
-        if (this.blockedFederation[siteBaseUrl]) {
-          score -= this.blockedFederation[siteBaseUrl] * 10;
-        }
+        const score = await this.trust.scoreInstance(siteBaseUrl);
 
         // ignore instances that have no data
         const instanceSus = new Suspicions(instance);
@@ -442,6 +359,7 @@ export default class CrawlOutput {
 
           isSuspicious: await this.isInstanceSus(instance),
           metrics: instanceSus.metrics,
+          susReason: susReason,
 
           blocks: {
             incoming: incomingBlocks,
@@ -497,24 +415,7 @@ export default class CrawlOutput {
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
-        let score = 0;
-        // having a linked instance gives you a point for each link
-        if (this.linkedFederation[siteBaseUrl]) {
-          score += this.linkedFederation[siteBaseUrl];
-        }
-
-        // each allowed instance gives you points
-        if (this.allowedFederation[siteBaseUrl]) {
-          score += this.allowedFederation[siteBaseUrl] * 2;
-        }
-
-        // each blocked instance takes away points
-        if (this.blockedFederation[siteBaseUrl]) {
-          score -= this.blockedFederation[siteBaseUrl] * 10;
-        }
-
-        // also score based subscribers
-        score = score * community.counts.subscribers;
+        const score = await this.trust.scoreCommunity(siteBaseUrl, community);
 
         const relatedInstance = this.instanceList.find(
           (instance) =>
