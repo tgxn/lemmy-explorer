@@ -136,15 +136,15 @@ jobs:
         working-directory: ./cdk
 
       - name: CDK Bootstrap
-        run: cdk bootstrap
+        run: ./node_modules/.bin/cdk bootstrap
         working-directory: ./cdk
 
       - name: CDK Synth
-        run: cdk synthesize --all
+        run: ./node_modules/.bin/cdk synthesize --all
         working-directory: ./cdk
 
       - name: CDK Diff
-        run: cdk diff --all
+        run: ./node_modules/.bin/cdk diff --all
         working-directory: ./cdk
 
 
