@@ -136,17 +136,14 @@ jobs:
         working-directory: ./cdk
 
       - name: CDK Bootstrap
-        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
         run: cdk bootstrap
         working-directory: ./cdk
 
       - name: CDK Synth
-        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
         run: cdk synthesize --all
         working-directory: ./cdk
 
       - name: CDK Diff
-        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
         run: cdk diff --all
         working-directory: ./cdk
 
