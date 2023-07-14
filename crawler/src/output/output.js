@@ -107,20 +107,14 @@ export default class CrawlOutput {
     };
     await this.splitter.storeMetaData(metaData);
 
-    // get previous run
+    // get previous run  from current production data
     const client = new AxiosClient();
     let previousRun = await client.getUrl(
-      "https://data.lemmyverse.net/data/meta.json"
+      "https://lemmyverse.net/data/meta.json"
     );
     previousRun = previousRun.data;
 
     console.log("Done; Total vs. Output");
-
-    const instancePctRounded = (
-      ((returnInstanceArray.length - previousRun.instances) /
-        previousRun.instances) *
-      100
-    ).toFixed(2);
 
     function calcChangeDisplay(current, previous) {
       return `${current > previous ? "+" : "-"}${current - previous} (${(
@@ -284,16 +278,19 @@ export default class CrawlOutput {
       new: returnCommunityArray.length,
       old: previousRun.communities,
     });
-    data.push({
-      type: "magazines",
-      new: kbinMagazineArray.length,
-      old: previousRun.magazines,
-    });
+
     data.push({
       type: "fediverse",
       new: returnStats.length,
       old: previousRun.fediverse,
     });
+
+    // @TODO kbin checks are disabled till scanning is fixed
+    // data.push({
+    //   type: "magazines",
+    //   new: kbinMagazineArray.length,
+    //   old: previousRun.magazines,
+    // });
     // data.push({
     //   type: "kbin_instances",
     //   new: kbinInstanceArray.length,
