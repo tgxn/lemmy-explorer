@@ -24,6 +24,61 @@ export default class FailureCrawl {
   async clean() {
     await this.cleanInstancesWithInvalidBaseUrl();
     await this.cleanCommunitiesWithInvalidBaseUrl();
+
+    await this.addTTLToFailures();
+    await this.addTTLToLastCrawl();
+  }
+
+  // add ttl to failures and last_crawl that dont have one already
+  async addTTLToFailures() {
+    const allErrors = await storage.tracking.getAllErrors("*");
+
+    let keep = 0;
+    let remove = 0;
+
+    for (const [key, value] of Object.entries(allErrors)) {
+      // console.log(key, value);
+
+      /// calc ttl based on when it was last crawled `time`
+      const maxAge = 12 * 60 * 60 * 1000; // how old a record can exist for
+      const age = Date.now() - value.time; // how old the record is
+
+      let ttl = maxAge - age; // how long the record should exist for (in ms)
+
+      if (ttl < 0) {
+        await storage.client.expire(key, 1);
+        remove++;
+      } else {
+        keep++;
+      }
+    }
+    console.log("keep", keep, "remove", remove);
+  }
+
+  // add ttl to failures and last_crawl that dont have one already
+  async addTTLToLastCrawl() {
+    const allLastCrawl = await storage.tracking.listAllLastCrawl();
+
+    let keep = 0;
+    let remove = 0;
+
+    for (const [key, value] of Object.entries(allLastCrawl)) {
+      // console.log(key, value);
+
+      /// calc ttl based on when it was last crawled
+      const maxAge = 12 * 60 * 60 * 1000; // how old a record can exist for
+      const age = Date.now() - value; // how old the record is
+
+      let ttl = maxAge - age; // how long the record should exist for (in ms)
+
+      if (ttl < 0) {
+        await storage.client.expire(key, 1);
+        remove++;
+      } else {
+        keep++;
+      }
+    }
+    console.log("keep", keep, "remove", remove);
   }
 
   isInstanceValid(baseUrl, actorId) {

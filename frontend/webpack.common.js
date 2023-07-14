@@ -17,6 +17,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: "Lemmy Explorer",
       template: "index.html",
+      inject: "body",
+      scriptLoading: "defer",
+      hash: true,
     }),
     new CopyWebpackPlugin({
       patterns: [{ from: "public", to: "" }],

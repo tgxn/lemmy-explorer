@@ -73,7 +73,9 @@ export default class CrawlOutput {
 
     const returnInstanceArray = await this.getInstanceArray();
 
-    const returnCommunityArray = await this.getCommunityArray();
+    const returnCommunityArray = await this.getCommunityArray(
+      returnInstanceArray
+    );
 
     // generate instance-level metrics for every instance
     await Promise.all(
@@ -232,20 +234,6 @@ export default class CrawlOutput {
       if (found && found !== instance) {
         console.log("Duplicate Instance", instance.baseurl);
         issues.push("Duplicate Instance: " + instance.baseurl);
-      }
-    }
-
-    // check for communities with instances missing from instances
-    for (let i = 0; i < returnCommunityArray.length; i++) {
-      const community = returnCommunityArray[i];
-
-      const found = returnInstanceArray.find(
-        (i) => i.baseurl === community.baseurl
-      );
-
-      if (!found) {
-        console.log("Missing Instance", community.baseurl);
-        issues.push("Missing Instance: " + community.baseurl);
       }
     }
 
@@ -660,7 +648,7 @@ export default class CrawlOutput {
     return storeData;
   }
 
-  async getCommunityArray() {
+  async getCommunityArray(returnInstanceArray) {
     let storeCommunityData = await Promise.all(
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
@@ -752,6 +740,22 @@ export default class CrawlOutput {
 
       return true;
     });
+
+    // remove those not being in the instance list
+    if (returnInstanceArray) {
+      storeCommunityData = storeCommunityData.filter((community) => {
+        const relatedInstance = returnInstanceArray.find(
+          (instance) => instance.baseurl === community.baseurl
+        );
+
+        if (!relatedInstance) {
+          logging.info("filtered due to no instance", community.url);
+          return false;
+        }
+
+        return true;
+      });
+    }
 
     // filter blank
     storeCommunityData = storeCommunityData.filter(
