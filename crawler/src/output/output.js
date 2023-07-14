@@ -15,6 +15,8 @@ import { Suspicions } from "./suspicions.js";
 
 import Splitter from "./splitter.js";
 
+import AxiosClient from "../lib/axios.js";
+
 export default class CrawlOutput {
   constructor() {
     this.uptimeData = null;
@@ -91,6 +93,7 @@ export default class CrawlOutput {
       instances: returnInstanceArray.length,
       communities: returnCommunityArray.length,
       magazines: kbinMagazineArray.length,
+      kbin_instances: kbinInstanceArray.length,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -104,33 +107,76 @@ export default class CrawlOutput {
     };
     await this.splitter.storeMetaData(metaData);
 
+    // get previous run
+    const client = new AxiosClient();
+    let previousRun = await client.getUrl(
+      "https://data.lemmyverse.net/data/meta.json"
+    );
+    previousRun = previousRun.data;
+
     console.log("Done; Total vs. Output");
+
+    const instancePctRounded = (
+      ((returnInstanceArray.length - previousRun.instances) /
+        previousRun.instances) *
+      100
+    ).toFixed(2);
+
+    function calcChangeDisplay(current, previous) {
+      return `${current > previous ? "+" : "-"}${current - previous} (${(
+        ((current - previous) / previous) *
+        100
+      ).toFixed(2)}%)`;
+    }
+
     console.table(
       {
         Instances: {
           ExportName: "Instances",
           Total: this.instanceList.length,
           Output: returnInstanceArray.length,
+          Previous: previousRun.instances,
+          Change: calcChangeDisplay(
+            returnInstanceArray.length,
+            previousRun.instances
+          ),
         },
         Communities: {
           ExportName: "Communities",
           Total: this.communityList.length,
           Output: returnCommunityArray.length,
+          Previous: previousRun.communities,
+          Change: calcChangeDisplay(
+            returnCommunityArray.length,
+            previousRun.communities
+          ),
         },
         KBinInstances: {
           ExportName: "KBin Instances",
           Total: "N/A",
           Output: kbinInstanceArray.length,
+          Previous: previousRun.kbin_instances,
+          Change: calcChangeDisplay(
+            kbinInstanceArray.length,
+            previousRun.kbin_instances
+          ),
         },
         Magazines: {
           ExportName: "Magazines",
           Total: this.kbinData.length,
           Output: kbinMagazineArray.length,
+          Previous: previousRun.magazines,
+          Change: calcChangeDisplay(
+            kbinMagazineArray.length,
+            previousRun.magazines
+          ),
         },
         Fediverse: {
           ExportName: "Fediverse Servers",
           Total: "N/A",
           Output: returnStats.length,
+          Previous: previousRun.fediverse,
+          Change: calcChangeDisplay(returnStats.length, previousRun.fediverse),
         },
         ErrorData: {
           ExportName: "Error Data",
@@ -143,8 +189,133 @@ export default class CrawlOutput {
           Output: susSiteList.length,
         },
       },
-      ["Total", "Output"]
+      ["Total", "Output", "Previous", "Change"]
     );
+
+    const validateOutput = await this.validateOutput(
+      previousRun,
+      returnInstanceArray,
+      returnCommunityArray,
+      kbinInstanceArray,
+      kbinMagazineArray,
+      returnStats
+    );
+
+    return validateOutput;
+  }
+
+  // ensure the output is okay for the website
+  async validateOutput(
+    previousRun,
+    returnInstanceArray,
+    returnCommunityArray,
+    kbinInstanceArray,
+    kbinMagazineArray,
+    returnStats
+  ) {
+    const issues = [];
+
+    // check that there is data in all arrays
+    if (
+      returnInstanceArray.length === 0 ||
+      returnCommunityArray.length === 0 ||
+      kbinInstanceArray.length === 0 ||
+      kbinMagazineArray.length === 0 ||
+      returnStats.length === 0
+    ) {
+      console.log("Empty Array");
+      issues.push("Empty Array(s)");
+    }
+
+    // check for duplicate baseurls
+    for (let i = 0; i < returnInstanceArray.length; i++) {
+      const instance = returnInstanceArray[i];
+
+      const found = returnInstanceArray.find(
+        (i) => i.baseurl === instance.baseurl
+      );
+
+      if (found && found !== instance) {
+        console.log("Duplicate Instance", instance.baseurl);
+        issues.push("Duplicate Instance: " + instance.baseurl);
+      }
+    }
+
+    // check for communities with instances missing from instances
+    for (let i = 0; i < returnCommunityArray.length; i++) {
+      const community = returnCommunityArray[i];
+
+      const found = returnInstanceArray.find(
+        (i) => i.baseurl === community.baseurl
+      );
+
+      if (!found) {
+        console.log("Missing Instance", community.baseurl);
+        issues.push("Missing Instance: " + community.baseurl);
+      }
+    }
+
+    // check values are < 10% different
+    const checkChangeIsValid = (value, previousValue, pct = 10) => {
+      if (!value || !previousValue) {
+        return false;
+      }
+
+      const diff = Math.abs(value - previousValue);
+      const percent = (diff / previousValue) * 100;
+
+      if (percent > pct) {
+        console.log("Percent Diff", value, previousValue, percent);
+        return false;
+      }
+
+      return true;
+    };
+
+    // check that the output is not too different from the previous run
+    const data = [];
+    data.push({
+      type: "instances",
+      new: returnInstanceArray.length,
+      old: previousRun.instances,
+    });
+    data.push({
+      type: "communities",
+      new: returnCommunityArray.length,
+      old: previousRun.communities,
+    });
+    data.push({
+      type: "magazines",
+      new: kbinMagazineArray.length,
+      old: previousRun.magazines,
+    });
+    data.push({
+      type: "fediverse",
+      new: returnStats.length,
+      old: previousRun.fediverse,
+    });
+    // data.push({
+    //   type: "kbin_instances",
+    //   new: kbinInstanceArray.length,
+    //   old: previousRun.kbin_instances,
+    // });
+
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+
+      const isValid = checkChangeIsValid(item.new, item.old);
+
+      if (!isValid) {
+        console.log("Percent Diff", item.type, item.new, item.old);
+        issues.push("Percent Diff: " + item.type);
+      }
+    }
+
+    if (issues.length > 0) {
+      console.log("Validation Issues", issues);
+
+      throw new Error("Validation Issues: " + issues.join(", "));
+    }
 
     return true;
   }
