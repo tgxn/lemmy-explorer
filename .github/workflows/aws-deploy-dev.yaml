@@ -4,14 +4,18 @@ on:
   push:
     branches:
       - aws_deploy
+      - develop
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # run every 6 hours
+  schedule:
+    - cron: "0 */6 * * *"
 
 jobs:
-  aws_cdk:
+  aws_deploy_dev:
     runs-on: ubuntu-latest
-    #  defaults:
-    #   run:
-    #     working-directory: ./cdk
-
     steps:
 
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
