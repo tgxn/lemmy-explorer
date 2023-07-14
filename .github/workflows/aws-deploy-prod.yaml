@@ -1,9 +1,9 @@
-name: deploy-aws-dev
+name: deploy-aws-prod
 
 on:
   push:
     branches:
-      - aws_deploy
+      - main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
     - cron: "0 */6 * * *"
 
 jobs:
-  aws_deploy_dev:
+  aws_deploy_prod:
     runs-on: ubuntu-latest
     steps:
 
@@ -117,7 +117,7 @@ jobs:
         with:
           dir: ./cdk
           name: "config.json"
-          json: ${{ secrets.DEV_CONFIG }}
+          json: ${{ secrets.PROD_CONFIG }}
 
       # print json
       - name: print-json
