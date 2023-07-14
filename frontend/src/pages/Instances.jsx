@@ -311,7 +311,7 @@ function Instances({ filterSuspicious }) {
         </Box>
       </Box>
 
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ mt: 2 }}>
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
         {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
