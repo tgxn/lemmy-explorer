@@ -5,16 +5,17 @@ on:
     branches:
       - develop
 
+  # # run every 6 hours
+  # only runs on the base branch, weird, github????
+  # schedule:
+  #   - cron: "0 */6 * * *"
+  
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-  # run every 6 hours
-  schedule:
-    - cron: "0 */6 * * *"
-
 concurrency: 
   group: develop
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   aws_deploy_dev:

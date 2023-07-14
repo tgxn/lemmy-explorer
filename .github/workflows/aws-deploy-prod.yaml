@@ -8,13 +8,13 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-  # run every 8 hours
+  # run every 6 hours
   schedule:
-    - cron: "0 */8 * * *"
+    - cron: "0 */6 * * *"
 
 concurrency: 
   group: production
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   aws_deploy_prod:
