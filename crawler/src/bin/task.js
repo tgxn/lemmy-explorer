@@ -6,6 +6,7 @@ import SingleCommunityQueue from "../queue/check_comm.js";
 import KBinQueue from "../queue/kbin.js";
 
 import CrawlOutput from "../output/output.js";
+import { syncCheckpoint } from "../output/sync_s3.js";
 
 import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
@@ -35,6 +36,13 @@ export default async function runTask(taskName = null) {
 
       const output = new CrawlOutput();
       await output.start();
+
+      break;
+
+    case "sync":
+      logging.info("Sync JSON Output to S3");
+
+      await syncCheckpoint();
 
       break;
 

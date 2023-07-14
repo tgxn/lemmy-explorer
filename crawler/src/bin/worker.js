@@ -11,7 +11,7 @@ import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
 import CrawlKBin from "../crawl/kbin.js";
 
-import dumpRedis from "../output/dumpredis.js";
+import { syncCheckpoint } from "../output/sync_s3.js";
 
 import {
   AUTO_UPLOAD_S3,
@@ -70,7 +70,7 @@ export default async function startWorker(startWorkerName = null) {
       logging.info("Creating DUMP Task", AGED_CRON_EXPRESSION);
       cron.schedule(PUBLISH_S3_CRON, async (time) => {
         try {
-          await dumpRedis();
+          await syncCheckpoint();
         } catch (e) {
           console.log("Error in DUMP Task", e);
         }

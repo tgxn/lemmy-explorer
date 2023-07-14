@@ -11,7 +11,7 @@ import {
 } from "../lib/const.js";
 
 // upload a copy of the file in REDIS_DUMP_FILE to S3
-export default async function dumpRedis() {
+export async function syncCheckpoint() {
   try {
     const checkpointName = `checkpoint-${Date.now()}.rdb`;
     const checkpointPath = path.join(
