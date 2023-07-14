@@ -181,7 +181,13 @@ function Instances({ filterSuspicious }) {
   }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious]);
 
   return (
-    <Container maxWidth={false} sx={{}}>
+    <Container
+      maxWidth={false}
+      style={{
+        paddingRight: "16px",
+        paddingLeft: "16px",
+      }}
+    >
       <Box
         component="header"
         sx={{
