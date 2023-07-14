@@ -3,6 +3,7 @@ import logging from "../lib/logging.js";
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";
 import SingleCommunityQueue from "../queue/check_comm.js";
+import KBinQueue from "../queue/kbin.js";
 
 import storage from "../storage.js";
 
@@ -15,6 +16,9 @@ export default class CrawlAged {
     this.instanceCrawler = new InstanceQueue(false);
     this.communityCrawler = new CommunityQueue(false);
     this.singleCommunityCrawler = new SingleCommunityQueue(false);
+
+    // @TODO scan for aged kbin magazines
+    this.kbinCrawler = new KBinQueue(false);
   }
 
   addInstance(instanceBaseUrl) {
