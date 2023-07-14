@@ -17,7 +17,7 @@ module.exports = {
       ...defaultOptions,
       name: "crawl-instance",
       args: ["-w", "instance"],
-      instances: 4,
+      instances: 6,
     },
     {
       ...defaultOptions,

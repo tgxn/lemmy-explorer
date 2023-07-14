@@ -181,7 +181,13 @@ function Instances({ filterSuspicious }) {
   }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious]);
 
   return (
-    <Container maxWidth={false} sx={{}}>
+    <Container
+      maxWidth={false}
+      style={{
+        paddingRight: "16px",
+        paddingLeft: "16px",
+      }}
+    >
       <Box
         component="header"
         sx={{
@@ -311,7 +317,7 @@ function Instances({ filterSuspicious }) {
         </Box>
       </Box>
 
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ mt: 2 }}>
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
         {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
