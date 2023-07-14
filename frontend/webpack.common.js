@@ -19,6 +19,7 @@ module.exports = {
       template: "index.html",
       inject: "body",
       scriptLoading: "defer",
+      hash: true,
     }),
     new CopyWebpackPlugin({
       patterns: [{ from: "public", to: "" }],
