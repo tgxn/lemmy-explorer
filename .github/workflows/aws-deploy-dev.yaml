@@ -15,6 +15,11 @@ on:
 jobs:
   aws_deploy_dev:
     runs-on: ubuntu-latest
+
+    environment: 
+      name: develop
+      url: https://develop.lemmyverse.net
+
     steps:
 
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
@@ -117,11 +122,7 @@ jobs:
         with:
           dir: ./cdk
           name: "config.json"
-          json: ${{ secrets.DEV_CONFIG }}
-
-      # print json
-      - name: print-json
-        run: cat ./cdk/config.json
+          json: ${{ vars.CONFIG_JSON }}
 
       # install npm dependencies
       - name: Cache NPM Modules

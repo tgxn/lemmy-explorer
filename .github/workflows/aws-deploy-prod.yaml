@@ -8,13 +8,18 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-  # run every 6 hours
+  # run every 8 hours
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */8 * * *"
 
 jobs:
   aws_deploy_prod:
     runs-on: ubuntu-latest
+
+    environment: 
+      name: production
+      url: https://lemmyverse.net
+
     steps:
 
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
@@ -117,11 +122,7 @@ jobs:
         with:
           dir: ./cdk
           name: "config.json"
-          json: ${{ secrets.PROD_CONFIG }}
-
-      # print json
-      - name: print-json
-        run: cat ./cdk/config.json
+          json: ${{ vars.CONFIG_JSON }}
 
       # install npm dependencies
       - name: Cache NPM Modules
