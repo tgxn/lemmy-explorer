@@ -23,9 +23,12 @@ export default class TrackingStore {
   async upsertError(type, baseUrl, errorDetail) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
-    return this.storage.putRedis(
+    // 12 hours
+    const expireInSeconds = 12 * 60 * 60;
+    return this.storage.putRedisTTL(
       `${this.failureKey}:${type}:${baseUrl}`,
-      errorDetail
+      errorDetail,
+      expireInSeconds
     );
   }
 
@@ -33,12 +36,16 @@ export default class TrackingStore {
   async getLastCrawl(type, baseUrl) {
     return this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
   }
+
   async setLastCrawl(type, baseUrl) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
-    return this.storage.putRedis(
+    // 12 hours
+    const expireInSeconds = 12 * 60 * 60;
+    return this.storage.putRedisTTL(
       `${this.historyKey}:${type}:${baseUrl}`,
-      Date.now()
+      Date.now(),
+      expireInSeconds
     );
   }
 }

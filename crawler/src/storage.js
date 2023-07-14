@@ -47,6 +47,11 @@ class Storage {
     return this.client.set(key, JSON.stringify(value));
   }
 
+  async putRedisTTL(key, value, expireInSeconds) {
+    await this.client.set(key, JSON.stringify(value));
+    return this.client.expire(key, expireInSeconds);
+  }
+
   async getRedis(key) {
     const json = await this.client.get(key);
     if (!json) return null;
