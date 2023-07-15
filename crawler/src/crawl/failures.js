@@ -52,7 +52,7 @@ export default class FailureCrawl {
         keep++;
       }
     }
-    console.log("keep", keep, "remove", remove);
+    console.log("errors: keep", keep, "remove", remove);
   }
 
   // add ttl to failures and last_crawl that dont have one already
@@ -78,7 +78,7 @@ export default class FailureCrawl {
         keep++;
       }
     }
-    console.log("keep", keep, "remove", remove);
+    console.log("last_crawl: keep", keep, "remove", remove);
   }
 
   isInstanceValid(baseUrl, actorId) {
