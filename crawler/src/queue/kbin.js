@@ -20,13 +20,9 @@ export default class KBinQueue extends BaseQueue {
         );
         if (lastCrawlTs) {
           const lastCrawledMsAgo = Date.now() - lastCrawlTs;
-          if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlTooRecentError(
-              `Skipping - Crawled too recently (${
-                lastCrawledMsAgo / 1000
-              }s ago)`
-            );
-          }
+          throw new CrawlTooRecentError(
+            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
+          );
         }
 
         const crawler = new KBinCrawler();

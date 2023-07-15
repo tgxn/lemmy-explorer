@@ -49,6 +49,7 @@ export default class FailureCrawl {
         await storage.client.expire(key, 1);
         remove++;
       } else {
+        await storage.client.expire(key, ttl);
         keep++;
       }
     }
@@ -66,7 +67,7 @@ export default class FailureCrawl {
       // console.log(key, value);
 
       /// calc ttl based on when it was last crawled
-      const maxAge = 12 * 60 * 60 * 1000; // how old a record can exist for
+      const maxAge = 6 * 60 * 60 * 1000; // how old a record can exist for
       const age = Date.now() - value; // how old the record is
 
       let ttl = maxAge - age; // how long the record should exist for (in ms)
@@ -75,6 +76,7 @@ export default class FailureCrawl {
         await storage.client.expire(key, 1);
         remove++;
       } else {
+        await storage.client.expire(key, ttl);
         keep++;
       }
     }

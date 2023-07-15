@@ -86,13 +86,9 @@ export default class InstanceQueue extends BaseQueue {
         );
         if (lastCrawlTs) {
           const lastCrawledMsAgo = Date.now() - lastCrawlTs;
-          if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlTooRecentError(
-              `Skipping - Crawled too recently (${
-                lastCrawledMsAgo / 1000
-              }s ago)`
-            );
-          }
+          throw new CrawlTooRecentError(
+            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
+          );
         }
 
         // check when the latest entry to errors was too recent
@@ -101,12 +97,10 @@ export default class InstanceQueue extends BaseQueue {
           instanceBaseUrl
         );
         if (lastErrorTs) {
-          const lastErrorMsAgo = Date.now() - lastErrorTs;
-          if (lastErrorMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlTooRecentError(
-              `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
-            );
-          }
+          const lastErrorMsAgo = Date.now() - lastErrorTs.time;
+          throw new CrawlTooRecentError(
+            `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
+          );
         }
 
         const crawler = new InstanceCrawler(instanceBaseUrl);
