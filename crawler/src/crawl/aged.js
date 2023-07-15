@@ -104,7 +104,7 @@ export default class CrawlAged {
       return false;
     });
 
-    logging.info("Aged Communities By Base", byBase);
+    logging.info("Aged Communities By Base", Object.keys(byBase).length);
 
     for (const community of agedCommunities) {
       const baseUrl = community.community.actor_id.split("/")[2];
