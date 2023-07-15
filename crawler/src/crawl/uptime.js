@@ -4,30 +4,20 @@
  */
 import logging from "../lib/logging.js";
 
-import axios from "axios";
-
 import storage from "../storage.js";
 
-import {
-  CRAWLER_USER_AGENT,
-  CRAWLER_ATTRIB_URL,
-  AXIOS_REQUEST_TIMEOUT,
-} from "../lib/const.js";
+import AxiosClient from "../lib/axios.js";
 
 export default class CrawlUptime {
   constructor() {
-    this.axios = axios.create({
-      timeout: AXIOS_REQUEST_TIMEOUT,
-      headers: {
-        "User-Agent": CRAWLER_USER_AGENT,
-        "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
-      },
-    });
+    this.client = new AxiosClient();
   }
 
   async crawl() {
-    const instances = await this.axios.post("https://api.fediverse.observer/", {
-      query: `query{
+    const instances = await this.client.axios.post(
+      "https://api.fediverse.observer/",
+      {
+        query: `query{
             nodes (softwarename: "lemmy") {
             domain
             latency
@@ -40,7 +30,8 @@ export default class CrawlUptime {
             status
             }
         }`,
-    });
+      }
+    );
     logging.info(instances.data);
 
     await storage.uptime.addNew({
