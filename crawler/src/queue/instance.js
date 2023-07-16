@@ -5,11 +5,7 @@ import { isValidLemmyDomain } from "../lib/validator.js";
 import storage from "../storage.js";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
-import {
-  CRAWL_TIMEOUT,
-  MIN_RECRAWL_MS,
-  RECRAWL_FEDIVERSE_MS,
-} from "../lib/const.js";
+import { CRAWL_AGED_TIME } from "../lib/const.js";
 
 import CommunityQueue from "./community.js";
 import InstanceCrawler from "../crawl/instance.js";
@@ -71,7 +67,7 @@ export default class InstanceQueue extends BaseQueue {
             knownFediverseServer.name !== "lemmybb" &&
             knownFediverseServer.name !== "kbin" &&
             knownFediverseServer.time &&
-            Date.now() - knownFediverseServer.time < RECRAWL_FEDIVERSE_MS // re-scan fedi servers to check their status
+            Date.now() - knownFediverseServer.time < CRAWL_AGED_TIME.FEDIVERSE // re-scan fedi servers to check their status
           ) {
             throw new CrawlTooRecentError(
               `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}"`

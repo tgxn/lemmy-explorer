@@ -7,7 +7,7 @@ import KBinQueue from "../queue/kbin.js";
 
 import storage from "../storage.js";
 
-import { RECRAWL_AGED_MS, DELETE_AGED_MS } from "../lib/const.js";
+import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const.js";
 
 export default class CrawlAged {
   constructor() {
@@ -35,7 +35,7 @@ export default class CrawlAged {
     const agedInstances = instances.filter((instance) => {
       if (!instance.lastCrawled) return true; // not set
 
-      if (Date.now() - instance.lastCrawled > RECRAWL_AGED_MS) {
+      if (Date.now() - instance.lastCrawled > CRAWL_AGED_TIME.INSTANCE) {
         return true;
       }
 
@@ -67,7 +67,7 @@ export default class CrawlAged {
       // pick up really old ones
       if (
         community.lastCrawled &&
-        Date.now() - community.lastCrawled > DELETE_AGED_MS
+        Date.now() - community.lastCrawled > CRAWL_DELETE_TIME.COMMUNITY
       ) {
         this.singleCommunityCrawler.createJob(base, community.community.name);
       }
@@ -88,8 +88,8 @@ export default class CrawlAged {
         return true;
       }
 
-      // if it was last cscanned more then RECRAWL_AGED_MS
-      const lastCrawledAgoMs = Date.now() - RECRAWL_AGED_MS;
+      // is this record aged?
+      const lastCrawledAgoMs = Date.now() - CRAWL_AGED_TIME.COMMUNITY;
       if (community.lastCrawled < lastCrawledAgoMs) {
         // console.log(
         //   "ASGED",

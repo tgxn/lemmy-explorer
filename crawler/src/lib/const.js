@@ -22,40 +22,47 @@ export const PUBLISH_S3_BUCKET =
 // every 4 hours by default
 export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */4 * * *";
 
-// timeout for the instance and community crawlers
+// these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
   INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
   COMMUNITY: 45 * 60 * 1000, // 45 minutes in ms
   KBIN: 30 * 60 * 1000, // 45 minutes in ms
 };
 
-// the minimum amount of time between crawling the same instance
-const MIN_RECRAWL_HOURS = 6;
-export const MIN_RECRAWL_MS = hoursToMs(MIN_RECRAWL_HOURS);
+//NEW - max age to be included in output
+export const OUTPUT_MAX_AGE = {
+  INSTANCE: hoursToMs(16),
+  COMMUNITY: hoursToMs(16),
+  MAGAZINE: hoursToMs(16),
+};
 
-// consider records to be aged after this long (to re-crawl)
-const RECRAWL_AGED_HOURS = 7;
-export const RECRAWL_AGED_MS = hoursToMs(RECRAWL_AGED_HOURS);
+//NEW - controls the time before manual re-scan of objects
+export const CRAWL_AGED_TIME = {
+  INSTANCE: hoursToMs(8),
+  COMMUNITY: hoursToMs(8),
 
-// consider communities for deletion after they haven't been seen for this long
-const DELETE_AGED_HOURS = 13; // more than
-export const DELETE_AGED_MS = hoursToMs(DELETE_AGED_HOURS);
+  // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
+  FEDIVERSE: hoursToMs(2 * 24), // 2 days
+};
 
-// if a server is identified as a non-lemmy server, ho often should we wait before checking again?
-const RECRAWL_FEDIVERSE_HOURS = 24 * 7;
-export const RECRAWL_FEDIVERSE_MS = hoursToMs(RECRAWL_FEDIVERSE_HOURS);
+// consider for deletion after they haven't been seen for this long
+// they are added to manually scan one last time before finally beign deleted
+export const CRAWL_DELETE_TIME = {
+  COMMUNITY: hoursToMs(13),
+};
+
+// when should these records expire from redis
+export const RECORD_TTL_TIMES_SECONDS = {
+  LAST_CRAWL: 6 * 60 * 60, // records won't be re-scanned if there is a last_crawl entry fort them
+  ERROR: 8 * 60 * 60, // errors should be retried less frequently
+};
 
 // how often should the cron run with --cron
 export const AGED_CRON_EXPRESSION = "*/15 * * * *"; // every 15 minutes
 
 // how often to hit fediverse.observer to get uptimes with --cron
-export const UPTIME_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
-
-export const KBIN_CRON_EXPRESSION = "0 */12 * * *"; // every 12 hours
-
-// the maximum age for output items to be included in the json dumps
-const OUTPUT_MAX_AGE_HOURS = 12;
-export const OUTPUT_MAX_AGE_MS = OUTPUT_MAX_AGE_HOURS * 60 * 60 * 1000;
+export const UPTIME_CRON_EXPRESSION = "0 */12 * * *";
+export const KBIN_CRON_EXPRESSION = "0 */6 * * *";
 
 // for each request we make, after how much time should axios be configured to timeout
 export const AXIOS_REQUEST_TIMEOUT = 120 * 1000; // 20 seconds in ms

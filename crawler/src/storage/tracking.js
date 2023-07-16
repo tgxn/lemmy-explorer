@@ -5,6 +5,8 @@
 //   time: number;
 // };
 
+import { RECORD_TTL_TIMES_SECONDS } from "../lib/const.js";
+
 export default class TrackingStore {
   constructor(storage) {
     this.storage = storage;
@@ -23,12 +25,10 @@ export default class TrackingStore {
   async upsertError(type, baseUrl, errorDetail) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
-    // 12 hours
-    const expireInSeconds = 12 * 60 * 60;
     return this.storage.putRedisTTL(
       `${this.failureKey}:${type}:${baseUrl}`,
       errorDetail,
-      expireInSeconds
+      RECORD_TTL_TIMES_SECONDS.ERROR
     );
   }
 
@@ -44,12 +44,10 @@ export default class TrackingStore {
   async setLastCrawl(type, baseUrl) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
-    // 12 hours
-    const expireInSeconds = 12 * 60 * 60;
     return this.storage.putRedisTTL(
       `${this.historyKey}:${type}:${baseUrl}`,
       Date.now(),
-      expireInSeconds
+      RECORD_TTL_TIMES_SECONDS.LAST_CRAWL
     );
   }
 }

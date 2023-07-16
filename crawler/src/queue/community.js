@@ -1,24 +1,19 @@
-import logging from "../lib/logging.js";
-
-import Queue from "bee-queue";
-
-import storage from "../storage.js";
-
-import { CrawlTooRecentError } from "../lib/error.js";
-import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
+import BaseQueue from "./queue.js";
 
 import CommunityCrawler from "../crawl/community.js";
 
-import BaseQueue from "./queue.js";
+import logging from "../lib/logging.js";
+import storage from "../storage.js";
+
+import { CrawlTooRecentError } from "../lib/error.js";
 
 export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
     const processor = async ({ baseUrl }) => {
-      // await storage.connect();
-
       let communityData = null;
+
       try {
-        // check if community's instance has already been crawled within MIN_RECRAWL_MS
+        // check if community's instance has already been crawled
         const lastCrawlTs = await storage.tracking.getLastCrawl(
           "community",
           baseUrl
@@ -68,8 +63,6 @@ export default class CommunityQueue extends BaseQueue {
         }
       }
 
-      // close redis connection on end of job
-      // await storage.close();
       return communityData;
     };
 

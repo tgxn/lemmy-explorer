@@ -5,8 +5,6 @@ import storage from "../storage.js";
 
 import KBinCrawler from "../crawl/kbin.js";
 
-import { MIN_RECRAWL_MS } from "../lib/const.js";
-
 import BaseQueue from "./queue.js";
 
 export default class KBinQueue extends BaseQueue {

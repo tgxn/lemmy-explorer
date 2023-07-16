@@ -1,22 +1,20 @@
-import logging from "../lib/logging.js";
-// this file generates the .json files for the frontend /public folder
-// it conencts to redis and pulls lists of all the data we have stored
-
-import { open } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
-
 import removeMd from "remove-markdown";
 
+import { OUTPUT_MAX_AGE } from "../lib/const.js";
+
+import logging from "../lib/logging.js";
 import storage from "../storage.js";
-
-import { OUTPUT_MAX_AGE_MS } from "../lib/const.js";
-
-import { Suspicions } from "./suspicions.js";
-
-import Splitter from "./splitter.js";
 
 import AxiosClient from "../lib/axios.js";
 
+import Splitter from "./splitter.js";
+import { Suspicions } from "./suspicions.js";
+
+/**
+ * this generates the .json files for the frontend /public folder
+ * it conencts to redis and pulls lists of all the data we have stored
+ */
 export default class CrawlOutput {
   constructor() {
     this.uptimeData = null;
@@ -28,6 +26,7 @@ export default class CrawlOutput {
     this.splitter = new Splitter();
   }
 
+  // load all required data from redis
   async loadAllData() {
     this.uptimeData = await storage.uptime.getLatest();
     this.instanceErrors = await storage.tracking.getAllErrors("instance");
@@ -55,7 +54,6 @@ export default class CrawlOutput {
 
   /**
    * Main Output Generation Script
-   *
    */
   async start() {
     await this.loadAllData();
@@ -627,7 +625,7 @@ export default class CrawlOutput {
 
       // remove communities with age more than the max
       const recordAge = Date.now() - instance.time;
-      if (recordAge > OUTPUT_MAX_AGE_MS) {
+      if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
         return false;
       }
 
@@ -724,7 +722,7 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - community.time;
 
-      // if (recordAge < OUTPUT_MAX_AGE_MS && community.nsfw) {
+      // if (recordAge < OUTPUT_MAX_AGE.COMMUNITY && community.nsfw) {
       //   console.log("NFSW Updated Recently!!", community.url);
       //   // return false;
       // }
@@ -734,7 +732,7 @@ export default class CrawlOutput {
         return true;
       }
 
-      if (recordAge > OUTPUT_MAX_AGE_MS) {
+      if (recordAge > OUTPUT_MAX_AGE.COMMUNITY) {
         return false;
       }
 
@@ -834,10 +832,6 @@ export default class CrawlOutput {
     // key value in errors
     let errorTypes = {};
     for (const [key, value] of Object.entries(this.instanceErrors)) {
-      if (value.time < Date.now() - OUTPUT_MAX_AGE_MS) {
-        continue;
-      }
-
       const instanceData = {
         baseurl: key.replace("error:instance:", ""),
         error: value.error,
@@ -907,7 +901,7 @@ export default class CrawlOutput {
 
     // filter old data
     const filteredKBins = this.kbinData.filter((kbin) => {
-      return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE_MS;
+      return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE.MAGAZINE;
     });
 
     // logging.info(
