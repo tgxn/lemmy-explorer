@@ -5,6 +5,8 @@
 //   time: number;
 // };
 
+import { RECORD_TTL_TIMES_SECONDS } from "../lib/const.js";
+
 export default class TrackingStore {
   constructor(storage) {
     this.storage = storage;
@@ -23,9 +25,10 @@ export default class TrackingStore {
   async upsertError(type, baseUrl, errorDetail) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
-    return this.storage.putRedis(
+    return this.storage.putRedisTTL(
       `${this.failureKey}:${type}:${baseUrl}`,
-      errorDetail
+      errorDetail,
+      RECORD_TTL_TIMES_SECONDS.ERROR
     );
   }
 
@@ -33,12 +36,18 @@ export default class TrackingStore {
   async getLastCrawl(type, baseUrl) {
     return this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
   }
+
+  async listAllLastCrawl() {
+    return this.storage.listRedisWithKeys(`${this.historyKey}:*`);
+  }
+
   async setLastCrawl(type, baseUrl) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
-    return this.storage.putRedis(
+    return this.storage.putRedisTTL(
       `${this.historyKey}:${type}:${baseUrl}`,
-      Date.now()
+      Date.now(),
+      RECORD_TTL_TIMES_SECONDS.LAST_CRAWL
     );
   }
 }

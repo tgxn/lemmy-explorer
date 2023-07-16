@@ -11,15 +11,9 @@ import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
 import CrawlKBin from "../crawl/kbin.js";
 
-import dumpRedis from "../output/dumpredis.js";
+import { syncCheckpoint } from "../output/sync_s3.js";
 
-import {
-  AUTO_UPLOAD_S3,
-  PUBLISH_S3_CRON,
-  AGED_CRON_EXPRESSION,
-  KBIN_CRON_EXPRESSION,
-  UPTIME_CRON_EXPRESSION,
-} from "../lib/const.js";
+import { AUTO_UPLOAD_S3, CRON_SCHEDULES } from "../lib/const.js";
 
 import storage from "../storage.js";
 
@@ -51,8 +45,8 @@ export default async function startWorker(startWorkerName = null) {
   else if (startWorkerName == "cron") {
     logging.info("Creating Cron Tasks (Aged/Uptime)");
 
-    logging.info("Creating Aged Cron Task", AGED_CRON_EXPRESSION);
-    cron.schedule(AGED_CRON_EXPRESSION, async (time) => {
+    logging.info("Creating Aged Cron Task", CRON_SCHEDULES.AGED);
+    cron.schedule(CRON_SCHEDULES.AGED, async (time) => {
       try {
         console.log("Running Aged Cron Task", time);
         await storage.connect();
@@ -67,19 +61,19 @@ export default async function startWorker(startWorkerName = null) {
     });
 
     if (AUTO_UPLOAD_S3) {
-      logging.info("Creating DUMP Task", AGED_CRON_EXPRESSION);
-      cron.schedule(PUBLISH_S3_CRON, async (time) => {
+      logging.info("Creating DUMP Task", CRON_SCHEDULES.PUBLISH_S3);
+      cron.schedule(CRON_SCHEDULES.PUBLISH_S3, async (time) => {
         try {
-          await dumpRedis();
+          await syncCheckpoint();
         } catch (e) {
           console.log("Error in DUMP Task", e);
         }
       });
     }
 
-    // shares KBIN_CRON_EXPRESSION
-    logging.info("Creating KBin Cron Task", KBIN_CRON_EXPRESSION);
-    cron.schedule(KBIN_CRON_EXPRESSION, async (time) => {
+    // shares CRON_SCHEDULES.KBIN
+    logging.info("Creating KBin Cron Task", CRON_SCHEDULES.KBIN);
+    cron.schedule(CRON_SCHEDULES.KBIN, async (time) => {
       console.log("Running KBin Cron Task", time);
       await storage.connect();
 
@@ -89,8 +83,8 @@ export default async function startWorker(startWorkerName = null) {
       await storage.close();
     });
 
-    logging.info("Creating Uptime Cron Task", UPTIME_CRON_EXPRESSION);
-    cron.schedule(UPTIME_CRON_EXPRESSION, async (time) => {
+    logging.info("Creating Uptime Cron Task", CRON_SCHEDULES.UPTIME);
+    cron.schedule(CRON_SCHEDULES.UPTIME, async (time) => {
       console.log("Running Uptime Cron Task", time);
       await storage.connect();
 

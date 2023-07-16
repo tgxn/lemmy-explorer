@@ -1,37 +1,28 @@
-import logging from "../lib/logging.js";
-
-import Queue from "bee-queue";
-
-import storage from "../storage.js";
-
-import { CrawlTooRecentError } from "../lib/error.js";
-import { CRAWL_TIMEOUT, MIN_RECRAWL_MS } from "../lib/const.js";
+import BaseQueue from "./queue.js";
 
 import CommunityCrawler from "../crawl/community.js";
 
-import BaseQueue from "./queue.js";
+import logging from "../lib/logging.js";
+import storage from "../storage.js";
+
+import { CrawlTooRecentError } from "../lib/error.js";
 
 export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
     const processor = async ({ baseUrl }) => {
-      // await storage.connect();
-
       let communityData = null;
+
       try {
-        // check if community's instance has already been crawled within MIN_RECRAWL_MS
+        // check if community's instance has already been crawled
         const lastCrawlTs = await storage.tracking.getLastCrawl(
           "community",
           baseUrl
         );
         if (lastCrawlTs) {
           const lastCrawledMsAgo = Date.now() - lastCrawlTs;
-          if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlTooRecentError(
-              `Skipping - Crawled too recently (${
-                lastCrawledMsAgo / 1000
-              }s ago)`
-            );
-          }
+          throw new CrawlTooRecentError(
+            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
+          );
         }
 
         // check when the latest entry to errors was too recent
@@ -40,12 +31,10 @@ export default class CommunityQueue extends BaseQueue {
           baseUrl
         );
         if (lastErrorTs) {
-          const lastErrorMsAgo = Date.now() - lastErrorTs;
-          if (lastErrorMsAgo < MIN_RECRAWL_MS) {
-            throw new CrawlTooRecentError(
-              `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
-            );
-          }
+          const lastErrorMsAgo = Date.now() - lastErrorTs.time;
+          throw new CrawlTooRecentError(
+            `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
+          );
         }
 
         const crawler = new CommunityCrawler(baseUrl);
@@ -74,8 +63,6 @@ export default class CommunityQueue extends BaseQueue {
         }
       }
 
-      // close redis connection on end of job
-      // await storage.close();
       return communityData;
     };
 

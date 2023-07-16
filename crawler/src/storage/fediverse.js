@@ -15,7 +15,7 @@ export default class Fediverse {
     return this.storage.getRedis(`fediverse:${baseUrl}`);
   }
   async upsert(baseUrl, data) {
-    const dd = { time: Date.now(), ...data };
+    const dd = { baseurl: baseUrl, time: Date.now(), ...data };
     return this.storage.putRedis(`fediverse:${baseUrl}`, dd);
   }
 }

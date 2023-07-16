@@ -3,10 +3,11 @@ import logging from "../lib/logging.js";
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";
 import SingleCommunityQueue from "../queue/check_comm.js";
+import KBinQueue from "../queue/kbin.js";
 
 import storage from "../storage.js";
 
-import { RECRAWL_AGED_MS, DELETE_AGED_MS } from "../lib/const.js";
+import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const.js";
 
 export default class CrawlAged {
   constructor() {
@@ -15,6 +16,134 @@ export default class CrawlAged {
     this.instanceCrawler = new InstanceQueue(false);
     this.communityCrawler = new CommunityQueue(false);
     this.singleCommunityCrawler = new SingleCommunityQueue(false);
+
+    // @TODO scan for aged kbin magazines
+    this.kbinCrawler = new KBinQueue(false);
+  }
+
+  async recordAges() {
+    // get all communities, instances, fediverse and magazine records, and get age distribution
+
+    const instances = await storage.instance.getAll();
+    const communities = await storage.community.getAll();
+    const magazines = await storage.kbin.getAll();
+    const fediverse = await storage.fediverse.getAll();
+    const errors = await storage.tracking.getAllErrors("*");
+    const lastCrawls = await storage.tracking.listAllLastCrawl();
+
+    const healthData = [];
+
+    // get age distribution
+    function getAgeDistribution(records, attribute) {
+      const buckets = {
+        "1-2 hours": 0,
+        "2-4 hours": 0,
+        "4-6 hours": 0,
+        "6-8 hours": 0,
+        "8-10 hours": 0,
+        "10-12 hours": 0,
+        "12+ hours": 0,
+      };
+
+      const now = Date.now();
+      const ages = records.map((record) => {
+        const age = now - record[attribute];
+
+        // sort into hourly buckets: 1-2 hours, 2-4 hours, 4-6 hours, 6+ hours
+        if (age < 2 * 60 * 60 * 1000) {
+          buckets["1-2 hours"]++;
+        } else if (age < 4 * 60 * 60 * 1000) {
+          buckets["2-4 hours"]++;
+        } else if (age < 6 * 60 * 60 * 1000) {
+          buckets["4-6 hours"]++;
+        } else if (age < 8 * 60 * 60 * 1000) {
+          buckets["6-8 hours"]++;
+        } else if (age < 10 * 60 * 60 * 1000) {
+          buckets["8-10 hours"]++;
+        } else if (age < 12 * 60 * 60 * 1000) {
+          buckets["10-12 hours"]++;
+        } else {
+          buckets["12+ hours"]++;
+        }
+
+        return age;
+      });
+
+      return {
+        min: Math.min(...ages),
+        max: Math.max(...ages),
+        avg: ages.reduce((a, b) => a + b, 0) / ages.length,
+        buckets,
+      };
+    }
+
+    const instanceAgeDistribution = getAgeDistribution(
+      instances,
+      "lastCrawled"
+    );
+    healthData.push({
+      table: "Instances",
+      ...instanceAgeDistribution.buckets,
+    });
+
+    const communityAgeDistribution = getAgeDistribution(
+      communities,
+      "lastCrawled"
+    );
+    healthData.push({
+      table: "Communities",
+      ...communityAgeDistribution.buckets,
+    });
+
+    const magazineAgeDistribution = getAgeDistribution(
+      magazines,
+      "lastCrawled"
+    );
+    healthData.push({
+      table: "Magazines",
+      ...magazineAgeDistribution.buckets,
+    });
+
+    const fediverseAgeDistribution = getAgeDistribution(
+      Object.values(fediverse),
+      "time"
+    );
+    healthData.push({
+      table: "Fediverse",
+      ...fediverseAgeDistribution.buckets,
+    });
+
+    const lastCrawlAgeDistribution = getAgeDistribution(
+      Object.values(lastCrawls).map((value) => ({
+        time: value,
+      })),
+      "time"
+    );
+    healthData.push({
+      table: "Last Crawl",
+      ...lastCrawlAgeDistribution.buckets,
+    });
+
+    const errorAgeDistribution = getAgeDistribution(
+      Object.values(errors),
+      "time"
+    );
+    healthData.push({
+      table: "Errors",
+      ...errorAgeDistribution.buckets,
+    });
+
+    console.log("Data Age Distribution");
+    console.table(healthData, [
+      "table",
+      "1-2 hours",
+      "2-4 hours",
+      "4-6 hours",
+      "6-8 hours",
+      "8-10 hours",
+      "10-12 hours",
+      "12+ hours",
+    ]);
   }
 
   addInstance(instanceBaseUrl) {
@@ -31,7 +160,7 @@ export default class CrawlAged {
     const agedInstances = instances.filter((instance) => {
       if (!instance.lastCrawled) return true; // not set
 
-      if (Date.now() - instance.lastCrawled > RECRAWL_AGED_MS) {
+      if (Date.now() - instance.lastCrawled > CRAWL_AGED_TIME.INSTANCE) {
         return true;
       }
 
@@ -63,7 +192,7 @@ export default class CrawlAged {
       // pick up really old ones
       if (
         community.lastCrawled &&
-        Date.now() - community.lastCrawled > DELETE_AGED_MS
+        Date.now() - community.lastCrawled > CRAWL_DELETE_TIME.COMMUNITY
       ) {
         this.singleCommunityCrawler.createJob(base, community.community.name);
       }
@@ -84,8 +213,8 @@ export default class CrawlAged {
         return true;
       }
 
-      // if it was last cscanned more then RECRAWL_AGED_MS
-      const lastCrawledAgoMs = Date.now() - RECRAWL_AGED_MS;
+      // is this record aged?
+      const lastCrawledAgoMs = Date.now() - CRAWL_AGED_TIME.COMMUNITY;
       if (community.lastCrawled < lastCrawledAgoMs) {
         // console.log(
         //   "ASGED",
@@ -100,7 +229,7 @@ export default class CrawlAged {
       return false;
     });
 
-    logging.info("Aged Communities By Base", byBase);
+    logging.info("Aged Communities By Base", Object.keys(byBase).length);
 
     for (const community of agedCommunities) {
       const baseUrl = community.community.actor_id.split("/")[2];

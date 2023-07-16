@@ -20,6 +20,21 @@ export default class AxiosClient {
     });
   }
 
+  async getUrl(url, options = {}) {
+    try {
+      return await this.axios.get(url, options);
+
+      // if (response.status !== 200) {
+    } catch (e) {
+      if (e.response && e.response.data) {
+        throw new CrawlError(
+          `Failed to get url ${url}: ${e.message}`,
+          e.response.data
+        );
+      }
+    }
+  }
+
   async getUrlWithRetry(url, options = {}, maxRetries = 4, current = 0) {
     try {
       return await this.axios.get(url, options);

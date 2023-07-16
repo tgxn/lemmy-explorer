@@ -6,6 +6,7 @@ import SingleCommunityQueue from "../queue/check_comm.js";
 import KBinQueue from "../queue/kbin.js";
 
 import CrawlOutput from "../output/output.js";
+import { syncCheckpoint } from "../output/sync_s3.js";
 
 import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
@@ -31,11 +32,19 @@ export default async function runTask(taskName = null) {
 
   switch (taskName) {
     // generate output .json files from data stored in redis
+    // @TODO add a flag to throw if there is no/very little change, overall <1%?
     case "out":
       logging.info("Generate JSON Output");
 
       const output = new CrawlOutput();
       await output.start();
+
+      break;
+
+    case "sync":
+      logging.info("Sync JSON Output to S3");
+
+      await syncCheckpoint();
 
       break;
 
@@ -107,6 +116,11 @@ export default async function runTask(taskName = null) {
         "succeeded",
         "failed",
       ]);
+
+      // record health
+
+      const agedAge = new CrawlAged();
+      await agedAge.recordAges();
 
       break;
 

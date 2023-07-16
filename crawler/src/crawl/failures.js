@@ -17,13 +17,71 @@ import storage from "../storage.js";
 
 import { getActorBaseUrl } from "../lib/validator.js";
 
+import { RECORD_TTL_TIMES_SECONDS } from "../lib/const.js";
+
 // @TODO these should no longer be in the database to start with, not really required...
 export default class FailureCrawl {
   constructor() {}
 
   async clean() {
-    await this.cleanInstancesWithInvalidBaseUrl();
-    await this.cleanCommunitiesWithInvalidBaseUrl();
+    // await this.cleanInstancesWithInvalidBaseUrl();
+    // await this.cleanCommunitiesWithInvalidBaseUrl();
+
+    await this.addTTLToFailures();
+    await this.addTTLToLastCrawl();
+  }
+
+  // add ttl to failures and last_crawl that dont have one already
+  async addTTLToFailures() {
+    const allErrors = await storage.tracking.getAllErrors("*");
+
+    let keep = 0;
+    let remove = 0;
+
+    for (const [key, value] of Object.entries(allErrors)) {
+      const normalTTL = RECORD_TTL_TIMES_SECONDS.ERROR * 1000;
+      const shouldExpireAtMs = value.time + normalTTL;
+      const ttlFromNowSeconds = Math.round(
+        (shouldExpireAtMs - Date.now()) / 1000
+      );
+
+      // console.log(key, ttlFromNowSeconds, value.time);
+
+      if (ttlFromNowSeconds < 0) {
+        await storage.client.expire(key, 1);
+        remove++;
+      } else {
+        await storage.client.expire(key, ttlFromNowSeconds);
+        keep++;
+      }
+    }
+    console.log("errors: update", keep, "remove", remove);
+  }
+
+  // add ttl to failures and last_crawl that dont have one already
+  async addTTLToLastCrawl() {
+    const allLastCrawl = await storage.tracking.listAllLastCrawl();
+
+    let keep = 0;
+    let remove = 0;
+
+    for (const [key, value] of Object.entries(allLastCrawl)) {
+      const normalTTL = RECORD_TTL_TIMES_SECONDS.LAST_CRAWL * 1000; // how old a record can exist for
+
+      const shouldExpireAtMs = value + normalTTL;
+      const ttlFromNowSeconds = Math.round(
+        (shouldExpireAtMs - Date.now()) / 1000
+      );
+
+      if (ttlFromNowSeconds < 0) {
+        await storage.client.expire(key, 1);
+        remove++;
+      } else {
+        await storage.client.expire(key, ttlFromNowSeconds);
+        keep++;
+      }
+    }
+    console.log("last_crawl: keep", keep, "remove", remove);
   }
 
   isInstanceValid(baseUrl, actorId) {
