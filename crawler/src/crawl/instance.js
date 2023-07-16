@@ -74,7 +74,7 @@ export default class InstanceCrawler {
       "https://" + this.crawlDomain + "/api/v3/site"
     );
 
-    return siteInfo.data;
+    return [siteInfo.data, siteInfo.headers];
   }
 
   /**
@@ -106,7 +106,8 @@ export default class InstanceCrawler {
       throw new CrawlError(`not a lemmy instance (${nodeInfo.software.name})`);
     }
 
-    const siteInfo = await this.getSiteInfo();
+    const [siteInfo, siteHeaders] = await this.getSiteInfo();
+    console.log(`${this.crawlDomain}: found lemmy instance`, siteHeaders);
 
     const actorBaseUrl = getActorBaseUrl(siteInfo.site_view.site.actor_id);
     if (!actorBaseUrl) {
@@ -175,6 +176,7 @@ export default class InstanceCrawler {
         taglines: siteInfo.taglines,
         federated: siteInfo.federated_instances,
       },
+      headers: siteHeaders,
       langs: discussionLangs,
     };
 

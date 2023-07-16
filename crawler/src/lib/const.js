@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 function hoursToMs(hours) {
   return hours * 60 * 60 * 1000;
 }
@@ -15,7 +17,7 @@ export const CHECKPOINT_DIR = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
 
 export const AWS_REGION = process.env.AWS_REGION || "ap-southeast-2";
 export const PUBLISH_S3_BUCKET =
-  process.env.PUBLISH_S3_BUCKET || "lemmyexplorer-build-bucket";
+  process.env.PUBLISH_S3_BUCKET || "lemmyexplorer-build-prod-buildbucket";
 
 // every 4 hours by default
 export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */4 * * *";
