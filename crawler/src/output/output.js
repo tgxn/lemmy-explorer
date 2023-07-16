@@ -117,7 +117,7 @@ export default class CrawlOutput {
     console.log("Done; Total vs. Output");
 
     function calcChangeDisplay(current, previous) {
-      return `${current > previous ? "+" : "-"}${current - previous} (${(
+      return `${current > previous ? "+" : ""}${current - previous} (${(
         ((current - previous) / previous) *
         100
       ).toFixed(2)}%)`;
