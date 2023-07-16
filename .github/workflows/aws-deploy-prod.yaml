@@ -89,6 +89,10 @@ jobs:
         run: npm ci
         working-directory: ./crawler
 
+      - name: Run Health Script
+        run: node index.js --health
+        working-directory: ./crawler
+
       - name: Run Output Script
         run: node index.js --out
         working-directory: ./crawler
