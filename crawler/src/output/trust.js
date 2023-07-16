@@ -1,5 +1,11 @@
 import storage from "../storage.js";
 
+import divinator from "divinator";
+
+// used to calculate instance overall rating, as well as several instance and community metrics
+// it is meant to take some of the trust assertion logic out of the main output script
+
+// create a new isntance for the overall output, and call methods on it
 export default class Trust {
   // init  this once per output
   constructor() {
@@ -15,12 +21,9 @@ export default class Trust {
 
     - does a guarantee exist on fediseer? (1 point)
     - how many endorsements does this instance have? (1 point per endorsement)
-
-    
-
-
   */
 
+  // loads the initial data into the trust library
   async setupSources(instanceList) {
     this.instanceList = instanceList;
 
@@ -31,6 +34,68 @@ export default class Trust {
     this.linkedFederation = linkedFederation;
     this.allowedFederation = allowedFederation;
     this.blockedFederation = blockedFederation;
+
+    // this.instanceDeviation = await this.calcInstanceDeviation();
+  }
+
+  async setAllInstancesWithMetrics(storeData) {
+    this.instancesWithMetrics = storeData;
+
+    this.allInstanceMetrics = {
+      userActivityScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.userActivityScore
+      ),
+      activityUserScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.activityUserScore
+      ),
+      userActiveMonthScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.userActiveMonthScore
+      ),
+    };
+  }
+
+  async calcInstanceDeviation() {
+    let response1 = divinator.zscore(
+      this.allInstanceMetrics.userActivityScores,
+      3.2
+    );
+    let response2 = divinator.zscore(
+      this.allInstanceMetrics.userActivityScores,
+      3.2
+    );
+    let response3 = divinator.zscore(
+      this.allInstanceMetrics.userActivityScores,
+      3.2
+    );
+
+    console.log("data deviation", response1);
+
+    for (const index in this.instancesWithMetrics) {
+      if (response1[index]) {
+        console.log(
+          "userActivityScore deviation",
+          this.instancesWithMetrics[index].metrics.userActivityScore,
+          this.instancesWithMetrics[index].url,
+          response1[index]
+        );
+      }
+      if (response2[index]) {
+        console.log(
+          "activityUserScore deviation",
+          this.instancesWithMetrics[index].metrics.userActivityScore,
+          this.instancesWithMetrics[index].url,
+          response2[index]
+        );
+      }
+      if (response3[index]) {
+        console.log(
+          "userActiveMonthScore deviation",
+          this.instancesWithMetrics[index].metrics.userActivityScore,
+          this.instancesWithMetrics[index].url,
+          response3[index]
+        );
+      }
+    }
   }
 
   // run domain through this to get scores

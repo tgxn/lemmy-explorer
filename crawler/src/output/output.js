@@ -26,6 +26,8 @@ export default class CrawlOutput {
 
     this.splitter = new Splitter();
     this.trust = new Trust();
+
+    this.suspicious = new Suspicions(this.trust);
   }
 
   // load all required data from redis
@@ -43,11 +45,9 @@ export default class CrawlOutput {
     await this.trust.setupSources(this.instanceList);
   }
 
-  async isInstanceSus(instance, log = true) {
-    const instanceSus = new Suspicions(instance, log);
-
-    return await instanceSus.isSuspicious();
-  }
+  // async isInstanceSus(instance, log = true) {
+  //   return await this.suspicious.isSuspicious(instance);
+  // }
 
   /**
    * Main Output Generation Script
@@ -480,8 +480,7 @@ export default class CrawlOutput {
         const score = await this.trust.scoreInstance(siteBaseUrl);
 
         // ignore instances that have no data
-        const instanceSus = new Suspicions(instance);
-        const susReason = await instanceSus.isSuspiciousReasons();
+        const susReason = await this.suspicious.isSuspiciousReasons(instance);
 
         return {
           baseurl: siteBaseUrl,
@@ -511,7 +510,7 @@ export default class CrawlOutput {
           score: score,
           uptime: siteUptime,
 
-          isSuspicious: await this.isInstanceSus(instance),
+          isSuspicious: await this.suspicious.isSuspicious(instance),
           metrics: instanceSus.metrics,
           susReason: susReason,
 
@@ -519,6 +518,21 @@ export default class CrawlOutput {
             incoming: incomingBlocks,
             outgoing: outgoingBlocks,
           },
+        };
+      })
+    );
+
+    // add trust
+    await this.trust.setAllInstancesWithMetrics(storeData);
+    const trustData = await this.trust.calcInstanceDeviation();
+
+    storeData = await Promise.all(
+      storeData.map(async (instance) => {
+        const trustData = await this.trust.scoreInstance(instance.baseurl);
+
+        return {
+          ...instance,
+          trust: trustData,
         };
       })
     );
@@ -575,7 +589,7 @@ export default class CrawlOutput {
           (instance) =>
             instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
         );
-        const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
+        // const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
 
         // if (community.community.nsfw)
         //   console.log(community.community.name, community.community.nsfw);
@@ -595,7 +609,7 @@ export default class CrawlOutput {
           counts: community.counts,
           time: community.lastCrawled || null,
 
-          isSuspicious: isInstanceSus,
+          isSuspicious: this.suspicious.isSuspicious(relatedInstance),
           score: score,
         };
       })

@@ -11,32 +11,31 @@ import storage from "../storage.js";
 
 export class Suspicions {
   // instance is from redis
-  constructor(instance, log = false) {
-    this.baseUrl = instance.siteData.site.actor_id.split("/")[2];
-    this.instance = instance;
-
+  constructor(trustLib, log = false) {
     this.log = log;
   }
 
-  async getMetrics() {
-    const metrics = {
-      usersTotal: this.instance.siteData.counts.users || 1,
+  async getMetrics(instance) {
+    const baseUrl = instance.siteData.site.actor_id.split("/")[2];
 
-      usersMonth: this.instance.siteData.counts.users_active_month || 1,
-      usersWeek: this.instance.siteData.counts.users_active_week || 1,
+    const metrics = {
+      usersTotal: instance.siteData.counts.users || 1,
+
+      usersMonth: instance.siteData.counts.users_active_month || 1,
+      usersWeek: instance.siteData.counts.users_active_week || 1,
 
       totalActivity:
-        this.instance.nodeData.usage.localPosts +
-          this.instance.nodeData.usage.localComments || 1,
-      localPosts: this.instance.nodeData.usage.localPosts || 1,
-      localComments: this.instance.nodeData.usage.localComments || 1,
+        instance.nodeData.usage.localPosts +
+          instance.nodeData.usage.localComments || 1,
+      localPosts: instance.nodeData.usage.localPosts || 1,
+      localComments: th.instance.nodeData.usage.localComments || 1,
     };
 
     // using the history, calculate how much it increses each crawl
     // and then how many users per minute that is...
     // also calculate how much increase growth % per scan
     let instanceUserHistory = await storage.instance.getAttributeWithScores(
-      this.baseUrl,
+      baseUrl,
       "users"
     );
     // console.log("getAttributeWithScores", instanceUserHistory);
@@ -152,9 +151,8 @@ export class Suspicions {
     };
   }
 
-  async isSuspiciousReasons() {
-    this.metrics = await this.getMetrics();
-    let metrics = this.metrics;
+  async isSuspiciousReasons(instance) {
+    let metrics = await this.getMetrics(instance);
 
     // console.log(this.baseUrl, "metrics", metrics);
 
@@ -219,8 +217,8 @@ export class Suspicions {
   }
 
   // reports true/false
-  async isSuspicious() {
-    const susFail = await this.isSuspiciousReasons();
+  async isSuspicious(instance) {
+    const susFail = await this.isSuspiciousReasons(instance);
     if (susFail.length > 0) {
       return true;
     }
