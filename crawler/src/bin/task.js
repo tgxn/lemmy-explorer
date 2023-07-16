@@ -108,6 +108,11 @@ export default async function runTask(taskName = null) {
         "failed",
       ]);
 
+      // record health
+
+      const agedAge = new CrawlAged();
+      await agedAge.recordAges();
+
       break;
 
     // adds ages domain jobs immediately
