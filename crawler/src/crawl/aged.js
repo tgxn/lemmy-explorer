@@ -41,7 +41,8 @@ export default class CrawlAged {
         "4-6 hours": 0,
         "6-8 hours": 0,
         "8-10 hours": 0,
-        "10+ hours": 0,
+        "10-12 hours": 0,
+        "12+ hours": 0,
       };
 
       const now = Date.now();
@@ -59,8 +60,10 @@ export default class CrawlAged {
           buckets["6-8 hours"]++;
         } else if (age < 10 * 60 * 60 * 1000) {
           buckets["8-10 hours"]++;
+        } else if (age < 12 * 60 * 60 * 1000) {
+          buckets["10-12 hours"]++;
         } else {
-          buckets["10+ hours"]++;
+          buckets["12+ hours"]++;
         }
 
         return age;
@@ -138,7 +141,8 @@ export default class CrawlAged {
       "4-6 hours",
       "6-8 hours",
       "8-10 hours",
-      "10+ hours",
+      "10-12 hours",
+      "12+ hours",
     ]);
   }
 

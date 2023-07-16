@@ -179,7 +179,7 @@ export default class CommunityCrawler {
         return await this.getSingleCommunityData(communityName, attempt + 1);
       }
 
-      logging.trace(`${this.logPrefix} communityData error`, e);
+      logging.error(`${this.logPrefix} communityData error`, e);
       return false;
     }
   }
