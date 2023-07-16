@@ -19,9 +19,6 @@ export const AWS_REGION = process.env.AWS_REGION || "ap-southeast-2";
 export const PUBLISH_S3_BUCKET =
   process.env.PUBLISH_S3_BUCKET || "lemmyexplorer-build-prod-buildbucket";
 
-// every 4 hours by default
-export const PUBLISH_S3_CRON = process.env.PUBLISH_S3_CRON || "0 */4 * * *";
-
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
   INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
@@ -57,12 +54,12 @@ export const RECORD_TTL_TIMES_SECONDS = {
   ERROR: 8 * 60 * 60, // errors should be retried less frequently
 };
 
-// how often should the cron run with --cron
-export const AGED_CRON_EXPRESSION = "*/15 * * * *"; // every 15 minutes
-
-// how often to hit fediverse.observer to get uptimes with --cron
-export const UPTIME_CRON_EXPRESSION = "0 */12 * * *";
-export const KBIN_CRON_EXPRESSION = "0 */6 * * *";
+export const CRON_SCHEDULES = {
+  PUBLISH_S3: process.env.PUBLISH_S3_CRON || "0 */4 * * *", // every 4 hours
+  AGED: "*/15 * * * *",
+  UPTIME: "0 */12 * * *",
+  KBIN: "0 */6 * * *",
+};
 
 // for each request we make, after how much time should axios be configured to timeout
 export const AXIOS_REQUEST_TIMEOUT = 120 * 1000; // 20 seconds in ms
