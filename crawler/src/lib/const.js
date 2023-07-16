@@ -26,14 +26,14 @@ export const CRAWL_TIMEOUT = {
   KBIN: 30 * 60 * 1000, // 45 minutes in ms
 };
 
-//NEW - max age to be included in output
+// max age to be included in output
 export const OUTPUT_MAX_AGE = {
   INSTANCE: hoursToMs(16),
   COMMUNITY: hoursToMs(16),
   MAGAZINE: hoursToMs(16),
 };
 
-//NEW - controls the time before manual re-scan of objects
+// controls the time before manual re-scan of old objects
 export const CRAWL_AGED_TIME = {
   INSTANCE: hoursToMs(8),
   COMMUNITY: hoursToMs(8),
@@ -48,7 +48,7 @@ export const CRAWL_DELETE_TIME = {
   COMMUNITY: hoursToMs(13),
 };
 
-// when should these records expire from redis
+// when should these records expire from redis - min time between scans
 export const RECORD_TTL_TIMES_SECONDS = {
   LAST_CRAWL: 6 * 60 * 60, // records won't be re-scanned if there is a last_crawl entry fort them
   ERROR: 8 * 60 * 60, // errors should be retried less frequently
