@@ -24,8 +24,8 @@ export default class FailureCrawl {
   constructor() {}
 
   async clean() {
-    // await this.cleanInstancesWithInvalidBaseUrl();
-    // await this.cleanCommunitiesWithInvalidBaseUrl();
+    await this.cleanInstancesWithInvalidBaseUrl();
+    await this.cleanCommunitiesWithInvalidBaseUrl();
 
     await this.addTTLToFailures();
     await this.addTTLToLastCrawl();

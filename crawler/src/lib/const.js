@@ -21,9 +21,9 @@ export const PUBLISH_S3_BUCKET =
 
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
-  INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
-  COMMUNITY: 45 * 60 * 1000, // 45 minutes in ms
-  KBIN: 30 * 60 * 1000, // 45 minutes in ms
+  INSTANCE: 30 * 60 * 1000, // 30 mins
+  COMMUNITY: 120 * 60 * 1000, // 2 hours
+  KBIN: 60 * 60 * 1000, // one hour
 };
 
 // max age to be included in output
