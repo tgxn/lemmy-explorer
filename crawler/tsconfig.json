@@ -1,9 +1,13 @@
 {
-  "declaration": true,
-  "include": ["index.js", "src/**/*"],
+  "exclude": ["node_modules/"],
+  "allowJs": true,
+  "checkJs": true,
   "compilerOptions": {
-    "allowJs": true,
-    "checkJs": true,
+    "declaration": false,
+    "declarationMap": false,
+    "module": "CommonJS",
+    "target": "ESNext",
+    "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true

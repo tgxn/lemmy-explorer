@@ -1,5 +1,3 @@
-import RedisStorage from "../storage";
-
 declare type CommunityData = {
   community: {
     id: number;
@@ -25,8 +23,18 @@ declare type CommunityData = {
   lastCrawled: number;
 };
 
-declare class Community {
+export default class Community {
   constructor(storage: any);
+  storage: any;
+  getAll(): Promise<any>;
+  getAllWithKeys(): Promise<any>;
+  getOne(baseUrl: any, communityName: any): Promise<any>;
+  upsert(baseUrl: any, community: any): Promise<any>;
+  delete(baseUrl: any, communityName: any, reason?: string): Promise<any>;
+  setTrackedAttribute(
+    baseUrl: any,
+    communityName: any,
+    attributeName: any,
+    attributeValue: any
+  ): Promise<any>;
 }
-
-export default Community;
