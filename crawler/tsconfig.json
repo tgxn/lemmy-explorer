@@ -1,0 +1,11 @@
+{
+  "declaration": true,
+  "include": ["index.js", "src/**/*"],
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  }
+}

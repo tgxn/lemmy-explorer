@@ -1,5 +1,3 @@
-import logging from "./lib/logging.js";
-
 import { createClient } from "redis";
 
 import { REDIS_URL } from "./lib/const.js";
@@ -13,7 +11,7 @@ import UptimeStore from "./storage/uptime.js";
 
 import TrackingStore from "./storage/tracking.js";
 
-class Storage {
+class RedisStorage {
   constructor() {
     console.log("Storage constructor", REDIS_URL);
     this.client = createClient({
@@ -125,5 +123,5 @@ class Storage {
   }
 }
 
-const storage = new Storage();
+const storage = new RedisStorage();
 export default storage;
