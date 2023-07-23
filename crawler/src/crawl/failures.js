@@ -17,6 +17,8 @@ import storage from "../storage.js";
 
 import { getActorBaseUrl } from "../lib/validator.js";
 
+import { RECORD_TTL_TIMES_SECONDS } from "../lib/const.js";
+
 // @TODO these should no longer be in the database to start with, not really required...
 export default class FailureCrawl {
   constructor() {}
@@ -37,22 +39,23 @@ export default class FailureCrawl {
     let remove = 0;
 
     for (const [key, value] of Object.entries(allErrors)) {
-      // console.log(key, value);
+      const normalTTL = RECORD_TTL_TIMES_SECONDS.ERROR * 1000;
+      const shouldExpireAtMs = value.time + normalTTL;
+      const ttlFromNowSeconds = Math.round(
+        (shouldExpireAtMs - Date.now()) / 1000
+      );
 
-      /// calc ttl based on when it was last crawled `time`
-      const maxAge = 12 * 60 * 60 * 1000; // how old a record can exist for
-      const age = Date.now() - value.time; // how old the record is
+      // console.log(key, ttlFromNowSeconds, value.time);
 
-      let ttl = maxAge - age; // how long the record should exist for (in ms)
-
-      if (ttl < 0) {
+      if (ttlFromNowSeconds < 0) {
         await storage.client.expire(key, 1);
         remove++;
       } else {
+        await storage.client.expire(key, ttlFromNowSeconds);
         keep++;
       }
     }
-    console.log("keep", keep, "remove", remove);
+    console.log("errors: update", keep, "remove", remove);
   }
 
   // add ttl to failures and last_crawl that dont have one already
@@ -63,22 +66,22 @@ export default class FailureCrawl {
     let remove = 0;
 
     for (const [key, value] of Object.entries(allLastCrawl)) {
-      // console.log(key, value);
+      const normalTTL = RECORD_TTL_TIMES_SECONDS.LAST_CRAWL * 1000; // how old a record can exist for
 
-      /// calc ttl based on when it was last crawled
-      const maxAge = 12 * 60 * 60 * 1000; // how old a record can exist for
-      const age = Date.now() - value; // how old the record is
+      const shouldExpireAtMs = value + normalTTL;
+      const ttlFromNowSeconds = Math.round(
+        (shouldExpireAtMs - Date.now()) / 1000
+      );
 
-      let ttl = maxAge - age; // how long the record should exist for (in ms)
-
-      if (ttl < 0) {
+      if (ttlFromNowSeconds < 0) {
         await storage.client.expire(key, 1);
         remove++;
       } else {
+        await storage.client.expire(key, ttlFromNowSeconds);
         keep++;
       }
     }
-    console.log("keep", keep, "remove", remove);
+    console.log("last_crawl: keep", keep, "remove", remove);
   }
 
   isInstanceValid(baseUrl, actorId) {

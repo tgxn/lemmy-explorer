@@ -3,7 +3,6 @@ import logging from "../lib/logging.js";
 import storage from "../storage.js";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
-import { MIN_RECRAWL_MS } from "../lib/const.js";
 
 import KBinQueue from "../queue/kbin.js";
 import InstanceQueue from "../queue/instance.js";
@@ -89,13 +88,11 @@ export default class CrawlKBin {
           );
           if (lastCrawlTs) {
             const lastCrawledMsAgo = Date.now() - lastCrawlTs;
-            if (lastCrawledMsAgo < MIN_RECRAWL_MS) {
-              throw new CrawlTooRecentError(
-                `Skipping - Crawled too recently (${
-                  lastCrawledMsAgo / 1000
-                }s ago)`
-              );
-            }
+            throw new CrawlTooRecentError(
+              `Skipping - Crawled too recently (${
+                lastCrawledMsAgo / 1000
+              }s ago)`
+            );
           }
 
           await this.getStoreMag(kbinBaseUrl, mag);

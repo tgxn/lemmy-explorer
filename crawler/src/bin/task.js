@@ -31,6 +31,7 @@ export default async function runTask(taskName = null) {
 
   switch (taskName) {
     // generate output .json files from data stored in redis
+    // @TODO add a flag to throw if there is no/very little change, overall <1%?
     case "out":
       logging.info("Generate JSON Output");
 
@@ -106,6 +107,11 @@ export default async function runTask(taskName = null) {
         "succeeded",
         "failed",
       ]);
+
+      // record health
+
+      const agedAge = new CrawlAged();
+      await agedAge.recordAges();
 
       break;
 
