@@ -28,9 +28,9 @@ export const CRAWL_TIMEOUT = {
 
 // max age to be included in output
 export const OUTPUT_MAX_AGE = {
-  INSTANCE: hoursToMs(16),
-  COMMUNITY: hoursToMs(16),
-  MAGAZINE: hoursToMs(16),
+  INSTANCE: hoursToMs(18),
+  COMMUNITY: hoursToMs(18),
+  MAGAZINE: hoursToMs(18),
 };
 
 // controls the time before manual re-scan of old objects

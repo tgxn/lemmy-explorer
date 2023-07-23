@@ -151,14 +151,6 @@ function KBinMagazines() {
         });
       }
     }
-
-    // hide no banner
-    // if (hideNoBanner) {
-    //   console.log(`Hiding communities with no banner`);
-    //   communties = communties.filter((community) => {
-    //     return community.banner != null;
-    //   });
-    // }
     console.log(`Filtered ${communties.length} magazines`);
 
     // sorting
@@ -238,16 +230,8 @@ function KBinMagazines() {
           <Option value="name">Name</Option>
         </Select>
 
-        {/* <InstanceFilter /> */}
-
         <Box sx={{ display: "flex", gap: 3 }}>
           <TriStateCheckbox checked={showNSFW} onChange={(checked) => setShowNSFW(checked)} />
-
-          {/* <Checkbox
-            label="Hide No Banner"
-            checked={hideNoBanner}
-            onChange={(event) => setHideNoBanner(event.target.checked)}
-          /> */}
         </Box>
 
         <Box

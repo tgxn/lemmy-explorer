@@ -119,7 +119,7 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
               color={homeBaseUrl == instance.url.split("/")[2] ? "success" : "neutral"}
               sx={{ ml: "auto", alignSelf: "flex-start", flexShrink: 1 }}
               onClick={() => {
-                dispatch(setHomeInstance(instance.url.split("/")[2]));
+                dispatch(setHomeInstance(instance.url.split("/")[2], "lemmy"));
               }}
             >
               <HomeIcon />
