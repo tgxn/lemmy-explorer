@@ -135,8 +135,7 @@ export default class InstanceQueue extends BaseQueue {
             time: new Date().getTime(),
           };
 
-          // if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.putRedis(`error:instance:${baseUrl}`, errorDetail);
+          await storage.tracking.upsertError("instance", baseUrl, errorDetail);
 
           logging.error(`[Instance] [${baseUrl}] Error: ${error.message}`);
         }

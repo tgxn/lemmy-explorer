@@ -46,7 +46,7 @@ const InstanceAvatarBase = React.memo(function ({ instance, homeBaseUrl, dispatc
   }, [isHomeUrl, isHover]);
 
   const setAsHome = () => {
-    dispatch(setHomeInstance(instance.baseurl));
+    dispatch(setHomeInstance(instance.baseurl, "lemmy"));
   };
 
   return (

@@ -1,5 +1,8 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+
 import useQueryCache from "../../hooks/useQueryCache";
 
 import Badge from "@mui/joy/Badge";
@@ -11,6 +14,8 @@ import Typography from "@mui/joy/Typography";
 
 import { SimpleNumberFormat } from "../Shared/Display";
 import HeaderSideMenu from "./HeaderSideMenu";
+
+import { setHomeInstance } from "../../reducers/configReducer";
 
 // export default function MobileMenu() {
 //   const buttonRef = React.useRef(null);
@@ -52,6 +57,9 @@ import HeaderSideMenu from "./HeaderSideMenu";
 // }
 
 export default function Header() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const dispatch = useDispatch();
+
   const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "meta");
 
   const [index, setIndex] = React.useState(0);
@@ -61,6 +69,7 @@ export default function Header() {
   const location = useLocation();
   console.log("location", location);
 
+  // set the active tab based on current location
   React.useEffect(() => {
     if (location.pathname == "/") {
       setIndex(0);
@@ -72,6 +81,24 @@ export default function Header() {
       setIndex(null);
     }
   }, [location]);
+
+  // set the current home instance if the url param is set
+  React.useEffect(() => {
+    console.log("location", location.search);
+
+    if (searchParams.has("home_url")) {
+      const home_url = searchParams.get("home_url");
+
+      let home_type = "lemmy";
+      if (searchParams.has("home_type")) {
+        home_type = searchParams.get("home_type");
+      }
+
+      console.log("home_url", home_url, home_type);
+      dispatch(setHomeInstance(home_url, home_type));
+      setSearchParams({ home_url: null, home_type: null });
+    }
+  }, [searchParams]);
 
   return (
     <Box

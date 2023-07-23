@@ -21,16 +21,16 @@ export const PUBLISH_S3_BUCKET =
 
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
-  INSTANCE: 10 * 60 * 1000, // 10 minutes in ms
-  COMMUNITY: 45 * 60 * 1000, // 45 minutes in ms
-  KBIN: 30 * 60 * 1000, // 45 minutes in ms
+  INSTANCE: 30 * 60 * 1000, // 30 mins
+  COMMUNITY: 120 * 60 * 1000, // 2 hours
+  KBIN: 60 * 60 * 1000, // one hour
 };
 
 // max age to be included in output
 export const OUTPUT_MAX_AGE = {
-  INSTANCE: hoursToMs(16),
-  COMMUNITY: hoursToMs(16),
-  MAGAZINE: hoursToMs(16),
+  INSTANCE: hoursToMs(18),
+  COMMUNITY: hoursToMs(18),
+  MAGAZINE: hoursToMs(18),
 };
 
 // controls the time before manual re-scan of old objects

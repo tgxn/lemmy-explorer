@@ -38,7 +38,7 @@ const InstanceList = React.memo(function ({ items }) {
             justifyContent: "left",
           }}
           cellRenderer={({ rowData }) => {
-            console.log(rowData);
+            // console.log(rowData);
             return (
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Box

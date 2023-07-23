@@ -44,7 +44,6 @@ function Communities({ filterSuspicious, filteredInstances }) {
 
   const [orderBy, setOrderBy] = React.useState("smart");
   const [showNSFW, setShowNSFW] = React.useState(false);
-  const [hideNoBanner, setHideNoBanner] = React.useState(false);
 
   // debounce the filter text input
   const [filterText, setFilterText] = React.useState("");
@@ -58,7 +57,6 @@ function Communities({ filterSuspicious, filteredInstances }) {
       setShowNSFW(
         searchParams.get("nsfw") == "true" ? true : searchParams.get("nsfw") == "null" ? null : false,
       );
-    if (searchParams.has("banner")) setHideNoBanner(searchParams.get("banner"));
   }, []);
 
   // update query params
@@ -68,10 +66,9 @@ function Communities({ filterSuspicious, filteredInstances }) {
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
-    if (hideNoBanner != false) parms.banner = hideNoBanner;
 
     setSearchParams(parms);
-  }, [orderBy, showNSFW, hideNoBanner, filterText]);
+  }, [orderBy, showNSFW, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
@@ -168,14 +165,6 @@ function Communities({ filterSuspicious, filteredInstances }) {
         });
       }
     }
-
-    // hide no banner
-    if (hideNoBanner) {
-      console.log(`Hiding communities with no banner`);
-      communties = communties.filter((community) => {
-        return community.banner != null;
-      });
-    }
     console.log(`Filtered ${communties.length} communities`);
 
     // sorting
@@ -203,7 +192,7 @@ function Communities({ filterSuspicious, filteredInstances }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNSFW, orderBy, debounceFilterText, hideNoBanner, filterSuspicious, filteredInstances]);
+  }, [data, showNSFW, orderBy, debounceFilterText, filterSuspicious, filteredInstances]);
 
   return (
     <Container
@@ -267,12 +256,6 @@ function Communities({ filterSuspicious, filteredInstances }) {
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <TriStateCheckbox checked={showNSFW} onChange={(checked) => setShowNSFW(checked)} />
-
-          <Checkbox
-            label="Hide No Banner"
-            checked={hideNoBanner}
-            onChange={(event) => setHideNoBanner(event.target.checked)}
-          />
         </Box>
 
         <Box
