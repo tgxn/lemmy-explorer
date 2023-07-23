@@ -67,13 +67,29 @@ export default class CrawlOutput {
 
         // cors
         if (instance.headers["access-control-allow-origin"]?.includes("*")) {
-          tags.push("cors");
+          tags.push("cors*");
         }
 
         // add tags to instance
         instance.tags = tags;
       }
     }
+
+    // print
+    console.log("Tags");
+    const tags = {};
+    for (const instance of this.instanceList) {
+      if (instance.tags) {
+        instance.tags.forEach((tag) => {
+          if (!tags[tag]) {
+            tags[tag] = 1;
+          } else {
+            tags[tag]++;
+          }
+        });
+      }
+    }
+    console.table(tags);
   }
 
   /**
