@@ -133,7 +133,7 @@ function InstanceCard({ instance }) {
           borderRadius: 0,
         })}
       >
-        <BannerImage imageSrc={instance.banner || false} />
+        <BannerImage imageSrc={instance.banner || instance.icon || false} />
         <Divider inset="context" />
       </CardOverflow>
 
