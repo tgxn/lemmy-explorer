@@ -99,7 +99,7 @@ function CommunityCard({ community }) {
           borderRadius: 0,
         })}
       >
-        <BannerImage imageSrc={community.banner || false} />
+        <BannerImage imageSrc={community.banner || community.icon || false} />
         <Divider inset="context" />
       </CardOverflow>
 
