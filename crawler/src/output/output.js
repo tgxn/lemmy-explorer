@@ -43,11 +43,38 @@ export default class CrawlOutput {
 
     // setup trust data
     await this.trust.setupSources(this.instanceList);
+
+    await this.tagInstances();
   }
 
   // async isInstanceSus(instance, log = true) {
   //   return await this.suspicious.isSuspicious(instance);
   // }
+
+  // look thru headers etc and assign tags
+  async tagInstances() {
+    /* tags:
+      "cloufdlare"
+      "cors"
+    */
+    for (const instance of this.instanceList) {
+      let tags = [];
+      if (instance.headers) {
+        // cloudflare
+        if (instance.headers?.server?.includes("cloudflare")) {
+          tags.push("cloudflare");
+        }
+
+        // cors
+        if (instance.headers["access-control-allow-origin"]?.includes("*")) {
+          tags.push("cors");
+        }
+
+        // add tags to instance
+        instance.tags = tags;
+      }
+    }
+  }
 
   /**
    * Main Output Generation Script
@@ -511,7 +538,7 @@ export default class CrawlOutput {
           uptime: siteUptime,
 
           isSuspicious: await this.suspicious.isSuspicious(instance),
-          metrics: instanceSus.metrics,
+          metrics: await this.suspicious.getMetrics(instance),
           susReason: susReason,
 
           blocks: {
@@ -790,8 +817,8 @@ export default class CrawlOutput {
 
     for (const instance of this.instanceList) {
       // ignore instances that have no data
-      const instanceSus = new Suspicions(instance);
-      const susReason = await instanceSus.isSuspiciousReasons();
+      // const instanceSus = new Suspicions();
+      const susReason = await this.suspicious.isSuspiciousReasons(instance);
 
       if (susReason.length > 0) {
         output.push({
@@ -799,7 +826,7 @@ export default class CrawlOutput {
           name: instance.siteData.site.name,
           base: instance.siteData.site.actor_id.split("/")[2],
           actor_id: instance.siteData.site.actor_id,
-          metrics: instanceSus.metrics,
+          metrics: await this.suspicious.getMetrics(instance),
           reasons: susReason,
         });
       }

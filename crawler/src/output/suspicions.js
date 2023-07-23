@@ -28,7 +28,7 @@ export class Suspicions {
         instance.nodeData.usage.localPosts +
           instance.nodeData.usage.localComments || 1,
       localPosts: instance.nodeData.usage.localPosts || 1,
-      localComments: th.instance.nodeData.usage.localComments || 1,
+      localComments: instance.nodeData.usage.localComments || 1,
     };
 
     // using the history, calculate how much it increses each crawl
