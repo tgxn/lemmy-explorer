@@ -3,14 +3,14 @@ import removeMd from "remove-markdown";
 
 import { OUTPUT_MAX_AGE } from "../lib/const.js";
 
+import AxiosClient from "../lib/axios.js";
 import logging from "../lib/logging.js";
 import storage from "../storage.js";
 
-import AxiosClient from "../lib/axios.js";
+import OutputFileWriter from "./file_writer.js";
 
 import Trust from "./trust.js";
-import Splitter from "./splitter.js";
-import { Suspicions } from "./suspicions.js";
+// import { Suspicions } from "./suspicions.js";
 
 /**
  * this generates the .json files for the frontend /public folder
@@ -24,10 +24,9 @@ export default class CrawlOutput {
     this.instanceList = null;
     this.communityList = null;
 
-    this.splitter = new Splitter();
-    this.trust = new Trust();
+    this.fileWriter = new OutputFileWriter();
 
-    this.suspicious = new Suspicions(this.trust);
+    this.trust = new Trust();
   }
 
   // load all required data from redis
@@ -99,7 +98,7 @@ export default class CrawlOutput {
     await this.loadAllData();
 
     // delete existing data from the output directory
-    await this.splitter.cleanData();
+    await this.fileWriter.cleanData();
 
     const susSiteList = await this.outputSusList();
 
@@ -110,10 +109,12 @@ export default class CrawlOutput {
     const kbinMagazineArray = await this.outputKBinMagazineList();
 
     const returnInstanceArray = await this.getInstanceArray();
+    await this.fileWriter.storeInstanceData(returnInstanceArray);
 
     const returnCommunityArray = await this.getCommunityArray(
       returnInstanceArray
     );
+    await this.fileWriter.storeCommunityData(returnCommunityArray);
 
     // generate instance-level metrics for every instance
     await Promise.all(
@@ -146,7 +147,7 @@ export default class CrawlOutput {
       allowed: this.trust.allowedFederation,
       blocked: this.trust.blockedFederation,
     };
-    await this.splitter.storeMetaData(metaData);
+    await this.fileWriter.storeMetaData(metaData);
 
     // get previous run  from current production data
     const client = new AxiosClient();
@@ -493,7 +494,7 @@ export default class CrawlOutput {
       };
     });
 
-    await this.splitter.storeInstanceMetricsData(instance.baseurl, {
+    await this.fileWriter.storeInstanceMetricsData(instance.baseurl, {
       instance,
       communityCount: storeCommunityData.filter(
         (community) => community.baseurl === instance.baseurl
@@ -523,7 +524,7 @@ export default class CrawlOutput {
         const score = await this.trust.scoreInstance(siteBaseUrl);
 
         // ignore instances that have no data
-        const susReason = await this.suspicious.isSuspiciousReasons(instance);
+        const susReason = await this.trust.isSuspiciousReasons(instance);
 
         return {
           baseurl: siteBaseUrl,
@@ -553,8 +554,8 @@ export default class CrawlOutput {
           score: score,
           uptime: siteUptime,
 
-          isSuspicious: await this.suspicious.isSuspicious(instance),
-          metrics: await this.suspicious.getMetrics(instance),
+          isSuspicious: await this.trust.isSuspicious(instance),
+          metrics: await this.trust.getMetrics(instance),
           susReason: susReason,
 
           blocks: {
@@ -616,8 +617,6 @@ export default class CrawlOutput {
     //   `Instances ${this.instanceList.length} -> ${storeData.length}`
     // );
 
-    await this.splitter.storeInstanceData(storeData);
-
     return storeData;
   }
 
@@ -652,7 +651,7 @@ export default class CrawlOutput {
           counts: community.counts,
           time: community.lastCrawled || null,
 
-          isSuspicious: this.suspicious.isSuspicious(relatedInstance),
+          isSuspicious: this.trust.isSuspicious(relatedInstance),
           score: score,
         };
       })
@@ -723,8 +722,6 @@ export default class CrawlOutput {
     //   `Communities ${this.communityList.length} -> ${storeCommunityData.length}`
     // );
 
-    await this.splitter.storeCommunityData(storeCommunityData);
-
     return storeCommunityData;
   }
 
@@ -758,7 +755,7 @@ export default class CrawlOutput {
       }
     });
 
-    await this.splitter.storeFediverseData(
+    await this.fileWriter.storeFediverseData(
       returnStats,
       softwareNames,
       softwareBaseUrls
@@ -779,7 +776,7 @@ export default class CrawlOutput {
       })
       .filter((instance) => instance !== null);
 
-    await this.splitter.storeKbinInstanceList(kbinInstances);
+    await this.fileWriter.storeKbinInstanceList(kbinInstances);
 
     return kbinInstances;
   }
@@ -822,7 +819,7 @@ export default class CrawlOutput {
 
     // logging.info("instanceErrors", instanceErrors.length, errorTypes);
 
-    await this.splitter.storeInstanceErrors(instanceErrors);
+    await this.fileWriter.storeInstanceErrors(instanceErrors);
 
     return instanceErrors;
   }
@@ -834,7 +831,7 @@ export default class CrawlOutput {
     for (const instance of this.instanceList) {
       // ignore instances that have no data
       // const instanceSus = new Suspicions();
-      const susReason = await this.suspicious.isSuspiciousReasons(instance);
+      const susReason = await this.trust.isSuspiciousReasons(instance);
 
       if (susReason.length > 0) {
         output.push({
@@ -842,13 +839,13 @@ export default class CrawlOutput {
           name: instance.siteData.site.name,
           base: instance.siteData.site.actor_id.split("/")[2],
           actor_id: instance.siteData.site.actor_id,
-          metrics: await this.suspicious.getMetrics(instance),
+          metrics: await this.trust.getMetrics(instance),
           reasons: susReason,
         });
       }
     }
 
-    await this.splitter.storeSuspicousData(output);
+    await this.fileWriter.storeSuspicousData(output);
 
     return output;
   }
@@ -891,7 +888,7 @@ export default class CrawlOutput {
       });
     }
 
-    await this.splitter.storeKBinMagazineData(output);
+    await this.fileWriter.storeKBinMagazineData(output);
 
     return filteredKBins;
   }
