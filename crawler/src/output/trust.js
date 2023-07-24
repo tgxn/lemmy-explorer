@@ -46,6 +46,17 @@ export default class OutputTrust {
     this.instaceTags = await this.tagInstances();
     this.instancesWithMetrics = await this.getInstancesWithMetrics();
     this.deviations = await this.calcInstanceDeviation();
+    this.endorsements = this.getInstanceEndorsements();
+  }
+
+  getInstanceEndorsements() {
+    const endorsements = {};
+    this.fediseerData.forEach((instance) => {
+      if (instance.endorsements) {
+        endorsements[instance.domain] = instance.endorsements;
+      }
+    });
+    return endorsements;
   }
 
   getInstanceGuarantor(baseUrl) {
@@ -454,20 +465,36 @@ export default class OutputTrust {
   // run domain through this to get scores
   async scoreInstance(baseUrl) {
     let score = 0;
+
+    const scores = {};
+
     // having a linked instance gives you a point for each link
     if (this.linkedFederation[baseUrl]) {
-      score += this.linkedFederation[baseUrl];
+      score += this.linkedFederation[baseUrl] / 2;
+      scores.linked = this.linkedFederation[baseUrl] / 2;
+    }
+
+    // having endorsements will boost you in the search results
+    if (this.endorsements[baseUrl]) {
+      score += this.endorsements[baseUrl] * 4;
+      scores.endorsements = this.endorsements[baseUrl] * 4;
     }
 
     // each allowed instance gives you points
     if (this.allowedFederation[baseUrl]) {
-      score += this.allowedFederation[baseUrl] * 2;
+      score += this.allowedFederation[baseUrl] * 3;
+      scores.allowed = this.allowedFederation[baseUrl] * 3;
     }
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
       score -= this.blockedFederation[baseUrl] * 10;
+      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
     }
+
+    // if (scores.endorsements) {
+    //   console.log(baseUrl, scores);
+    // }
 
     return score;
   }
