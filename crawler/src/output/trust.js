@@ -121,6 +121,8 @@ export default class OutputTrust {
   }
 
   async instanceSusReasonList(instance) {
+    const instanceBaseUrl = instance.siteData.site.actor_id.split("/")[2];
+
     let metrics = await this.getMetrics(instance);
 
     // console.log(this.baseUrl, "metrics", metrics);
@@ -131,17 +133,6 @@ export default class OutputTrust {
       metrics.localPosts < 1000 &&
       metrics.localComments < 1000
     ) {
-      return [];
-    }
-
-    // if they have a guarantor, they are not sus
-    const instanceBaseUrl = instance.siteData.site.actor_id.split("/")[2];
-    const instanceGuarantor = this.getInstanceGuarantor(instanceBaseUrl);
-    // console.log("instanceGuarantor", instanceGuarantor);
-    if (instanceGuarantor !== null) {
-      console.log(
-        `skipping sus checks for instance: ${instanceBaseUrl} with guarantor: ${instanceGuarantor}`
-      );
       return [];
     }
 
@@ -198,6 +189,20 @@ export default class OutputTrust {
       reasons.push(
         `deviations: ${this.deviations[instanceBaseUrl].join(", ")}`
       );
+    }
+
+    // if they have a guarantor, they are not sus
+    const instanceGuarantor = this.getInstanceGuarantor(instanceBaseUrl);
+    // console.log("instanceGuarantor", instanceGuarantor);
+    if (instanceGuarantor !== null) {
+      // if (reasons.length > 0) {
+      //   console.log(
+      //     `skipping sus checks for instance: ${instanceBaseUrl} with guarantor: ${instanceGuarantor} (that sould have been marked as sus otherwise!)`,
+      //     reasons
+      //   );
+      // }
+
+      return [];
     }
 
     // @TODO add check for users increase % between crawls
