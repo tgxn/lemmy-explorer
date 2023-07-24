@@ -39,56 +39,6 @@ export default class CrawlOutput {
 
     this.fediverseData = await storage.fediverse.getAll();
     this.kbinData = await storage.kbin.getAll();
-
-    // setup trust data
-    await this.trust.setupSources(this.instanceList);
-
-    await this.tagInstances();
-  }
-
-  // async isInstanceSus(instance, log = true) {
-  //   return await this.suspicious.isSuspicious(instance);
-  // }
-
-  // look thru headers etc and assign tags
-  async tagInstances() {
-    /* tags:
-      "cloufdlare"
-      "cors"
-    */
-    for (const instance of this.instanceList) {
-      let tags = [];
-      if (instance.headers) {
-        // cloudflare
-        if (instance.headers?.server?.includes("cloudflare")) {
-          tags.push("cloudflare");
-        }
-
-        // cors
-        if (instance.headers["access-control-allow-origin"]?.includes("*")) {
-          tags.push("cors*");
-        }
-
-        // add tags to instance
-        instance.tags = tags;
-      }
-    }
-
-    // print
-    console.log("Tags");
-    const tags = {};
-    for (const instance of this.instanceList) {
-      if (instance.tags) {
-        instance.tags.forEach((tag) => {
-          if (!tags[tag]) {
-            tags[tag] = 1;
-          } else {
-            tags[tag]++;
-          }
-        });
-      }
-    }
-    console.table(tags);
   }
 
   /**
@@ -97,16 +47,14 @@ export default class CrawlOutput {
   async start() {
     await this.loadAllData();
 
+    // setup trust data
+    await this.trust.setupSources(this.instanceList);
+
     // delete existing data from the output directory
     await this.fileWriter.cleanData();
 
-    const susSiteList = await this.outputSusList();
-
-    const returnStats = await this.outputFediverseData();
-
-    const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
-
-    const kbinMagazineArray = await this.outputKBinMagazineList();
+    const susSiteList = await this.trust.getSusInstances();
+    await this.fileWriter.storeSuspicousData(susSiteList);
 
     const returnInstanceArray = await this.getInstanceArray();
     await this.fileWriter.storeInstanceData(returnInstanceArray);
@@ -116,13 +64,21 @@ export default class CrawlOutput {
     );
     await this.fileWriter.storeCommunityData(returnCommunityArray);
 
-    // generate instance-level metrics for every instance
+    // generate instance-level metrics `instance.com.json` for each instance
     await Promise.all(
       returnInstanceArray.map(async (instance) => {
         return this.generateInstanceMetrics(instance, returnCommunityArray);
       })
     );
 
+    // fediverse data
+    const returnStats = await this.outputFediverseData();
+
+    // kbin data
+    const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
+    const kbinMagazineArray = await this.outputKBinMagazineList();
+
+    // error data
     const instanceErrors = await this.outputClassifiedErrors();
 
     // STORE RUN METADATA
@@ -524,7 +480,7 @@ export default class CrawlOutput {
         const score = await this.trust.scoreInstance(siteBaseUrl);
 
         // ignore instances that have no data
-        const susReason = await this.trust.isSuspiciousReasons(instance);
+        const susReason = await this.trust.instanceSusReasonList(instance);
 
         return {
           baseurl: siteBaseUrl,
@@ -554,7 +510,7 @@ export default class CrawlOutput {
           score: score,
           uptime: siteUptime,
 
-          isSuspicious: await this.trust.isSuspicious(instance),
+          isSuspicious: susReason.length > 0 ? true : false,
           metrics: await this.trust.getMetrics(instance),
           susReason: susReason,
 
@@ -567,19 +523,20 @@ export default class CrawlOutput {
     );
 
     // add trust
-    await this.trust.setAllInstancesWithMetrics(storeData);
-    const trustData = await this.trust.calcInstanceDeviation();
+    // await this.trust.setAllInstancesWithMetrics(storeData);
 
-    storeData = await Promise.all(
-      storeData.map(async (instance) => {
-        const trustData = await this.trust.scoreInstance(instance.baseurl);
+    // const trustData = await this.trust.calcInstanceDeviation();
 
-        return {
-          ...instance,
-          trust: trustData,
-        };
-      })
-    );
+    // storeData = await Promise.all(
+    //   storeData.map(async (instance) => {
+    //     const trustData = await this.trust.scoreInstance(instance.baseurl);
+
+    //     return {
+    //       ...instance,
+    //       trust: trustData,
+    //     };
+    //   })
+    // );
 
     // remove those with errors that happened before time
     storeData = storeData.filter((instance) => {
@@ -631,10 +588,9 @@ export default class CrawlOutput {
           (instance) =>
             instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
         );
-        // const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
-
-        // if (community.community.nsfw)
-        //   console.log(community.community.name, community.community.nsfw);
+        const isInstanceSus = await this.trust.instanceSusReasonList(
+          relatedInstance
+        );
 
         return {
           baseurl: siteBaseUrl,
@@ -651,13 +607,14 @@ export default class CrawlOutput {
           counts: community.counts,
           time: community.lastCrawled || null,
 
-          isSuspicious: this.trust.isSuspicious(relatedInstance),
+          isSuspicious: isInstanceSus.length > 0 ? true : false,
           score: score,
         };
       })
     );
 
     // remove those with errors that happened before updated time
+    let preFilterFails = storeCommunityData.length;
     storeCommunityData = storeCommunityData.filter((community) => {
       const fail = this.findFail(community.baseurl);
       if (fail) {
@@ -668,8 +625,10 @@ export default class CrawlOutput {
       }
       return true;
     });
+    console.log(`Filtered ${preFilterFails - storeCommunityData.length} fails`);
 
     // remove communities not updated in 24h
+    let preFilterAge = storeCommunityData.length;
     storeCommunityData = storeCommunityData.filter((community) => {
       if (!community.time) {
         console.log("no time", community);
@@ -695,21 +654,30 @@ export default class CrawlOutput {
 
       return true;
     });
+    console.log(`Filtered ${preFilterAge - storeCommunityData.length} age`);
 
     // remove those not being in the instance list
     if (returnInstanceArray) {
+      let preFilterInstance = storeCommunityData.length;
       storeCommunityData = storeCommunityData.filter((community) => {
         const relatedInstance = returnInstanceArray.find(
           (instance) => instance.baseurl === community.baseurl
         );
 
         if (!relatedInstance) {
-          logging.info("filtered due to no instance", community.url);
+          // logging.info(
+          //   "filtered due to no instance",
+          //   community.baseurl,
+          //   community.url
+          // );
           return false;
         }
 
         return true;
       });
+      console.log(
+        `Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`
+      );
     }
 
     // filter blank
@@ -822,32 +790,6 @@ export default class CrawlOutput {
     await this.fileWriter.storeInstanceErrors(instanceErrors);
 
     return instanceErrors;
-  }
-
-  // generate a list of all the instances that are suspicious and the reasons
-  async outputSusList() {
-    const output = [];
-
-    for (const instance of this.instanceList) {
-      // ignore instances that have no data
-      // const instanceSus = new Suspicions();
-      const susReason = await this.trust.isSuspiciousReasons(instance);
-
-      if (susReason.length > 0) {
-        output.push({
-          users: instance.nodeData.usage.users.total,
-          name: instance.siteData.site.name,
-          base: instance.siteData.site.actor_id.split("/")[2],
-          actor_id: instance.siteData.site.actor_id,
-          metrics: await this.trust.getMetrics(instance),
-          reasons: susReason,
-        });
-      }
-    }
-
-    await this.fileWriter.storeSuspicousData(output);
-
-    return output;
   }
 
   // generate a list of all the instances that are suspicious and the reasons

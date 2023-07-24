@@ -33,6 +33,8 @@ export default class OutputTrust {
   async setupSources(instanceList) {
     this.instanceList = instanceList;
 
+    this.fediseerData = await storage.fediseer.getLatest();
+
     // parse all federated instance data
     const [linkedFederation, allowedFederation, blockedFederation] =
       this.getFederationLists(this.instanceList);
@@ -41,9 +43,173 @@ export default class OutputTrust {
     this.allowedFederation = allowedFederation;
     this.blockedFederation = blockedFederation;
 
-    // this.instanceDeviation = await this.calcInstanceDeviation();
+    this.instaceTags = await this.tagInstances();
+    this.instancesWithMetrics = await this.getInstancesWithMetrics();
+    this.deviations = await this.calcInstanceDeviation();
   }
 
+  getInstanceGuarantor(baseUrl) {
+    // console.log("getInstanceGuarantor", this.fediseerData);
+
+    const instanceGuarantor = this.fediseerData.find(
+      (instance) => instance.domain === baseUrl
+    );
+
+    if (
+      instanceGuarantor !== undefined &&
+      instanceGuarantor.guarantor !== null
+    ) {
+      // console.log("instanceGuarantor", instanceGuarantor);
+      return instanceGuarantor.guarantor;
+    }
+
+    return null;
+  }
+
+  /**
+   * returns an array of instances that are suspicious
+   *
+   */
+  async getSusInstances() {
+    const susInstances = [];
+
+    for (const instance of this.instanceList) {
+      const susReason = await this.instanceSusReasonList(instance);
+
+      if (susReason.length > 0) {
+        susInstances.push({
+          users: instance.nodeData.usage.users.total,
+          name: instance.siteData.site.name,
+          base: instance.siteData.site.actor_id.split("/")[2],
+          actor_id: instance.siteData.site.actor_id,
+          metrics: await this.getMetrics(instance),
+          reasons: susReason,
+        });
+      }
+    }
+
+    return susInstances;
+  }
+
+  async getInstancesWithMetrics() {
+    const instancesWithMetrics = await Promise.all(
+      this.instanceList.map(async (instance) => {
+        const instanceMetrics = await this.getMetrics(instance);
+
+        return {
+          ...instance,
+          baseurl: instance.siteData.site.actor_id.split("/")[2],
+          metrics: instanceMetrics,
+        };
+      })
+    );
+
+    // get all metrics into one object
+    this.allInstanceMetrics = {
+      userActivityScores: instancesWithMetrics.map(
+        (instance) => instance.metrics.userActivityScore
+      ),
+      activityUserScores: instancesWithMetrics.map(
+        (instance) => instance.metrics.activityUserScore
+      ),
+      userActiveMonthScores: instancesWithMetrics.map(
+        (instance) => instance.metrics.userActiveMonthScore
+      ),
+    };
+
+    return instancesWithMetrics;
+  }
+
+  async instanceSusReasonList(instance) {
+    let metrics = await this.getMetrics(instance);
+
+    // console.log(this.baseUrl, "metrics", metrics);
+
+    // if less than x, skip
+    if (
+      metrics.usersTotal < 1000 &&
+      metrics.localPosts < 1000 &&
+      metrics.localComments < 1000
+    ) {
+      return [];
+    }
+
+    // if they have a guarantor, they are not sus
+    const instanceBaseUrl = instance.siteData.site.actor_id.split("/")[2];
+    const instanceGuarantor = this.getInstanceGuarantor(instanceBaseUrl);
+    // console.log("instanceGuarantor", instanceGuarantor);
+    if (instanceGuarantor !== null) {
+      console.log(
+        `skipping sus checks for instance: ${instanceBaseUrl} with guarantor: ${instanceGuarantor}`
+      );
+      return [];
+    }
+
+    // no data is sus
+    if (!metrics.usersTotal) {
+      return ["no data in usersTotal"];
+      // reasons.push("no data in usersTotal");
+    }
+
+    const reasons = [];
+
+    // checks for total users vs. posts+comments
+    // const postActivityFail = this.isPostActivityLow();
+
+    const SUS_LEVEL = 20;
+    if (metrics.userActivityScore > SUS_LEVEL) {
+      reasons.push(
+        `Total Users vs. Total Activity is LOW: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
+      );
+    }
+
+    const SUS_LEVEL_LOW = 900;
+    if (metrics.activityUserScore > SUS_LEVEL_LOW) {
+      // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
+      reasons.push(
+        `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
+      );
+    }
+
+    // checks for total users vs. active users metric
+    // const userAtivityFail = this.isUserActivityLow();
+    const susMaxPercent = 500;
+    if (metrics.userActiveMonthScore > susMaxPercent) {
+      reasons.push(
+        `MAU Count is LOW: ${metrics.usersTotal} / ${metrics.usersMonth} = ${metrics.userActiveMonthScore}`
+      );
+    }
+
+    // disabled as it also picks up big instances that dont have lots of scan data
+    // const biggestJumpMax = 1000;
+    // if (metrics.biggestJump > biggestJumpMax) {
+    //   reasons.push(`biggest jump is too big: ${metrics.biggestJump}`);
+    // }
+
+    if (metrics.averagePerMinute > 9.5) {
+      // console.log(this.baseUrl, "averagePerMinute", metrics.averagePerMinute);
+      reasons.push(`averagePerMinute is too high: ${metrics.averagePerMinute}`);
+    }
+
+    if (
+      this.deviations[instanceBaseUrl] &&
+      this.deviations[instanceBaseUrl].length > 0
+    ) {
+      reasons.push(
+        `deviations: ${this.deviations[instanceBaseUrl].join(", ")}`
+      );
+    }
+
+    // @TODO add check for users increase % between crawls
+
+    return reasons;
+  }
+
+  /**
+   *  returns an object with various metrics for an instance
+   *
+   * @param {*} instance
+   */
   async getMetrics(instance) {
     const baseUrl = instance.siteData.site.actor_id.split("/")[2];
 
@@ -67,6 +233,7 @@ export default class OutputTrust {
       baseUrl,
       "users"
     );
+
     // console.log("getAttributeWithScores", instanceUserHistory);
     if (instanceUserHistory.length > 0) {
       // used to track as we check the history
@@ -180,79 +347,45 @@ export default class OutputTrust {
     };
   }
 
-  async isSuspiciousReasons(instance) {
-    let metrics = await this.getMetrics(instance);
+  // look thru headers etc and assign tags
+  async tagInstances() {
+    /* tags:
+      "cloufdlare"
+      "cors"
+    */
+    for (const instance of this.instanceList) {
+      let tags = [];
+      if (instance.headers) {
+        // cloudflare
+        if (instance.headers?.server?.includes("cloudflare")) {
+          tags.push("cloudflare");
+        }
 
-    // console.log(this.baseUrl, "metrics", metrics);
+        // cors
+        if (instance.headers["access-control-allow-origin"]?.includes("*")) {
+          tags.push("cors*");
+        }
 
-    // if less than x, skip
-    if (
-      metrics.usersTotal < 1000 &&
-      metrics.localPosts < 1000 &&
-      metrics.localComments < 1000
-    ) {
-      return [];
+        // add tags to instance
+        instance.tags = tags;
+      }
     }
 
-    // no data is sus
-    if (!metrics.usersTotal) {
-      return ["no data in usersTotal"];
-      // reasons.push("no data in usersTotal");
+    // print
+    console.log("Tags");
+    const tags = {};
+    for (const instance of this.instanceList) {
+      if (instance.tags) {
+        instance.tags.forEach((tag) => {
+          if (!tags[tag]) {
+            tags[tag] = 1;
+          } else {
+            tags[tag]++;
+          }
+        });
+      }
     }
-
-    const reasons = [];
-
-    // checks for total users vs. posts+comments
-    // const postActivityFail = this.isPostActivityLow();
-
-    const SUS_LEVEL = 20;
-    if (metrics.userActivityScore > SUS_LEVEL) {
-      reasons.push(
-        `Total Users vs. Total Activity is LOW: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
-      );
-    }
-
-    const SUS_LEVEL_LOW = 900;
-    if (metrics.activityUserScore > SUS_LEVEL_LOW) {
-      // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
-      reasons.push(
-        `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
-      );
-    }
-
-    // checks for total users vs. active users metric
-    // const userAtivityFail = this.isUserActivityLow();
-    const susMaxPercent = 500;
-    if (metrics.userActiveMonthScore > susMaxPercent) {
-      reasons.push(
-        `MAU Count is LOW: ${metrics.usersTotal} / ${metrics.usersMonth} = ${metrics.userActiveMonthScore}`
-      );
-    }
-
-    // disabled as it also picks up big instances that dont have lots of scan data
-    // const biggestJumpMax = 1000;
-    // if (metrics.biggestJump > biggestJumpMax) {
-    //   reasons.push(`biggest jump is too big: ${metrics.biggestJump}`);
-    // }
-
-    if (metrics.averagePerMinute > 9.5) {
-      // console.log(this.baseUrl, "averagePerMinute", metrics.averagePerMinute);
-      reasons.push(`averagePerMinute is too high: ${metrics.averagePerMinute}`);
-    }
-
-    // @TODO add check for users increase % between crawls
-
-    return reasons;
-  }
-
-  // reports true/false
-  async isSuspicious(instance) {
-    const susFail = await this.isSuspiciousReasons(instance);
-    if (susFail.length > 0) {
-      return true;
-    }
-
-    return false;
+    console.table(tags);
   }
 
   /**
@@ -266,64 +399,51 @@ export default class OutputTrust {
     - how many endorsements does this instance have? (1 point per endorsement)
   */
 
-  async setAllInstancesWithMetrics(storeData) {
-    this.instancesWithMetrics = storeData;
-
-    this.allInstanceMetrics = {
-      userActivityScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.userActivityScore
-      ),
-      activityUserScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.activityUserScore
-      ),
-      userActiveMonthScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.userActiveMonthScore
-      ),
-    };
-  }
-
   async calcInstanceDeviation() {
+    // these returns an array of deviations for each value in the array
     let response1 = divinator.zscore(
       this.allInstanceMetrics.userActivityScores,
-      3.1
+      0.75
     );
     let response2 = divinator.zscore(
-      this.allInstanceMetrics.userActivityScores,
-      3.1
+      this.allInstanceMetrics.activityUserScores,
+      0.75
     );
     let response3 = divinator.zscore(
-      this.allInstanceMetrics.userActivityScores,
-      3.1
+      this.allInstanceMetrics.userActiveMonthScores,
+      0.75
     );
 
-    // console.log("data deviation", response1);
-
+    // deviations are stored as arrays of booleans (true if they are outside the allowed range)
+    const deviations = {};
     for (const index in this.instancesWithMetrics) {
+      const baseUrlDeviations = [];
+
       if (response1[index]) {
-        console.log(
-          "userActivityScore deviation",
-          this.instancesWithMetrics[index].metrics.userActivityScore,
-          this.instancesWithMetrics[index].url,
-          response1[index]
-        );
+        baseUrlDeviations.push("userActivityScore");
       }
       if (response2[index]) {
-        console.log(
-          "activityUserScore deviation",
-          this.instancesWithMetrics[index].metrics.userActivityScore,
-          this.instancesWithMetrics[index].url,
-          response2[index]
-        );
+        baseUrlDeviations.push("activityUserScore");
       }
       if (response3[index]) {
+        baseUrlDeviations.push("userActiveMonthScore");
+      }
+
+      if (baseUrlDeviations.length > 0) {
         console.log(
-          "userActiveMonthScore deviation",
-          this.instancesWithMetrics[index].metrics.userActivityScore,
-          this.instancesWithMetrics[index].url,
-          response3[index]
+          "instance deviates!!",
+          this.instancesWithMetrics[index].baseurl,
+          baseUrlDeviations
         );
+
+        deviations[this.instancesWithMetrics[index].baseurl] =
+          baseUrlDeviations;
       }
     }
+
+    console.log("deviations", Object.keys(deviations).length);
+
+    return deviations;
   }
 
   // run domain through this to get scores
