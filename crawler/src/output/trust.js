@@ -15,10 +15,12 @@ import divinator from "divinator";
  */
 
 /**
- * - score - from activityscore (federated instances vs. instancezs that defederated with)
+ * this library is used to calculate various metrics for an instance
+ *
+ * - "score" - from activityscore (federated instances vs. instancezs that defederated with)
  * - "suspicious" boolean - if the site has odd posts/user activity, and if not guarantored on fediseer
  * - "trusted" string || null - if there is a guarantor for this instance, who is it?
- *
+ * - "metrics" object - various metrics for the instance
  *
  */
 
@@ -46,10 +48,10 @@ export default class OutputTrust {
     this.instaceTags = await this.tagInstances();
     this.instancesWithMetrics = await this.getInstancesWithMetrics();
     this.deviations = await this.calcInstanceDeviation();
-    this.endorsements = this.getInstanceEndorsements();
+    this.endorsements = this.getAllInstanceEndorsements();
   }
 
-  getInstanceEndorsements() {
+  getAllInstanceEndorsements() {
     const endorsements = {};
     this.fediseerData.forEach((instance) => {
       if (instance.endorsements) {
@@ -463,6 +465,7 @@ export default class OutputTrust {
   }
 
   // run domain through this to get scores
+  // this generates the "smart sort" score that is used by default
   async scoreInstance(baseUrl) {
     let score = 0;
 

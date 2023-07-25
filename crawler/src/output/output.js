@@ -8,9 +8,205 @@ import logging from "../lib/logging.js";
 import storage from "../storage.js";
 
 import OutputFileWriter from "./file_writer.js";
+import OutputTrust from "./trust.js";
 
-import Trust from "./trust.js";
-// import { Suspicions } from "./suspicions.js";
+class OutputUtils {
+  constructor() {}
+
+  // strip markdown, optionally substring
+  stripMarkdownSubStr(text, maxLength = -1) {
+    const stripped = removeMd(text);
+
+    if (maxLength > 0) {
+      return stripped.substring(0, maxLength);
+    }
+
+    return stripped;
+  }
+
+  // given an error message from redis, figure out what it relates to..
+  findErrorType(errorMessage) {
+    if (
+      errorMessage.includes("ENOENT") ||
+      errorMessage.includes("ECONNREFUSED") ||
+      errorMessage.includes("ECONNRESET") ||
+      errorMessage.includes("ENOTFOUND") ||
+      errorMessage.includes("EAI_AGAIN") ||
+      errorMessage.includes("socket hang up") ||
+      errorMessage.includes("Client network socket disconnected")
+    ) {
+      return "connectException";
+    }
+
+    if (errorMessage.includes("timeout of")) {
+      return "timeout";
+    }
+
+    if (
+      errorMessage.includes("self-signed certificate") ||
+      errorMessage.includes("does not match certificate's altnames") ||
+      errorMessage.includes("tlsv1 unrecognized name") ||
+      errorMessage.includes("tlsv1 alert internal error") ||
+      errorMessage.includes("ssl3_get_record:wrong version number") ||
+      errorMessage.includes("unable to verify the first certificate") ||
+      errorMessage.includes("unable to get local issuer certificate") ||
+      errorMessage.includes("certificate has expired")
+    ) {
+      return "sslException";
+    }
+
+    if (errorMessage.includes("baseUrl is not a valid domain")) {
+      return "invalidBaseUrl";
+    }
+
+    if (
+      errorMessage.includes("code 300") ||
+      errorMessage.includes("code 400") ||
+      errorMessage.includes("code 403") ||
+      errorMessage.includes("code 404") ||
+      errorMessage.includes("code 406") ||
+      errorMessage.includes("code 410") ||
+      errorMessage.includes("code 500") ||
+      errorMessage.includes("code 502") ||
+      errorMessage.includes("code 503") ||
+      errorMessage.includes("code 520") ||
+      errorMessage.includes("code 521") ||
+      errorMessage.includes("code 523") ||
+      errorMessage.includes("code 525") ||
+      errorMessage.includes("code 526") ||
+      errorMessage.includes("code 530") ||
+      errorMessage.includes("Maximum number of redirects exceeded")
+    ) {
+      return "httpException";
+    }
+
+    if (
+      errorMessage.includes("no diaspora rel in") ||
+      errorMessage.includes("wellKnownInfo.data.links is not iterable") ||
+      errorMessage.includes("missing /.well-known/nodeinfo links")
+    ) {
+      return "httpException";
+    }
+
+    if (errorMessage.includes("not a lemmy instance")) {
+      return "notLemmy";
+    }
+
+    if (
+      errorMessage.includes("invalid actor id") ||
+      errorMessage.includes("actor id does not match instance domain")
+    ) {
+      return "invalidActorId";
+    }
+
+    logging.silly("unhandled error", errorMessage);
+  }
+
+  // ensure the output is okay for the website
+  async validateOutput(
+    previousRun,
+    returnInstanceArray,
+    returnCommunityArray,
+    kbinInstanceArray,
+    kbinMagazineArray,
+    returnStats
+  ) {
+    const issues = [];
+
+    // check that there is data in all arrays
+    if (
+      returnInstanceArray.length === 0 ||
+      returnCommunityArray.length === 0 ||
+      kbinInstanceArray.length === 0 ||
+      kbinMagazineArray.length === 0 ||
+      returnStats.length === 0
+    ) {
+      console.log("Empty Array");
+      issues.push("Empty Array(s)");
+    }
+
+    // check for duplicate baseurls
+    for (let i = 0; i < returnInstanceArray.length; i++) {
+      const instance = returnInstanceArray[i];
+
+      const found = returnInstanceArray.find(
+        (i) => i.baseurl === instance.baseurl
+      );
+
+      if (found && found !== instance) {
+        console.log("Duplicate Instance", instance.baseurl);
+        issues.push("Duplicate Instance: " + instance.baseurl);
+      }
+    }
+
+    // check values are < 10% different
+    const checkChangeIsValid = (value, previousValue, pct = 10) => {
+      if (!value || !previousValue) {
+        return false;
+      }
+
+      const diff = Math.abs(value - previousValue);
+      const percent = (diff / previousValue) * 100;
+
+      if (percent > pct) {
+        console.log("Percent Diff", value, previousValue, percent);
+        return false;
+      }
+
+      return true;
+    };
+
+    // check that the output is not too different from the previous run
+    const data = [];
+    data.push({
+      type: "instances",
+      new: returnInstanceArray.length,
+      old: previousRun.instances,
+    });
+    data.push({
+      type: "communities",
+      new: returnCommunityArray.length,
+      old: previousRun.communities,
+    });
+
+    data.push({
+      type: "fediverse",
+      new: returnStats.length,
+      old: previousRun.fediverse,
+    });
+
+    // @TODO kbin checks are disabled till scanning is fixed
+    // data.push({
+    //   type: "magazines",
+    //   new: kbinMagazineArray.length,
+    //   old: previousRun.magazines,
+    // });
+    // data.push({
+    //   type: "kbin_instances",
+    //   new: kbinInstanceArray.length,
+    //   old: previousRun.kbin_instances,
+    // });
+
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+
+      const isValid = checkChangeIsValid(item.new, item.old);
+
+      if (!isValid) {
+        console.log("Percent Diff", item.type, item.new, item.old);
+        issues.push("Percent Diff: " + item.type);
+      }
+    }
+
+    if (issues.length > 0) {
+      console.log("Validation Issues", issues);
+
+      throw new Error("Validation Issues: " + issues.join(", "));
+    }
+
+    return true;
+  }
+}
 
 /**
  * this generates the .json files for the frontend /public folder
@@ -23,10 +219,13 @@ export default class CrawlOutput {
     this.communityErrors = null;
     this.instanceList = null;
     this.communityList = null;
+    this.fediverseData = null;
+    this.kbinData = null;
+
+    this.utils = new OutputUtils();
 
     this.fileWriter = new OutputFileWriter();
-
-    this.trust = new Trust();
+    this.trust = new OutputTrust();
   }
 
   // load all required data from redis
@@ -36,7 +235,6 @@ export default class CrawlOutput {
     this.communityErrors = await storage.tracking.getAllErrors("community");
     this.instanceList = await storage.instance.getAll();
     this.communityList = await storage.community.getAll();
-
     this.fediverseData = await storage.fediverse.getAll();
     this.kbinData = await storage.kbin.getAll();
   }
@@ -184,7 +382,7 @@ export default class CrawlOutput {
       ["Total", "Output", "Previous", "Change"]
     );
 
-    const validateOutput = await this.validateOutput(
+    const validateOutput = await this.utils.validateOutput(
       previousRun,
       returnInstanceArray,
       returnCommunityArray,
@@ -194,111 +392,6 @@ export default class CrawlOutput {
     );
 
     return validateOutput;
-  }
-
-  // ensure the output is okay for the website
-  async validateOutput(
-    previousRun,
-    returnInstanceArray,
-    returnCommunityArray,
-    kbinInstanceArray,
-    kbinMagazineArray,
-    returnStats
-  ) {
-    const issues = [];
-
-    // check that there is data in all arrays
-    if (
-      returnInstanceArray.length === 0 ||
-      returnCommunityArray.length === 0 ||
-      kbinInstanceArray.length === 0 ||
-      kbinMagazineArray.length === 0 ||
-      returnStats.length === 0
-    ) {
-      console.log("Empty Array");
-      issues.push("Empty Array(s)");
-    }
-
-    // check for duplicate baseurls
-    for (let i = 0; i < returnInstanceArray.length; i++) {
-      const instance = returnInstanceArray[i];
-
-      const found = returnInstanceArray.find(
-        (i) => i.baseurl === instance.baseurl
-      );
-
-      if (found && found !== instance) {
-        console.log("Duplicate Instance", instance.baseurl);
-        issues.push("Duplicate Instance: " + instance.baseurl);
-      }
-    }
-
-    // check values are < 10% different
-    const checkChangeIsValid = (value, previousValue, pct = 10) => {
-      if (!value || !previousValue) {
-        return false;
-      }
-
-      const diff = Math.abs(value - previousValue);
-      const percent = (diff / previousValue) * 100;
-
-      if (percent > pct) {
-        console.log("Percent Diff", value, previousValue, percent);
-        return false;
-      }
-
-      return true;
-    };
-
-    // check that the output is not too different from the previous run
-    const data = [];
-    data.push({
-      type: "instances",
-      new: returnInstanceArray.length,
-      old: previousRun.instances,
-    });
-    data.push({
-      type: "communities",
-      new: returnCommunityArray.length,
-      old: previousRun.communities,
-    });
-
-    data.push({
-      type: "fediverse",
-      new: returnStats.length,
-      old: previousRun.fediverse,
-    });
-
-    // @TODO kbin checks are disabled till scanning is fixed
-    // data.push({
-    //   type: "magazines",
-    //   new: kbinMagazineArray.length,
-    //   old: previousRun.magazines,
-    // });
-    // data.push({
-    //   type: "kbin_instances",
-    //   new: kbinInstanceArray.length,
-    //   old: previousRun.kbin_instances,
-    // });
-
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-
-      const isValid = checkChangeIsValid(item.new, item.old);
-
-      if (!isValid) {
-        console.log("Percent Diff", item.type, item.new, item.old);
-        issues.push("Percent Diff: " + item.type);
-      }
-    }
-
-    if (issues.length > 0) {
-      console.log("Validation Issues", issues);
-
-      throw new Error("Validation Issues: " + issues.join(", "));
-    }
-
-    return true;
   }
 
   /// find updatenode for given baseurl
@@ -321,88 +414,6 @@ export default class CrawlOutput {
     }
 
     return null;
-  }
-
-  stripMarkdown(text) {
-    // strip markdown
-    return removeMd(text);
-  }
-
-  findErrorType(errorMessage) {
-    if (
-      errorMessage.includes("ENOENT") ||
-      errorMessage.includes("ECONNREFUSED") ||
-      errorMessage.includes("ECONNRESET") ||
-      errorMessage.includes("ENOTFOUND") ||
-      errorMessage.includes("EAI_AGAIN") ||
-      errorMessage.includes("socket hang up") ||
-      errorMessage.includes("Client network socket disconnected")
-    ) {
-      return "connectException";
-    }
-
-    if (errorMessage.includes("timeout of")) {
-      return "timeout";
-    }
-
-    if (
-      errorMessage.includes("self-signed certificate") ||
-      errorMessage.includes("does not match certificate's altnames") ||
-      errorMessage.includes("tlsv1 unrecognized name") ||
-      errorMessage.includes("tlsv1 alert internal error") ||
-      errorMessage.includes("ssl3_get_record:wrong version number") ||
-      errorMessage.includes("unable to verify the first certificate") ||
-      errorMessage.includes("unable to get local issuer certificate") ||
-      errorMessage.includes("certificate has expired")
-    ) {
-      return "sslException";
-    }
-
-    if (errorMessage.includes("baseUrl is not a valid domain")) {
-      return "invalidBaseUrl";
-    }
-
-    if (
-      errorMessage.includes("code 300") ||
-      errorMessage.includes("code 400") ||
-      errorMessage.includes("code 403") ||
-      errorMessage.includes("code 404") ||
-      errorMessage.includes("code 406") ||
-      errorMessage.includes("code 410") ||
-      errorMessage.includes("code 500") ||
-      errorMessage.includes("code 502") ||
-      errorMessage.includes("code 503") ||
-      errorMessage.includes("code 520") ||
-      errorMessage.includes("code 521") ||
-      errorMessage.includes("code 523") ||
-      errorMessage.includes("code 525") ||
-      errorMessage.includes("code 526") ||
-      errorMessage.includes("code 530") ||
-      errorMessage.includes("Maximum number of redirects exceeded")
-    ) {
-      return "httpException";
-    }
-
-    if (
-      errorMessage.includes("no diaspora rel in") ||
-      errorMessage.includes("wellKnownInfo.data.links is not iterable") ||
-      errorMessage.includes("missing /.well-known/nodeinfo links")
-    ) {
-      return "httpException";
-    }
-
-    if (errorMessage.includes("not a lemmy instance")) {
-      return "notLemmy";
-    }
-
-    if (
-      errorMessage.includes("invalid actor id") ||
-      errorMessage.includes("actor id does not match instance domain")
-    ) {
-      return "invalidActorId";
-    }
-
-    logging.silly("unhandled error", errorMessage);
   }
 
   async generateInstanceMetrics(instance, storeCommunityData) {
@@ -486,7 +497,10 @@ export default class CrawlOutput {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
-          desc: this.stripMarkdown(instance.siteData.site.description),
+          desc: this.utils.stripMarkdownSubStr(
+            instance.siteData.site.description,
+            350
+          ),
 
           // config
           downvotes: instance.siteData.config?.enable_downvotes,
@@ -597,8 +611,8 @@ export default class CrawlOutput {
           url: community.community.actor_id,
           name: community.community.name,
           title: community.community.title,
-          desc: this.stripMarkdown(community.community.description).substring(
-            0,
+          desc: this.utils.stripMarkdownSubStr(
+            community.community.description,
             350
           ),
           icon: community.community.icon,
@@ -760,7 +774,7 @@ export default class CrawlOutput {
         error: value.error,
         time: value.time,
       };
-      instanceData.type = this.findErrorType(value.error);
+      instanceData.type = this.utils.findErrorType(value.error);
 
       if (errorTypes[instanceData.type] === undefined) {
         errorTypes[instanceData.type] = 0;
@@ -817,7 +831,7 @@ export default class CrawlOutput {
 
         baseurl: kbin.id.split("/")[2],
 
-        summary: this.stripMarkdown(kbin.summary),
+        summary: this.utils.stripMarkdownSubStr(kbin.summary, 350),
         sensitive: kbin.sensitive,
         postingRestrictedToMods: kbin.postingRestrictedToMods,
 
