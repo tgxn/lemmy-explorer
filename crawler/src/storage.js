@@ -1,3 +1,5 @@
+/// <reference path="storage.d.ts" />
+
 import { createClient } from "redis";
 
 import { REDIS_URL } from "./lib/const.js";

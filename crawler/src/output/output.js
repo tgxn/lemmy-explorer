@@ -1,3 +1,5 @@
+/// <reference path="output.d.ts" />
+
 import { readFile } from "node:fs/promises";
 import removeMd from "remove-markdown";
 

@@ -1,15 +1,14 @@
 {
-  "exclude": ["node_modules/"],
-  "allowJs": true,
-  "checkJs": true,
+  "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
+    // "module": "system",
     "declaration": false,
     "declarationMap": false,
-    "module": "CommonJS",
-    "target": "ESNext",
+    // "target": "ESNext",
     "noImplicitAny": true,
-    "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
-  }
+  },
+  "exclude": ["node_modules/"],
+  "allowJs": true,
+  "checkJs": true
 }
