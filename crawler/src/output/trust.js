@@ -21,7 +21,7 @@ import divinator from "divinator";
  * - "suspicious" boolean - if the site has odd posts/user activity, and if not guarantored on fediseer
  * - "trusted" string || null - if there is a guarantor for this instance, who is it?
  * - "metrics" object - various metrics for the instance
- *
+ * - "tags" - ["cloudflare"]
  */
 
 // create a new isntance for the overall output, and call methods on it
@@ -36,6 +36,7 @@ export default class OutputTrust {
     this.instanceList = instanceList;
 
     this.fediseerData = await storage.fediseer.getLatest();
+    this.endorsements = this.getAllInstanceEndorsements();
 
     // parse all federated instance data
     const [linkedFederation, allowedFederation, blockedFederation] =
@@ -46,9 +47,9 @@ export default class OutputTrust {
     this.blockedFederation = blockedFederation;
 
     this.instaceTags = await this.tagInstances();
-    this.instancesWithMetrics = await this.getInstancesWithMetrics();
-    this.deviations = await this.calcInstanceDeviation();
-    this.endorsements = this.getAllInstanceEndorsements();
+
+    // generate trust data for each instance
+    await this.getInstancesWithMetrics();
   }
 
   getAllInstanceEndorsements() {
@@ -61,18 +62,81 @@ export default class OutputTrust {
     return endorsements;
   }
 
-  getInstanceGuarantor(baseUrl) {
-    // console.log("getInstanceGuarantor", this.fediseerData);
+  async getInstancesWithMetrics() {
+    this.instancesWithMetrics = await Promise.all(
+      this.instanceList.map(async (instance) => {
+        const baseUrl = instance.siteData.site.actor_id.split("/")[2];
 
-    const instanceGuarantor = this.fediseerData.find(
-      (instance) => instance.domain === baseUrl
+        const instanceMetrics = await this.getMetrics(instance);
+
+        const instanceGuarantor = this.fediseerData.find(
+          (instance) => instance.domain === baseUrl
+        );
+
+        let guarantor = null;
+        if (
+          instanceGuarantor !== undefined &&
+          instanceGuarantor.guarantor !== null
+        ) {
+          console.log("instanceGuarantor", instanceGuarantor);
+          guarantor = instanceGuarantor.guarantor;
+        }
+
+        return {
+          // ...instance,
+
+          baseurl: baseUrl,
+          metrics: instanceMetrics,
+
+          users: instance.nodeData.usage.users.total,
+          name: instance.siteData.site.name,
+
+          base: baseUrl, // preserved for UI
+
+          actor_id: instance.siteData.site.actor_id,
+
+          // reasons: susReasons,
+
+          guarantor,
+        };
+      })
     );
 
-    if (
-      instanceGuarantor !== undefined &&
-      instanceGuarantor.guarantor !== null
-    ) {
-      // console.log("instanceGuarantor", instanceGuarantor);
+    // get all metrics into one object
+    this.allInstanceMetrics = {
+      userActivityScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.userActivityScore
+      ),
+      activityUserScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.activityUserScore
+      ),
+      userActiveMonthScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.userActiveMonthScore
+      ),
+    };
+
+    this.deviations = await this.calcInstanceDeviation();
+
+    // add reasons to each instance after deviations are calculated
+    this.instancesWithMetrics = await Promise.all(
+      this.instanceList.map(async (instance) => {
+        const susReasons = await this.instanceSusReasonList(instance);
+
+        return {
+          ...instance,
+          reasons: susReasons,
+        };
+      })
+    );
+  }
+
+  // getters for the data
+  getInstanceGuarantor(baseUrl) {
+    const instanceGuarantor = this.instancesWithMetrics.find(
+      (instance) => instance.baseurl === baseUrl
+    );
+
+    if (instanceGuarantor?.guarantor) {
       return instanceGuarantor.guarantor;
     }
 
@@ -86,51 +150,22 @@ export default class OutputTrust {
   async getSusInstances() {
     const susInstances = [];
 
-    for (const instance of this.instanceList) {
-      const susReason = await this.instanceSusReasonList(instance);
+    for (const instance of this.instancesWithMetrics) {
+      // const susReason = await this.instanceSusReasonList(instance);
 
-      if (susReason.length > 0) {
+      if (instance.reasons.length > 0) {
         susInstances.push({
-          users: instance.nodeData.usage.users.total,
-          name: instance.siteData.site.name,
-          base: instance.siteData.site.actor_id.split("/")[2],
-          actor_id: instance.siteData.site.actor_id,
-          metrics: await this.getMetrics(instance),
-          reasons: susReason,
+          users: instance.users,
+          name: instance.name,
+          base: instance.baseurl,
+          actor_id: instance.actor_id,
+          metrics: instance.metrics,
+          reasons: instance.reasons,
         });
       }
     }
 
     return susInstances;
-  }
-
-  async getInstancesWithMetrics() {
-    const instancesWithMetrics = await Promise.all(
-      this.instanceList.map(async (instance) => {
-        const instanceMetrics = await this.getMetrics(instance);
-
-        return {
-          ...instance,
-          baseurl: instance.siteData.site.actor_id.split("/")[2],
-          metrics: instanceMetrics,
-        };
-      })
-    );
-
-    // get all metrics into one object
-    this.allInstanceMetrics = {
-      userActivityScores: instancesWithMetrics.map(
-        (instance) => instance.metrics.userActivityScore
-      ),
-      activityUserScores: instancesWithMetrics.map(
-        (instance) => instance.metrics.activityUserScore
-      ),
-      userActiveMonthScores: instancesWithMetrics.map(
-        (instance) => instance.metrics.userActiveMonthScore
-      ),
-    };
-
-    return instancesWithMetrics;
   }
 
   async instanceSusReasonList(instance) {
@@ -206,14 +241,15 @@ export default class OutputTrust {
 
     // if they have a guarantor, they are not sus
     const instanceGuarantor = this.getInstanceGuarantor(instanceBaseUrl);
+
     // console.log("instanceGuarantor", instanceGuarantor);
     if (instanceGuarantor !== null) {
-      // if (reasons.length > 0) {
-      //   console.log(
-      //     `skipping sus checks for instance: ${instanceBaseUrl} with guarantor: ${instanceGuarantor} (that sould have been marked as sus otherwise!)`,
-      //     reasons
-      //   );
-      // }
+      if (reasons.length > 0) {
+        console.log(
+          `skipping sus checks for instance: ${instanceBaseUrl} with guarantor: ${instanceGuarantor} (that sould have been marked as sus otherwise!)`,
+          reasons
+        );
+      }
 
       return [];
     }
