@@ -400,13 +400,25 @@ export default class OutputTrust {
     return null;
   }
 
-  getMetrics(baseUrl) {
+  // getMetrics(baseUrl) {
+  //   const instanceGuarantor = this.instancesWithMetrics.find(
+  //     (instance) => instance.baseurl === baseUrl
+  //   );
+
+  //   if (instanceGuarantor?.metrics) {
+  //     return instanceGuarantor.metrics;
+  //   }
+
+  //   return null;
+  // }
+
+  getInstance(baseUrl) {
     const instanceGuarantor = this.instancesWithMetrics.find(
       (instance) => instance.baseurl === baseUrl
     );
 
-    if (instanceGuarantor?.metrics) {
-      return instanceGuarantor.metrics;
+    if (instanceGuarantor) {
+      return instanceGuarantor;
     }
 
     return null;
@@ -542,31 +554,15 @@ export default class OutputTrust {
     return score;
   }
 
-  // run domain through this to get scores
-  // this generates the "smart sort" score that is used by default
-  async scoreInstance(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find(
+  async calcCommunityScore(baseUrl, community) {
+    const instanceMetrics = this.instancesWithMetrics.find(
       (instance) => instance.baseurl === baseUrl
     );
 
-    if (instanceGuarantor?.score) {
-      return instanceGuarantor.score;
-    }
-
-    return null;
-  }
-
-  async scoreCommunity(baseUrl, community) {
-    let score = await this.scoreInstance(baseUrl);
-
     // multiply score based subscribers
-    score = score * community.counts.subscribers;
+    const score = instanceMetrics.score * community.counts.subscribers;
 
     return score;
-
-    // return {
-    //   score: score,
-    // }
   }
 
   // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each

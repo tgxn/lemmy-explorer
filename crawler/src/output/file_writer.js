@@ -67,7 +67,7 @@ export default class OutputFileWriter {
 
     // tuning the amount of entries per-file
     this.communitiesPerFile = 500;
-    this.instancesPerFile = 200;
+    this.instancesPerFile = 100;
     this.magazinesPerFile = 500;
   }
 

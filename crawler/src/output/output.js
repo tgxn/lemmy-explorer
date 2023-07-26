@@ -488,10 +488,12 @@ export default class CrawlOutput {
         const outgoingBlocks =
           instance.siteData.federated?.blocked?.length || 0;
 
-        const score = await this.trust.scoreInstance(siteBaseUrl);
+        const instanceTrustData = this.trust.getInstance(siteBaseUrl);
+
+        const score = instanceTrustData.score;
 
         // ignore instances that have no data
-        const susReason = await this.trust.getInstanceSusReasons(siteBaseUrl);
+        const susReason = instanceTrustData.reasons;
 
         return {
           baseurl: siteBaseUrl,
@@ -525,13 +527,17 @@ export default class CrawlOutput {
           uptime: siteUptime,
 
           isSuspicious: susReason.length > 0 ? true : false,
-          metrics: this.trust.getMetrics(siteBaseUrl),
+          metrics: instanceTrustData.metrics || null,
+          tags: instanceTrustData.tags || [],
           susReason: susReason,
+
+          trust: instanceTrustData,
 
           blocks: {
             incoming: incomingBlocks,
             outgoing: outgoingBlocks,
           },
+          blocked: instance.siteData.federated?.blocked || [],
         };
       })
     );
@@ -596,7 +602,10 @@ export default class CrawlOutput {
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
-        const score = await this.trust.scoreCommunity(siteBaseUrl, community);
+        const score = await this.trust.calcCommunityScore(
+          siteBaseUrl,
+          community
+        );
 
         const relatedInstance = this.instanceList.find(
           (instance) =>
