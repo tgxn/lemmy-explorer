@@ -251,7 +251,7 @@ export default class CrawlOutput {
     // delete existing data from the output directory
     await this.fileWriter.cleanData();
 
-    const susSiteList = await this.trust.getSusInstances();
+    const susSiteList = this.trust.getSusInstances();
     await this.fileWriter.storeSuspicousData(susSiteList);
 
     const returnInstanceArray = await this.getInstanceArray();
@@ -491,7 +491,7 @@ export default class CrawlOutput {
         const score = await this.trust.scoreInstance(siteBaseUrl);
 
         // ignore instances that have no data
-        const susReason = await this.trust.instanceSusReasonList(instance);
+        const susReason = await this.trust.getInstanceSusReasons(siteBaseUrl);
 
         return {
           baseurl: siteBaseUrl,
@@ -525,7 +525,7 @@ export default class CrawlOutput {
           uptime: siteUptime,
 
           isSuspicious: susReason.length > 0 ? true : false,
-          metrics: await this.trust.getMetrics(instance),
+          metrics: this.trust.getMetrics(siteBaseUrl),
           susReason: susReason,
 
           blocks: {
@@ -602,7 +602,7 @@ export default class CrawlOutput {
           (instance) =>
             instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
         );
-        const isInstanceSus = await this.trust.instanceSusReasonList(
+        const isInstanceSus = await this.trust.getInstanceSusReasons(
           relatedInstance
         );
 
