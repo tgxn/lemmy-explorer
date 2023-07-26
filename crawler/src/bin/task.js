@@ -10,6 +10,7 @@ import { syncCheckpoint } from "../output/sync_s3.js";
 
 import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
+import CrawlFediseer from "../crawl/fediseer.js";
 
 import Failures from "../crawl/failures.js";
 import CrawlKBin from "../crawl/kbin.js";
@@ -52,6 +53,14 @@ export default async function runTask(taskName = null) {
 
       const failures = new Failures();
       await failures.clean();
+
+      break;
+
+    case "fedi":
+      console.log("Running Fediseer Crawl");
+
+      const fediseerCrawl = new CrawlFediseer();
+      await fediseerCrawl.crawl();
 
       break;
 

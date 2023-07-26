@@ -10,6 +10,7 @@ import KBinStore from "./storage/kbin.js";
 import UptimeStore from "./storage/uptime.js";
 
 import TrackingStore from "./storage/tracking.js";
+import FediseerStore from "./storage/fediseer.js";
 
 class RedisStorage {
   constructor() {
@@ -24,6 +25,7 @@ class RedisStorage {
     this.community = new CommunityStore(this);
     this.uptime = new UptimeStore(this);
     this.fediverse = new FediverseStore(this);
+    this.fediseer = new FediseerStore(this);
 
     this.tracking = new TrackingStore(this);
     this.kbin = new KBinStore(this);

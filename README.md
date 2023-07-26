@@ -15,6 +15,15 @@ The project consists of three modules:
 
 ## FAQ
 
+## Q: How can I set a link to automatically set the home instance?
+
+You can append `home_url` and (optionally) `home_type` to the URL to set the home instance and type.
+
+`?home_url=lemmy.example.com`
+`?home_url=kbin.example.com&home_type=kbin`
+
+ > `home_type` supports "lemmy" and "kbin" (default is "lemmy")
+
 ### Q: **How does discovery work?**
 It uses a [seed list of communities](https://github.com/tgxn/lemmy-explorer/blob/main/crawler/src/lib/const.js#L47) and scans the equivalent of the `/instances` federation lists, and then creates jobs to scan each of those servers.
 

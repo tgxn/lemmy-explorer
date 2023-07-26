@@ -58,6 +58,7 @@ function Instances({ filterSuspicious }) {
   }, []);
 
   // update query params
+  // @TODO this should not happen on page load?
   useEffect(() => {
     const parms = {};
 
@@ -65,6 +66,7 @@ function Instances({ filterSuspicious }) {
     if (orderBy != "smart") parms.order = orderBy;
     if (showOpenOnly) parms.open = showOpenOnly;
 
+    console.log(`Updating query params: ${JSON.stringify(parms)}`);
     setSearchParams(parms);
   }, [showOpenOnly, orderBy, debounceFilterText]);
 
