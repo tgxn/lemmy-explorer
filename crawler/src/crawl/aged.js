@@ -231,6 +231,17 @@ export default class CrawlAged {
 
     logging.info("Aged Communities By Base", Object.keys(byBase).length);
 
+    const baseCounts = Object.keys(byBase)
+      .map((base) => {
+        return {
+          base,
+          count: byBase[base].length,
+        };
+      })
+      .sort((a, b) => a.count - b.count);
+
+    console.table(baseCounts);
+
     for (const community of agedCommunities) {
       const baseUrl = community.community.actor_id.split("/")[2];
       this.addInstance(baseUrl);
