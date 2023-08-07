@@ -3,13 +3,212 @@ import removeMd from "remove-markdown";
 
 import { OUTPUT_MAX_AGE } from "../lib/const.js";
 
+import AxiosClient from "../lib/axios.js";
 import logging from "../lib/logging.js";
 import storage from "../storage.js";
 
-import AxiosClient from "../lib/axios.js";
+import OutputFileWriter from "./file_writer.js";
+import OutputTrust from "./trust.js";
 
-import Splitter from "./splitter.js";
-import { Suspicions } from "./suspicions.js";
+class OutputUtils {
+  constructor() {}
+
+  // strip markdown, optionally substring
+  stripMarkdownSubStr(text, maxLength = -1) {
+    const stripped = removeMd(text);
+
+    if (maxLength > 0) {
+      return stripped.substring(0, maxLength);
+    }
+
+    return stripped;
+  }
+
+  // given an error message from redis, figure out what it relates to..
+  findErrorType(errorMessage) {
+    if (
+      errorMessage.includes("ENOENT") ||
+      errorMessage.includes("ECONNREFUSED") ||
+      errorMessage.includes("ECONNRESET") ||
+      errorMessage.includes("ENOTFOUND") ||
+      errorMessage.includes("EAI_AGAIN") ||
+      errorMessage.includes("socket hang up") ||
+      errorMessage.includes("Client network socket disconnected")
+    ) {
+      return "connectException";
+    }
+
+    if (errorMessage.includes("timeout of")) {
+      return "timeout";
+    }
+
+    if (
+      errorMessage.includes("self-signed certificate") ||
+      errorMessage.includes("does not match certificate's altnames") ||
+      errorMessage.includes("tlsv1 unrecognized name") ||
+      errorMessage.includes("tlsv1 alert internal error") ||
+      errorMessage.includes("ssl3_get_record:wrong version number") ||
+      errorMessage.includes("unable to verify the first certificate") ||
+      errorMessage.includes("unable to get local issuer certificate") ||
+      errorMessage.includes("certificate has expired")
+    ) {
+      return "sslException";
+    }
+
+    if (errorMessage.includes("baseUrl is not a valid domain")) {
+      return "invalidBaseUrl";
+    }
+
+    if (
+      errorMessage.includes("code 300") ||
+      errorMessage.includes("code 400") ||
+      errorMessage.includes("code 403") ||
+      errorMessage.includes("code 404") ||
+      errorMessage.includes("code 406") ||
+      errorMessage.includes("code 410") ||
+      errorMessage.includes("code 500") ||
+      errorMessage.includes("code 502") ||
+      errorMessage.includes("code 503") ||
+      errorMessage.includes("code 520") ||
+      errorMessage.includes("code 521") ||
+      errorMessage.includes("code 523") ||
+      errorMessage.includes("code 525") ||
+      errorMessage.includes("code 526") ||
+      errorMessage.includes("code 530") ||
+      errorMessage.includes("Maximum number of redirects exceeded")
+    ) {
+      return "httpException";
+    }
+
+    if (
+      errorMessage.includes("no diaspora rel in") ||
+      errorMessage.includes("wellKnownInfo.data.links is not iterable") ||
+      errorMessage.includes("missing /.well-known/nodeinfo links")
+    ) {
+      return "httpException";
+    }
+
+    if (errorMessage.includes("not a lemmy instance")) {
+      return "notLemmy";
+    }
+
+    if (
+      errorMessage.includes("invalid actor id") ||
+      errorMessage.includes("actor id does not match instance domain")
+    ) {
+      return "invalidActorId";
+    }
+
+    logging.silly("unhandled error", errorMessage);
+  }
+
+  // ensure the output is okay for the website
+  async validateOutput(
+    previousRun,
+    returnInstanceArray,
+    returnCommunityArray,
+    kbinInstanceArray,
+    kbinMagazineArray,
+    returnStats
+  ) {
+    const issues = [];
+
+    // check that there is data in all arrays
+    if (
+      returnInstanceArray.length === 0 ||
+      returnCommunityArray.length === 0 ||
+      kbinInstanceArray.length === 0 ||
+      kbinMagazineArray.length === 0 ||
+      returnStats.length === 0
+    ) {
+      console.log("Empty Array");
+      issues.push("Empty Array(s)");
+    }
+
+    // check for duplicate baseurls
+    for (let i = 0; i < returnInstanceArray.length; i++) {
+      const instance = returnInstanceArray[i];
+
+      const found = returnInstanceArray.find(
+        (i) => i.baseurl === instance.baseurl
+      );
+
+      if (found && found !== instance) {
+        console.log("Duplicate Instance", instance.baseurl);
+        issues.push("Duplicate Instance: " + instance.baseurl);
+      }
+    }
+
+    // check values are < 10% different
+    const checkChangeIsValid = (value, previousValue, pct = 10) => {
+      if (!value || !previousValue) {
+        return false;
+      }
+
+      const diff = Math.abs(value - previousValue);
+      const percent = (diff / previousValue) * 100;
+
+      if (percent > pct) {
+        console.log("Percent Diff", value, previousValue, percent);
+        return false;
+      }
+
+      return true;
+    };
+
+    // check that the output is not too different from the previous run
+    const data = [];
+    data.push({
+      type: "instances",
+      new: returnInstanceArray.length,
+      old: previousRun.instances,
+    });
+
+    // disabled temporarily till lemmyworld is fixed.
+    // data.push({
+    //   type: "communities",
+    //   new: returnCommunityArray.length,
+    //   old: previousRun.communities,
+    // });
+
+    data.push({
+      type: "fediverse",
+      new: returnStats.length,
+      old: previousRun.fediverse,
+    });
+
+    // @TODO kbin checks are disabled till scanning is fixed
+    // data.push({
+    //   type: "magazines",
+    //   new: kbinMagazineArray.length,
+    //   old: previousRun.magazines,
+    // });
+    // data.push({
+    //   type: "kbin_instances",
+    //   new: kbinInstanceArray.length,
+    //   old: previousRun.kbin_instances,
+    // });
+
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+
+      const isValid = checkChangeIsValid(item.new, item.old);
+
+      if (!isValid) {
+        console.log("Percent Diff", item.type, item.new, item.old);
+        issues.push("Percent Diff: " + item.type);
+      }
+    }
+
+    if (issues.length > 0) {
+      console.log("Validation Issues", issues);
+
+      throw new Error("Validation Issues: " + issues.join(", "));
+    }
+
+    return true;
+  }
+}
 
 /**
  * this generates the .json files for the frontend /public folder
@@ -22,8 +221,13 @@ export default class CrawlOutput {
     this.communityErrors = null;
     this.instanceList = null;
     this.communityList = null;
+    this.fediverseData = null;
+    this.kbinData = null;
 
-    this.splitter = new Splitter();
+    this.utils = new OutputUtils();
+
+    this.fileWriter = new OutputFileWriter();
+    this.trust = new OutputTrust();
   }
 
   // load all required data from redis
@@ -33,23 +237,8 @@ export default class CrawlOutput {
     this.communityErrors = await storage.tracking.getAllErrors("community");
     this.instanceList = await storage.instance.getAll();
     this.communityList = await storage.community.getAll();
-
     this.fediverseData = await storage.fediverse.getAll();
     this.kbinData = await storage.kbin.getAll();
-
-    // parse all federated instance data
-    const [linkedFederation, allowedFederation, blockedFederation] =
-      this.getFederationLists(this.instanceList);
-
-    this.linkedFederation = linkedFederation;
-    this.allowedFederation = allowedFederation;
-    this.blockedFederation = blockedFederation;
-  }
-
-  async isInstanceSus(instance, log = true) {
-    const instanceSus = new Suspicions(instance, log);
-
-    return await instanceSus.isSuspicious();
   }
 
   /**
@@ -58,30 +247,38 @@ export default class CrawlOutput {
   async start() {
     await this.loadAllData();
 
+    // setup trust data
+    await this.trust.setupSources(this.instanceList);
+
     // delete existing data from the output directory
-    await this.splitter.cleanData();
+    await this.fileWriter.cleanData();
 
-    const susSiteList = await this.outputSusList();
-
-    const returnStats = await this.outputFediverseData();
-
-    const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
-
-    const kbinMagazineArray = await this.outputKBinMagazineList();
+    const susSiteList = this.trust.getSusInstances();
+    await this.fileWriter.storeSuspicousData(susSiteList);
 
     const returnInstanceArray = await this.getInstanceArray();
+    await this.fileWriter.storeInstanceData(returnInstanceArray);
 
     const returnCommunityArray = await this.getCommunityArray(
       returnInstanceArray
     );
+    await this.fileWriter.storeCommunityData(returnCommunityArray);
 
-    // generate instance-level metrics for every instance
+    // generate instance-level metrics `instance.com.json` for each instance
     await Promise.all(
       returnInstanceArray.map(async (instance) => {
         return this.generateInstanceMetrics(instance, returnCommunityArray);
       })
     );
 
+    // fediverse data
+    const returnStats = await this.outputFediverseData();
+
+    // kbin data
+    const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
+    const kbinMagazineArray = await this.outputKBinMagazineList();
+
+    // error data
     const instanceErrors = await this.outputClassifiedErrors();
 
     // STORE RUN METADATA
@@ -92,6 +289,7 @@ export default class CrawlOutput {
     const metaData = {
       instances: returnInstanceArray.length,
       communities: returnCommunityArray.length,
+      kbin_instances: kbinInstanceArray.length,
       magazines: kbinMagazineArray.length,
       kbin_instances: kbinInstanceArray.length,
       fediverse: returnStats.length,
@@ -101,11 +299,11 @@ export default class CrawlOutput {
 
       // top 10 linked, allowed, blocked domains
       // sort by count of times seen on each list
-      linked: this.linkedFederation,
-      allowed: this.allowedFederation,
-      blocked: this.blockedFederation,
+      linked: this.trust.linkedFederation,
+      allowed: this.trust.allowedFederation,
+      blocked: this.trust.blockedFederation,
     };
-    await this.splitter.storeMetaData(metaData);
+    await this.fileWriter.storeMetaData(metaData);
 
     // get previous run  from current production data
     const client = new AxiosClient();
@@ -186,7 +384,7 @@ export default class CrawlOutput {
       ["Total", "Output", "Previous", "Change"]
     );
 
-    const validateOutput = await this.validateOutput(
+    const validateOutput = await this.utils.validateOutput(
       previousRun,
       returnInstanceArray,
       returnCommunityArray,
@@ -196,111 +394,6 @@ export default class CrawlOutput {
     );
 
     return validateOutput;
-  }
-
-  // ensure the output is okay for the website
-  async validateOutput(
-    previousRun,
-    returnInstanceArray,
-    returnCommunityArray,
-    kbinInstanceArray,
-    kbinMagazineArray,
-    returnStats
-  ) {
-    const issues = [];
-
-    // check that there is data in all arrays
-    if (
-      returnInstanceArray.length === 0 ||
-      returnCommunityArray.length === 0 ||
-      kbinInstanceArray.length === 0 ||
-      kbinMagazineArray.length === 0 ||
-      returnStats.length === 0
-    ) {
-      console.log("Empty Array");
-      issues.push("Empty Array(s)");
-    }
-
-    // check for duplicate baseurls
-    for (let i = 0; i < returnInstanceArray.length; i++) {
-      const instance = returnInstanceArray[i];
-
-      const found = returnInstanceArray.find(
-        (i) => i.baseurl === instance.baseurl
-      );
-
-      if (found && found !== instance) {
-        console.log("Duplicate Instance", instance.baseurl);
-        issues.push("Duplicate Instance: " + instance.baseurl);
-      }
-    }
-
-    // check values are < 10% different
-    const checkChangeIsValid = (value, previousValue, pct = 10) => {
-      if (!value || !previousValue) {
-        return false;
-      }
-
-      const diff = Math.abs(value - previousValue);
-      const percent = (diff / previousValue) * 100;
-
-      if (percent > pct) {
-        console.log("Percent Diff", value, previousValue, percent);
-        return false;
-      }
-
-      return true;
-    };
-
-    // check that the output is not too different from the previous run
-    const data = [];
-    data.push({
-      type: "instances",
-      new: returnInstanceArray.length,
-      old: previousRun.instances,
-    });
-    data.push({
-      type: "communities",
-      new: returnCommunityArray.length,
-      old: previousRun.communities,
-    });
-
-    data.push({
-      type: "fediverse",
-      new: returnStats.length,
-      old: previousRun.fediverse,
-    });
-
-    // @TODO kbin checks are disabled till scanning is fixed
-    // data.push({
-    //   type: "magazines",
-    //   new: kbinMagazineArray.length,
-    //   old: previousRun.magazines,
-    // });
-    // data.push({
-    //   type: "kbin_instances",
-    //   new: kbinInstanceArray.length,
-    //   old: previousRun.kbin_instances,
-    // });
-
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-
-      const isValid = checkChangeIsValid(item.new, item.old);
-
-      if (!isValid) {
-        console.log("Percent Diff", item.type, item.new, item.old);
-        issues.push("Percent Diff: " + item.type);
-      }
-    }
-
-    if (issues.length > 0) {
-      console.log("Validation Issues", issues);
-
-      throw new Error("Validation Issues: " + issues.join(", "));
-    }
-
-    return true;
   }
 
   /// find updatenode for given baseurl
@@ -323,155 +416,6 @@ export default class CrawlOutput {
     }
 
     return null;
-  }
-
-  stripMarkdown(text) {
-    // strip markdown
-    return removeMd(text);
-  }
-
-  // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
-  getFederationLists(instances) {
-    // count instances by list
-    let linkedFederation = {};
-    let allowedFederation = {};
-    let blockedFederation = {};
-
-    function dedupAddItem(list, baseUrl) {
-      // only add strings
-      if (typeof baseUrl !== "string") {
-        return;
-      }
-
-      if (!list[baseUrl]) {
-        list[baseUrl] = 1;
-      } else {
-        list[baseUrl]++;
-      }
-    }
-
-    // start crawler jobs for all of the instances this one is federated with
-    instances.forEach((instance) => {
-      if (!instance.siteData?.federated) {
-        // logging.debug("no federated data", instance.siteData.site.actor_id);
-        return;
-      }
-
-      const { linked, allowed, blocked } = instance.siteData.federated;
-
-      // logging.silly(
-      //   `federated instances: ${instance.siteData.site.actor_id}`,
-      //   instance.siteData.federated.linked.length
-      // );
-
-      if (linked.length > 0) {
-        for (const baseUrl of linked) {
-          dedupAddItem(linkedFederation, baseUrl);
-        }
-      }
-      if (allowed && allowed.length > 0) {
-        for (const baseUrl of allowed) {
-          dedupAddItem(allowedFederation, baseUrl);
-        }
-      }
-      if (blocked && blocked.length > 0) {
-        for (const baseUrl of blocked) {
-          dedupAddItem(blockedFederation, baseUrl);
-        }
-      }
-    });
-
-    // logging.info(
-    //   `Federation Linked: ${Object.keys(linkedFederation).length} Allowed: ${
-    //     Object.keys(allowedFederation).length
-    //   } Blocked: ${Object.keys(blockedFederation).length}`
-    // );
-
-    console.log("Global Federation Counts (counts of urls in merged lists)");
-    console.table({
-      linked: Object.keys(linkedFederation).length,
-      allowed: Object.keys(allowedFederation).length,
-      blocked: Object.keys(blockedFederation).length,
-    });
-
-    return [linkedFederation, allowedFederation, blockedFederation];
-  }
-
-  findErrorType(errorMessage) {
-    if (
-      errorMessage.includes("ENOENT") ||
-      errorMessage.includes("ECONNREFUSED") ||
-      errorMessage.includes("ECONNRESET") ||
-      errorMessage.includes("ENOTFOUND") ||
-      errorMessage.includes("EAI_AGAIN") ||
-      errorMessage.includes("socket hang up") ||
-      errorMessage.includes("Client network socket disconnected")
-    ) {
-      return "connectException";
-    }
-
-    if (errorMessage.includes("timeout of")) {
-      return "timeout";
-    }
-
-    if (
-      errorMessage.includes("self-signed certificate") ||
-      errorMessage.includes("does not match certificate's altnames") ||
-      errorMessage.includes("tlsv1 unrecognized name") ||
-      errorMessage.includes("tlsv1 alert internal error") ||
-      errorMessage.includes("ssl3_get_record:wrong version number") ||
-      errorMessage.includes("unable to verify the first certificate") ||
-      errorMessage.includes("unable to get local issuer certificate") ||
-      errorMessage.includes("certificate has expired")
-    ) {
-      return "sslException";
-    }
-
-    if (errorMessage.includes("baseUrl is not a valid domain")) {
-      return "invalidBaseUrl";
-    }
-
-    if (
-      errorMessage.includes("code 300") ||
-      errorMessage.includes("code 400") ||
-      errorMessage.includes("code 403") ||
-      errorMessage.includes("code 404") ||
-      errorMessage.includes("code 406") ||
-      errorMessage.includes("code 410") ||
-      errorMessage.includes("code 500") ||
-      errorMessage.includes("code 502") ||
-      errorMessage.includes("code 503") ||
-      errorMessage.includes("code 520") ||
-      errorMessage.includes("code 521") ||
-      errorMessage.includes("code 523") ||
-      errorMessage.includes("code 525") ||
-      errorMessage.includes("code 526") ||
-      errorMessage.includes("code 530") ||
-      errorMessage.includes("Maximum number of redirects exceeded")
-    ) {
-      return "httpException";
-    }
-
-    if (
-      errorMessage.includes("no diaspora rel in") ||
-      errorMessage.includes("wellKnownInfo.data.links is not iterable") ||
-      errorMessage.includes("missing /.well-known/nodeinfo links")
-    ) {
-      return "httpException";
-    }
-
-    if (errorMessage.includes("not a lemmy instance")) {
-      return "notLemmy";
-    }
-
-    if (
-      errorMessage.includes("invalid actor id") ||
-      errorMessage.includes("actor id does not match instance domain")
-    ) {
-      return "invalidActorId";
-    }
-
-    logging.silly("unhandled error", errorMessage);
   }
 
   async generateInstanceMetrics(instance, storeCommunityData) {
@@ -519,7 +463,7 @@ export default class CrawlOutput {
       };
     });
 
-    await this.splitter.storeInstanceMetricsData(instance.baseurl, {
+    await this.fileWriter.storeInstanceMetricsData(instance.baseurl, {
       instance,
       communityCount: storeCommunityData.filter(
         (community) => community.baseurl === instance.baseurl
@@ -542,35 +486,25 @@ export default class CrawlOutput {
 
         const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
 
-        const incomingBlocks = this.blockedFederation[siteBaseUrl] || 0;
+        const incomingBlocks = this.trust.blockedFederation[siteBaseUrl] || 0;
         const outgoingBlocks =
           instance.siteData.federated?.blocked?.length || 0;
 
-        let score = 0;
-        // having a linked instance gives you a point for each link
-        if (this.linkedFederation[siteBaseUrl]) {
-          score += this.linkedFederation[siteBaseUrl];
-        }
+        const instanceTrustData = this.trust.getInstance(siteBaseUrl);
 
-        // each allowed instance gives you points
-        if (this.allowedFederation[siteBaseUrl]) {
-          score += this.allowedFederation[siteBaseUrl] * 2;
-        }
-
-        // each blocked instance takes away points
-        if (this.blockedFederation[siteBaseUrl]) {
-          score -= this.blockedFederation[siteBaseUrl] * 10;
-        }
+        const score = instanceTrustData.score;
 
         // ignore instances that have no data
-        const instanceSus = new Suspicions(instance);
-        const susReason = await instanceSus.isSuspiciousReasons();
+        const susReason = instanceTrustData.reasons;
 
         return {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
-          desc: this.stripMarkdown(instance.siteData.site.description),
+          desc: this.utils.stripMarkdownSubStr(
+            instance.siteData.site.description,
+            350
+          ),
 
           // config
           downvotes: instance.siteData.config?.enable_downvotes,
@@ -594,16 +528,37 @@ export default class CrawlOutput {
           score: score,
           uptime: siteUptime,
 
-          isSuspicious: await this.isInstanceSus(instance),
-          metrics: instanceSus.metrics,
+          isSuspicious: susReason.length > 0 ? true : false,
+          metrics: instanceTrustData.metrics || null,
+          tags: instanceTrustData.tags || [],
+          susReason: susReason,
+
+          trust: instanceTrustData,
 
           blocks: {
             incoming: incomingBlocks,
             outgoing: outgoingBlocks,
           },
+          blocked: instance.siteData.federated?.blocked || [],
         };
       })
     );
+
+    // add trust
+    // await this.trust.setAllInstancesWithMetrics(storeData);
+
+    // const trustData = await this.trust.calcInstanceDeviation();
+
+    // storeData = await Promise.all(
+    //   storeData.map(async (instance) => {
+    //     const trustData = await this.trust.scoreInstance(instance.baseurl);
+
+    //     return {
+    //       ...instance,
+    //       trust: trustData,
+    //     };
+    //   })
+    // );
 
     // remove those with errors that happened before time
     storeData = storeData.filter((instance) => {
@@ -641,8 +596,6 @@ export default class CrawlOutput {
     //   `Instances ${this.instanceList.length} -> ${storeData.length}`
     // );
 
-    await this.splitter.storeInstanceData(storeData);
-
     return storeData;
   }
 
@@ -651,41 +604,26 @@ export default class CrawlOutput {
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
-        let score = 0;
-        // having a linked instance gives you a point for each link
-        if (this.linkedFederation[siteBaseUrl]) {
-          score += this.linkedFederation[siteBaseUrl];
-        }
-
-        // each allowed instance gives you points
-        if (this.allowedFederation[siteBaseUrl]) {
-          score += this.allowedFederation[siteBaseUrl] * 2;
-        }
-
-        // each blocked instance takes away points
-        if (this.blockedFederation[siteBaseUrl]) {
-          score -= this.blockedFederation[siteBaseUrl] * 10;
-        }
-
-        // also score based subscribers
-        score = score * community.counts.subscribers;
+        const score = await this.trust.calcCommunityScore(
+          siteBaseUrl,
+          community
+        );
 
         const relatedInstance = this.instanceList.find(
           (instance) =>
             instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
         );
-        const isInstanceSus = await this.isInstanceSus(relatedInstance, false);
-
-        // if (community.community.nsfw)
-        //   console.log(community.community.name, community.community.nsfw);
+        const isInstanceSus = await this.trust.getInstanceSusReasons(
+          relatedInstance
+        );
 
         return {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
           name: community.community.name,
           title: community.community.title,
-          desc: this.stripMarkdown(community.community.description).substring(
-            0,
+          desc: this.utils.stripMarkdownSubStr(
+            community.community.description,
             350
           ),
           icon: community.community.icon,
@@ -694,13 +632,14 @@ export default class CrawlOutput {
           counts: community.counts,
           time: community.lastCrawled || null,
 
-          isSuspicious: isInstanceSus,
+          isSuspicious: isInstanceSus.length > 0 ? true : false,
           score: score,
         };
       })
     );
 
     // remove those with errors that happened before updated time
+    let preFilterFails = storeCommunityData.length;
     storeCommunityData = storeCommunityData.filter((community) => {
       const fail = this.findFail(community.baseurl);
       if (fail) {
@@ -711,8 +650,10 @@ export default class CrawlOutput {
       }
       return true;
     });
+    console.log(`Filtered ${preFilterFails - storeCommunityData.length} fails`);
 
     // remove communities not updated in 24h
+    let preFilterAge = storeCommunityData.length;
     storeCommunityData = storeCommunityData.filter((community) => {
       if (!community.time) {
         console.log("no time", community);
@@ -738,21 +679,30 @@ export default class CrawlOutput {
 
       return true;
     });
+    console.log(`Filtered ${preFilterAge - storeCommunityData.length} age`);
 
     // remove those not being in the instance list
     if (returnInstanceArray) {
+      let preFilterInstance = storeCommunityData.length;
       storeCommunityData = storeCommunityData.filter((community) => {
         const relatedInstance = returnInstanceArray.find(
           (instance) => instance.baseurl === community.baseurl
         );
 
         if (!relatedInstance) {
-          logging.info("filtered due to no instance", community.url);
+          // logging.info(
+          //   "filtered due to no instance",
+          //   community.baseurl,
+          //   community.url
+          // );
           return false;
         }
 
         return true;
       });
+      console.log(
+        `Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`
+      );
     }
 
     // filter blank
@@ -764,8 +714,6 @@ export default class CrawlOutput {
     // logging.info(
     //   `Communities ${this.communityList.length} -> ${storeCommunityData.length}`
     // );
-
-    await this.splitter.storeCommunityData(storeCommunityData);
 
     return storeCommunityData;
   }
@@ -800,7 +748,7 @@ export default class CrawlOutput {
       }
     });
 
-    await this.splitter.storeFediverseData(
+    await this.fileWriter.storeFediverseData(
       returnStats,
       softwareNames,
       softwareBaseUrls
@@ -821,7 +769,7 @@ export default class CrawlOutput {
       })
       .filter((instance) => instance !== null);
 
-    await this.splitter.storeKbinInstanceList(kbinInstances);
+    await this.fileWriter.storeKbinInstanceList(kbinInstances);
 
     return kbinInstances;
   }
@@ -837,7 +785,7 @@ export default class CrawlOutput {
         error: value.error,
         time: value.time,
       };
-      instanceData.type = this.findErrorType(value.error);
+      instanceData.type = this.utils.findErrorType(value.error);
 
       if (errorTypes[instanceData.type] === undefined) {
         errorTypes[instanceData.type] = 0;
@@ -864,35 +812,9 @@ export default class CrawlOutput {
 
     // logging.info("instanceErrors", instanceErrors.length, errorTypes);
 
-    await this.splitter.storeInstanceErrors(instanceErrors);
+    await this.fileWriter.storeInstanceErrors(instanceErrors);
 
     return instanceErrors;
-  }
-
-  // generate a list of all the instances that are suspicious and the reasons
-  async outputSusList() {
-    const output = [];
-
-    for (const instance of this.instanceList) {
-      // ignore instances that have no data
-      const instanceSus = new Suspicions(instance);
-      const susReason = await instanceSus.isSuspiciousReasons();
-
-      if (susReason.length > 0) {
-        output.push({
-          users: instance.nodeData.usage.users.total,
-          name: instance.siteData.site.name,
-          base: instance.siteData.site.actor_id.split("/")[2],
-          actor_id: instance.siteData.site.actor_id,
-          metrics: instanceSus.metrics,
-          reasons: susReason,
-        });
-      }
-    }
-
-    await this.splitter.storeSuspicousData(output);
-
-    return output;
   }
 
   // generate a list of all the instances that are suspicious and the reasons
@@ -920,7 +842,7 @@ export default class CrawlOutput {
 
         baseurl: kbin.id.split("/")[2],
 
-        summary: this.stripMarkdown(kbin.summary),
+        summary: this.utils.stripMarkdownSubStr(kbin.summary, 350),
         sensitive: kbin.sensitive,
         postingRestrictedToMods: kbin.postingRestrictedToMods,
 
@@ -933,7 +855,7 @@ export default class CrawlOutput {
       });
     }
 
-    await this.splitter.storeKBinMagazineData(output);
+    await this.fileWriter.storeKBinMagazineData(output);
 
     return filteredKBins;
   }

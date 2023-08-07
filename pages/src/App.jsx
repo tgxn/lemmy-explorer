@@ -100,7 +100,7 @@ export default function App() {
       chip: "Min",
       desc: "an array of known kbin instances",
       path: "kbin.min.json",
-      count: "instances",
+      count: "kbin_instances",
     },
     {
       name: "KBin Magazines",
