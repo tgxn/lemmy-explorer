@@ -335,13 +335,14 @@ export default class OutputTrust {
       );
     }
 
-    const SUS_LEVEL_LOW = 900;
-    if (metrics.activityUserScore > SUS_LEVEL_LOW) {
-      // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
-      reasons.push(
-        `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
-      );
-    }
+    // removed since it doesn't seem to be required anymore. (with new deviations checking)
+    // const SUS_LEVEL_LOW = 900;
+    // if (metrics.activityUserScore > SUS_LEVEL_LOW) {
+    //   // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
+    //   reasons.push(
+    //     `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
+    //   );
+    // }
 
     // checks for total users vs. active users metric
     // const userAtivityFail = this.isUserActivityLow();

@@ -155,8 +155,12 @@ function Instances({ filterSuspicious }) {
       instances = instances.sort((a, b) => b.score - a.score);
     } else if (orderBy === "users") {
       instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
+    } else if (orderBy === "active_day") {
+      instances = instances.sort((a, b) => b.counts.users_active_day - a.counts.users_active_day);
     } else if (orderBy === "active") {
-      instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
+      instances = instances.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
+    } else if (orderBy === "active_month") {
+      instances = instances.sort((a, b) => b.counts.users_active_month - a.counts.users_active_month);
     } else if (orderBy === "posts") {
       instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
     } else if (orderBy === "comments") {
@@ -235,7 +239,9 @@ function Instances({ filterSuspicious }) {
         >
           <Option value="smart">Smart Sort</Option>
           <Option value="users">Users</Option>
-          <Option value="active">Active Users</Option>
+          <Option value="active_day">Active Users (day)</Option>
+          <Option value="active">Active Users (week)</Option>
+          <Option value="active_month">Active Users (month)</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
           <Option value="oldest">Oldest</Option>

@@ -173,8 +173,12 @@ function Communities({ filterSuspicious, filteredInstances }) {
       communties = communties.sort((a, b) => b.score - a.score);
     } else if (orderBy === "subscribers") {
       communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
+    } else if (orderBy === "active_day") {
+      communties = communties.sort((a, b) => b.counts.users_active_day - a.counts.users_active_day);
     } else if (orderBy === "active") {
       communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
+    } else if (orderBy === "active_month") {
+      communties = communties.sort((a, b) => b.counts.users_active_month - a.counts.users_active_month);
     } else if (orderBy === "posts") {
       communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
     } else if (orderBy === "comments") {
@@ -247,7 +251,9 @@ function Communities({ filterSuspicious, filteredInstances }) {
         >
           <Option value="smart">Smart Sort</Option>
           <Option value="subscribers">Subscribers</Option>
-          <Option value="active">Active Users</Option>
+          <Option value="active_day">Active Users (day)</Option>
+          <Option value="active">Active Users (week)</Option>
+          <Option value="active_month">Active Users (month)</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
         </Select>
