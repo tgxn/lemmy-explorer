@@ -164,12 +164,12 @@ class OutputUtils {
       old: previousRun.instances,
     });
 
-    // disabled temporarily till lemmyworld is fixed.
-    // data.push({
-    //   type: "communities",
-    //   new: returnCommunityArray.length,
-    //   old: previousRun.communities,
-    // });
+    // check that community counts haven't changed heaps
+    data.push({
+      type: "communities",
+      new: returnCommunityArray.length,
+      old: previousRun.communities,
+    });
 
     data.push({
       type: "fediverse",
