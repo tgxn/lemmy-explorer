@@ -630,6 +630,7 @@ export default class CrawlOutput {
           banner: community.community.banner,
           nsfw: community.community.nsfw,
           counts: community.counts,
+          published: new Date(community.community.published.replace(/(\.\d{6})/, "Z")).getTime() || null,
           time: community.lastCrawled || null,
 
           isSuspicious: isInstanceSus.length > 0 ? true : false,
