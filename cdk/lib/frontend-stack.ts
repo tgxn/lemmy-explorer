@@ -156,7 +156,7 @@ export class FrontendStack extends Stack {
       destinationBucket: siteBucket,
       distribution: distribution,
       distributionPaths: ["/*"],
-      // memoryLimit: 1024,
+      memoryLimit: 1024,
       // useEfs: true,
       prune: true,
       ephemeralStorageSize: Size.mebibytes(1024),
