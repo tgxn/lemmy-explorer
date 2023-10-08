@@ -112,12 +112,12 @@ jobs:
         working-directory: ./crawler
 
       # store the json files as artifacts
-      - name: archive json artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist-json-bundle
-          path: |
-            ./frontend/public/data/
+      # - name: archive json artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: dist-json-bundle
+      #     path: |
+      #       ./frontend/public/data/
 
       - name: copy the json files to github pages
         working-directory: ./
