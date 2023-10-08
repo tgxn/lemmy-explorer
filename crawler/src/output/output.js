@@ -617,6 +617,35 @@ export default class CrawlOutput {
           relatedInstance
         );
 
+        // calculate community published time
+        let publishTime = null;
+        if (community.community.published) {
+          try {
+            // why do some instances have Z on the end -.-
+            publishTime = new Date(
+              community.community.published.replace(/(\.\d{6}Z?)/, "Z")
+            ).getTime();
+
+            // if not a number
+            if (isNaN(publishTime)) {
+              console.error(
+                "error parsing publish time",
+                community.community.published
+              );
+              publishTime = null;
+            }
+
+            // console.log("publishTime", publishTime);
+          } catch (e) {
+            console.error(
+              "error parsing publish time",
+              community.community.published
+            );
+          }
+        } else {
+          console.error("no publish time", community.community);
+        }
+
         return {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
@@ -630,7 +659,7 @@ export default class CrawlOutput {
           banner: community.community.banner,
           nsfw: community.community.nsfw,
           counts: community.counts,
-          published: new Date(community.community.published.replace(/(\.\d{6})/, "Z")).getTime() || null,
+          published: publishTime,
           time: community.lastCrawled || null,
 
           isSuspicious: isInstanceSus.length > 0 ? true : false,
