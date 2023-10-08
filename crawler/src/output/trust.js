@@ -102,6 +102,7 @@ export default class OutputTrust {
           tags: this.getInstanceTags(instance),
 
           guarantor,
+          endorsements: this.endorsements[baseUrl] || 0,
         };
       })
     );

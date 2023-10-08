@@ -12,10 +12,11 @@ module.exports = merge(common, {
     client: {
       overlay: true,
     },
+    static: {
+      watch: false,
+    },
     hot: true,
-    // hotOnly: true,
     liveReload: true,
-    // watchContentBase: true,
     historyApiFallback: { index: "/", disableDotRule: true },
   },
   optimization: {

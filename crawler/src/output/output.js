@@ -164,12 +164,12 @@ class OutputUtils {
       old: previousRun.instances,
     });
 
-    // disabled temporarily till lemmyworld is fixed.
-    // data.push({
-    //   type: "communities",
-    //   new: returnCommunityArray.length,
-    //   old: previousRun.communities,
-    // });
+    // check that community counts haven't changed heaps
+    data.push({
+      type: "communities",
+      new: returnCommunityArray.length,
+      old: previousRun.communities,
+    });
 
     data.push({
       type: "fediverse",
@@ -513,7 +513,6 @@ export default class CrawlOutput {
           private: instance.siteData.config?.private_instance,
           fed: instance.siteData.config?.federation_enabled,
 
-          date: instance.siteData.site.published,
           version: instance.nodeData.software.version,
           open: instance.nodeData.openRegistrations,
 
@@ -523,6 +522,11 @@ export default class CrawlOutput {
           icon: instance.siteData.site.icon,
           banner: instance.siteData.site.banner,
           langs: instance.langs,
+
+          date: instance.siteData.site.published, // TO BE DEPRECATED
+          published: this.parseLemmyTimeToUnix(
+            instance.siteData?.site?.published
+          ),
 
           time: instance.lastCrawled || null,
           score: score,
@@ -599,6 +603,31 @@ export default class CrawlOutput {
     return storeData;
   }
 
+  parseLemmyTimeToUnix(time) {
+    // calculate community published time
+    let publishTime = null;
+    if (time) {
+      try {
+        // why do some instances have Z on the end -.-
+        publishTime = new Date(time.replace(/(\.\d{6}Z?)/, "Z")).getTime();
+
+        // if not a number
+        if (isNaN(publishTime)) {
+          console.error("error parsing publish time", time);
+          publishTime = null;
+        }
+
+        // console.log("publishTime", publishTime);
+      } catch (e) {
+        console.error("error parsing publish time", time);
+      }
+    } else {
+      console.error("no publish time", time);
+    }
+
+    return publishTime;
+  }
+
   async getCommunityArray(returnInstanceArray) {
     let storeCommunityData = await Promise.all(
       this.communityList.map(async (community) => {
@@ -617,6 +646,35 @@ export default class CrawlOutput {
           relatedInstance
         );
 
+        // // calculate community published time
+        // let publishTime = null;
+        // if (community.community.published) {
+        //   try {
+        //     // why do some instances have Z on the end -.-
+        //     publishTime = new Date(
+        //       community.community.published.replace(/(\.\d{6}Z?)/, "Z")
+        //     ).getTime();
+
+        //     // if not a number
+        //     if (isNaN(publishTime)) {
+        //       console.error(
+        //         "error parsing publish time",
+        //         community.community.published
+        //       );
+        //       publishTime = null;
+        //     }
+
+        //     // console.log("publishTime", publishTime);
+        //   } catch (e) {
+        //     console.error(
+        //       "error parsing publish time",
+        //       community.community.published
+        //     );
+        //   }
+        // } else {
+        //   console.error("no publish time", community.community);
+        // }
+
         return {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
@@ -630,6 +688,7 @@ export default class CrawlOutput {
           banner: community.community.banner,
           nsfw: community.community.nsfw,
           counts: community.counts,
+          published: this.parseLemmyTimeToUnix(community.community?.published),
           time: community.lastCrawled || null,
 
           isSuspicious: isInstanceSus.length > 0 ? true : false,

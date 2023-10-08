@@ -183,6 +183,8 @@ function Communities({ filterSuspicious, filteredInstances }) {
       communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
     } else if (orderBy === "comments") {
       communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
+    } else if (orderBy === "published") {
+      communties = communties.sort((a, b) => b.published - a.published);
     }
     console.log(`Sorted ${communties.length} communities`);
 
@@ -254,6 +256,7 @@ function Communities({ filterSuspicious, filteredInstances }) {
           <Option value="active_day">Active Users (day)</Option>
           <Option value="active">Active Users (week)</Option>
           <Option value="active_month">Active Users (month)</Option>
+          <Option value="published">Newest Publish Time</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
         </Select>

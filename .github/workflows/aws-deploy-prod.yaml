@@ -117,12 +117,12 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
-      - name: archive frontend bundle
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist-frontend-bundle
-          path: |
-            ./frontend/dist/
+      # - name: archive frontend bundle
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: dist-frontend-bundle
+      #     path: |
+      #       ./frontend/dist/
 
       - name: create-json
         id: create-json
