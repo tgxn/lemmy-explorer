@@ -63,7 +63,12 @@ import { rm, mkdir } from "node:fs/promises";
 export default class OutputFileWriter {
   constructor() {
     this.publicDataFolder = `../frontend/public/data`;
+
+    // stores a .meta file for each instance
     this.metricsPath = `${this.publicDataFolder}/metrics`;
+
+    // stores a .meta file for each community under instance DIR
+    this.communityMetricsPath = `${this.publicDataFolder}/community-metrics`;
 
     // tuning the amount of entries per-file
     this.communitiesPerFile = 500;
@@ -99,6 +104,13 @@ export default class OutputFileWriter {
       this.communitiesPerFile,
       communityArray
     );
+
+    for (let i = 0; i < communityArray.length; i++) {
+      await this.storeCommunityMetricsData(
+        communityArray[i].baseurl,
+        communityArray[i]
+      );
+    }
   }
 
   /**
@@ -174,6 +186,23 @@ export default class OutputFileWriter {
     await this.writeJsonFile(
       `${this.metricsPath}/${instanceBaseUrl}.meta.json`,
       JSON.stringify(data)
+    );
+  }
+
+  /**
+   * this method is used to store the community metrics data
+   *
+   * @param {string} instanceBaseUrl - the base url of the instance
+   * @param {object} data - the instance metrics data
+   */
+  async storeCommunityMetricsData(instanceBaseUrl, communityData) {
+    await mkdir(`${this.communityMetricsPath}/${instanceBaseUrl}`, {
+      recursive: true,
+    });
+
+    await this.writeJsonFile(
+      `${this.communityMetricsPath}/${instanceBaseUrl}/${communityData.name}.meta.json`,
+      JSON.stringify(communityData)
     );
   }
 
