@@ -12,6 +12,8 @@ import { Construct } from "constructs";
 import { NagSuppressions } from "cdk-nag";
 
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
+import { Size } from "aws-cdk-lib";
+
 import {
   CacheCookieBehavior,
   CacheHeaderBehavior,
@@ -155,8 +157,10 @@ export class FrontendStack extends Stack {
       distribution: distribution,
       distributionPaths: ["/*"],
       // memoryLimit: 1024,
-      useEfs: true,
-      retainOnDelete: false,
+      // useEfs: true,
+      prune: true,
+      ephemeralStorageSize: Size.mebibytes(1024),
+      // retainOnDelete: false,
     });
   }
 }
