@@ -154,6 +154,9 @@ export class FrontendStack extends Stack {
       destinationBucket: siteBucket,
       distribution: distribution,
       distributionPaths: ["/*"],
+      // memoryLimit: 1024,
+      useEfs: true,
+      retainOnDelete: false,
     });
   }
 }
