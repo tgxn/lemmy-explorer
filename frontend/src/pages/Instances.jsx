@@ -180,6 +180,8 @@ function Instances({ filterSuspicious }) {
         if (aDate > bDate) return 1;
         return 0;
       });
+    } else if (orderBy === "published") {
+      instances = instances.sort((a, b) => b.published - a.published);
     }
 
     // return a clone so that it triggers a re-render  on sort
@@ -245,6 +247,7 @@ function Instances({ filterSuspicious }) {
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
           <Option value="oldest">Oldest</Option>
+          <Option value="published">Newest Publish Time</Option>
         </Select>
 
         <LanguageFilter
