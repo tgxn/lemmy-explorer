@@ -14,6 +14,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 
 import { SimpleNumberFormat } from "../Shared/Display";
+import { ExtLink } from "../Shared/Link";
 import { StringStat, NumberStat } from "../Shared/StatGridCards";
 
 // for a given attribute stats array, get the change over time
@@ -133,8 +134,37 @@ export default function InstanceOverview({ metricsData }) {
               />
             }
             color="info"
-            title="Current Version"
+            title="Current Backend Version"
             value={instance.version}
+          />
+        </Grid>
+
+        <Grid xs={12} md={6}>
+          <StringStat
+            icon={
+              <SystemUpdateAltIcon
+                sx={{
+                  //rotate 180 degrees
+                  transform: "rotate(180deg)",
+                }}
+              />
+            }
+            color="info"
+            title={
+              <>
+                <ExtLink
+                  linkUrl="https://fediseer.com/"
+                  linkName="Fediseer"
+                  variant="solid"
+                  sx={{
+                    mr: 1,
+                  }}
+                />
+                Endorsements
+              </>
+            }
+            value={instance.trust.endorsements}
+            description={<>Guarantor: {instance.trust.guarantor}</>}
           />
         </Grid>
       </Grid>
