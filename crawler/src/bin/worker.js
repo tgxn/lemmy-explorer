@@ -94,6 +94,16 @@ export default async function startWorker(startWorkerName = null) {
       await storage.close();
     });
 
+    // Crawl Fediseer
+    logging.info("Creating CrawlFediseer Cron Task", CRON_SCHEDULES.FEDISEER);
+    cron.schedule(CRON_SCHEDULES.FEDISEER, async (time) => {
+      console.log("Running CrawlFediseer Cron Task", time);
+      await storage.connect();
+
+      const fediseerCrawl = new CrawlFediseer();
+      await fediseerCrawl.crawl();
+    });
+
     logging.info("Cron Tasks Created");
   }
 }
