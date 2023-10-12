@@ -1,11 +1,5 @@
-/** Uptime Crawler
- *
- * Meant to run max 1/day and get all uptime from api.fediverse.observer
- */
 import logging from "../lib/logging.js";
-
 import axios from "axios";
-
 import storage from "../storage.js";
 
 import {
@@ -17,12 +11,40 @@ import {
 export default class CrawlFediseer {
   constructor() {
     this.axios = axios.create({
+      baseURL: "https://fediseer.com/api/v1/",
+      timeout: 6000,
       timeout: AXIOS_REQUEST_TIMEOUT,
       headers: {
         "User-Agent": CRAWLER_USER_AGENT,
         "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
       },
     });
+  }
+
+  async getAllPagesData(page = 1) {
+    let mergedInstances = [];
+
+    const perPage = 100;
+
+    const fediseerWhitelist = await this.axios.get(
+      `/whitelist?endorsements=1&guarantors=1&page=${page}&limit=${perPage}`
+    );
+    mergedInstances = [...fediseerWhitelist.data.instances];
+
+    console.log(
+      `got ${fediseerWhitelist.data.instances.length} instances from page ${page}`
+    );
+
+    if (fediseerWhitelist.data.instances.length != perPage) {
+      return mergedInstances;
+    }
+
+    // get next page
+    const nextPage = page + 1;
+    const moreInstances = await this.getAllPagesData(nextPage);
+    mergedInstances = [...mergedInstances, ...moreInstances];
+
+    return mergedInstances;
   }
 
   async crawl() {
@@ -37,34 +59,35 @@ export default class CrawlFediseer {
      *   how many instances this one has endorsed
      */
 
-    const fediseerWhitelist = await this.axios.get(
-      "https://fediseer.com/api/v1/whitelist?endorsements=0&guarantors=0"
-      //  {
-      //   query: `query{
-      //         nodes (softwarename: "lemmy") {
-      //         domain
-      //         latency
-      //         countryname
-      //         uptime_alltime
-      //         date_created
-      //         date_updated
-      //         date_laststats
-      //         score
-      //         status
-      //         }
-      //     }`,
-      // }
-    );
-    logging.info(
-      `https://fediseer.com/api/v1/whitelist?endorsements=0&guarantors=1`
-    );
-    logging.info(
-      `fediseer whitelist total: ${fediseerWhitelist.data.instances.length}`
-    );
+    const fediseerWhitelist = await this.getAllPagesData();
 
-    const instances = [...fediseerWhitelist.data.instances];
+    // run this in a function per page
 
-    await storage.fediseer.addNew(instances);
+    //   //  {
+    //   //   query: `query{
+    //   //         nodes (softwarename: "lemmy") {
+    //   //         domain
+    //   //         latency
+    //   //         countryname
+    //   //         uptime_alltime
+    //   //         date_created
+    //   //         date_updated
+    //   //         date_laststats
+    //   //         score
+    //   //         status
+    //   //         }
+    //   //     }`,
+    //   // }
+    // );
+
+    // logging.info(
+    //   `https://fediseer.com/api/v1/whitelist?endorsements=0&guarantors=1`
+    // );
+    logging.info(`fediseer whitelist total: ${fediseerWhitelist.length}`);
+
+    // const instances = [...fediseerWhitelist];
+
+    await storage.fediseer.addNew(fediseerWhitelist);
 
     // let domainGuarantees = {};
     // for (var instance of instances) {
