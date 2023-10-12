@@ -48,6 +48,7 @@ If you want to configure auto-upload to s3 or anything, you need to copy the `.e
 | `--aged` | Create jobs for aged instances and communities |
 | `--kbin` | Create jobs for kbin communities |
 | `--uptime` | Immediately crawl uptime data |
+| `--fedi` | Immediately crawl Fediseer data |
 
 
 #### **Examples**
