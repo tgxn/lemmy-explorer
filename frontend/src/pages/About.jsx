@@ -10,6 +10,7 @@ import Divider from "@mui/joy/Divider";
 
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
+import PaidIcon from "@mui/icons-material/Paid";
 
 export default function About() {
   return (
@@ -42,6 +43,15 @@ export default function About() {
           component="a"
         >
           View Code on GitHub
+        </Button>
+        <Button
+          startDecorator={<PaidIcon />}
+          color="info"
+          href="https://paypal.me/tgxn"
+          target="_lv_paypal"
+          component="a"
+        >
+          Buy me a coffee
         </Button>
         {/* <Button
           startDecorator={<ForumIcon />}
@@ -83,11 +93,16 @@ export default function About() {
         </Typography>
 
         <Typography>
-          Some data we use comes from other sites:
+          Some data we use comes from other sources:
           <ul>
             <li>
               <Link component="a" href="https://fediverse.observer/" target="_lv_fediverse">
                 Fediverse Explorer API
+              </Link>
+            </li>
+            <li>
+              <Link component="a" href="https://fediseer.com/" target="_lv_fediseer">
+                Fediseer API
               </Link>
             </li>
           </ul>
