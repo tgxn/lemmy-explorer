@@ -541,8 +541,8 @@ export default class OutputTrust {
 
     // having endorsements will boost you in the search results
     if (this.endorsements[baseUrl]) {
-      score += this.endorsements[baseUrl] * 4;
-      scores.endorsements = this.endorsements[baseUrl] * 4;
+      score += this.endorsements[baseUrl] * 6;
+      scores.endorsements = this.endorsements[baseUrl] * 6;
     }
 
     // each allowed instance gives you points
@@ -557,8 +557,12 @@ export default class OutputTrust {
       scores.blocked = "-" + this.blockedFederation[baseUrl] * 4;
     }
 
-    if (scores.endorsements) {
-      console.log(baseUrl, scores);
+    // score based on users
+    const instance = this.getInstance(baseUrl);
+    if (instance) {
+      // console.log("instance", instance);
+      score = score * instance.users;
+      scores.users = score * instance.users;
     }
 
     return score;
@@ -571,7 +575,7 @@ export default class OutputTrust {
 
     // multiply score based subscribers
     const activityScore =
-      (community.counts.subscribers + community.counts.comments) / 100;
+      community.counts.subscribers + community.counts.comments;
 
     const activeScore = community.counts.users_active_month * 5;
 
