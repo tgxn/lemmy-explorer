@@ -809,23 +809,24 @@ export default class CrawlOutput {
     });
 
     // count total tags in instance array and output tags meta file
-    let tagCounts = {}; // { tag: "name", count: 0 }
+    let tagCounts = []; // { tag: "name", count: 0 }
     outputInstanceData.forEach((instance) => {
       instance.tags.forEach((tag) => {
-        if (!tagCounts[tag]) {
-          tagCounts[tag] = 1;
+        const foundTag = tagCounts.find((t) => t.tag === tag);
+        if (foundTag) {
+          foundTag.count++;
         } else {
-          tagCounts[tag]++;
+          tagCounts.push({ tag: tag, count: 1 });
         }
       });
 
       // add tags to software
     });
 
-    // sort by count
-    tagCounts = Object.entries(tagCounts)
-      .sort(([, a], [, b]) => b - a)
-      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+    // sort tags by count
+    tagCounts = tagCounts.sort((a, b) => {
+      return b.count - a.count;
+    });
 
     await this.fileWriter.storeFediverseData(
       returnStats,
