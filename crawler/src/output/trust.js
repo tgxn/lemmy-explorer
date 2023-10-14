@@ -553,16 +553,16 @@ export default class OutputTrust {
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 4;
-      scores.blocked = "-" + this.blockedFederation[baseUrl] * 4;
+      score -= this.blockedFederation[baseUrl] * 10;
+      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
     }
 
     // score based on users
     const instance = this.getInstance(baseUrl);
     if (instance) {
       // console.log("instance", instance);
-      score = score * instance.users;
-      scores.users = score * instance.users;
+      score = score * (instance.users / 10);
+      scores.users = score * 2 * (instance.users / 10);
     }
 
     return score;
