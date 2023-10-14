@@ -31,6 +31,8 @@ import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
 
+import TagFilter from "../components/Shared/TagFilter";
+
 function Instances({ filterSuspicious }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -254,6 +256,8 @@ function Instances({ filterSuspicious }) {
           languageCodes={filterLangCodes}
           setLanguageCodes={(codes) => setFilterLangCodes(codes)}
         />
+
+        <TagFilter />
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
