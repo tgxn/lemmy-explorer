@@ -132,16 +132,20 @@ const TriStateCheckbox = ({ checked, onChange, children }, ref) => {
   let label = "NSFW: Hidden";
   let tooltip = "Click to Include NSFW";
 
+  let confirmVerb = "Include";
+
   // only nsfw
   if (localChecked === true) {
     label = "NSFW: Only Show NSFW";
-    tooltip = "Click to Show Only NSFW";
+    tooltip = "Click to Hide NSFW";
   }
 
   // included
   else if (localChecked === null) {
     label = "NSFW: Included";
-    tooltip = "Click to Hide NSFW";
+    tooltip = "Click to only show NSFW";
+
+    confirmVerb = "Only show";
   }
 
   return (
@@ -158,8 +162,8 @@ const TriStateCheckbox = ({ checked, onChange, children }, ref) => {
       <ConfirmDialog
         key="save-confirm"
         open={confirmShowNSFW}
-        title={`Show NSFW Content?`}
-        message={`Are you sure you want to display NSFW Content?`}
+        title={`${confirmVerb} NSFW Content?`}
+        message={`Are you sure you want to ${confirmVerb.toLowerCase()} NSFW content?`}
         buttonMessage={"Yes, I am over 18"}
         extraElements={[
           <Checkbox
