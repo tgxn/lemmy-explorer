@@ -6,7 +6,7 @@ import Box from "@mui/joy/Box";
 
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../Shared/Display";
 
-import CommunityList from "../ListView/Community";
+import Communities from "../Communities";
 
 function InstanceCommunities({ instance, homeBaseUrl }) {
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -27,7 +27,7 @@ function InstanceCommunities({ instance, homeBaseUrl }) {
     <Box>
       {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
       {isError && <PageError error={error} />}
-      {isSuccess && <CommunityList items={items} homeBaseUrl={homeBaseUrl} />}
+      {isSuccess && <Communities filterBaseUrl={instance.baseurl} />}
     </Box>
   );
 }
