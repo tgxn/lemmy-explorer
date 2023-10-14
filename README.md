@@ -27,6 +27,18 @@ You can append `home_url` and (optionally) `home_type` to the URL to set the hom
 ### Q: **How does discovery work?**
 It uses a [seed list of communities](https://github.com/tgxn/lemmy-explorer/blob/main/crawler/src/lib/const.js#L47) and scans the equivalent of the `/instances` federation lists, and then creates jobs to scan each of those servers.
 
+### Q: **How does the NSFW filter work?**
+The NSFW filter is a client-side filter that filters out NSFW communities and instances from results by default.
+The "NSFW Toggle" checkbox has thress states that you can toggle through:
+| State | Filter | Value |
+| --- | --- | --- |
+| Default | Hide NSFW | false |
+| One Click | Include NSFW | null |
+| Two Clicks | NSFW Only | true |
+
+When you try to switch to a non-sfw state, a popup will appear to confirm your choice. You can save your response in your browsers cache and it will be remembered. 
+
+
 ### Q: **How long till my instance shows up?**
 How long it takes to discover a new instance can vary depending on if you post content that's picked up by one of these servers.
 
