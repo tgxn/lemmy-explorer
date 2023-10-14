@@ -272,7 +272,7 @@ export default class CrawlOutput {
     );
 
     // fediverse data
-    const returnStats = await this.outputFediverseData();
+    const returnStats = await this.outputFediverseData(returnInstanceArray);
 
     // kbin data
     const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
@@ -497,6 +497,7 @@ export default class CrawlOutput {
         // ignore instances that have no data
         const susReason = instanceTrustData.reasons;
 
+        console.log("instanceTrustData.tags", instanceTrustData.tags);
         return {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
@@ -777,7 +778,7 @@ export default class CrawlOutput {
     return storeCommunityData;
   }
 
-  async outputFediverseData() {
+  async outputFediverseData(outputInstanceData) {
     let returnStats = [];
 
     let softwareNames = {};
@@ -807,10 +808,30 @@ export default class CrawlOutput {
       }
     });
 
+    // count total tags in instance array and output tags meta file
+    let tagCounts = {}; // { tag: "name", count: 0 }
+    outputInstanceData.forEach((instance) => {
+      instance.tags.forEach((tag) => {
+        if (!tagCounts[tag]) {
+          tagCounts[tag] = 1;
+        } else {
+          tagCounts[tag]++;
+        }
+      });
+
+      // add tags to software
+    });
+
+    // sort by count
+    tagCounts = Object.entries(tagCounts)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+
     await this.fileWriter.storeFediverseData(
       returnStats,
       softwareNames,
-      softwareBaseUrls
+      softwareBaseUrls,
+      tagCounts
     );
 
     return returnStats;

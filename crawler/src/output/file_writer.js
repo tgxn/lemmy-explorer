@@ -157,7 +157,7 @@ export default class OutputFileWriter {
    * @param {object} softwareData - the fediverse software data
    * @param {object} softwareBaseUrls - the fediverse software base urls
    */
-  async storeFediverseData(data, softwareData, softwareBaseUrls) {
+  async storeFediverseData(data, softwareData, softwareBaseUrls, fediTags) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/fediverse.json`,
       JSON.stringify(data)
@@ -169,6 +169,12 @@ export default class OutputFileWriter {
     await this.writeJsonFile(
       `${this.publicDataFolder}/fediverse_software_sites.json`,
       JSON.stringify(softwareBaseUrls)
+    );
+
+    // write tags meta
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/tags.meta.json`,
+      JSON.stringify(fediTags)
     );
   }
 
