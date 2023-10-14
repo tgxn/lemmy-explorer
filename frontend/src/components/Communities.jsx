@@ -205,13 +205,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
   }, [data, showNSFW, orderBy, debounceFilterText, filterSuspicious, filteredInstances]);
 
   return (
-    <Container
-      maxWidth={false}
-      style={{
-        paddingRight: "16px",
-        paddingLeft: "16px",
-      }}
-    >
+    <Box>
       <Box
         component="header"
         sx={{
@@ -344,7 +338,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
         {isSuccess && viewType == "grid" && <CommunityGrid items={communitiesData} />}
         {isSuccess && viewType == "list" && <CommunityList items={communitiesData} />}
       </Box>
-    </Container>
+    </Box>
   );
 }
 
