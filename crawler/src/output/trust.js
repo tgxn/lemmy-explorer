@@ -545,8 +545,8 @@ export default class OutputTrust {
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 10;
-      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
+      score -= this.blockedFederation[baseUrl] * 4;
+      scores.blocked = "-" + this.blockedFederation[baseUrl] * 4;
     }
 
     if (scores.endorsements) {
@@ -562,7 +562,12 @@ export default class OutputTrust {
     );
 
     // multiply score based subscribers
-    const score = instanceMetrics.score * community.counts.subscribers;
+    const activityScore =
+      (community.counts.subscribers + community.counts.comments) / 100;
+
+    const activeScore = community.counts.users_active_month * 5;
+
+    const score = instanceMetrics.score * activityScore * activeScore;
 
     return score;
   }
