@@ -6,7 +6,6 @@ import Box from "@mui/joy/Box";
 
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../Shared/Display";
 
-import CommunityList from "../ListView/Community";
 import Communities from "../Communities";
 
 function InstanceCommunities({ instance, homeBaseUrl }) {
