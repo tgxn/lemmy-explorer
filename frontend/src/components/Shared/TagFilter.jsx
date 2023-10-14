@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { connect, useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -25,7 +25,7 @@ import IconButton from "@mui/joy/IconButton";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
-import { setFilteredInstances } from "../../reducers/configReducer";
+import { setFilteredTags } from "../../reducers/configReducer";
 
 // # tags thinking
 
@@ -43,20 +43,23 @@ import { setFilteredInstances } from "../../reducers/configReducer";
 const LISTBOX_PADDING = 6; // px
 
 const CustomSwitch = React.memo((props) => {
-  const { baseUrl, dispatch, ...other } = props;
-  const filteredInstances = useSelector((state) => state.configReducer.filteredInstances);
+  const { tagValue, filteredTags, dispatch, ...other } = props;
 
-  const filtered = filteredInstances.indexOf(baseUrl) !== -1;
+  const filtered = filteredTags.indexOf(tagValue) !== -1;
 
   const changeValue = (event) => {
-    console.log("event.target.checked", baseUrl, event.target.checked);
+    console.log("event.target.checked", tagValue, event.target.checked);
 
-    const removeIndex = filteredInstances.filter((instance) => instance != baseUrl);
-    console.log("removeIndex", removeIndex, removeIndex.indexOf(baseUrl));
+    // attempt to remove it from the existing list
+    const removeIndex = filteredTags.filter((instance) => instance != tagValue);
+    console.log("removeIndex", removeIndex, removeIndex.indexOf(tagValue));
+
     if (event.target.checked) {
-      dispatch(setFilteredInstances(removeIndex));
+      console.log("setFilteredTags", removeIndex);
+      dispatch(setFilteredTags(removeIndex));
     } else {
-      dispatch(setFilteredInstances([...removeIndex, baseUrl]));
+      console.log("setFilteredTags", [...removeIndex, tagValue]);
+      dispatch(setFilteredTags([...removeIndex, tagValue]));
     }
   };
 
@@ -64,6 +67,9 @@ const CustomSwitch = React.memo((props) => {
     <Switch {...other} checked={!filtered} onChange={(event) => changeValue(event)} sx={{ ml: "auto" }} />
   );
 });
+const ConnectedSwitch = connect((state) => ({
+  filteredTags: state.configReducer.filteredTags,
+}))(CustomSwitch);
 
 function renderRow(props) {
   const { data, index, style } = props;
@@ -104,62 +110,51 @@ function renderRow(props) {
           }}
         >
           <>
-            {dataSet.name} ({dataSet.base})
+            {dataSet.tag} ({dataSet.count})
           </>
         </FormLabel>
-        <CustomSwitch baseUrl={dataSet.base} />
+        <ConnectedSwitch tagValue={dataSet.tag} />
       </FormControl>
     </ListItem>
   );
 }
 
-const InstanceDialog = React.memo(({ isOpen, onClose, dispatch }) => {
-  const filterSuspicious = useSelector((state) => state.configReducer.filterSuspicious);
+const TagDialog = React.memo(({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
 
   const {
     isLoading: loadingIns,
     error: errorIns,
     data: dataIns,
-  } = useQueryCache("instanceMinData", "instance.min");
-
-  const { isLoading: isLoadingSus, error: errorSus, data: dataSus } = useQueryCache("susData", "sus");
+  } = useQueryCache("tagsMetaData", "tags.meta");
 
   // debounce the filter text input
   const [filterText, setFilterText] = React.useState("");
   const debounceFilterText = useDebounce(filterText, 100);
 
   const filteredData = React.useMemo(() => {
-    if (!dataIns || !dataSus) {
+    if (!dataIns) {
       return [];
     }
 
     let filteredData = dataIns;
 
-    if (filterSuspicious) {
-      const susBaseArray = dataSus.map((item) => item.base);
-      filteredData = filteredData.filter((instance) => !susBaseArray.includes(instance.base));
-    }
-
     if (debounceFilterText) {
-      // filter name or base contains
       filteredData = filteredData.filter((item) => {
-        return (
-          item.name.toLowerCase().includes(debounceFilterText.toLowerCase()) ||
-          item.base.toLowerCase().includes(debounceFilterText.toLowerCase())
-        );
+        return item.tag.toLowerCase().includes(debounceFilterText.toLowerCase());
       });
     }
 
     console.log("filteredData", filteredData);
 
-    return filteredData.sort((a, b) => b.score - a.score);
-  }, [dataIns, dataSus, debounceFilterText]);
+    return filteredData.sort((a, b) => b.count - a.count);
+  }, [dataIns, debounceFilterText]);
 
-  if (loadingIns || isLoadingSus) {
+  if (loadingIns) {
     return null;
   }
 
-  if (errorIns || errorSus) {
+  if (errorIns) {
     return null;
   }
 
@@ -172,7 +167,7 @@ const InstanceDialog = React.memo(({ isOpen, onClose, dispatch }) => {
         <Box sx={{ p: 2, pb: 0 }}>
           <ModalClose />
           <Typography id="dialog-vertical-scroll-title" component="h2">
-            Instance Filter
+            Tag Filter
           </Typography>
         </Box>
 
@@ -210,9 +205,9 @@ const InstanceDialog = React.memo(({ isOpen, onClose, dispatch }) => {
         >
           <Button
             onClick={() => {
-              const allInstances = dataIns.map((item) => item.base);
-              console.log("allInstances", allInstances);
-              dispatch(setFilteredInstances(allInstances));
+              const allInstances = dataIns.map((item) => item.tag);
+              console.log("allTags", allInstances);
+              dispatch(setFilteredTags(allInstances));
             }}
             color="warning"
           >
@@ -220,7 +215,7 @@ const InstanceDialog = React.memo(({ isOpen, onClose, dispatch }) => {
           </Button>
           <Button
             onClick={() => {
-              dispatch(setFilteredInstances([]));
+              dispatch(setFilteredTags([]));
             }}
             color="success"
           >
@@ -235,14 +230,14 @@ const InstanceDialog = React.memo(({ isOpen, onClose, dispatch }) => {
 const TagFilter = React.memo(() => {
   const [filterOpen, setFilterOpen] = React.useState(false);
 
-  const filteredInstances = useSelector((state) => state.configReducer.filteredInstances);
+  const filteredTags = useSelector((state) => state.configReducer.filteredTags);
 
   return (
     <>
-      <InstanceDialog isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
+      <TagDialog isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
       <IconButton
-        variant={filteredInstances.length > 0 ? "solid" : "soft"}
-        color={filteredInstances.length > 0 ? "info" : "neutral"}
+        variant={filteredTags.length > 0 ? "solid" : "soft"}
+        color={filteredTags.length > 0 ? "info" : "neutral"}
         onClick={() => setFilterOpen(true)}
         sx={{
           px: 1,
@@ -251,7 +246,7 @@ const TagFilter = React.memo(() => {
           // borderRadius: "8px 0 0 8px",
         }}
       >
-        {filteredInstances.length > 0 ? <FilterAltOffIcon /> : <FilterAltIcon />} Tags
+        {filteredTags.length > 0 ? <FilterAltOffIcon /> : <FilterAltIcon />} Tags
       </IconButton>
     </>
   );
