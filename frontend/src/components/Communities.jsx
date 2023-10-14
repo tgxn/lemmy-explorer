@@ -196,6 +196,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
       `updating communities data with ${communties.length} communities, removed: ${
         data.length - communties.length
       }`,
+      communties,
     );
 
     console.timeEnd("sort+filter communities");
