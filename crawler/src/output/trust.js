@@ -560,7 +560,6 @@ export default class OutputTrust {
     // score based on users
     const instance = this.getInstance(baseUrl);
     if (instance) {
-      // console.log("instance", instance);
       score = score * (instance.users / 10);
       scores.users = score * 2 * (instance.users / 10);
     }
