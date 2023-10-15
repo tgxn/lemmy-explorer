@@ -162,7 +162,7 @@ export default class OutputTrust {
 
       // cors
       if (instance.headers["access-control-allow-origin"]?.includes("*")) {
-        tags.push("cors-header");
+        tags.push("cors-allowed");
       }
     }
     return tags;
@@ -533,36 +533,54 @@ export default class OutputTrust {
 
     const scores = {};
 
-    // having a linked instance gives you a point for each link
+    // for each other instance that linked to this one, add points
     if (this.linkedFederation[baseUrl]) {
-      score += this.linkedFederation[baseUrl] / 2;
-      scores.linked = this.linkedFederation[baseUrl] / 2;
+      score += this.linkedFederation[baseUrl] * 1;
+      scores.linked = this.linkedFederation[baseUrl] * 1;
+      console.log(baseUrl, "scores.linked", scores.linked);
     }
 
     // having endorsements will boost you in the search results
     if (this.endorsements[baseUrl]) {
-      score += this.endorsements[baseUrl] * 6;
-      scores.endorsements = this.endorsements[baseUrl] * 6;
+      scores.endorsements = this.endorsements[baseUrl] * 2;
+      score += scores.endorsements;
     }
 
     // each allowed instance gives you points
     if (this.allowedFederation[baseUrl]) {
-      score += this.allowedFederation[baseUrl] * 3;
       scores.allowed = this.allowedFederation[baseUrl] * 3;
+      score += scores.allowed;
     }
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 10;
-      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
+      scores.blocked = parseInt("-" + this.blockedFederation[baseUrl] * 10);
+      score += scores.blocked;
     }
 
-    // score based on users
+    // adjust score based on instance users
     const instance = this.getInstance(baseUrl);
     if (instance) {
-      score = score * (instance.users / 10);
-      scores.users = score * 2 * (instance.users / 10);
+      scores.users = instance.users / 500;
+      score += scores.users;
+
+      // active month
+      // console.log(baseUrl, instance);
+      scores.usersMonth = instance.metrics.usersMonth / 2;
+      score += scores.usersMonth;
     }
+
+    const log = [
+      "lemmy.world",
+      "hexbear.net",
+      "lemmy.ml",
+      "lemmysfw.com",
+      "lemmygrad.ml",
+      "literature.cafe",
+      "enterprise.lemmy.ml",
+    ];
+    if (log.includes(baseUrl))
+      console.log(baseUrl, "scores", scores, "overall", score);
 
     return score;
   }
