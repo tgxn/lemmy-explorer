@@ -533,16 +533,15 @@ export default class OutputTrust {
 
     const scores = {};
 
-    // for each other instance that linked to this one, add points
+    // having a linked instance gives you a point for each link
     if (this.linkedFederation[baseUrl]) {
-      score += this.linkedFederation[baseUrl] * 1;
-      scores.linked = this.linkedFederation[baseUrl] * 1;
-      console.log(baseUrl, "scores.linked", scores.linked);
+      scores.linked = this.linkedFederation[baseUrl] / 2;
+      score += scores.linked;
     }
 
     // having endorsements will boost you in the search results
     if (this.endorsements[baseUrl]) {
-      scores.endorsements = this.endorsements[baseUrl] * 2;
+      scores.endorsements = this.endorsements[baseUrl] * 4;
       score += scores.endorsements;
     }
 
@@ -561,13 +560,10 @@ export default class OutputTrust {
     // adjust score based on instance users
     const instance = this.getInstance(baseUrl);
     if (instance) {
-      scores.users = instance.users / 500;
-      score += scores.users;
-
       // active month
       // console.log(baseUrl, instance);
-      scores.usersMonth = instance.metrics.usersMonth / 2;
-      score += scores.usersMonth;
+      scores.usersMonth = instance.metrics.usersMonth / 1000;
+      score = score * scores.usersMonth;
     }
 
     const log = [
@@ -591,10 +587,9 @@ export default class OutputTrust {
     );
 
     // multiply score based subscribers
-    const activityScore =
-      community.counts.subscribers + community.counts.comments;
+    const activityScore = community.counts.subscribers;
 
-    const activeScore = community.counts.users_active_month * 5;
+    const activeScore = community.counts.users_active_month * 20;
 
     const score = instanceMetrics.score * activityScore * activeScore;
 
