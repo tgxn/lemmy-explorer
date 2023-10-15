@@ -76,7 +76,12 @@ const InstanceList = React.memo(function ({ items }) {
                       textOverflow: "ellipsis",
                     }}
                   >
-                    <ExtInstanceLink instance={rowData} />
+                    <ExtInstanceLink
+                      instance={rowData}
+                      sx={{
+                        color: "var(--joy-palette-primary-50)",
+                      }}
+                    />
                   </Typography>
 
                   <Typography level="body3">

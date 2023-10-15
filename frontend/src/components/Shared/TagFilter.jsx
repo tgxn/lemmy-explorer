@@ -25,6 +25,12 @@ import IconButton from "@mui/joy/IconButton";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
+// import { ToggleButtonGroup } from "@mui/joy";
+// import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
+// import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
+// import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
+// import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
+
 import { setFilteredTags } from "../../reducers/configReducer";
 
 // # tags thinking
@@ -42,38 +48,111 @@ import { setFilteredTags } from "../../reducers/configReducer";
 
 const LISTBOX_PADDING = 6; // px
 
-const CustomSwitch = React.memo((props) => {
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { Tooltip } from "@mui/joy";
+
+const CustomFilterToggle = React.memo((props) => {
   const { tagValue, filteredTags, dispatch, ...other } = props;
 
-  const filtered = filteredTags.indexOf(tagValue) !== -1;
+  const currentFilter = React.useMemo(() => {
+    return filteredTags.find((instance) => instance.tag == tagValue);
+  }, [filteredTags, tagValue]);
 
-  const changeValue = (event) => {
-    console.log("event.target.checked", tagValue, event.target.checked);
+  // const changeValue = (event) => {
+  //   console.log("event.target.checked", tagValue, event.target.checked);
 
-    // attempt to remove it from the existing list
-    const removeIndex = filteredTags.filter((instance) => instance != tagValue);
-    console.log("removeIndex", removeIndex, removeIndex.indexOf(tagValue));
+  //   // attempt to remove it from the existing list
+  //   const removeIndex = filteredTags.filter((instance) => instance != tagValue);
+  //   console.log("removeIndex", removeIndex, removeIndex.indexOf(tagValue));
 
-    if (event.target.checked) {
-      console.log("setFilteredTags", removeIndex);
-      dispatch(setFilteredTags(removeIndex));
-    } else {
-      console.log("setFilteredTags", [...removeIndex, tagValue]);
-      dispatch(setFilteredTags([...removeIndex, tagValue]));
+  //   if (event.target.checked) {
+  //     console.log("setFilteredTags", removeIndex);
+  //     dispatch(setFilteredTags(removeIndex));
+  //   } else {
+  //     console.log("setFilteredTags", [...removeIndex, tagValue]);
+  //     dispatch(setFilteredTags([...removeIndex, tagValue]));
+  //   }
+  // };
+
+  const setValue = (filter) => {
+    console.log("setValue", filter);
+
+    // hide / show - add filter
+    if (filter == "hide" || filter == "show") {
+      // pop existing items
+      const newTags = filteredTags.filter((instance) => instance.tag != tagValue);
+
+      newTags.push({
+        tag: tagValue,
+        action: filter,
+      });
+
+      dispatch(setFilteredTags(newTags));
+    }
+
+    // include - remove filter
+    else if (filter == "include") {
+      // pop existing items
+      const newTags = filteredTags.filter((instance) => instance.tag != tagValue);
+
+      dispatch(setFilteredTags(newTags));
     }
   };
 
   return (
-    <Switch {...other} checked={!filtered} onChange={(event) => changeValue(event)} sx={{ ml: "auto" }} />
+    <ButtonGroup size="sm" aria-label="outlined button group" sx={{ display: "flex", ml: "auto" }}>
+      <Tooltip title="Hide Tag">
+        <Button
+          color="warning"
+          variant="solid"
+          onClick={() => setValue("hide")}
+          disabled={currentFilter && currentFilter.action == "hide"}
+        >
+          <VisibilityOffIcon />
+        </Button>
+      </Tooltip>
+
+      <Tooltip title="Ignore Tag">
+        <Button
+          color="neutral"
+          variant="solid"
+          onClick={() => setValue("include")}
+          disabled={
+            !currentFilter ||
+            (currentFilter && currentFilter.action != "hide" && currentFilter.action != "show")
+          }
+        >
+          <CompareArrowsIcon />
+        </Button>
+      </Tooltip>
+
+      <Tooltip title="Show Tag">
+        <Button
+          color="success"
+          variant="solid"
+          onClick={() => setValue("show")}
+          disabled={currentFilter && currentFilter.action == "show"}
+        >
+          <VisibilityIcon />
+        </Button>
+      </Tooltip>
+    </ButtonGroup>
   );
 });
-const ConnectedSwitch = connect((state) => ({
+const ConnectedFilterToggle = connect((state) => ({
   filteredTags: state.configReducer.filteredTags,
-}))(CustomSwitch);
+}))(CustomFilterToggle);
 
 function renderRow(props) {
   const { data, index, style } = props;
   const dataSet = data[index];
+
+  const filteredTags = useSelector((state) => state.configReducer.filteredTags);
+  const currentFilter = React.useMemo(() => {
+    return filteredTags.find((instance) => instance.tag == dataSet.tag);
+  }, [filteredTags, dataSet]);
 
   const inlineStyle = {
     ...style,
@@ -82,6 +161,16 @@ function renderRow(props) {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   };
+
+  let bgColor = "background.level2";
+
+  if (currentFilter) {
+    if (currentFilter.action == "hide") {
+      bgColor = "#ac2f2f73";
+    } else if (currentFilter.action == "show") {
+      bgColor = "#39ac2f73";
+    }
+  }
 
   return (
     <ListItem
@@ -96,8 +185,8 @@ function renderRow(props) {
       <FormControl
         orientation="horizontal"
         sx={{
-          bgcolor: "background.level2",
-          height: "35px",
+          bgcolor: bgColor,
+          height: "45px",
           p: 1,
           borderRadius: "sm",
           width: "100%",
@@ -113,7 +202,7 @@ function renderRow(props) {
             {dataSet.tag} ({dataSet.count})
           </>
         </FormLabel>
-        <ConnectedSwitch tagValue={dataSet.tag} />
+        <ConnectedFilterToggle tagValue={dataSet.tag} />
       </FormControl>
     </ListItem>
   );
@@ -159,7 +248,7 @@ const TagDialog = React.memo(({ isOpen, onClose }) => {
   }
 
   const dataCount = filteredData.length;
-  const itemSize = 40;
+  const itemSize = 50;
 
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -205,9 +294,8 @@ const TagDialog = React.memo(({ isOpen, onClose }) => {
         >
           <Button
             onClick={() => {
-              const allInstances = dataIns.map((item) => item.tag);
-              console.log("allTags", allInstances);
-              dispatch(setFilteredTags(allInstances));
+              const allTagNames = dataIns.map((item) => ({ tag: item.tag, action: "hide" }));
+              dispatch(setFilteredTags(allTagNames));
             }}
             color="warning"
           >
@@ -216,6 +304,15 @@ const TagDialog = React.memo(({ isOpen, onClose }) => {
           <Button
             onClick={() => {
               dispatch(setFilteredTags([]));
+            }}
+            color="neutral"
+          >
+            Reset All
+          </Button>
+          <Button
+            onClick={() => {
+              const allTagNames = dataIns.map((item) => ({ tag: item.tag, action: "show" }));
+              dispatch(setFilteredTags(allTagNames));
             }}
             color="success"
           >
