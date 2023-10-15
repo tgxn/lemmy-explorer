@@ -143,6 +143,17 @@ export default class OutputTrust {
 
   getInstanceTags(instance) {
     let tags = [];
+
+    const baseUrl = instance.siteData.site.actor_id.split("/")[2];
+    const fediseerData = this.fediseerData.find(
+      (instance) => instance.domain === baseUrl
+    );
+
+    if (fediseerData && fediseerData.tags) {
+      tags = fediseerData.tags.map((tag) => tag.tag);
+    }
+
+    // add cloudflare to tags too
     if (instance.headers) {
       // cloudflare
       if (instance.headers?.server?.includes("cloudflare")) {
@@ -151,11 +162,8 @@ export default class OutputTrust {
 
       // cors
       if (instance.headers["access-control-allow-origin"]?.includes("*")) {
-        tags.push("cors*");
+        tags.push("cors-header");
       }
-
-      // add tags to instance
-      // instance.tags = tags;
     }
     return tags;
   }
@@ -545,16 +553,15 @@ export default class OutputTrust {
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 4;
-      scores.blocked = "-" + this.blockedFederation[baseUrl] * 4;
+      score -= this.blockedFederation[baseUrl] * 10;
+      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
     }
 
     // score based on users
     const instance = this.getInstance(baseUrl);
     if (instance) {
-      // console.log("instance", instance);
-      score = score * instance.users;
-      scores.users = score * instance.users;
+      score = score * (instance.users / 10);
+      scores.users = score * 2 * (instance.users / 10);
     }
 
     return score;
