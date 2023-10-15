@@ -162,7 +162,7 @@ export default class OutputTrust {
 
       // cors
       if (instance.headers["access-control-allow-origin"]?.includes("*")) {
-        tags.push("cors-header");
+        tags.push("cors-allowed");
       }
     }
     return tags;
@@ -535,34 +535,48 @@ export default class OutputTrust {
 
     // having a linked instance gives you a point for each link
     if (this.linkedFederation[baseUrl]) {
-      score += this.linkedFederation[baseUrl] / 2;
       scores.linked = this.linkedFederation[baseUrl] / 2;
+      score += scores.linked;
     }
 
     // having endorsements will boost you in the search results
     if (this.endorsements[baseUrl]) {
-      score += this.endorsements[baseUrl] * 6;
-      scores.endorsements = this.endorsements[baseUrl] * 6;
+      scores.endorsements = this.endorsements[baseUrl] * 4;
+      score += scores.endorsements;
     }
 
     // each allowed instance gives you points
     if (this.allowedFederation[baseUrl]) {
-      score += this.allowedFederation[baseUrl] * 3;
       scores.allowed = this.allowedFederation[baseUrl] * 3;
+      score += scores.allowed;
     }
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 10;
-      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
+      scores.blocked = parseInt("-" + this.blockedFederation[baseUrl] * 10);
+      score += scores.blocked;
     }
 
-    // score based on users
+    // adjust score based on instance users
     const instance = this.getInstance(baseUrl);
     if (instance) {
-      score = score * (instance.users / 10);
-      scores.users = score * 2 * (instance.users / 10);
+      // active month
+      // console.log(baseUrl, instance);
+      scores.usersMonth = instance.metrics.usersMonth / 1000;
+      score = score * scores.usersMonth;
     }
+
+    const log = [
+      "lemmy.world",
+      "hexbear.net",
+      "lemmy.ml",
+      "lemmysfw.com",
+      "lemmygrad.ml",
+      "literature.cafe",
+      "enterprise.lemmy.ml",
+    ];
+    if (log.includes(baseUrl))
+      console.log(baseUrl, "scores", scores, "overall", score);
 
     return score;
   }
@@ -573,10 +587,9 @@ export default class OutputTrust {
     );
 
     // multiply score based subscribers
-    const activityScore =
-      community.counts.subscribers + community.counts.comments;
+    const activityScore = community.counts.subscribers;
 
-    const activeScore = community.counts.users_active_month * 5;
+    const activeScore = community.counts.users_active_month * 20;
 
     const score = instanceMetrics.score * activityScore * activeScore;
 
