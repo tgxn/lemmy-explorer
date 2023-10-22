@@ -27,7 +27,7 @@ export default class CrawlFediseer {
     const perPage = 100;
 
     const fediseerWhitelist = await this.axios.get(
-      `/whitelist?endorsements=1&guarantors=0&page=${page}&limit=${perPage}`
+      `/whitelist?endorsements=0&guarantors=0&page=${page}&limit=${perPage}&software_csv=lemmy`
     );
     //   //  {
     //   //   query: `query{
