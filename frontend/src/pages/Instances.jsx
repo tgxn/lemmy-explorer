@@ -31,7 +31,9 @@ import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
 
-function Instances({ filterSuspicious }) {
+import TagFilter from "../components/Shared/TagFilter";
+
+function Instances({ filterSuspicious, filteredTags }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -76,6 +78,46 @@ function Instances({ filterSuspicious }) {
     if (error) return [];
 
     let instances = data;
+
+    // filter out excluded filteredTags
+    if (filteredTags.length > 0) {
+      console.log(`Filtering instances by ${filteredTags}`);
+      // array of instances that have the filteredTags
+
+      // communties = communties.filter((community) => !filteredInstances.includes(community.baseurl));
+      instances = instances.filter((instance) => {
+        // check if any of the tags in the tags array match any of the excluded tags
+
+        /**
+         * filteredTags has {tag: "foo", action: "hide"} / {tag: "foo", action: "show"}
+         * hide - remove instances that have this tag
+         * show - remove instances that don't have this tag
+         */
+
+        for (let i = 0; i < filteredTags.length; i++) {
+          const tag = filteredTags[i].tag;
+          const action = filteredTags[i].action;
+
+          // return true to include it
+          if (action == "show" && instance.tags.includes(tag)) {
+            return true;
+          } else if (action == "hide" && instance.tags.includes(tag)) {
+            return false;
+          }
+
+          // return false to exclude it
+          if (action == "show" && !instance.tags.includes(tag)) {
+            return false;
+          } else if (action == "hide" && !instance.tags.includes(tag)) {
+            return true;
+          }
+        }
+        return true;
+      });
+    }
+
+    // Variable
+
     if (showOpenOnly) {
       instances = instances.filter((instance) => instance.open);
     }
@@ -186,7 +228,7 @@ function Instances({ filterSuspicious }) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...instances];
-  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious]);
+  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious, filteredTags]);
 
   return (
     <Container
@@ -254,6 +296,8 @@ function Instances({ filterSuspicious }) {
           languageCodes={filterLangCodes}
           setLanguageCodes={(codes) => setFilterLangCodes(codes)}
         />
+
+        <TagFilter />
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
@@ -340,5 +384,6 @@ function Instances({ filterSuspicious }) {
 
 const mapStateToProps = (state) => ({
   filterSuspicious: state.configReducer.filterSuspicious,
+  filteredTags: state.configReducer.filteredTags,
 });
 export default connect(mapStateToProps)(Instances);

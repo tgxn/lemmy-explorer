@@ -67,9 +67,15 @@ const CommunityList = React.memo(function ({ items }) {
                       overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
+                      color: "var(--joy-palette-primary-50)",
                     }}
                   >
-                    <ExtCommunityLink community={rowData} />
+                    <ExtCommunityLink
+                      community={rowData}
+                      sx={{
+                        color: "var(--joy-palette-primary-50)",
+                      }}
+                    />
                     {/* <Tooltip
                       title={"Visit: " + rowData.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
                       variant="soft"

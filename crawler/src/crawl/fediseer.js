@@ -27,8 +27,25 @@ export default class CrawlFediseer {
     const perPage = 100;
 
     const fediseerWhitelist = await this.axios.get(
-      `/whitelist?endorsements=1&guarantors=1&page=${page}&limit=${perPage}`
+      `/whitelist?endorsements=0&guarantors=0&page=${page}&limit=${perPage}&software_csv=lemmy`
     );
+    //   //  {
+    //   //   query: `query{
+    //   //         nodes (softwarename: "lemmy") {
+    //   //         domain
+    //   //         latency
+    //   //         countryname
+    //   //         uptime_alltime
+    //   //         date_created
+    //   //         date_updated
+    //   //         date_laststats
+    //   //         score
+    //   //         status
+    //   //         }
+    //   //     }`,
+    //   // }
+    // );
+
     mergedInstances = [...fediseerWhitelist.data.instances];
 
     console.log(
@@ -59,31 +76,30 @@ export default class CrawlFediseer {
      *   how many instances this one has endorsed
      */
 
+    const fediseerTopTagsData = await this.axios.get(`/tags`);
+    console.log(`fediseer top tags total: ${fediseerTopTagsData.data.length}`);
+
     const fediseerWhitelist = await this.getAllPagesData();
-
-    // run this in a function per page
-
-    //   //  {
-    //   //   query: `query{
-    //   //         nodes (softwarename: "lemmy") {
-    //   //         domain
-    //   //         latency
-    //   //         countryname
-    //   //         uptime_alltime
-    //   //         date_created
-    //   //         date_updated
-    //   //         date_laststats
-    //   //         score
-    //   //         status
-    //   //         }
-    //   //     }`,
-    //   // }
-    // );
 
     // logging.info(
     //   `https://fediseer.com/api/v1/whitelist?endorsements=0&guarantors=1`
     // );
     logging.info(`fediseer whitelist total: ${fediseerWhitelist.length}`);
+
+    // map "rank" into tags, based on data from fediseerTopTagsData [{ tag, count }]
+    fediseerWhitelist.forEach((instance) => {
+      instance.tags = instance.tags.map((tag) => {
+        const fediseerTag = fediseerTopTagsData.data.find(
+          (fediseerTag) => fediseerTag.tag == tag
+        );
+
+        if (!fediseerTag)
+          console.log("fediseerTag not found in top tags", tag, fediseerTag);
+
+        return { tag: tag, rank: fediseerTag ? fediseerTag.count : 0 };
+      });
+    });
+    // console.log("fediseerWhitelist", fediseerWhitelist);
 
     // const instances = [...fediseerWhitelist];
 
