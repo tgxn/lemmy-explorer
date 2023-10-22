@@ -23,6 +23,14 @@ export function setFilteredInstances(filteredInstances) {
   };
 }
 
+export function setFilteredTags(filteredTags) {
+  console.log("setFilteredTags", filteredTags);
+  return {
+    type: "setFilteredTags",
+    payload: { filteredTags },
+  };
+}
+
 export function setFilterSuspicious(filterSuspicious) {
   return {
     type: "setFilterSuspicious",
@@ -34,6 +42,7 @@ const initialState = {
   homeBaseUrl: storage.get("instance"),
   instanceType: storage.get("type", "lemmy"),
   filteredInstances: storage.get("filteredInstances", []),
+  filteredTags: storage.get("filteredTags", []),
   filterSuspicious: storage.get("config.filterSuspicious", true),
 };
 
@@ -66,6 +75,13 @@ const configReducer = (state = initialState, action = {}) => {
       return {
         ...state,
         filteredInstances: action.payload.filteredInstances,
+      };
+
+    case "setFilteredTags":
+      storage.set("filteredTags", action.payload.filteredTags);
+      return {
+        ...state,
+        filteredTags: action.payload.filteredTags,
       };
 
     case "setFilterSuspicious":

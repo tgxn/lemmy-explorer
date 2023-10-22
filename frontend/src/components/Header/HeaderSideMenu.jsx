@@ -23,7 +23,7 @@ import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import HistoryIcon from "@mui/icons-material/History";
-import PestControlIcon from "@mui/icons-material/PestControl";
+import InfoIcon from "@mui/icons-material/Info";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import Face5Icon from "@mui/icons-material/Face5";
 import DataObjectIcon from "@mui/icons-material/DataObject";
@@ -246,9 +246,9 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
           {...(location.pathname === "/about" && { selected: true, variant: "soft" })}
         >
           <ListItemDecorator>
-            <PestControlIcon />
+            <InfoIcon />
           </ListItemDecorator>
-          Crawler Info
+          About / Info
         </MenuItem>
 
         <MenuItem href="https://data.lemmyverse.net" target="_lv_data" component="a">
