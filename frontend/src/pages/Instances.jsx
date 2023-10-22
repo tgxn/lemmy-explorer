@@ -90,29 +90,27 @@ function Instances({ filterSuspicious, filteredTags }) {
 
         /**
          * filteredTags has {tag: "foo", action: "hide"} / {tag: "foo", action: "show"}
-         * hide - remove instances that have this tag
-         * show - remove instances that don't have this tag
+         * show - remove instances that don't have this tag - it should filter ALL instances that don't have this tag
+         * hide - remove instances that have this tag - it should filter ALL instances that have this tag, overriding any other explicity shown tags
          */
 
-        for (let i = 0; i < filteredTags.length; i++) {
-          const tag = filteredTags[i].tag;
-          const action = filteredTags[i].action;
+        let decision = true;
 
-          // return true to include it
-          if (action == "show" && instance.tags.includes(tag)) {
-            return true;
-          } else if (action == "hide" && instance.tags.includes(tag)) {
-            return false;
+        filteredTags.forEach((tag) => {
+          if (tag.action == "show") {
+            // if the instance doesn't have the tag, remove it from the list
+            if (!instance.tags.includes(tag.tag)) {
+              decision = false;
+            }
+          } else if (tag.action == "hide") {
+            // if the instance has the tag, remove it from the list
+            if (instance.tags.includes(tag.tag)) {
+              decision = false;
+            }
           }
+        });
 
-          // return false to exclude it
-          if (action == "show" && !instance.tags.includes(tag)) {
-            return false;
-          } else if (action == "hide" && !instance.tags.includes(tag)) {
-            return true;
-          }
-        }
-        return true;
+        return decision;
       });
     }
 
