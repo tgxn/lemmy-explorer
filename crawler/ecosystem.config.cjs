@@ -1,6 +1,6 @@
 const defaultOptions = {
   log_type: "raw",
-  output: "/logs/out.log",
+  output: "./logs/out.log",
   script: "index.js",
   exec_mode: "fork",
 };
