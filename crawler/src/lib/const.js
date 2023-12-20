@@ -362,6 +362,7 @@ export const FEDDIT_URLS = [
   "yiffit.net",
   "zemmy.cc",
   "zoo.splitlinux.org",
+  "lemmy.co.in"
 ];
 
 export const START_URLS = [
