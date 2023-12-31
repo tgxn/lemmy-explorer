@@ -156,6 +156,7 @@ export default function InstanceOverview({ metricsData }) {
                   linkUrl={`https://gui.fediseer.com/instances/detail/${instance.baseurl}`}
                   linkName="Fediseer"
                   variant="solid"
+                  target="_fediseer"
                   sx={{
                     mr: 1,
                   }}
