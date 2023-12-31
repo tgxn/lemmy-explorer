@@ -7,11 +7,11 @@ This project provides a simple way to explore Lemmy Instances and Communities.
 
 ![List of Communities](./docs/images/communities.png)
 
-The project consists of three modules:
-1. Crawler (NodeJS, Redis)
-2. Frontend (ReactJS, MUI Joy, TanStack)
-3. Deploy (Amazon CDK v2)
-4. Data Site (GitHub Pages)
+The project consists of four modules:
+1. Crawler (NodeJS, Redis) `/crawler`
+2. Frontend (ReactJS, MUI Joy, TanStack) `/frontend`
+3. Deploy (Amazon CDK v2) `/cdk`
+4. Data Site (GitHub Pages) `/pages`
 
 ## FAQ
 
@@ -26,6 +26,8 @@ You can append `home_url` and (optionally) `home_type` to the URL to set the hom
 
 ### Q: **How does discovery work?**
 It uses a [seed list of communities](https://github.com/tgxn/lemmy-explorer/blob/main/crawler/src/lib/const.js#L47) and scans the equivalent of the `/instances` federation lists, and then creates jobs to scan each of those servers.
+
+Additionally, instance tags and trust data is fetched from [Fediseer](https://gui.fediseer.com/).
 
 ### Q: **How does the NSFW filter work?**
 The NSFW filter is a client-side filter that filters out NSFW communities and instances from results by default.

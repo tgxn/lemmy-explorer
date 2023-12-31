@@ -99,7 +99,7 @@ export function ExtInstanceLink({ instance, ...props }) {
   return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
 }
 
-export function ExtLink({ linkName, linkUrl, ...props }) {
+export function ExtLink({ linkName, linkUrl, target="_blank", ...props }) {
   return (
     <Link
       level="body1"
@@ -107,7 +107,7 @@ export function ExtLink({ linkName, linkUrl, ...props }) {
       alt={linkName}
       color="neutral"
       href={linkUrl}
-      target="_blank"
+      target={target}
       // sx={{
       //   fontWeight: "bold",
       //   fontSize: "16px",

@@ -153,9 +153,10 @@ export default function InstanceOverview({ metricsData }) {
             title={
               <>
                 <ExtLink
-                  linkUrl="https://fediseer.com/"
+                  linkUrl={`https://gui.fediseer.com/instances/detail/${instance.baseurl}`}
                   linkName="Fediseer"
                   variant="solid"
+                  target="_fediseer"
                   sx={{
                     mr: 1,
                   }}

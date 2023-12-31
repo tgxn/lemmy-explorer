@@ -497,7 +497,7 @@ export default class CrawlOutput {
         // ignore instances that have no data
         const susReason = instanceTrustData.reasons;
 
-        console.log("instanceTrustData.tags", instanceTrustData.tags);
+        // console.log("instanceTrustData.tags", instanceTrustData.tags);
         return {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
