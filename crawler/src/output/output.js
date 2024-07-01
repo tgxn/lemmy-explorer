@@ -192,6 +192,11 @@ class OutputUtils {
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
 
+      // TEMP skip if there are more items in the new payload
+      if (item.new > item.old){
+        return;
+      }
+
       const isValid = checkChangeIsValid(item.new, item.old);
 
       if (!isValid) {

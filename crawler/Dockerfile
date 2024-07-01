@@ -16,8 +16,8 @@ COPY ecosystem.config.cjs .
 COPY src src/
 
 # Install Dependencies
-RUN npm install pm2 -g
-RUN npm ci --only=production
+RUN yarn global add pm2
+RUN yarn install
 
 # Run App
 CMD [ "pm2-runtime", "--raw", "start", "ecosystem.config.cjs" ]
