@@ -29,13 +29,13 @@ module.exports = {
       ...defaultOptions,
       name: "crawl-one-community",
       args: ["-w", "single"],
-      instances: 2,
+      instances: 4,
     },
     {
       ...defaultOptions,
       name: "crawl-kbin",
       args: ["-w", "kbin"],
-      instances: 2,
+      instances: 4,
     },
   ],
 };
