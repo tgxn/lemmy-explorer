@@ -17,13 +17,13 @@ module.exports = {
       ...defaultOptions,
       name: "crawl-instance",
       args: ["-w", "instance"],
-      instances: 6,
+      instances: 10,
     },
     {
       ...defaultOptions,
       name: "crawl-community",
       args: ["-w", "community"],
-      instances: 4,
+      instances: 8,
     },
     {
       ...defaultOptions,
