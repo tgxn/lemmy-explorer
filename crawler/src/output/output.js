@@ -140,7 +140,7 @@ class OutputUtils {
     }
 
     // check values are < 10% different
-    const checkChangeIsValid = (value, previousValue, pct = 10) => {
+    const checkChangeIsValid = (value, previousValue, pct = 15) => {
       if (!value || !previousValue) {
         return false;
       }
