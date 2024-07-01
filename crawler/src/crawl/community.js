@@ -8,6 +8,12 @@ import AxiosClient from "../lib/axios.js";
 
 const TIME_BETWEEN_PAGES = 2000;
 
+const RETRY_COUNT = 2;
+const RETRY_PAGE_COUNT = 2;
+const TIME_BETWEEN_RETRIES = 1000;
+
+const PAGE_TIMEOUT = 5000;
+
 /**
  * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
  * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
@@ -173,9 +179,9 @@ export default class CommunityCrawler {
         return;
       }
 
-      // re-try 3 times
-      if (attempt < 3) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      // re-try overall
+      if (attempt < RETRY_COUNT) {
+        await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_RETRIES));
         return await this.getSingleCommunityData(communityName, attempt + 1);
       }
 
@@ -244,7 +250,9 @@ export default class CommunityCrawler {
             page: pageNumber,
             show_nsfw: true, // Added in 0.18.x? ish...
           },
-        }
+          timeout: PAGE_TIMEOUT,
+        },
+        RETRY_PAGE_COUNT // retry count per-page
       );
     } catch (e) {
       throw new CrawlError("Failed to get community page");

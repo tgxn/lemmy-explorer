@@ -9,6 +9,9 @@ import {
   CRAWLER_ATTRIB_URL,
 } from "../lib/const.js";
 
+// backoff after failed request
+const RETRY_BACKOFF_SECONDS = 2;
+
 export default class AxiosClient {
   constructor() {
     this.axios = axios.create({
@@ -45,11 +48,11 @@ export default class AxiosClient {
         logging.debug(
           `retrying url ${url} attempt ${current + 1}, waiting ${
             current + 1
-          }*2 seconds`
+          }*${RETRY_BACKOFF_SECONDS} seconds`
         );
 
         await new Promise((resolve) =>
-          setTimeout(resolve, (current + 1) * 2000)
+          setTimeout(resolve, (current + 1) * RETRY_BACKOFF_SECONDS)
         );
 
         return await this.getUrlWithRetry(
