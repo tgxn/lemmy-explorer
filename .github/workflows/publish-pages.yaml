@@ -156,7 +156,7 @@ jobs:
       - name: Stop Redis
         working-directory: ./crawler
         if: always()
-        run: docker-compose -f "docker-compose.github.yaml" down
+        run: docker compose -f "docker-compose.github.yaml" down
 
   # download the json files from the generate_jsons job
   # install npm dependencies
