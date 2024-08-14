@@ -68,11 +68,11 @@ jobs:
       # start redis & check if it is running
       - name: Start Redis
         working-directory: ./crawler
-        run: docker-compose -f "docker-compose.github.yaml" up -d redis
+        run: docker compose -f "docker-compose.github.yaml" up -d redis
       - working-directory: ./crawler
         run: docker ps -a
       - working-directory: ./crawler
-        run: docker-compose -f "docker-compose.github.yaml" logs redis
+        run: docker compose -f "docker-compose.github.yaml" logs redis
 
 
       # install npm dependencies
