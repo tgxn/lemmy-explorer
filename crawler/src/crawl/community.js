@@ -181,7 +181,9 @@ export default class CommunityCrawler {
 
       // re-try overall
       if (attempt < RETRY_COUNT) {
-        await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_RETRIES));
+        await new Promise((resolve) =>
+          setTimeout(resolve, TIME_BETWEEN_RETRIES)
+        );
         return await this.getSingleCommunityData(communityName, attempt + 1);
       }
 
