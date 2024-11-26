@@ -107,7 +107,7 @@ If you want to configure auto-upload to s3 or anything, you need to copy the `.e
 
 Redis is used to store crawled data.
 
-You can use `docker-compose up -d` to start a local redis server.
+You can use `docker compose up -d` to start a local redis server.
 Data is persisted to a `.data/redis` directory.
 
 | Redis Key | Description |
