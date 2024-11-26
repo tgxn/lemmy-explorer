@@ -193,7 +193,7 @@ class OutputUtils {
       const item = data[i];
 
       // TEMP skip if there are more items in the new payload
-      if (item.new > item.old){
+      if (item.new > item.old) {
         return;
       }
 
