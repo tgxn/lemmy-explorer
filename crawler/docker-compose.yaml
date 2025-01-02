@@ -22,7 +22,7 @@ services:
     networks:
       - crawler
     volumes:
-      - ./.data/logs:/logs:rw
+      - ./.data/logs:/usr/src/app/.data/logs:rw
       - ./.data/redis:/redis:ro
     environment:
       REDIS_URL: redis://redis:6379

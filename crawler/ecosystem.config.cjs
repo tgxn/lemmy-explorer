@@ -1,7 +1,6 @@
 const defaultOptions = {
   log_type: "raw",
   output: "./.data/logs/out.log",
-  error: "./.data/logs/error.log",
   script: "index.ts",
   exec_mode: "fork",
   interpreter: "tsx",
