@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # run when crawler changes
-    if: ${{ contains(github.event.head_commit.modified, 'crawler/') }}
+    # if: ${{ contains(github.event.head_commit.modified, 'crawler/') }}
 
     steps:
       - uses: actions/checkout@v3
