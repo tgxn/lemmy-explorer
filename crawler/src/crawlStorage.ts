@@ -1,21 +1,25 @@
-import logging from "./lib/logging";
-
 import { createClient, RedisClientType } from "redis";
+
+import logging from "./lib/logging";
 
 import { REDIS_URL } from "./lib/const";
 
+// core
 import InstanceStore from "./storage/instance";
 import CommunityStore from "./storage/community";
-
-import FediverseStore from "./storage/fediverse";
 import KBinStore from "./storage/kbin";
-import UptimeStore from "./storage/uptime";
 
-import TrackingStore from "./storage/tracking";
+// supporting
+import FediverseStore from "./storage/fediverse";
+import UptimeStore from "./storage/uptime";
 import FediseerStore from "./storage/fediseer";
 
-class Storage {
-  private client: RedisClientType;
+// tracking
+import TrackingStore from "./storage/tracking";
+
+class CrawlStorage {
+  // it's public so that utils cleanup can use it to expire stuff
+  public client: RedisClientType;
 
   private attributeMaxAge: number;
 
@@ -138,5 +142,5 @@ class Storage {
   }
 }
 
-const storage = new Storage();
-export default storage;
+const crawlStorage: CrawlStorage = new CrawlStorage();
+export default crawlStorage;

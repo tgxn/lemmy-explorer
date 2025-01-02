@@ -7,7 +7,7 @@ import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 import OutputFileWriter from "./file_writer";
 import OutputTrust from "./trust";
@@ -240,13 +240,15 @@ export default class CrawlOutput {
 
   // load all required data from redis
   async loadAllData() {
-    this.uptimeData = await storage.uptime.getLatest();
-    this.instanceErrors = await storage.tracking.getAllErrors("instance");
-    this.communityErrors = await storage.tracking.getAllErrors("community");
-    this.instanceList = await storage.instance.getAll();
-    this.communityList = await storage.community.getAll();
-    this.fediverseData = await storage.fediverse.getAll();
-    this.kbinData = await storage.kbin.getAll();
+    this.uptimeData = await crawlStorage.uptime.getLatest();
+    this.instanceErrors = await crawlStorage.tracking.getAllErrors("instance");
+    this.communityErrors = await crawlStorage.tracking.getAllErrors(
+      "community"
+    );
+    this.instanceList = await crawlStorage.instance.getAll();
+    this.communityList = await crawlStorage.community.getAll();
+    this.fediverseData = await crawlStorage.fediverse.getAll();
+    this.kbinData = await crawlStorage.kbin.getAll();
   }
 
   /**
@@ -430,19 +432,19 @@ export default class CrawlOutput {
 
   async generateInstanceMetrics(instance, storeCommunityData) {
     // get timeseries
-    const usersSeries = await storage.instance.getAttributeWithScores(
+    const usersSeries = await crawlStorage.instance.getAttributeWithScores(
       instance.baseurl,
       "users"
     );
-    const postsSeries = await storage.instance.getAttributeWithScores(
+    const postsSeries = await crawlStorage.instance.getAttributeWithScores(
       instance.baseurl,
       "posts"
     );
-    const commentsSeries = await storage.instance.getAttributeWithScores(
+    const commentsSeries = await crawlStorage.instance.getAttributeWithScores(
       instance.baseurl,
       "comments"
     );
-    const versionSeries = await storage.instance.getAttributeWithScores(
+    const versionSeries = await crawlStorage.instance.getAttributeWithScores(
       instance.baseurl,
       "version"
     );

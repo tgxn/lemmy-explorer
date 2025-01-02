@@ -1,4 +1,4 @@
-import Storage from "../storage";
+import Storage from "../crawlStorage";
 
 export default class Uptime {
   private storage: Storage;

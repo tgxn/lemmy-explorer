@@ -1,4 +1,4 @@
-import Storage from "../storage";
+import Storage from "../crawlStorage";
 
 /**
  * Stores each lemmy instance, keyed on baseUrl as `instance:baseUrl`.

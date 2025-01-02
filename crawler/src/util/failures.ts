@@ -13,7 +13,7 @@
  *
  */
 
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 import { getActorBaseUrl } from "../lib/validator";
@@ -32,7 +32,7 @@ export default class FailureCrawl {
 
   // add ttl to failures and last_crawl that dont have one already
   async addTTLToFailures() {
-    const allErrors = await storage.tracking.getAllErrors("*");
+    const allErrors = await crawlStorage.tracking.getAllErrors("*");
 
     let keep = 0;
     let remove = 0;
@@ -47,10 +47,10 @@ export default class FailureCrawl {
       // console.log(key, ttlFromNowSeconds, value.time);
 
       if (ttlFromNowSeconds < 0) {
-        await storage.client.expire(key, 1);
+        await crawlStorage.client.expire(key, 1);
         remove++;
       } else {
-        await storage.client.expire(key, ttlFromNowSeconds);
+        await crawlStorage.client.expire(key, ttlFromNowSeconds);
         keep++;
       }
     }
@@ -59,7 +59,7 @@ export default class FailureCrawl {
 
   // add ttl to failures and last_crawl that dont have one already
   async addTTLToLastCrawl() {
-    const allLastCrawl = await storage.tracking.listAllLastCrawl();
+    const allLastCrawl = await crawlStorage.tracking.listAllLastCrawl();
 
     let keep = 0;
     let remove = 0;
@@ -73,10 +73,10 @@ export default class FailureCrawl {
       );
 
       if (ttlFromNowSeconds < 0) {
-        await storage.client.expire(key, 1);
+        await crawlStorage.client.expire(key, 1);
         remove++;
       } else {
-        await storage.client.expire(key, ttlFromNowSeconds);
+        await crawlStorage.client.expire(key, ttlFromNowSeconds);
         keep++;
       }
     }
@@ -102,7 +102,7 @@ export default class FailureCrawl {
   // clean out any instances from the db that have non-matching baseurl and key, or if the actorid is invalid
   async cleanInstancesWithInvalidBaseUrl() {
     console.log("cleanInstancesWithInvalidBaseUrl");
-    const keys = await storage.instance.getAllWithKeys();
+    const keys = await crawlStorage.instance.getAllWithKeys();
 
     for (const [key, value] of Object.entries(keys)) {
       const keyBaseUrl = key.replace("instance:", "");
@@ -112,7 +112,7 @@ export default class FailureCrawl {
         value?.siteData?.site.actor_id
       );
       if (!isValid) {
-        await storage.instance.delete(keyBaseUrl);
+        await crawlStorage.instance.delete(keyBaseUrl);
       }
     }
   }
@@ -137,7 +137,7 @@ export default class FailureCrawl {
 
   async cleanCommunitiesWithInvalidBaseUrl() {
     console.log("cleanCommunitiesWithInvalidBaseUrl");
-    const keys = await storage.community.getAllWithKeys();
+    const keys = await crawlStorage.community.getAllWithKeys();
 
     for (const [key, value] of Object.entries(keys)) {
       const keyBaseUrl = key.split(":")[1];
@@ -145,22 +145,22 @@ export default class FailureCrawl {
 
       const isValid = this.isCommunityValid(keyBaseUrl, keyCommmunity, value);
       if (!isValid) {
-        await storage.community.delete(keyBaseUrl, keyCommmunity);
+        await crawlStorage.community.delete(keyBaseUrl, keyCommmunity);
         continue;
       }
 
       // check an instance exists for it=
-      const instance = await storage.instance.getOne(keyBaseUrl);
+      const instance = await crawlStorage.instance.getOne(keyBaseUrl);
       if (!instance) {
         console.error("instance not found", keyBaseUrl, keyCommmunity);
-        await storage.community.delete(keyBaseUrl, keyCommmunity);
+        await crawlStorage.community.delete(keyBaseUrl, keyCommmunity);
         continue;
       }
     }
   }
 
   async cleanInvalidInstances() {
-    const keys = await storage.instance.getAll();
+    const keys = await crawlStorage.instance.getAll();
 
     //   console.log(keys);
 

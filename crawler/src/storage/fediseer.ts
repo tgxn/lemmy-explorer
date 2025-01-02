@@ -1,4 +1,4 @@
-import Storage from "../storage";
+import Storage from "../crawlStorage";
 
 export default class Fediseer {
   private storage: Storage;

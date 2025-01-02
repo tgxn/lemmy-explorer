@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 import { CrawlTooRecentError } from "../lib/error";
 
@@ -10,8 +10,6 @@ import CommunityCrawler from "../crawl/community";
 export default class SingleCommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "one_community") {
     const processor: IJobProcessor = async ({ baseUrl, community }) => {
-      // await storage.connect();
-
       let communityData: any = null;
 
       if (!baseUrl || !community) {
@@ -40,7 +38,7 @@ export default class SingleCommunityQueue extends BaseQueue {
           };
 
           // if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.tracking.upsertError(
+          await crawlStorage.tracking.upsertError(
             "one_community",
             baseUrl,
             errorDetail
@@ -49,9 +47,6 @@ export default class SingleCommunityQueue extends BaseQueue {
           logging.error(`[OneCommunity] [${baseUrl}] Error: ${error.message}`);
         }
       }
-
-      // close redis connection on end of job
-      // await storage.close();
 
       return communityData;
     };

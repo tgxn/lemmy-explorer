@@ -1,10 +1,10 @@
-import path from "path";
-import util from "util";
+import path from "node:path";
+import util from "node:util";
 import { exec } from "node:child_process";
 
 import logging from "../lib/logging";
 
-import storage from "../storage";
+import storage from "../crawlStorage";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
 

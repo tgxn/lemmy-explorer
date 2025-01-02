@@ -1,7 +1,7 @@
 import BeeQueue from "bee-queue";
 
 import logging from "../lib/logging";
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 import { CrawlTooRecentError } from "../lib/error";
 import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";
@@ -66,7 +66,7 @@ export default class BaseQueue {
 
   process() {
     this.queue.process(async (job) => {
-      await storage.connect();
+      await crawlStorage.connect();
 
       let resultData = null;
       try {
@@ -91,7 +91,7 @@ export default class BaseQueue {
           };
 
           // if (error instanceof CrawlError || error instanceof AxiosError) {
-          await storage.tracking.upsertError(
+          await crawlStorage.tracking.upsertError(
             this.queueName,
             job.data.baseUrl,
             errorDetail
@@ -105,7 +105,7 @@ export default class BaseQueue {
       }
 
       // close redis connection on end of job
-      await storage.close();
+      await crawlStorage.close();
       return resultData;
     });
   }

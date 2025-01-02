@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import storage from "../storage";
+import storage from "../crawlStorage";
 
 import { CRAWL_AGED_TIME } from "../lib/const";
 import { CrawlError, CrawlTooRecentError } from "../lib/error";

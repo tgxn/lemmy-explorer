@@ -4,7 +4,7 @@
  */
 import logging from "../lib/logging";
 
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 import CrawlClient from "../lib/CrawlClient";
 
@@ -36,7 +36,7 @@ export default class CrawlUptime {
     );
     logging.info(instances.data);
 
-    await storage.uptime.addNew({
+    await crawlStorage.uptime.addNew({
       timestamp: Date.now(),
       nodes: instances.data.data.nodes,
     });

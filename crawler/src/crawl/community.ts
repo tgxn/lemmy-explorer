@@ -2,7 +2,7 @@ import logging from "../lib/logging";
 
 import { CrawlError } from "../lib/error";
 
-import storage from "../storage";
+import storage from "../crawlStorage";
 
 import CrawlClient from "../lib/CrawlClient";
 

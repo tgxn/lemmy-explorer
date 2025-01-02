@@ -15,7 +15,7 @@ import CrawlKBin from "../crawl/kbin";
 import CrawlAged from "../util/aged";
 import Failures from "../util/failures";
 
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 import { START_URLS } from "../lib/const";
 
@@ -39,7 +39,7 @@ export default async function runTask(taskName: ITaskName) {
     throw new Error("taskName is null");
   }
 
-  await storage.connect();
+  await crawlStorage.connect();
 
   switch (taskName) {
     // generate output .json files from data stored in redis
@@ -89,7 +89,7 @@ export default async function runTask(taskName: ITaskName) {
 
     // get redis bb queue health from redis
     case "health":
-      const healthData = [];
+      const healthData: any[] = [];
 
       const instanceCrawl = new InstanceQueue(false);
       const counts = await instanceCrawl.queue.checkHealth();
@@ -157,6 +157,7 @@ export default async function runTask(taskName: ITaskName) {
   }
 
   logging.silly("Task Complete:", taskName);
-  await storage.close();
+  await crawlStorage.close();
+
   return process.exit(0);
 }
