@@ -202,6 +202,8 @@ export default class CommunityCrawler {
       logging.info(
         `${this.logPrefix} Ended Success (${resultPromises.length} results)`
       );
+
+      return resultPromises;
     } catch (e) {
       logging.error(`${this.logPrefix} Ended: Error`, e);
       throw new CrawlError("Ended: Error", e);
