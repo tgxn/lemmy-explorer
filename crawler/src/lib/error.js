@@ -10,18 +10,6 @@ export class CrawlError extends Error {
   }
 }
 
-// // should log and not re-try worker
-// // for when we crawled too recently, not a lemmy instance
-// export class CrawlWarning extends Error {
-//   constructor(message, data = false) {
-//     super(message);
-//     this.name = "CrawlWarning";
-
-//     // spread data into this
-//     if (data) Object.assign(this, data);
-//   }
-// }
-
 export class CrawlTooRecentError extends Error {
   constructor(message, data = false) {
     super(message);
