@@ -49,7 +49,7 @@ export default class Community {
     return this.storage.getRedis(`community:${baseUrl}:${communityName}`);
   }
 
-  async upsert(baseUrl: string, community) {
+  async upsert(baseUrl: string, community: CommunityData) {
     const storeData = {
       ...community,
       lastCrawled: Date.now(),

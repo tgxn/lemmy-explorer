@@ -1,6 +1,8 @@
 import cron from "node-cron";
 
+import { AUTO_UPLOAD_S3, CRON_SCHEDULES } from "../lib/const";
 import logging from "../lib/logging";
+import crawlStorage from "../lib/crawlStorage";
 
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
@@ -13,10 +15,6 @@ import CrawlUptime from "../crawl/uptime";
 import CrawlKBin from "../crawl/kbin";
 
 import { syncCheckpoint } from "../output/sync_s3";
-
-import { AUTO_UPLOAD_S3, CRON_SCHEDULES } from "../lib/const";
-
-import crawlStorage from "../crawlStorage";
 
 /**
  * Queue worker and CRON tasks are started here.

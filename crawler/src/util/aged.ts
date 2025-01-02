@@ -5,7 +5,7 @@ import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import KBinQueue from "../queue/kbin";
 
-import crawlStorage from "../crawlStorage";
+import crawlStorage from "../lib/crawlStorage";
 
 import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const";
 
@@ -92,55 +92,37 @@ export default class CrawlAged {
       };
     }
 
-    const instanceAgeDistribution = getAgeDistribution(
-      instances,
-      "lastCrawled"
-    );
+    const instanceAgeDistribution = getAgeDistribution(instances, "lastCrawled");
     healthData.push({
       table: "Instances",
       ...instanceAgeDistribution.buckets,
     });
 
-    const communityAgeDistribution = getAgeDistribution(
-      communities,
-      "lastCrawled"
-    );
+    const communityAgeDistribution = getAgeDistribution(communities, "lastCrawled");
     healthData.push({
       table: "Communities",
       ...communityAgeDistribution.buckets,
     });
 
-    const magazineAgeDistribution = getAgeDistribution(
-      magazines,
-      "lastCrawled"
-    );
+    const magazineAgeDistribution = getAgeDistribution(magazines, "lastCrawled");
     healthData.push({
       table: "Magazines",
       ...magazineAgeDistribution.buckets,
     });
 
-    const fediverseAgeDistribution = getAgeDistribution(
-      Object.values(fediverse),
-      "time"
-    );
+    const fediverseAgeDistribution = getAgeDistribution(Object.values(fediverse), "time");
     healthData.push({
       table: "Fediverse",
       ...fediverseAgeDistribution.buckets,
     });
 
-    const lastCrawlAgeDistribution = getAgeDistribution(
-      Object.values(lastCrawls),
-      "time"
-    );
+    const lastCrawlAgeDistribution = getAgeDistribution(Object.values(lastCrawls), "time");
     healthData.push({
       table: "Last Crawl",
       ...lastCrawlAgeDistribution.buckets,
     });
 
-    const errorAgeDistribution = getAgeDistribution(
-      Object.values(errors),
-      "time"
-    );
+    const errorAgeDistribution = getAgeDistribution(Object.values(errors), "time");
     healthData.push({
       table: "Errors",
       ...errorAgeDistribution.buckets,
@@ -180,9 +162,7 @@ export default class CrawlAged {
       return false;
     });
 
-    logging.info(
-      `Instances Total: ${instances.length} Aged: ${agedInstances.length}`
-    );
+    logging.info(`Instances Total: ${instances.length} Aged: ${agedInstances.length}`);
 
     for (const instance of agedInstances) {
       const baseUrl = instance.siteData.site.actor_id.split("/")[2];
@@ -203,10 +183,7 @@ export default class CrawlAged {
 
       // this should only happen is the entry is older than a certain amount of time
       // pick up really old ones
-      if (
-        community.lastCrawled &&
-        Date.now() - community.lastCrawled > CRAWL_DELETE_TIME.COMMUNITY
-      ) {
+      if (community.lastCrawled && Date.now() - community.lastCrawled > CRAWL_DELETE_TIME.COMMUNITY) {
         this.singleCommunityCrawler.createJob(base, community.community.name);
       }
 
@@ -260,15 +237,11 @@ export default class CrawlAged {
       this.addInstance(baseUrl);
     }
 
-    logging.info(
-      `Communities Total: ${communities.length} Aged: ${agedCommunities.length}`
-    );
+    logging.info(`Communities Total: ${communities.length} Aged: ${agedCommunities.length}`);
 
     /// CRawl Jobs
 
-    logging.info(
-      `Total Aged Instances To Scan: ${this.agedInstanceBaseUrls.length}`
-    );
+    logging.info(`Total Aged Instances To Scan: ${this.agedInstanceBaseUrls.length}`);
   }
 
   async createJobs() {

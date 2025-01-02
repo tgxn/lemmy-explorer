@@ -1,10 +1,14 @@
 import { CrawlStorage } from "../crawlStorage";
 
 export type ErrorData = {
-  error: string;
-  stack: string;
-  isAxiosError?: boolean;
   time: number;
+  error: string;
+  stack?: string;
+  isAxiosError?: boolean;
+  requestUrl?: string;
+  code?: number;
+  url?: string;
+  duration?: number;
 };
 
 export type ErrorDataKeyValue = {
@@ -15,7 +19,7 @@ export type LastCrawlData = {
   time: number;
 };
 
-import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
+import { RECORD_TTL_TIMES_SECONDS } from "../const";
 
 export default class TrackingStore {
   private storage: CrawlStorage;
@@ -50,23 +54,8 @@ export default class TrackingStore {
   }
 
   // track last scans for instance and communities
-  async getLastCrawl(
-    type: string,
-    baseUrl: string
-  ): Promise<LastCrawlData | null> {
-    const lastCrawlRecord = await this.storage.getRedis(
-      `${this.historyKey}:${type}:${baseUrl}`
-    );
-
-    if (lastCrawlRecord) {
-      if (lastCrawlRecord.time) {
-        return lastCrawlRecord.time;
-      }
-
-      return lastCrawlRecord;
-    }
-
-    return null;
+  async getLastCrawl(type: string, baseUrl: string): Promise<LastCrawlData> {
+    return await this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
   }
 
   async listAllLastCrawl() {

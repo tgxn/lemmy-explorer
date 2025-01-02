@@ -4,7 +4,7 @@ import { exec } from "node:child_process";
 
 import logging from "../lib/logging";
 
-import storage from "../crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
@@ -85,12 +85,12 @@ export default class CrawlKBin {
       for (const mag of localMagazines) {
         try {
           // check for recent scan of this magazine
-          const lastCrawlTs = await storage.tracking.getLastCrawl(
+          const lastCrawl = await storage.tracking.getLastCrawl(
             "magazine",
             `${kbinBaseUrl}:${mag}`
           );
-          if (lastCrawlTs) {
-            const lastCrawledMsAgo = Date.now() - lastCrawlTs;
+          if (lastCrawl) {
+            const lastCrawledMsAgo = Date.now() - lastCrawl.time;
             throw new CrawlTooRecentError(
               `Skipping - Crawled too recently (${
                 lastCrawledMsAgo / 1000

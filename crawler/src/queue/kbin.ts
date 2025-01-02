@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import storage from "../crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import { CrawlTooRecentError } from "../lib/error";
 
@@ -14,12 +14,9 @@ export default class KBinQueue extends BaseQueue {
 
       try {
         // check for recent scan of this KBIN instance
-        const lastCrawlTs = await storage.tracking.getLastCrawl(
-          "kbin",
-          baseUrl
-        );
-        if (lastCrawlTs) {
-          const lastCrawledMsAgo = Date.now() - lastCrawlTs;
+        const lastCrawl = await storage.tracking.getLastCrawl("kbin", baseUrl);
+        if (lastCrawl) {
+          const lastCrawledMsAgo = Date.now() - lastCrawl.time;
           throw new CrawlTooRecentError(
             `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
           );

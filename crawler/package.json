@@ -15,7 +15,9 @@
     "start:init": "tsx index.ts --init",
     "start:dev:instance": "tsx index.ts -q instance",
     "start:dev:community": "tsx index.ts -q community",
-    "out": "tsx index.ts --out"
+    "out": "tsx index.ts --out",
+    "format": "prettier --check .",
+    "format:write": "prettier --write ."
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.717.0",
@@ -28,6 +30,7 @@
     "dotenv": "16.4.7",
     "node-cron": "^3.0.3",
     "pm2": "5.4.3",
+    "prettier": "^3.4.2",
     "redis": "4.7.0",
     "remove-markdown": "0.6.0",
     "tslib": "2.8.1",

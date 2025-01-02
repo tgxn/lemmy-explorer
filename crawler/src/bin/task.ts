@@ -1,4 +1,6 @@
+import { START_URLS } from "../lib/const";
 import logging from "../lib/logging";
+import crawlStorage from "../lib/crawlStorage";
 
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
@@ -14,10 +16,6 @@ import CrawlKBin from "../crawl/kbin";
 
 import CrawlAged from "../util/aged";
 import Failures from "../util/failures";
-
-import crawlStorage from "../crawlStorage";
-
-import { START_URLS } from "../lib/const";
 
 type ITaskName =
   | "out"

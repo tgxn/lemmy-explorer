@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import crawlStorage from "../crawlStorage";
+import crawlStorage from "../lib/crawlStorage";
 
 import CrawlClient from "../lib/CrawlClient";
 

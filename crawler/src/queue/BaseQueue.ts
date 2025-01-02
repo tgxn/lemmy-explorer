@@ -1,7 +1,7 @@
 import BeeQueue from "bee-queue";
 
 import logging from "../lib/logging";
-import crawlStorage from "../crawlStorage";
+import crawlStorage from "../lib/crawlStorage";
 
 import { CrawlTooRecentError } from "../lib/error";
 import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";

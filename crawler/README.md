@@ -115,10 +115,29 @@ These start a worker that will run a single job, then exit.
 | --- | --- |
 | `bin/` | helpers for CLI interface |
 | `crawler/` | main crawler scripts |
-| `lib/` | libraries for crawling and error handling |
+| `lib/` | libraries for crawling, error handling and storage |
 | `output/` | scripts to generate JSON output bundles |
 | `queue/` | queue processor scripts |
 | `store/` | redis storage classes |
+
+## Architecture
+
+### Crawlers
+
+Crawlers are tasks created to perform an action, which could be crawling an instance, community, or other data.
+
+
+### Queues
+
+Queues are where Tasks can be placed to be processed.
+
+| Task | Description |
+| --- | --- |
+| `instance` | Crawl an instance |
+| `community_list` | Crawl a community |
+| `community_single` | Crawl a single community |
+| `kbin` | Crawl a kbin community |
+
 
 
 ## Storage

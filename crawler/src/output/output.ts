@@ -7,7 +7,7 @@ import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import crawlStorage from "../crawlStorage";
+import crawlStorage from "../lib/crawlStorage";
 
 import OutputFileWriter from "./file_writer";
 import OutputTrust from "./trust";

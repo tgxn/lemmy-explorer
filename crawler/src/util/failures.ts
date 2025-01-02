@@ -13,7 +13,7 @@
  *
  */
 
-import crawlStorage from "../crawlStorage";
+import crawlStorage from "../lib/crawlStorage";
 
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 import { getActorBaseUrl } from "../lib/validator";
@@ -40,9 +40,7 @@ export default class FailureCrawl {
     for (const [key, value] of Object.entries(allErrors)) {
       const normalTTL = RECORD_TTL_TIMES_SECONDS.ERROR * 1000;
       const shouldExpireAtMs = value.time + normalTTL;
-      const ttlFromNowSeconds = Math.round(
-        (shouldExpireAtMs - Date.now()) / 1000
-      );
+      const ttlFromNowSeconds = Math.round((shouldExpireAtMs - Date.now()) / 1000);
 
       // console.log(key, ttlFromNowSeconds, value.time);
 
@@ -68,9 +66,7 @@ export default class FailureCrawl {
       const normalTTL = RECORD_TTL_TIMES_SECONDS.LAST_CRAWL * 1000; // how old a record can exist for
 
       const shouldExpireAtMs = value + normalTTL;
-      const ttlFromNowSeconds = Math.round(
-        (shouldExpireAtMs - Date.now()) / 1000
-      );
+      const ttlFromNowSeconds = Math.round((shouldExpireAtMs - Date.now()) / 1000);
 
       if (ttlFromNowSeconds < 0) {
         await crawlStorage.client.expire(key, 1);
@@ -107,10 +103,7 @@ export default class FailureCrawl {
     for (const [key, value] of Object.entries(keys)) {
       const keyBaseUrl = key.replace("instance:", "");
 
-      const isValid = this.isInstanceValid(
-        keyBaseUrl,
-        value?.siteData?.site.actor_id
-      );
+      const isValid = this.isInstanceValid(keyBaseUrl, value?.siteData?.site.actor_id);
       if (!isValid) {
         await crawlStorage.instance.delete(keyBaseUrl);
       }
@@ -118,10 +111,7 @@ export default class FailureCrawl {
   }
 
   async isCommunityValid(keyBaseUrl, keyCommmunity, record) {
-    const isInstanceValid = this.isInstanceValid(
-      keyBaseUrl,
-      record?.community?.actor_id
-    );
+    const isInstanceValid = this.isInstanceValid(keyBaseUrl, record?.community?.actor_id);
 
     if (!isInstanceValid) {
       return false;

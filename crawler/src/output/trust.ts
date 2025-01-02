@@ -1,6 +1,6 @@
 import divinator from "divinator";
 
-import crawlStorage from "../crawlStorage";
+import crawlStorage from "../lib/crawlStorage";
 
 // used to calculate instance overall rating, as well as several instance and community metrics
 // it is meant to take some of the trust assertion logic out of the main output script

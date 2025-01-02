@@ -37,7 +37,7 @@ export default class Instance {
     return this.storage.getRedis(`instance:${key}`);
   }
 
-  async upsert(baseUrl: string, value: string) {
+  async upsert(baseUrl: string, value: InstanceData) {
     return this.storage.putRedis(`instance:${baseUrl}`, value);
   }
 

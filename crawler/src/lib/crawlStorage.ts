@@ -1,7 +1,7 @@
 import { createClient, RedisClientType } from "redis";
 
-import { REDIS_URL } from "./lib/const";
-import logging from "./lib/logging";
+import { REDIS_URL } from "./const";
+import logging from "./logging";
 
 // core
 import InstanceStore from "./storage/instance";
