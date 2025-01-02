@@ -34,7 +34,16 @@ export default class TrackingStore {
 
   // track last scans for instance and communities
   async getLastCrawl(type, baseUrl) {
-    return this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
+    const lastCrawlRecord = await this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
+    if (lastCrawlRecord.time) {
+      return lastCrawlRecord.time;
+    }
+
+    if (lastCrawlRecord) {
+      return lastCrawlRecord;
+    }
+    
+    return null;
   }
 
   async listAllLastCrawl() {
