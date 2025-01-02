@@ -187,8 +187,10 @@ export default class CommunityCrawler {
         return await this.getSingleCommunityData(communityName, attempt + 1);
       }
 
-      logging.error(`${this.logPrefix} communityData error`, e);
-      return false;
+      logging.error(`${this.logPrefix} communityData error`, e.type, e.message);
+      // return false;
+      
+      throw e;
     }
   }
 
@@ -206,7 +208,8 @@ export default class CommunityCrawler {
       return resultPromises;
     } catch (e) {
       logging.error(`${this.logPrefix} Ended: Error`, e);
-      throw new CrawlError("Ended: Error", e);
+      throw new CrawlError(e.message, e);
+      // throw e;
     }
   }
 
@@ -259,7 +262,8 @@ export default class CommunityCrawler {
         RETRY_PAGE_COUNT // retry count per-page
       );
     } catch (e) {
-      throw new CrawlError("Failed to get community page");
+      // throw new CrawlError("Failed to get community page");
+      throw new CrawlError(e.message, e);
     }
 
     const communities = communityList.data.communities;
