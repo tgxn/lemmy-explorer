@@ -218,6 +218,14 @@ class OutputUtils {
  * it conencts to redis and pulls lists of all the data we have stored
  */
 export default class CrawlOutput {
+  private uptimeData: any;
+  private instanceErrors: any;
+  private communityErrors: any;
+  private instanceList: any;
+  private communityList: any;
+  private fediverseData: any;
+  private kbinData: any;
+
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
 
@@ -311,7 +319,7 @@ export default class CrawlOutput {
 
     // get previous run  from current production data
     const client = new CrawlClient();
-    let previousRun = await client.getUrl("https://lemmyverse.net/data/meta.json");
+    let previousRun: any = await client.getUrl("https://lemmyverse.net/data/meta.json");
     previousRun = previousRun.data;
 
     console.log("Done; Total vs. Output");

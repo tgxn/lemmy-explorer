@@ -39,6 +39,40 @@ jobs:
       - name: Check Style | Crawler
         run: yarn format
         working-directory: ${{ github.workspace }}/crawler/
+  check_crawler_types:
+    runs-on: ubuntu-latest
+
+    # run when crawler changes
+    # if: ${{ contains(github.event.head_commit.modified, 'crawler/') }}
+
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 22.12.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.12.0
+
+      # Install + Cache Crawler Dependencies
+      - name: Cache Node Modules | Crawler
+        id: cache-crawler-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-crawler-npm
+        with:
+          path: ${{ github.workspace }}/crawler/node_modules/
+          key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
+
+      - name: Install Node Modules | Crawler
+        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ${{ github.workspace }}/crawler
+
+      - name: Check Style | Crawler
+        run: yarn check:type
+        working-directory: ${{ github.workspace }}/crawler/
 
   # check_frontend_style:
   #   runs-on: ubuntu-latest
