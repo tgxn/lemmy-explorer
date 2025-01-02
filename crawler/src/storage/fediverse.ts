@@ -1,26 +1,34 @@
-import Storage from "../crawlStorage";
+import { CrawlStorage } from "../crawlStorage";
 
-// type FediverseData = {
-//   name: string;
-//   version: string;
-// };
+export type FediverseData = {
+  time?: number;
+  baseurl?: string;
+  name?: string;
+  version?: string;
+  repository?: string;
+  homepage?: string;
+};
+
+export type FediverseKeyValue = {
+  [key: string]: FediverseData;
+};
 
 export default class Fediverse {
-  private storage: Storage;
+  private storage: CrawlStorage;
 
-  constructor(storage: Storage) {
+  constructor(storage: CrawlStorage) {
     this.storage = storage;
   }
 
-  async getAll() {
+  async getAll(): Promise<FediverseKeyValue> {
     return this.storage.listRedisWithKeys(`fediverse:*`);
   }
 
-  async getOne(baseUrl) {
+  async getOne(baseUrl: string): Promise<FediverseData> {
     return this.storage.getRedis(`fediverse:${baseUrl}`);
   }
 
-  async upsert(baseUrl, data) {
+  async upsert(baseUrl: string, data: FediverseData) {
     const dd = { baseurl: baseUrl, time: Date.now(), ...data };
     return this.storage.putRedis(`fediverse:${baseUrl}`, dd);
   }

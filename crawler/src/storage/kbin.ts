@@ -1,9 +1,17 @@
-import Storage from "../crawlStorage";
+import { CrawlStorage } from "../crawlStorage";
+
+// export type KBinData = {
+//   name: string;
+//   baseUrl: string;
+//   description: string;
+//   lastCrawled: number;
+//   [key: string]: any;
+// };
 
 export default class KBinStore {
-  private storage: Storage;
+  private storage: CrawlStorage;
 
-  constructor(storage: Storage) {
+  constructor(storage: CrawlStorage) {
     this.storage = storage;
   }
 

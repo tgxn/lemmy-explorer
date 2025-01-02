@@ -1,4 +1,4 @@
-import Storage from "../crawlStorage";
+import { CrawlStorage } from "../crawlStorage";
 
 // type TrackingData = {
 //   error: string;
@@ -10,12 +10,12 @@ import Storage from "../crawlStorage";
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 
 export default class TrackingStore {
-  private storage: Storage;
+  private storage: CrawlStorage;
 
   private failureKey: string;
   private historyKey: string;
 
-  constructor(storage: Storage) {
+  constructor(storage: CrawlStorage) {
     this.storage = storage;
 
     this.failureKey = "error";

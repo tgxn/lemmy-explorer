@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import storage from "../crawlStorage";
+import crawlStorage from "../crawlStorage";
 
 import { CRAWL_AGED_TIME } from "../lib/const";
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
@@ -57,7 +57,7 @@ export default class InstanceQueue extends BaseQueue {
         logging.debug(`[Instance] [${baseUrl}] Starting Crawl`);
 
         // check if it's known to not be running lemmy (recan it if it's been a while)
-        const knownFediverseServer = await storage.fediverse.getOne(
+        const knownFediverseServer = await crawlStorage.fediverse.getOne(
           instanceBaseUrl
         );
         if (knownFediverseServer) {
@@ -75,7 +75,7 @@ export default class InstanceQueue extends BaseQueue {
         }
 
         //  last crawl if it's been successfully too recently
-        const lastCrawlTs = await storage.tracking.getLastCrawl(
+        const lastCrawlTs = await crawlStorage.tracking.getLastCrawl(
           "instance",
           instanceBaseUrl
         );
@@ -87,7 +87,7 @@ export default class InstanceQueue extends BaseQueue {
         }
 
         // check when the latest entry to errors was too recent
-        const lastErrorTs = await storage.tracking.getOneError(
+        const lastErrorTs = await crawlStorage.tracking.getOneError(
           "instance",
           instanceBaseUrl
         );
@@ -119,7 +119,7 @@ export default class InstanceQueue extends BaseQueue {
         await crawlCommunity.createJob(instanceBaseUrl);
 
         // set last successful crawl
-        await storage.tracking.setLastCrawl("instance", baseUrl, {
+        await crawlStorage.tracking.setLastCrawl("instance", baseUrl, {
           duration: (Date.now() - startTime) / 1000,
         });
 
@@ -147,7 +147,11 @@ export default class InstanceQueue extends BaseQueue {
 
           logging.error(`[Instance] [${baseUrl}] CrawlError: ${error.message}`);
 
-          await storage.tracking.upsertError("instance", baseUrl, errorDetail);
+          await crawlStorage.tracking.upsertError(
+            "instance",
+            baseUrl,
+            errorDetail
+          );
         } else {
           // console.log("error", error);
 
@@ -165,7 +169,11 @@ export default class InstanceQueue extends BaseQueue {
 
           logging.error(`[Instance] [${baseUrl}] Error: ${error.message}`);
 
-          await storage.tracking.upsertError("instance", baseUrl, errorDetail);
+          await crawlStorage.tracking.upsertError(
+            "instance",
+            baseUrl,
+            errorDetail
+          );
         }
       }
 
@@ -212,7 +220,9 @@ export default class InstanceQueue extends BaseQueue {
 
   // returns a amount os ms since we last crawled it, false if all good
   async getLastCrawlMsAgo(instanceBaseUrl: string) {
-    const existingInstance = await storage.instance.getOne(instanceBaseUrl);
+    const existingInstance = await crawlStorage.instance.getOne(
+      instanceBaseUrl
+    );
 
     if (existingInstance?.lastCrawled) {
       // logging.info("lastCrawled", existingInstance.lastCrawled);
@@ -224,7 +234,7 @@ export default class InstanceQueue extends BaseQueue {
     }
 
     // check for recent error
-    const lastError = await storage.tracking.getOneError(
+    const lastError = await crawlStorage.tracking.getOneError(
       "instance",
       instanceBaseUrl
     );

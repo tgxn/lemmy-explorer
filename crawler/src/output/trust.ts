@@ -1,6 +1,6 @@
 import divinator from "divinator";
 
-import storage from "../storage";
+import crawlStorage from "../crawlStorage";
 
 // used to calculate instance overall rating, as well as several instance and community metrics
 // it is meant to take some of the trust assertion logic out of the main output script
@@ -48,7 +48,7 @@ export default class OutputTrust {
   async setupSources(instanceList) {
     this.instanceList = instanceList;
 
-    this.fediseerData = await storage.fediseer.getLatest();
+    this.fediseerData = await crawlStorage.fediseer.getLatest();
     this.endorsements = this.getAllInstanceEndorsements();
 
     // parse all federated instance data
@@ -205,10 +205,8 @@ export default class OutputTrust {
     // using the history, calculate how much it increses each crawl
     // and then how many users per minute that is...
     // also calculate how much increase growth % per scan
-    let instanceUserHistory = await storage.instance.getAttributeWithScores(
-      baseUrl,
-      "users"
-    );
+    let instanceUserHistory =
+      await crawlStorage.instance.getAttributeWithScores(baseUrl, "users");
 
     // console.log("getAttributeWithScores", instanceUserHistory);
     if (instanceUserHistory.length > 0) {

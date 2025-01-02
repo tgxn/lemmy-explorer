@@ -1,4 +1,4 @@
-import Storage from "../crawlStorage";
+import { CrawlStorage } from "../crawlStorage";
 
 /**
  * Stores each lemmy instance, keyed on baseUrl as `instance:baseUrl`.
@@ -6,42 +6,51 @@ import Storage from "../crawlStorage";
  * Each instance is stored as a JSON object with the following fields:
  */
 
-// type InstanceData = {
-//   nodeData: Object;
-//   siteData: Object;
-//   langs: Array<string>;
-//   lastCrawled: number;
-// };
+export type InstanceData = {
+  nodeData: any;
+  siteData: any;
+  headers: any;
+  langs: Array<string>;
+  lastCrawled: number;
+};
+
+export type InstanceKeyValue = {
+  [key: string]: InstanceData;
+};
 
 export default class Instance {
-  private storage: Storage;
+  private storage: CrawlStorage;
 
-  constructor(storage: Storage) {
+  constructor(storage: CrawlStorage) {
     this.storage = storage;
   }
 
-  async getAll() {
+  async getAll(): Promise<InstanceData[]> {
     return this.storage.listRedis(`instance:*`);
   }
 
-  async getAllWithKeys() {
+  async getAllWithKeys(): Promise<InstanceKeyValue> {
     return this.storage.listRedisWithKeys(`instance:*`);
   }
 
-  async getOne(key) {
+  async getOne(key: string): Promise<InstanceData> {
     return this.storage.getRedis(`instance:${key}`);
   }
 
-  async upsert(baseUrl, value) {
+  async upsert(baseUrl: string, value: string) {
     return this.storage.putRedis(`instance:${baseUrl}`, value);
   }
 
-  async delete(key) {
+  async delete(key: string) {
     return this.storage.deleteRedis(`instance:${key}`);
   }
 
   // use these to track instance attributes over time
-  async setTrackedAttribute(baseUrl, attributeName, attributeValue) {
+  async setTrackedAttribute(
+    baseUrl: string,
+    attributeName: string,
+    attributeValue: string
+  ) {
     await this.storage.redisZAdd(
       `attributes:instance:${baseUrl}:${attributeName}`,
       Date.now(),
@@ -49,21 +58,17 @@ export default class Instance {
     );
   }
 
-  async getAttributeArray(baseUrl, attributeName) {
+  async getAttributeArray(baseUrl: string, attributeName: string) {
     const keys = await this.storage.getAttributeArray(baseUrl, attributeName);
-
-    // console.log(baseUrl, "keys", keys);
 
     return keys;
   }
 
-  async getAttributeWithScores(baseUrl, attributeName) {
+  async getAttributeWithScores(baseUrl: string, attributeName: string) {
     const keys = await this.storage.getAttributesWithScores(
       baseUrl,
       attributeName
     );
-
-    // console.log(baseUrl, "keys", keys);
 
     return keys;
   }

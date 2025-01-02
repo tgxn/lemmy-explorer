@@ -1,8 +1,7 @@
 import { createClient, RedisClientType } from "redis";
 
-import logging from "./lib/logging";
-
 import { REDIS_URL } from "./lib/const";
+import logging from "./lib/logging";
 
 // core
 import InstanceStore from "./storage/instance";
@@ -17,7 +16,7 @@ import FediseerStore from "./storage/fediseer";
 // tracking
 import TrackingStore from "./storage/tracking";
 
-class CrawlStorage {
+export class CrawlStorage {
   // it's public so that utils cleanup can use it to expire stuff
   public client: RedisClientType;
 
@@ -32,7 +31,7 @@ class CrawlStorage {
   public kbin: KBinStore;
 
   constructor() {
-    logging.info("Storage constructor", REDIS_URL);
+    logging.debug("CrawlStorage Constructed", REDIS_URL);
     this.client = createClient({
       url: REDIS_URL,
     });
@@ -51,6 +50,7 @@ class CrawlStorage {
   async connect() {
     if (!this.client.isOpen) {
       await this.client.connect();
+      logging.info("CrawlStorage Opened", REDIS_URL);
     }
   }
 
@@ -60,16 +60,20 @@ class CrawlStorage {
     }
   }
 
-  async putRedis(key, value) {
+  async putRedis(key: string, value: any): Promise<any> {
     return this.client.set(key, JSON.stringify(value));
   }
 
-  async putRedisTTL(key, value, expireInSeconds) {
+  async putRedisTTL(
+    key: string,
+    value: any,
+    expireInSeconds: number
+  ): Promise<any> {
     await this.client.set(key, JSON.stringify(value));
     return this.client.expire(key, expireInSeconds);
   }
 
-  async getRedis(key) {
+  async getRedis(key: string): Promise<any> {
     const json = await this.client.get(key);
     if (!json) return null;
     return JSON.parse(json);
@@ -83,7 +87,7 @@ class CrawlStorage {
       langs: Array<string>,
       lastCrawled: number,
     } */
-  async listRedisWithKeys(key) {
+  async listRedisWithKeys(key: string): Promise<{ [key: string]: any }> {
     const keys = await this.client.keys(key);
     const object = {};
     await Promise.all(
@@ -96,7 +100,7 @@ class CrawlStorage {
   }
 
   // returns an array
-  async listRedis(key) {
+  async listRedis(key: string): Promise<any[]> {
     const keys = await this.client.keys(key);
     return Promise.all(
       keys.map(async (key) => {
@@ -106,18 +110,21 @@ class CrawlStorage {
     );
   }
 
-  async redisZAdd(key, score, value) {
+  async redisZAdd(key: string, score: number, value: string): Promise<any> {
     if (typeof value !== "string") {
       value = JSON.stringify(value);
     }
     return this.client.zAdd(key, [{ score, value }]);
   }
 
-  async deleteRedis(key) {
+  async deleteRedis(key: string): Promise<any> {
     return this.client.del(key);
   }
 
-  async getAttributeArray(baseUrl, attributeName) {
+  async getAttributeArray(
+    baseUrl: string,
+    attributeName: string
+  ): Promise<any> {
     const start = Date.now() - this.attributeMaxAge;
     const end = Date.now();
 
@@ -129,7 +136,10 @@ class CrawlStorage {
     return keys;
   }
 
-  async getAttributesWithScores(baseUrl, attributeName) {
+  async getAttributesWithScores(
+    baseUrl: string,
+    attributeName: string
+  ): Promise<any> {
     const start = Date.now() - this.attributeMaxAge;
     const end = Date.now();
 

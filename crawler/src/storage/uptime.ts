@@ -1,9 +1,9 @@
-import Storage from "../crawlStorage";
+import { CrawlStorage } from "../crawlStorage";
 
 export default class Uptime {
-  private storage: Storage;
+  private storage: CrawlStorage;
 
-  constructor(storage: Storage) {
+  constructor(storage: CrawlStorage) {
     this.storage = storage;
   }
 

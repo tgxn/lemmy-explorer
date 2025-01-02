@@ -1,4 +1,4 @@
-import Storage from "../crawlStorage";
+import { CrawlStorage } from "../crawlStorage";
 
 export type CommunityData = {
   community: {
@@ -22,29 +22,34 @@ export type CommunityData = {
   subscribed: string;
   blocked: boolean;
   counts: Object;
+  banned_from_community?: boolean;
   lastCrawled: number;
 };
 
-export default class Community {
-  private storage: Storage;
+export type CommunityKeyValue = {
+  [key: string]: CommunityData;
+};
 
-  constructor(storage: Storage) {
+export default class Community {
+  private storage: CrawlStorage;
+
+  constructor(storage: CrawlStorage) {
     this.storage = storage;
   }
 
-  async getAll() {
+  async getAll(): Promise<CommunityData[]> {
     return this.storage.listRedis(`community:*`);
   }
 
-  async getAllWithKeys() {
+  async getAllWithKeys(): Promise<CommunityKeyValue> {
     return this.storage.listRedisWithKeys(`community:*`);
   }
 
-  async getOne(baseUrl, communityName) {
+  async getOne(baseUrl: string, communityName: string): Promise<CommunityData> {
     return this.storage.getRedis(`community:${baseUrl}:${communityName}`);
   }
 
-  async upsert(baseUrl, community) {
+  async upsert(baseUrl: string, community) {
     const storeData = {
       ...community,
       lastCrawled: Date.now(),
@@ -55,7 +60,11 @@ export default class Community {
     );
   }
 
-  async delete(baseUrl, communityName, reason = "unknown") {
+  async delete(
+    baseUrl: string,
+    communityName: string,
+    reason: string = "unknown"
+  ) {
     const oldRecord = await this.getOne(baseUrl, communityName);
     await this.storage.putRedis(
       `deleted:community:${baseUrl}:${communityName}`,
@@ -71,10 +80,10 @@ export default class Community {
 
   // use these to track community attributes over time
   async setTrackedAttribute(
-    baseUrl,
-    communityName,
-    attributeName,
-    attributeValue
+    baseUrl: string,
+    communityName: string,
+    attributeName: string,
+    attributeValue: string
   ) {
     return this.storage.redisZAdd(
       `attributes:community:${baseUrl}:${communityName}:${attributeName}`,
