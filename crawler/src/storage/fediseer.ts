@@ -1,5 +1,9 @@
+import Storage from "../storage";
+
 export default class Fediseer {
-  constructor(storage) {
+  private storage: Storage;
+
+  constructor(storage: Storage) {
     this.storage = storage;
   }
 

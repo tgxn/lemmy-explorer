@@ -1,3 +1,5 @@
+import Storage from "../storage";
+
 // type CommunityData = {
 //   community: {
 //     id: number;
@@ -24,19 +26,24 @@
 // };
 
 export default class Community {
-  constructor(storage) {
+  private storage: Storage;
+
+  constructor(storage: Storage) {
     this.storage = storage;
   }
 
   async getAll() {
     return this.storage.listRedis(`community:*`);
   }
+
   async getAllWithKeys() {
     return this.storage.listRedisWithKeys(`community:*`);
   }
+
   async getOne(baseUrl, communityName) {
     return this.storage.getRedis(`community:${baseUrl}:${communityName}`);
   }
+
   async upsert(baseUrl, community) {
     const storeData = {
       ...community,
@@ -47,6 +54,7 @@ export default class Community {
       storeData
     );
   }
+
   async delete(baseUrl, communityName, reason = "unknown") {
     const oldRecord = await this.getOne(baseUrl, communityName);
     await this.storage.putRedis(

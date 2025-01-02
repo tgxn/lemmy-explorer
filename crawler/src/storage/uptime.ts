@@ -1,5 +1,9 @@
+import Storage from "../storage";
+
 export default class Uptime {
-  constructor(storage) {
+  private storage: Storage;
+
+  constructor(storage: Storage) {
     this.storage = storage;
   }
 

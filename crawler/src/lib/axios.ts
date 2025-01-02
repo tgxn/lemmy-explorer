@@ -1,13 +1,13 @@
 import logging from "./logging";
 import axios from "axios";
 
-import { CrawlError } from "./error.js";
+import { CrawlError } from "./error";
 
 import {
   AXIOS_REQUEST_TIMEOUT,
   CRAWLER_USER_AGENT,
   CRAWLER_ATTRIB_URL,
-} from "../lib/const.js";
+} from "./const";
 
 // backoff after failed request
 const RETRY_BACKOFF_SECONDS = 2;

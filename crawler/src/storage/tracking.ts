@@ -1,3 +1,5 @@
+import Storage from "../storage";
+
 // type TrackingData = {
 //   error: string;
 //   stack: string;
@@ -5,10 +7,15 @@
 //   time: number;
 // };
 
-import { RECORD_TTL_TIMES_SECONDS } from "../lib/const.js";
+import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 
 export default class TrackingStore {
-  constructor(storage) {
+  private storage: Storage;
+
+  private failureKey: string;
+  private historyKey: string;
+
+  constructor(storage: Storage) {
     this.storage = storage;
 
     this.failureKey = "error";
@@ -19,9 +26,11 @@ export default class TrackingStore {
   async getAllErrors(type) {
     return this.storage.listRedisWithKeys(`${this.failureKey}:${type}:*`);
   }
+
   async getOneError(type, key) {
     return this.storage.getRedis(`${this.failureKey}:${type}:${key}`);
   }
+
   async upsertError(type, baseUrl, errorDetail) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
@@ -34,7 +43,9 @@ export default class TrackingStore {
 
   // track last scans for instance and communities
   async getLastCrawl(type, baseUrl) {
-    const lastCrawlRecord = await this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
+    const lastCrawlRecord = await this.storage.getRedis(
+      `${this.historyKey}:${type}:${baseUrl}`
+    );
 
     if (lastCrawlRecord) {
       if (lastCrawlRecord.time) {
@@ -43,7 +54,7 @@ export default class TrackingStore {
 
       return lastCrawlRecord;
     }
-    
+
     return null;
   }
 

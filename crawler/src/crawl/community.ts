@@ -1,10 +1,10 @@
 import logging from "../lib/logging";
 
-import { CrawlError } from "../lib/error.js";
+import { CrawlError } from "../lib/error";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import AxiosClient from "../lib/axios.js";
+import AxiosClient from "../lib/axios";
 
 const TIME_BETWEEN_PAGES = 2000;
 

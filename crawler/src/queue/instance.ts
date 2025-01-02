@@ -1,16 +1,16 @@
 import Queue from "bee-queue";
 import logging from "../lib/logging";
 
-import { isValidLemmyDomain } from "../lib/validator.js";
-import storage from "../storage.js";
+import { isValidLemmyDomain } from "../lib/validator";
+import storage from "../storage";
 
-import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
-import { CRAWL_AGED_TIME } from "../lib/const.js";
+import { CrawlError, CrawlTooRecentError } from "../lib/error";
+import { CRAWL_AGED_TIME } from "../lib/const";
 
-import CommunityQueue from "./community.js";
-import InstanceCrawler from "../crawl/instance.js";
+import CommunityQueue from "./community";
+import InstanceCrawler from "../crawl/instance";
 
-import BaseQueue from "./queue.js";
+import BaseQueue from "./queue";
 
 export default class InstanceQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "instance") {

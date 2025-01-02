@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
 import removeMd from "remove-markdown";
 
-import { OUTPUT_MAX_AGE } from "../lib/const.js";
+import { OUTPUT_MAX_AGE } from "../lib/const";
 
-import AxiosClient from "../lib/axios.js";
+import AxiosClient from "../lib/axios";
 import logging from "../lib/logging";
-import storage from "../storage.js";
+import storage from "../storage";
 
-import OutputFileWriter from "./file_writer.js";
-import OutputTrust from "./trust.js";
+import OutputFileWriter from "./file_writer";
+import OutputTrust from "./trust";
 
 class OutputUtils {
   constructor() {}

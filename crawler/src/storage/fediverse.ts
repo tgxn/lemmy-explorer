@@ -1,19 +1,25 @@
+import Storage from "../storage";
+
 // type FediverseData = {
 //   name: string;
 //   version: string;
 // };
 
 export default class Fediverse {
-  constructor(storage) {
+  private storage: Storage;
+
+  constructor(storage: Storage) {
     this.storage = storage;
   }
 
   async getAll() {
     return this.storage.listRedisWithKeys(`fediverse:*`);
   }
+
   async getOne(baseUrl) {
     return this.storage.getRedis(`fediverse:${baseUrl}`);
   }
+
   async upsert(baseUrl, data) {
     const dd = { baseurl: baseUrl, time: Date.now(), ...data };
     return this.storage.putRedis(`fediverse:${baseUrl}`, dd);

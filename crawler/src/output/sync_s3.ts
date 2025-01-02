@@ -8,7 +8,7 @@ import {
   PUBLISH_S3_BUCKET,
   CHECKPOINT_DIR,
   REDIS_DUMP_FILE,
-} from "../lib/const.js";
+} from "../lib/const";
 
 // upload a copy of the file in REDIS_DUMP_FILE to S3
 export async function syncCheckpoint() {

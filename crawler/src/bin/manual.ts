@@ -1,9 +1,9 @@
 import logging from "../lib/logging";
 
-import InstanceQueue from "../queue/instance.js";
-import CommunityQueue from "../queue/community.js";
-import SingleCommunityQueue from "../queue/check_comm.js";
-import KBinQueue from "../queue/kbin.js";
+import InstanceQueue from "../queue/instance";
+import CommunityQueue from "../queue/community";
+import SingleCommunityQueue from "../queue/check_comm";
+import KBinQueue from "../queue/kbin";
 
 export default async function runManualWorker(
   workerName: string,

@@ -1,13 +1,13 @@
 import logging from "../lib/logging";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import { CrawlError, CrawlTooRecentError } from "../lib/error.js";
+import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
-import KBinQueue from "../queue/kbin.js";
-import InstanceQueue from "../queue/instance.js";
+import KBinQueue from "../queue/kbin";
+import InstanceQueue from "../queue/instance";
 
-import AxiosClient from "../lib/axios.js";
+import AxiosClient from "../lib/axios";
 
 // const util = require("util");
 // const execAsync = util.promisify(require("child_process").exec);

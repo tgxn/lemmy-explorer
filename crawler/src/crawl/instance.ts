@@ -1,13 +1,13 @@
 import logging from "../lib/logging";
 
-import { CrawlError } from "../lib/error.js";
-import { getActorBaseUrl } from "../lib/validator.js";
+import { CrawlError } from "../lib/error";
+import { getActorBaseUrl } from "../lib/validator";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import AxiosClient from "../lib/axios.js";
+import AxiosClient from "../lib/axios";
 
-import KBinQueue from "../queue/kbin.js";
+import KBinQueue from "../queue/kbin";
 
 export default class InstanceCrawler {
   constructor(crawlDomain) {

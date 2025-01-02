@@ -13,11 +13,11 @@
  *
  */
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import { getActorBaseUrl } from "../lib/validator.js";
+import { getActorBaseUrl } from "../lib/validator";
 
-import { RECORD_TTL_TIMES_SECONDS } from "../lib/const.js";
+import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 
 // @TODO these should no longer be in the database to start with, not really required...
 export default class FailureCrawl {

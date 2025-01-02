@@ -1,13 +1,13 @@
 import logging from "../lib/logging";
 
-import InstanceQueue from "../queue/instance.js";
-import CommunityQueue from "../queue/community.js";
-import SingleCommunityQueue from "../queue/check_comm.js";
-import KBinQueue from "../queue/kbin.js";
+import InstanceQueue from "../queue/instance";
+import CommunityQueue from "../queue/community";
+import SingleCommunityQueue from "../queue/check_comm";
+import KBinQueue from "../queue/kbin";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const.js";
+import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const";
 
 export default class CrawlAged {
   constructor() {

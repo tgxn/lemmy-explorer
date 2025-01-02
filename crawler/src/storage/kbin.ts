@@ -1,17 +1,24 @@
+import Storage from "../storage";
+
 export default class KBinStore {
-  constructor(storage) {
+  private storage: Storage;
+
+  constructor(storage: Storage) {
     this.storage = storage;
   }
 
   async getAll() {
     return this.storage.listRedis(`magazine:*`);
   }
+
   async getAllWithKeys() {
     return this.storage.listRedisWithKeys(`magazine:*`);
   }
+
   async getOne(baseUrl, magazineName) {
     return this.storage.getRedis(`magazine:${baseUrl}:${magazineName}`);
   }
+
   async upsert(baseUrl, magazine) {
     const storeData = {
       ...magazine,

@@ -1,11 +1,11 @@
-import BaseQueue from "./queue.js";
+import BaseQueue from "./queue";
 
-import CommunityCrawler from "../crawl/community.js";
+import CommunityCrawler from "../crawl/community";
 
 import logging from "../lib/logging";
-import storage from "../storage.js";
+import storage from "../storage";
 
-import { CrawlTooRecentError } from "../lib/error.js";
+import { CrawlTooRecentError } from "../lib/error";
 
 export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {

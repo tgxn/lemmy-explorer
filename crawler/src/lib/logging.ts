@@ -1,4 +1,4 @@
-import { LOG_LEVEL } from "./const.js";
+import { LOG_LEVEL } from "./const";
 
 // pm2 already writes logs, just make them pretty
 

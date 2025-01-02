@@ -1,23 +1,23 @@
 import logging from "../lib/logging";
 
-import InstanceQueue from "../queue/instance.js";
-import CommunityQueue from "../queue/community.js";
-import SingleCommunityQueue from "../queue/check_comm.js";
-import KBinQueue from "../queue/kbin.js";
+import InstanceQueue from "../queue/instance";
+import CommunityQueue from "../queue/community";
+import SingleCommunityQueue from "../queue/check_comm";
+import KBinQueue from "../queue/kbin";
 
-import CrawlOutput from "../output/output.js";
-import { syncCheckpoint } from "../output/sync_s3.js";
+import CrawlOutput from "../output/output";
+import { syncCheckpoint } from "../output/sync_s3";
 
-import CrawlAged from "../crawl/aged.js";
-import CrawlUptime from "../crawl/uptime.js";
+import CrawlAged from "../crawl/aged";
+import CrawlUptime from "../crawl/uptime";
 import CrawlFediseer from "../crawl/fediseer";
 
-import Failures from "../crawl/failures.js";
-import CrawlKBin from "../crawl/kbin.js";
+import Failures from "../crawl/failures";
+import CrawlKBin from "../crawl/kbin";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import { START_URLS } from "../lib/const.js";
+import { START_URLS } from "../lib/const";
 
 // used to run tasks against db that exist after they are complete
 export default async function runTask(taskName: string = null) {

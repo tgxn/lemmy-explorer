@@ -2,10 +2,10 @@ import logging from "../lib/logging";
 
 import Queue from "bee-queue";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import { CrawlTooRecentError } from "../lib/error.js";
-import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const.js";
+import { CrawlTooRecentError } from "../lib/error";
+import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";
 
 export default class BaseQueue {
   constructor(isWorker, queueName, jobProcessor) {

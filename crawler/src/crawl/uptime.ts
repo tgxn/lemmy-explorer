@@ -4,9 +4,9 @@
  */
 import logging from "../lib/logging";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import AxiosClient from "../lib/axios.js";
+import AxiosClient from "../lib/axios";
 
 export default class CrawlUptime {
   constructor() {

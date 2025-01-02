@@ -2,20 +2,20 @@ import cron from "node-cron";
 
 import logging from "../lib/logging";
 
-import InstanceQueue from "../queue/instance.js";
-import CommunityQueue from "../queue/community.js";
-import SingleCommunityQueue from "../queue/check_comm.js";
-import KBinQueue from "../queue/kbin.js";
+import InstanceQueue from "../queue/instance";
+import CommunityQueue from "../queue/community";
+import SingleCommunityQueue from "../queue/check_comm";
+import KBinQueue from "../queue/kbin";
 
-import CrawlAged from "../crawl/aged.js";
-import CrawlUptime from "../crawl/uptime.js";
-import CrawlKBin from "../crawl/kbin.js";
+import CrawlAged from "../crawl/aged";
+import CrawlUptime from "../crawl/uptime";
+import CrawlKBin from "../crawl/kbin";
 
-import { syncCheckpoint } from "../output/sync_s3.js";
+import { syncCheckpoint } from "../output/sync_s3";
 
-import { AUTO_UPLOAD_S3, CRON_SCHEDULES } from "../lib/const.js";
+import { AUTO_UPLOAD_S3, CRON_SCHEDULES } from "../lib/const";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
 /**
  * Queue worker and CRON tasks are started here.

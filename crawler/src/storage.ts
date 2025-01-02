@@ -1,22 +1,34 @@
-// import logging from "./lib/logging";
+import logging from "./lib/logging";
 
-import { createClient } from "redis";
+import { createClient, RedisClientType } from "redis";
 
-import { REDIS_URL } from "./lib/const.js";
+import { REDIS_URL } from "./lib/const";
 
-import InstanceStore from "./storage/instance.js";
-import CommunityStore from "./storage/community.js";
+import InstanceStore from "./storage/instance";
+import CommunityStore from "./storage/community";
 
-import FediverseStore from "./storage/fediverse.js";
-import KBinStore from "./storage/kbin.js";
-import UptimeStore from "./storage/uptime.js";
+import FediverseStore from "./storage/fediverse";
+import KBinStore from "./storage/kbin";
+import UptimeStore from "./storage/uptime";
 
-import TrackingStore from "./storage/tracking.js";
+import TrackingStore from "./storage/tracking";
 import FediseerStore from "./storage/fediseer";
 
 class Storage {
+  private client: RedisClientType;
+
+  private attributeMaxAge: number;
+
+  public instance: InstanceStore;
+  public community: CommunityStore;
+  public uptime: UptimeStore;
+  public fediverse: FediverseStore;
+  public fediseer: FediseerStore;
+  public tracking: TrackingStore;
+  public kbin: KBinStore;
+
   constructor() {
-    // console.log("Storage constructor", REDIS_URL);
+    logging.info("Storage constructor", REDIS_URL);
     this.client = createClient({
       url: REDIS_URL,
     });
@@ -28,7 +40,6 @@ class Storage {
     this.uptime = new UptimeStore(this);
     this.fediverse = new FediverseStore(this);
     this.fediseer = new FediseerStore(this);
-
     this.tracking = new TrackingStore(this);
     this.kbin = new KBinStore(this);
   }

@@ -1,11 +1,11 @@
 import logging from "../lib/logging";
-import { CrawlTooRecentError } from "../lib/error.js";
+import { CrawlTooRecentError } from "../lib/error";
 
-import storage from "../storage.js";
+import storage from "../storage";
 
-import KBinCrawler from "../crawl/kbin.js";
+import KBinCrawler from "../crawl/kbin";
 
-import BaseQueue from "./queue.js";
+import BaseQueue from "./queue";
 
 export default class KBinQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "kbin") {

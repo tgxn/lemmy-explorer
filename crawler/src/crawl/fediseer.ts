@@ -1,13 +1,13 @@
 import axios, { AxiosInstance } from "axios";
 
 import logging from "../lib/logging";
-import storage from "../storage.js";
+import storage from "../storage";
 
 import {
   CRAWLER_USER_AGENT,
   CRAWLER_ATTRIB_URL,
   AXIOS_REQUEST_TIMEOUT,
-} from "../lib/const.js";
+} from "../lib/const";
 
 export default class CrawlFediseer {
   private axios: AxiosInstance;

@@ -1,4 +1,4 @@
-import logging from "../lib/logging";
+import logging from "./logging";
 
 import isValidDomain from "is-valid-domain";
 
