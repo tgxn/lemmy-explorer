@@ -48,6 +48,7 @@ If you want to configure auto-upload to s3 or anything, you need to copy the `.e
 | `--aged` | Create jobs for aged instances and communities |
 | `--kbin` | Create jobs for kbin communities |
 | `--uptime` | Immediately crawl uptime data |
+| `--fedi` | Immediately crawl Fediseer data |
 
 
 #### **Examples**
@@ -106,7 +107,7 @@ If you want to configure auto-upload to s3 or anything, you need to copy the `.e
 
 Redis is used to store crawled data.
 
-You can use `docker-compose up -d` to start a local redis server.
+You can use `docker compose up -d` to start a local redis server.
 Data is persisted to a `.data/redis` directory.
 
 | Redis Key | Description |

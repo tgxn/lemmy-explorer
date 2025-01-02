@@ -9,6 +9,9 @@ import {
   CRAWLER_ATTRIB_URL,
 } from "../lib/const.js";
 
+// backoff after failed request
+const RETRY_BACKOFF_SECONDS = 2;
+
 export default class AxiosClient {
   constructor() {
     this.axios = axios.create({
@@ -26,12 +29,21 @@ export default class AxiosClient {
 
       // if (response.status !== 200) {
     } catch (e) {
-      if (e.response && e.response.data) {
-        throw new CrawlError(
-          `Failed to get url ${url}: ${e.message}`,
-          e.response.data
-        );
-      }
+      throw e;
+      // if (e.response && e.response.data) {
+      //   // throw new CrawlError(
+      //   //   `Failed to get url ${url}: ${e.message}`,
+      //   //   e.response.data
+      //   // );
+
+      //   throw new CrawlError(`${e.message} (attempts: ${maxRetries})`, {
+      //     isAxiosError: true,
+      //     code: e.code,
+      //     url: e.config.url,
+      //     request: e.request | null,
+      //     response: e.response,
+      //   });
+      // }
     }
   }
 
@@ -42,15 +54,15 @@ export default class AxiosClient {
       if (current < maxRetries) {
         // logging.error("error in get", e);
 
+        const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
+
         logging.debug(
-          `retrying url ${url} attempt ${current + 1}, waiting ${
+          `retrying url ${url} attempt ${
             current + 1
-          }*2 seconds`
+          }, waiting ${delaySeconds} seconds`
         );
 
-        await new Promise((resolve) =>
-          setTimeout(resolve, (current + 1) * 2000)
-        );
+        await new Promise((resolve) => setTimeout(resolve, delaySeconds));
 
         return await this.getUrlWithRetry(
           url,
@@ -60,17 +72,21 @@ export default class AxiosClient {
         );
       }
 
-      if (e.response && e.response.data) {
-        throw new CrawlError(
-          `Failed to get url ${url} after ${maxRetries} attempts: ${e.message}`,
-          e.response.data
-        );
-      }
+      // if (e.response && e.response.data) {
+      //   throw new CrawlError(`${e.message} (attempts: ${maxRetries})`, {
+      //     isAxiosError: true,
+      //     request: e.request | null,
+      //     response: e.response.data,
+      //   });
+      // }
 
-      throw new CrawlError(
-        `Failed to get url ${url} after ${maxRetries} attempts: ${e.message}`,
-        e.response
-      );
+      throw new CrawlError(`${e.message} (attempts: ${maxRetries})`, {
+        isAxiosError: true,
+        code: e.code,
+        url: e.config.url,
+        request: e.request | null,
+        response: e.response,
+      });
     }
   }
 }

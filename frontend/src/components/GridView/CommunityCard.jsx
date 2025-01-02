@@ -112,7 +112,10 @@ function CommunityCard({ community }) {
         <Typography
           level="body3"
           sx={{
-            height: "50px",
+            display: "-webkit-box",
+            // "-webkit-box-orient": "vertical",
+            // "-webkit-line-clamp": "3",
+            height: "54px",
             maxHeight: "90px",
             overflow: "hidden",
           }}

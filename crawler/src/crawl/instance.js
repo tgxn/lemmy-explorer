@@ -57,7 +57,10 @@ export default class InstanceCrawler {
     }
 
     for (var linkRel of wellKnownInfo.data.links) {
-      if (linkRel.rel == "http://nodeinfo.diaspora.software/ns/schema/2.0") {
+      if (
+        linkRel.rel == "http://nodeinfo.diaspora.software/ns/schema/2.0" ||
+        linkRel.rel == "http://nodeinfo.diaspora.software/ns/schema/2.1"
+      ) {
         nodeinfoUrl = linkRel.href;
       }
     }

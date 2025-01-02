@@ -142,7 +142,7 @@ class OutputUtils {
     }
 
     // check values are < 10% different
-    const checkChangeIsValid = (value, previousValue, pct = 10) => {
+    const checkChangeIsValid = (value, previousValue, pct = 15) => {
       if (!value || !previousValue) {
         return false;
       }
@@ -165,6 +165,8 @@ class OutputUtils {
       new: returnInstanceArray.length,
       old: previousRun.instances,
     });
+
+    // check that community counts haven't changed heaps
     data.push({
       type: "communities",
       new: returnCommunityArray.length,
@@ -191,6 +193,11 @@ class OutputUtils {
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
+
+      // TEMP skip if there are more items in the new payload
+      if (item.new > item.old) {
+        return;
+      }
 
       const isValid = checkChangeIsValid(item.new, item.old);
 
@@ -272,7 +279,7 @@ export default class CrawlOutput {
     );
 
     // fediverse data
-    const returnStats = await this.outputFediverseData();
+    const returnStats = await this.outputFediverseData(returnInstanceArray);
 
     // kbin data
     const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
@@ -490,11 +497,14 @@ export default class CrawlOutput {
         const outgoingBlocks =
           instance.siteData.federated?.blocked?.length || 0;
 
-        const score = await this.trust.scoreInstance(siteBaseUrl);
+        const instanceTrustData = this.trust.getInstance(siteBaseUrl);
+
+        const score = instanceTrustData.score;
 
         // ignore instances that have no data
-        const susReason = await this.trust.getInstanceSusReasons(siteBaseUrl);
+        const susReason = instanceTrustData.reasons;
 
+        // console.log("instanceTrustData.tags", instanceTrustData.tags);
         return {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
@@ -511,7 +521,6 @@ export default class CrawlOutput {
           private: instance.siteData.config?.private_instance,
           fed: instance.siteData.config?.federation_enabled,
 
-          date: instance.siteData.site.published,
           version: instance.nodeData.software.version,
           open: instance.nodeData.openRegistrations,
 
@@ -522,18 +531,27 @@ export default class CrawlOutput {
           banner: instance.siteData.site.banner,
           langs: instance.langs,
 
+          date: instance.siteData.site.published, // TO BE DEPRECATED
+          published: this.parseLemmyTimeToUnix(
+            instance.siteData?.site?.published
+          ),
+
           time: instance.lastCrawled || null,
           score: score,
           uptime: siteUptime,
 
           isSuspicious: susReason.length > 0 ? true : false,
-          metrics: this.trust.getMetrics(siteBaseUrl),
+          metrics: instanceTrustData.metrics || null,
+          tags: instanceTrustData.tags || [],
           susReason: susReason,
+
+          trust: instanceTrustData,
 
           blocks: {
             incoming: incomingBlocks,
             outgoing: outgoingBlocks,
           },
+          blocked: instance.siteData.federated?.blocked || [],
         };
       })
     );
@@ -593,12 +611,40 @@ export default class CrawlOutput {
     return storeData;
   }
 
+  parseLemmyTimeToUnix(time) {
+    // calculate community published time
+    let publishTime = null;
+    if (time) {
+      try {
+        // why do some instances have Z on the end -.-
+        publishTime = new Date(time.replace(/(\.\d{6}Z?)/, "Z")).getTime();
+
+        // if not a number
+        if (isNaN(publishTime)) {
+          console.error("error parsing publish time", time);
+          publishTime = null;
+        }
+
+        // console.log("publishTime", publishTime);
+      } catch (e) {
+        console.error("error parsing publish time", time);
+      }
+    } else {
+      console.error("no publish time", time);
+    }
+
+    return publishTime;
+  }
+
   async getCommunityArray(returnInstanceArray) {
     let storeCommunityData = await Promise.all(
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
-        const score = await this.trust.scoreCommunity(siteBaseUrl, community);
+        const score = await this.trust.calcCommunityScore(
+          siteBaseUrl,
+          community
+        );
 
         const relatedInstance = this.instanceList.find(
           (instance) =>
@@ -607,6 +653,35 @@ export default class CrawlOutput {
         const isInstanceSus = await this.trust.getInstanceSusReasons(
           relatedInstance
         );
+
+        // // calculate community published time
+        // let publishTime = null;
+        // if (community.community.published) {
+        //   try {
+        //     // why do some instances have Z on the end -.-
+        //     publishTime = new Date(
+        //       community.community.published.replace(/(\.\d{6}Z?)/, "Z")
+        //     ).getTime();
+
+        //     // if not a number
+        //     if (isNaN(publishTime)) {
+        //       console.error(
+        //         "error parsing publish time",
+        //         community.community.published
+        //       );
+        //       publishTime = null;
+        //     }
+
+        //     // console.log("publishTime", publishTime);
+        //   } catch (e) {
+        //     console.error(
+        //       "error parsing publish time",
+        //       community.community.published
+        //     );
+        //   }
+        // } else {
+        //   console.error("no publish time", community.community);
+        // }
 
         return {
           baseurl: siteBaseUrl,
@@ -621,6 +696,7 @@ export default class CrawlOutput {
           banner: community.community.banner,
           nsfw: community.community.nsfw,
           counts: community.counts,
+          published: this.parseLemmyTimeToUnix(community.community?.published),
           time: community.lastCrawled || null,
 
           isSuspicious: isInstanceSus.length > 0 ? true : false,
@@ -709,7 +785,7 @@ export default class CrawlOutput {
     return storeCommunityData;
   }
 
-  async outputFediverseData() {
+  async outputFediverseData(outputInstanceData) {
     let returnStats = [];
 
     let softwareNames = {};
@@ -739,10 +815,31 @@ export default class CrawlOutput {
       }
     });
 
+    // count total tags in instance array and output tags meta file
+    let tagCounts = []; // { tag: "name", count: 0 }
+    outputInstanceData.forEach((instance) => {
+      instance.tags.forEach((tag) => {
+        const foundTag = tagCounts.find((t) => t.tag === tag);
+        if (foundTag) {
+          foundTag.count++;
+        } else {
+          tagCounts.push({ tag: tag, count: 1 });
+        }
+      });
+
+      // add tags to software
+    });
+
+    // sort tags by count
+    tagCounts = tagCounts.sort((a, b) => {
+      return b.count - a.count;
+    });
+
     await this.fileWriter.storeFediverseData(
       returnStats,
       softwareNames,
-      softwareBaseUrls
+      softwareBaseUrls,
+      tagCounts
     );
 
     return returnStats;

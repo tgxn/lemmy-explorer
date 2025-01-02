@@ -31,7 +31,9 @@ import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
 
-function Instances({ filterSuspicious }) {
+import TagFilter from "../components/Shared/TagFilter";
+
+function Instances({ filterSuspicious, filteredTags }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -76,6 +78,44 @@ function Instances({ filterSuspicious }) {
     if (error) return [];
 
     let instances = data;
+
+    // filter out excluded filteredTags
+    if (filteredTags.length > 0) {
+      console.log(`Filtering instances by ${filteredTags}`);
+      // array of instances that have the filteredTags
+
+      // communties = communties.filter((community) => !filteredInstances.includes(community.baseurl));
+      instances = instances.filter((instance) => {
+        // check if any of the tags in the tags array match any of the excluded tags
+
+        /**
+         * filteredTags has {tag: "foo", action: "hide"} / {tag: "foo", action: "show"}
+         * show - remove instances that don't have this tag - it should filter ALL instances that don't have this tag
+         * hide - remove instances that have this tag - it should filter ALL instances that have this tag, overriding any other explicity shown tags
+         */
+
+        let decision = true;
+
+        filteredTags.forEach((tag) => {
+          if (tag.action == "show") {
+            // if the instance doesn't have the tag, remove it from the list
+            if (!instance.tags.includes(tag.tag)) {
+              decision = false;
+            }
+          } else if (tag.action == "hide") {
+            // if the instance has the tag, remove it from the list
+            if (instance.tags.includes(tag.tag)) {
+              decision = false;
+            }
+          }
+        });
+
+        return decision;
+      });
+    }
+
+    // Variable
+
     if (showOpenOnly) {
       instances = instances.filter((instance) => instance.open);
     }
@@ -155,8 +195,12 @@ function Instances({ filterSuspicious }) {
       instances = instances.sort((a, b) => b.score - a.score);
     } else if (orderBy === "users") {
       instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
+    } else if (orderBy === "active_day") {
+      instances = instances.sort((a, b) => b.counts.users_active_day - a.counts.users_active_day);
     } else if (orderBy === "active") {
-      instances = instances.sort((a, b) => b.usage.users.activeMonth - a.usage.users.activeMonth);
+      instances = instances.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
+    } else if (orderBy === "active_month") {
+      instances = instances.sort((a, b) => b.counts.users_active_month - a.counts.users_active_month);
     } else if (orderBy === "posts") {
       instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
     } else if (orderBy === "comments") {
@@ -176,11 +220,13 @@ function Instances({ filterSuspicious }) {
         if (aDate > bDate) return 1;
         return 0;
       });
+    } else if (orderBy === "published") {
+      instances = instances.sort((a, b) => b.published - a.published);
     }
 
     // return a clone so that it triggers a re-render  on sort
     return [...instances];
-  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious]);
+  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious, filteredTags]);
 
   return (
     <Container
@@ -235,16 +281,21 @@ function Instances({ filterSuspicious }) {
         >
           <Option value="smart">Smart Sort</Option>
           <Option value="users">Users</Option>
-          <Option value="active">Active Users</Option>
+          <Option value="active_day">Active Users (day)</Option>
+          <Option value="active">Active Users (week)</Option>
+          <Option value="active_month">Active Users (month)</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
           <Option value="oldest">Oldest</Option>
+          <Option value="published">Newest Publish Time</Option>
         </Select>
 
         <LanguageFilter
           languageCodes={filterLangCodes}
           setLanguageCodes={(codes) => setFilterLangCodes(codes)}
         />
+
+        <TagFilter />
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <Checkbox
@@ -331,5 +382,6 @@ function Instances({ filterSuspicious }) {
 
 const mapStateToProps = (state) => ({
   filterSuspicious: state.configReducer.filterSuspicious,
+  filteredTags: state.configReducer.filteredTags,
 });
 export default connect(mapStateToProps)(Instances);

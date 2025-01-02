@@ -35,7 +35,8 @@ export default class InstanceQueue extends BaseQueue {
     const crawlCommunity = new CommunityQueue();
 
     const processor = async ({ baseUrl }) => {
-      let instanceData = null;
+      const startTime = Date.now();
+
       try {
         // if it's not a string
         if (typeof baseUrl !== "string") {
@@ -120,28 +121,57 @@ export default class InstanceQueue extends BaseQueue {
         await crawlCommunity.createJob(instanceBaseUrl);
 
         // set last successful crawl
-        await storage.tracking.setLastCrawl("instance", baseUrl);
+        await storage.tracking.setLastCrawl("instance", baseUrl, {
+          duration: (Date.now() - startTime) / 1000,
+        });
+
+        const endTime = Date.now();
+        logging.info(
+          `[Instance] [${baseUrl}] Finished in ${(endTime - startTime) / 1000}s`
+        );
+
+        return instanceData;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
             `[Instance] [${baseUrl}] CrawlTooRecentError: ${error.message}`
           );
-        } else {
+        } else if (error instanceof CrawlError) {
           const errorDetail = {
             error: error.message,
             stack: error.stack,
             isAxiosError: error.isAxiosError,
-            requestUrl: error.isAxiosError ? error.request.url : null,
+            code: error.code,
+            url: error.url,
             time: new Date().getTime(),
+            duration: Date.now() - startTime,
           };
 
+          logging.error(`[Instance] [${baseUrl}] CrawlError: ${error.message}`);
+
           await storage.tracking.upsertError("instance", baseUrl, errorDetail);
+        } else {
+          // console.log("error", error);
+
+          const errorDetail = {
+            error: error.message,
+            stack: error.stack,
+            isAxiosError: error.isAxiosError,
+            code: error.code,
+            url: error.url,
+            time: new Date().getTime(),
+            duration: Date.now() - startTime,
+          };
+
+          // console.log("errorDetail", errorDetail);
 
           logging.error(`[Instance] [${baseUrl}] Error: ${error.message}`);
+
+          await storage.tracking.upsertError("instance", baseUrl, errorDetail);
         }
       }
 
-      return instanceData;
+      return null;
     };
 
     super(isWorker, queueName, processor);

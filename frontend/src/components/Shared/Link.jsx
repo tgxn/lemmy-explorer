@@ -23,8 +23,10 @@ export function CopyLink({ copyText, linkProps }) {
         {...linkProps}
         onClick={(e) => {
           e.preventDefault();
-          navigator.clipboard.writeText(copyText);
-          setCopied(true);
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(copyText);
+            setCopied(true);
+          }
         }}
       >
         <ContentCopyIcon
@@ -39,7 +41,7 @@ export function CopyLink({ copyText, linkProps }) {
   );
 }
 
-const CommunityLink = React.memo(({ baseType, community, homeBaseUrl, instanceType }) => {
+const CommunityLink = React.memo(({ baseType, community, homeBaseUrl, instanceType, ...props }) => {
   const [instanceLink, tooltipTitle] = React.useMemo(() => {
     let instanceLink = `https://${community.baseurl}/c/${community.name}`;
     let tooltipTitle = `${community.baseurl}/c/${community.name}`;
@@ -79,6 +81,7 @@ const CommunityLink = React.memo(({ baseType, community, homeBaseUrl, instanceTy
         color="neutral"
         href={instanceLink}
         target="_blank"
+        {...props}
       >
         {community.title}
         <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
@@ -92,22 +95,27 @@ const mapStateToProps = (state) => ({
 });
 export const ExtCommunityLink = connect(mapStateToProps)(CommunityLink);
 
-export function ExtInstanceLink({ instance }) {
+export function ExtInstanceLink({ instance, ...props }) {
+  return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
+}
+
+export function ExtLink({ linkName, linkUrl, target="_blank", ...props }) {
   return (
     <Link
       level="body1"
       variant="plain"
-      alt={instance.name}
+      alt={linkName}
       color="neutral"
-      href={instance.url}
-      target="_blank"
+      href={linkUrl}
+      target={target}
       // sx={{
       //   fontWeight: "bold",
       //   fontSize: "16px",
       //   textOverflow: "ellipsis",
       // }}
+      {...props}
     >
-      {instance.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+      {linkName} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
     </Link>
   );
 }

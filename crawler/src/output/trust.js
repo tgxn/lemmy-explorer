@@ -102,6 +102,7 @@ export default class OutputTrust {
           tags: this.getInstanceTags(instance),
 
           guarantor,
+          endorsements: this.endorsements[baseUrl] || 0,
         };
       })
     );
@@ -142,6 +143,17 @@ export default class OutputTrust {
 
   getInstanceTags(instance) {
     let tags = [];
+
+    const baseUrl = instance.siteData.site.actor_id.split("/")[2];
+    const fediseerData = this.fediseerData.find(
+      (instance) => instance.domain === baseUrl
+    );
+
+    if (fediseerData && fediseerData.tags) {
+      tags = fediseerData.tags.map((tag) => tag.tag);
+    }
+
+    // add cloudflare to tags too
     if (instance.headers) {
       // cloudflare
       if (instance.headers?.server?.includes("cloudflare")) {
@@ -150,11 +162,8 @@ export default class OutputTrust {
 
       // cors
       if (instance.headers["access-control-allow-origin"]?.includes("*")) {
-        tags.push("cors*");
+        tags.push("cors-allowed");
       }
-
-      // add tags to instance
-      // instance.tags = tags;
     }
     return tags;
   }
@@ -335,13 +344,14 @@ export default class OutputTrust {
       );
     }
 
-    const SUS_LEVEL_LOW = 900;
-    if (metrics.activityUserScore > SUS_LEVEL_LOW) {
-      // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
-      reasons.push(
-        `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
-      );
-    }
+    // removed since it doesn't seem to be required anymore. (with new deviations checking)
+    // const SUS_LEVEL_LOW = 900;
+    // if (metrics.activityUserScore > SUS_LEVEL_LOW) {
+    //   // console.log(this.baseUrl, "activityUserScore", metrics.activityUserScore);
+    //   reasons.push(
+    //     `Total Activity vs. Total Users is HIGH: ${metrics.totalActivity} / ${metrics.usersTotal} = ${metrics.activityUserScore}`
+    //   );
+    // }
 
     // checks for total users vs. active users metric
     // const userAtivityFail = this.isUserActivityLow();
@@ -400,13 +410,25 @@ export default class OutputTrust {
     return null;
   }
 
-  getMetrics(baseUrl) {
+  // getMetrics(baseUrl) {
+  //   const instanceGuarantor = this.instancesWithMetrics.find(
+  //     (instance) => instance.baseurl === baseUrl
+  //   );
+
+  //   if (instanceGuarantor?.metrics) {
+  //     return instanceGuarantor.metrics;
+  //   }
+
+  //   return null;
+  // }
+
+  getInstance(baseUrl) {
     const instanceGuarantor = this.instancesWithMetrics.find(
       (instance) => instance.baseurl === baseUrl
     );
 
-    if (instanceGuarantor?.metrics) {
-      return instanceGuarantor.metrics;
+    if (instanceGuarantor) {
+      return instanceGuarantor;
     }
 
     return null;
@@ -513,60 +535,65 @@ export default class OutputTrust {
 
     // having a linked instance gives you a point for each link
     if (this.linkedFederation[baseUrl]) {
-      score += this.linkedFederation[baseUrl] / 2;
       scores.linked = this.linkedFederation[baseUrl] / 2;
+      score += scores.linked;
     }
 
     // having endorsements will boost you in the search results
     if (this.endorsements[baseUrl]) {
-      score += this.endorsements[baseUrl] * 4;
       scores.endorsements = this.endorsements[baseUrl] * 4;
+      score += scores.endorsements;
     }
 
     // each allowed instance gives you points
     if (this.allowedFederation[baseUrl]) {
-      score += this.allowedFederation[baseUrl] * 3;
       scores.allowed = this.allowedFederation[baseUrl] * 3;
+      score += scores.allowed;
     }
 
     // each blocked instance takes away points
     if (this.blockedFederation[baseUrl]) {
-      score -= this.blockedFederation[baseUrl] * 10;
-      scores.blocked = "-" + this.blockedFederation[baseUrl] * 10;
+      scores.blocked = parseInt("-" + this.blockedFederation[baseUrl] * 10);
+      score += scores.blocked;
     }
 
-    if (scores.endorsements) {
-      console.log(baseUrl, scores);
+    // adjust score based on instance users
+    const instance = this.getInstance(baseUrl);
+    if (instance) {
+      // active month
+      // console.log(baseUrl, instance);
+      scores.usersMonth = instance.metrics.usersMonth / 1000;
+      score = score * scores.usersMonth;
     }
+
+    const log = [
+      "lemmy.world",
+      "hexbear.net",
+      "lemmy.ml",
+      "lemmysfw.com",
+      "lemmygrad.ml",
+      "literature.cafe",
+      "enterprise.lemmy.ml",
+    ];
+    if (log.includes(baseUrl))
+      console.log(baseUrl, "scores", scores, "overall", score);
 
     return score;
   }
 
-  // run domain through this to get scores
-  // this generates the "smart sort" score that is used by default
-  async scoreInstance(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find(
+  async calcCommunityScore(baseUrl, community) {
+    const instanceMetrics = this.instancesWithMetrics.find(
       (instance) => instance.baseurl === baseUrl
     );
 
-    if (instanceGuarantor?.score) {
-      return instanceGuarantor.score;
-    }
-
-    return null;
-  }
-
-  async scoreCommunity(baseUrl, community) {
-    let score = await this.scoreInstance(baseUrl);
-
     // multiply score based subscribers
-    score = score * community.counts.subscribers;
+    const activityScore = community.counts.subscribers;
+
+    const activeScore = community.counts.users_active_month * 20;
+
+    const score = instanceMetrics.score * activityScore * activeScore;
 
     return score;
-
-    // return {
-    //   score: score,
-    // }
   }
 
   // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each

@@ -59,10 +59,11 @@ export const CRON_SCHEDULES = {
   AGED: "*/15 * * * *",
   UPTIME: "0 */12 * * *",
   KBIN: "0 */6 * * *",
+  FEDISEER: "0 */12 * * *",
 };
 
 // for each request we make, after how much time should axios be configured to timeout
-export const AXIOS_REQUEST_TIMEOUT = 120 * 1000; // 20 seconds in ms
+export const AXIOS_REQUEST_TIMEOUT = 60 * 1000; // 60 seconds in ms
 
 export const FEDDIT_URLS = [
   "0xdd.org.ru",

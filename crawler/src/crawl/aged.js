@@ -47,26 +47,37 @@ export default class CrawlAged {
 
       const now = Date.now();
       const ages = records.map((record) => {
-        const age = now - record[attribute];
 
-        // sort into hourly buckets: 1-2 hours, 2-4 hours, 4-6 hours, 6+ hours
-        if (age < 2 * 60 * 60 * 1000) {
-          buckets["1-2 hours"]++;
-        } else if (age < 4 * 60 * 60 * 1000) {
-          buckets["2-4 hours"]++;
-        } else if (age < 6 * 60 * 60 * 1000) {
-          buckets["4-6 hours"]++;
-        } else if (age < 8 * 60 * 60 * 1000) {
-          buckets["6-8 hours"]++;
-        } else if (age < 10 * 60 * 60 * 1000) {
-          buckets["8-10 hours"]++;
-        } else if (age < 12 * 60 * 60 * 1000) {
-          buckets["10-12 hours"]++;
-        } else {
-          buckets["12+ hours"]++;
+        // not sure why this would fail, but it seems that sometimes fediseer{"time"] is empty.
+        try {
+
+          const age = now - record[attribute];
+
+          // sort into hourly buckets: 1-2 hours, 2-4 hours, 4-6 hours, 6+ hours
+          if (age < 2 * 60 * 60 * 1000) {
+            buckets["1-2 hours"]++;
+          } else if (age < 4 * 60 * 60 * 1000) {
+            buckets["2-4 hours"]++;
+          } else if (age < 6 * 60 * 60 * 1000) {
+            buckets["4-6 hours"]++;
+          } else if (age < 8 * 60 * 60 * 1000) {
+            buckets["6-8 hours"]++;
+          } else if (age < 10 * 60 * 60 * 1000) {
+            buckets["8-10 hours"]++;
+          } else if (age < 12 * 60 * 60 * 1000) {
+            buckets["10-12 hours"]++;
+          } else {
+            buckets["12+ hours"]++;
+          }
+
+          return age;
+
+        } catch (e) {
+          console.error(e);
+          console.log(record);
+          
+          return 0;
         }
-
-        return age;
       });
 
       return {
@@ -112,11 +123,9 @@ export default class CrawlAged {
       table: "Fediverse",
       ...fediverseAgeDistribution.buckets,
     });
-
+    
     const lastCrawlAgeDistribution = getAgeDistribution(
-      Object.values(lastCrawls).map((value) => ({
-        time: value,
-      })),
+      Object.values(lastCrawls),
       "time"
     );
     healthData.push({
@@ -230,6 +239,17 @@ export default class CrawlAged {
     });
 
     logging.info("Aged Communities By Base", Object.keys(byBase).length);
+
+    const baseCounts = Object.keys(byBase)
+      .map((base) => {
+        return {
+          base,
+          count: byBase[base].length,
+        };
+      })
+      .sort((a, b) => a.count - b.count);
+
+    console.table(baseCounts);
 
     for (const community of agedCommunities) {
       const baseUrl = community.community.actor_id.split("/")[2];
