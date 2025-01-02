@@ -26,7 +26,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-   
   # download the redis dump from s3
   # create the json files for the redis data
   # upload the json files to github artifacts
@@ -39,7 +38,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
       - name: root suid tar
         run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
@@ -53,7 +51,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
-     
+
       - name: get current hour for cache busting
         id: cache-hour
         run: echo "hour=$(date +'%Y-%m-%d-%H')" >>$GITHUB_OUTPUT
@@ -79,6 +77,10 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ap-southeast-2
 
+      # log the sha 256 hash of the redis dump
+      - name: Log Redis Dump Hash
+        run: sha256sum ./.redis/dump.rdb
+
       # start redis & check if it is running
       - name: Start Redis
         working-directory: ./crawler
@@ -88,21 +90,22 @@ jobs:
       - working-directory: ./crawler
         run: docker compose -f "docker-compose.github.yaml" logs redis
 
-      # install npm dependencies
-      - name: Cache NPM Modules
+      # Install + Cache Crawler Dependencies
+      - name: Cache Node Modules | Crawler
         id: cache-crawler-npm
         uses: actions/cache@v3
         env:
           cache-name: cache-crawler-npm
         with:
           path: ./crawler/node_modules/
-          key: cache-crawler-npm-${{ hashFiles('crawler/package-lock.json') }}
+          key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
-      - name: Install Dependencies
+      - name: Install Node Modules | Crawler
         if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
-        run: npm ci
+        run: yarn --frozen-lockfile
         working-directory: ./crawler
 
+      # Run Crawler Output Script
       - name: Run Health Script
         run: node index.js --health
         working-directory: ./crawler
@@ -111,20 +114,12 @@ jobs:
         run: node index.js --out
         working-directory: ./crawler
 
-      # store the json files as artifacts
-      # - name: archive json artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist-json-bundle
-      #     path: |
-      #       ./frontend/public/data/
-
       - name: copy the json files to github pages
         working-directory: ./
         run: cp -r ./frontend/public/data/ ./pages/public/
 
       # build pages frontend
-      - name: Cache NPM Modules
+      - name: Cache Node Modules | Pages
         id: cache-pages-npm
         uses: actions/cache@v3
         env:
@@ -137,7 +132,7 @@ jobs:
         if: steps.cache-pages-npm.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./pages
-        
+
       - name: Build the Frontend for Pages
         run: npm run build
         working-directory: ./pages
@@ -147,7 +142,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: ./pages/dist/
-          
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
@@ -157,100 +152,3 @@ jobs:
         working-directory: ./crawler
         if: always()
         run: docker compose -f "docker-compose.github.yaml" down
-
-  # download the json files from the generate_jsons job
-  # install npm dependencies
-  # build the frontend
-  # store the frontend bundle as artifact
-  # build_frontend:
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 30
-  #   needs: generate_jsons
-
-  #   steps:
-
-  #     - uses: actions/checkout@v3
-
-  #     # download the artifacts from the generate_jsons job
-  #     - name: Download the JSON Bundle
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: dist-json-bundle
-  #         path: ./frontend/public/data/
-
-  #     # bundle the frontend
-  #     - name: Use Node.js 18.15.0
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18.15.0
-
-      # - name: List the JSON Bundle
-      #   run: ls -lah ./public/data
-      #   working-directory: ./frontend
-
-      # - name: Cache NPM Modules
-      #   id: cache-frontend-npm
-      #   uses: actions/cache@v3
-      #   env:
-      #     cache-name: cache-frontend-npm
-      #   with:
-      #     path: ./frontend/node_modules/
-      #     key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
-
-      # - name: Install Dependencies
-      #   if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-      #   run: npm ci
-      #   working-directory: ./frontend
-        
-      # - name: Build the Frontend
-      #   run: npm run build
-      #   working-directory: ./frontend
-
-  #     # store the frontend bundle as artifact
-  #     - name: Archive production artifacts
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: dist-frontend-bundle
-  #         path: |
-  #           ./frontend/dist/
-
-  # download the artifacts generated from the other jobs
-  # zip the json files
-  # generate a release tag
-  # create a release with artifacts zip attached
-  # create_release:
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [generate_jsons, build_frontend]
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     # download the artifacts from the generate_jsons job
-  #     - name: Download the JSON Bundle
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: dist-json-bundle
-  #         path: ./dist-json-bundle/
-
-  #     - name: Zip artifact for deployment
-  #       run: zip dist-json-bundle.zip ./dist-json-bundle/* -r
-
-  #     - name: Generate release tag
-  #       id: generate_release_tag
-  #       uses: amitsingh-007/next-release-tag@v4.0.0
-  #       with:
-  #         github_token: ${{ github.token }}
-  #         tag_prefix: 'v'
-  #         tag_template: 'yyyy.mm.dd.i'
-
-  #     - name: Create Release
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
-  #         name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
-  #         prerelease: false
-  #         generate_release_notes: true
-  #         fail_on_unmatched_files: true
-  #         files: ./dist-json-bundle.zip
-

@@ -12,7 +12,7 @@ on:
   schedule:
     - cron: "0 */6 * * *"
 
-concurrency: 
+concurrency:
   group: production
   cancel-in-progress: false
 
@@ -20,12 +20,11 @@ jobs:
   aws_deploy_prod:
     runs-on: ubuntu-latest
 
-    environment: 
+    environment:
       name: production
       url: https://lemmyverse.net
 
     steps:
-
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
       - name: root suid tar
         run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
@@ -36,7 +35,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
-     
+
       # download latest redis database
       - name: get current hour for cache busting
         id: cache-hour
@@ -77,7 +76,7 @@ jobs:
         run: docker compose -f "docker-compose.github.yaml" logs redis
 
       # Install + Cache Crawler Dependencies
-      - name: Load Node Modules Cache | Crawler
+      - name: Cache Node Modules | Crawler
         id: cache-crawler-npm
         uses: actions/cache@v3
         env:
@@ -118,13 +117,6 @@ jobs:
       - name: Build the Frontend
         run: npm run build
         working-directory: ./frontend
-
-      # - name: archive frontend bundle
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist-frontend-bundle
-      #     path: |
-      #       ./frontend/dist/
 
       - name: create-json
         id: create-json
