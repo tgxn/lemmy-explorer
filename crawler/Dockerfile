@@ -17,8 +17,10 @@ COPY ecosystem.config.cjs .
 COPY src src/
 
 # Install Dependencies
+RUN yarn global add tsx
+
 RUN yarn global add pm2
-RUN pm2 install typescript
+# RUN pm2 install typescript
 
 RUN yarn install
 

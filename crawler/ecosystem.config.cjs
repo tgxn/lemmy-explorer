@@ -3,7 +3,7 @@ const defaultOptions = {
   output: "./logs/out.log",
   script: "index.ts",
   exec_mode: "fork",
-  interpreter: "node",
+  interpreter: "tsx",
 };
 
 module.exports = {
