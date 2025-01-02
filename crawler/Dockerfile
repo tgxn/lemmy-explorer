@@ -11,7 +11,8 @@ WORKDIR /usr/src/app
 
 # Install App
 COPY index.js .
-COPY package*.json .
+COPY package.json .
+COPY yarn.lock .
 COPY ecosystem.config.cjs .
 COPY src src/
 

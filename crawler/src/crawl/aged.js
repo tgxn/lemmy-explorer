@@ -123,11 +123,9 @@ export default class CrawlAged {
       table: "Fediverse",
       ...fediverseAgeDistribution.buckets,
     });
-
+    
     const lastCrawlAgeDistribution = getAgeDistribution(
-      Object.values(lastCrawls).map((value) => ({
-        time: value,
-      })),
+      Object.values(lastCrawls),
       "time"
     );
     healthData.push({

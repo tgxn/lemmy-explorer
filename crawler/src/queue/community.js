@@ -10,10 +10,10 @@ import { CrawlTooRecentError } from "../lib/error.js";
 export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
     const processor = async ({ baseUrl }) => {
-      let communityData = null;
+      const startTime = Date.now();
 
       try {
-        // check if community's instance has already been crawled
+        // check if community's instance has already been crawled revcently (these expire from redis)
         const lastCrawlTs = await storage.tracking.getLastCrawl(
           "community",
           baseUrl
@@ -37,11 +37,24 @@ export default class CommunityQueue extends BaseQueue {
           );
         }
 
+        // perform the crawl
         const crawler = new CommunityCrawler(baseUrl);
         const communityData = await crawler.crawlList();
 
         // set last successful crawl
-        await storage.tracking.setLastCrawl("community", baseUrl);
+        await storage.tracking.setLastCrawl("community", baseUrl, {
+          duration: (Date.now() - startTime) / 1000,
+          resultCount: communityData.length,
+        });
+
+        const endTime = Date.now();
+        logging.info(
+          `[Community] [${baseUrl}] Finished in ${
+            (endTime - startTime) / 1000
+          }s`
+        );
+
+        return communityData;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(
@@ -54,16 +67,17 @@ export default class CommunityQueue extends BaseQueue {
             isAxiosError: error.isAxiosError,
             requestUrl: error.isAxiosError ? error.request.url : null,
             time: Date.now(),
+            duration: Date.now() - startTime,
           };
+
+          logging.error(`[Community] [${baseUrl}] Error: ${error.message}`);
 
           // if (error instanceof CrawlError || error instanceof AxiosError) {
           await storage.tracking.upsertError("community", baseUrl, errorDetail);
-
-          logging.error(`[Community] [${baseUrl}] Error: ${error.message}`);
         }
       }
 
-      return communityData;
+      return null;
     };
 
     super(isWorker, queueName, processor);

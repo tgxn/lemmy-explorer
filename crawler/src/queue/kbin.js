@@ -10,6 +10,8 @@ import BaseQueue from "./queue.js";
 export default class KBinQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "kbin") {
     const processor = async ({ baseUrl }) => {
+      const startTime = Date.now();
+
       try {
         // check for recent scan of this KBIN instance
         const lastCrawlTs = await storage.tracking.getLastCrawl(
@@ -26,7 +28,9 @@ export default class KBinQueue extends BaseQueue {
         const crawler = new KBinCrawler();
         const kbinInstance = await crawler.processOneInstance(baseUrl);
 
-        await storage.tracking.setLastCrawl("kbin", baseUrl);
+        await storage.tracking.setLastCrawl("kbin", baseUrl, {
+          duration: (Date.now() - startTime) / 1000,
+        });
 
         return kbinInstance;
       } catch (error) {

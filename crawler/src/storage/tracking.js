@@ -34,19 +34,29 @@ export default class TrackingStore {
 
   // track last scans for instance and communities
   async getLastCrawl(type, baseUrl) {
-    return this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
+    const lastCrawlRecord = await this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
+
+    if (lastCrawlRecord) {
+      if (lastCrawlRecord.time) {
+        return lastCrawlRecord.time;
+      }
+
+      return lastCrawlRecord;
+    }
+    
+    return null;
   }
 
   async listAllLastCrawl() {
     return this.storage.listRedisWithKeys(`${this.historyKey}:*`);
   }
 
-  async setLastCrawl(type, baseUrl) {
+  async setLastCrawl(type, baseUrl, data = null) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
     return this.storage.putRedisTTL(
       `${this.historyKey}:${type}:${baseUrl}`,
-      Date.now(),
+      { time: Date.now(), ...data },
       RECORD_TTL_TIMES_SECONDS.LAST_CRAWL
     );
   }

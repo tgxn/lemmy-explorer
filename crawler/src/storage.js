@@ -16,7 +16,7 @@ import FediseerStore from "./storage/fediseer.js";
 
 class Storage {
   constructor() {
-    console.log("Storage constructor", REDIS_URL);
+    // console.log("Storage constructor", REDIS_URL);
     this.client = createClient({
       url: REDIS_URL,
     });
