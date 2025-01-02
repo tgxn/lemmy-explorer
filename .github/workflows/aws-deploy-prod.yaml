@@ -118,7 +118,7 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
-      - name: create-json
+      - name: Create CDK Config JSON
         id: create-json
         uses: jsdaniell/create-json@v1.2.2
         with:
