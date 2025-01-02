@@ -1,16 +1,14 @@
-import Queue from "bee-queue";
 import logging from "../lib/logging";
-
-import { isValidLemmyDomain } from "../lib/validator";
 import storage from "../storage";
 
-import { CrawlError, CrawlTooRecentError } from "../lib/error";
 import { CRAWL_AGED_TIME } from "../lib/const";
+import { CrawlError, CrawlTooRecentError } from "../lib/error";
+import { isValidLemmyDomain } from "../lib/validator";
+
+import BaseQueue, { IJobProcessor, ISuccessCallback } from "./BaseQueue";
 
 import CommunityQueue from "./community";
 import InstanceCrawler from "../crawl/instance";
-
-import BaseQueue from "./queue";
 
 export default class InstanceQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "instance") {
@@ -34,7 +32,7 @@ export default class InstanceQueue extends BaseQueue {
     */
     const crawlCommunity = new CommunityQueue();
 
-    const processor = async ({ baseUrl }) => {
+    const processor: IJobProcessor = async ({ baseUrl }) => {
       const startTime = Date.now();
 
       try {
@@ -177,7 +175,10 @@ export default class InstanceQueue extends BaseQueue {
     super(isWorker, queueName, processor);
   }
 
-  async createJob(instanceBaseUrl, onSuccess = null) {
+  async createJob(
+    instanceBaseUrl: string,
+    onSuccess: ISuccessCallback | null = null
+  ) {
     // console.log("createJob", instanceBaseUrl);
     // replace http/s with nothign
     let trimmedUrl = instanceBaseUrl.replace(/^https?:\/\//, "").trim();
@@ -210,7 +211,7 @@ export default class InstanceQueue extends BaseQueue {
   }
 
   // returns a amount os ms since we last crawled it, false if all good
-  async getLastCrawlMsAgo(instanceBaseUrl) {
+  async getLastCrawlMsAgo(instanceBaseUrl: string) {
     const existingInstance = await storage.instance.getOne(instanceBaseUrl);
 
     if (existingInstance?.lastCrawled) {

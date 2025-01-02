@@ -1,26 +1,44 @@
+import BeeQueue from "bee-queue";
+
 import logging from "../lib/logging";
-
-import Queue from "bee-queue";
-
 import storage from "../storage";
 
 import { CrawlTooRecentError } from "../lib/error";
 import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";
 
+export type IJobProcessor = (processorConfig: {
+  baseUrl: string;
+  community?: string;
+}) => Promise<any>;
+
+export type ISuccessCallback = ((resultData: any) => void) | null;
+// export type ISuccessCallback1 = ISuccessCallback | null;
+
 export default class BaseQueue {
-  constructor(isWorker, queueName, jobProcessor) {
+  protected queueName: string;
+  protected queue: BeeQueue;
+  protected logPrefix: string;
+
+  protected jobProcessor: IJobProcessor;
+
+  constructor(
+    isWorker: boolean,
+    queueName: string,
+    jobProcessor: IJobProcessor
+  ) {
     this.queueName = queueName;
-    this.jobProcessor = jobProcessor;
 
-    this.logPrefix = `[Queue] [${this.queueName}]`;
-
-    this.queue = new Queue(queueName, {
+    this.queue = new BeeQueue(queueName, {
       redis: REDIS_URL,
       removeOnSuccess: true,
       removeOnFailure: true,
       isWorker: isWorker,
       getEvents: isWorker,
     });
+
+    this.logPrefix = `[Queue] [${this.queueName}]`;
+
+    this.jobProcessor = jobProcessor;
 
     // report failures!
     this.queue.on("failed", (job, err) => {
@@ -34,7 +52,7 @@ export default class BaseQueue {
     if (isWorker) this.process();
   }
 
-  async createJob(jobId, jobData, onSuccess = null) {
+  async createJob(jobId, jobData, onSuccess: ISuccessCallback = null) {
     const job = this.queue.createJob(jobData);
     logging.silly(`${this.logPrefix} createJob`, jobData);
 

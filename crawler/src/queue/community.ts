@@ -1,15 +1,15 @@
-import BaseQueue from "./queue";
-
-import CommunityCrawler from "../crawl/community";
-
 import logging from "../lib/logging";
 import storage from "../storage";
 
 import { CrawlTooRecentError } from "../lib/error";
 
+import BaseQueue, { IJobProcessor, ISuccessCallback } from "./BaseQueue";
+
+import CommunityCrawler from "../crawl/community";
+
 export default class CommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
-    const processor = async ({ baseUrl }) => {
+    const processor: IJobProcessor = async ({ baseUrl }) => {
       const startTime = Date.now();
 
       try {
@@ -83,7 +83,7 @@ export default class CommunityQueue extends BaseQueue {
     super(isWorker, queueName, processor);
   }
 
-  async createJob(instanceBaseUrl, onSuccess = null) {
+  async createJob(instanceBaseUrl: string, onSuccess: ISuccessCallback = null) {
     const trimmedUrl = instanceBaseUrl.trim();
 
     return await super.createJob(

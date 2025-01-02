@@ -62,7 +62,7 @@ export default class TrackingStore {
     return this.storage.listRedisWithKeys(`${this.historyKey}:*`);
   }
 
-  async setLastCrawl(type, baseUrl, data = null) {
+  async setLastCrawl(type, baseUrl, data: any = {}) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
     return this.storage.putRedisTTL(

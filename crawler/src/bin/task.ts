@@ -19,8 +19,19 @@ import storage from "../storage";
 
 import { START_URLS } from "../lib/const";
 
+type ITaskName =
+  | "out"
+  | "sync"
+  | "clean"
+  | "fedi"
+  | "init"
+  | "health"
+  | "aged"
+  | "kbin"
+  | "uptime";
+
 // used to run tasks against db that exist after they are complete
-export default async function runTask(taskName: string = null) {
+export default async function runTask(taskName: ITaskName) {
   logging.silly("Running Task:", taskName);
 
   if (taskName == null) {

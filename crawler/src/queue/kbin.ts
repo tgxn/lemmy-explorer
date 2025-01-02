@@ -1,15 +1,15 @@
 import logging from "../lib/logging";
+import storage from "../storage";
+
 import { CrawlTooRecentError } from "../lib/error";
 
-import storage from "../storage";
+import BaseQueue, { IJobProcessor, ISuccessCallback } from "./BaseQueue";
 
 import KBinCrawler from "../crawl/kbin";
 
-import BaseQueue from "./queue";
-
 export default class KBinQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "kbin") {
-    const processor = async ({ baseUrl }) => {
+    const processor: IJobProcessor = async ({ baseUrl }) => {
       const startTime = Date.now();
 
       try {
@@ -65,7 +65,7 @@ export default class KBinQueue extends BaseQueue {
   }
 
   // use as KBinQueue.createJob({ baseUrl: "https://kbin.io" });
-  async createJob(baseUrl, onSuccess = null) {
+  async createJob(baseUrl: string, onSuccess: ISuccessCallback = null) {
     await super.createJob(baseUrl, { baseUrl }, onSuccess);
   }
 }

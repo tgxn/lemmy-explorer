@@ -5,7 +5,7 @@
       "declaration": false,
       "declarationMap": false,
 
-      "noImplicitAny": false,
+      "noImplicitAny": true,
       "allowSyntheticDefaultImports": true,
 
       "esModuleInterop": true
