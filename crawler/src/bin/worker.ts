@@ -3,11 +3,12 @@ import cron from "node-cron";
 import logging from "../lib/logging";
 
 import InstanceQueue from "../queue/instance";
-import CommunityQueue from "../queue/community";
-import SingleCommunityQueue from "../queue/check_comm";
+import CommunityQueue from "../queue/community_list";
+import SingleCommunityQueue from "../queue/community_single";
 import KBinQueue from "../queue/kbin";
 
-import CrawlAged from "../crawl/aged";
+import CrawlAged from "../util/aged";
+
 import CrawlUptime from "../crawl/uptime";
 import CrawlKBin from "../crawl/kbin";
 

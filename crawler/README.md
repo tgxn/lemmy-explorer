@@ -109,6 +109,18 @@ These start a worker that will run a single job, then exit.
 
 
 
+## Project Structure
+
+| Directory | Description |
+| --- | --- |
+| `bin/` | helpers for CLI interface |
+| `crawler/` | main crawler scripts |
+| `lib/` | libraries for crawling and error handling |
+| `output/` | scripts to generate JSON output bundles |
+| `queue/` | queue processor scripts |
+| `store/` | redis storage classes |
+
+
 ## Storage
 
 Redis is used to store crawled data.
@@ -129,3 +141,4 @@ Data is persisted to a `.data/redis` directory.
 | `uptime:*` | Uptime data _(fetched from `api.fediverse.observer`)_ |
 
 Most of the keys have sub keys for the instance `base_url` or community `base_url:community_name`.
+

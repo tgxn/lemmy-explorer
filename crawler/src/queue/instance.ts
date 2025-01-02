@@ -7,7 +7,7 @@ import { isValidLemmyDomain } from "../lib/validator";
 
 import BaseQueue, { IJobProcessor, ISuccessCallback } from "./BaseQueue";
 
-import CommunityQueue from "./community";
+import CommunityQueue from "./community_list";
 import InstanceCrawler from "../crawl/instance";
 
 export default class InstanceQueue extends BaseQueue {

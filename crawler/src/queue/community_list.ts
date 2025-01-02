@@ -7,7 +7,7 @@ import BaseQueue, { IJobProcessor, ISuccessCallback } from "./BaseQueue";
 
 import CommunityCrawler from "../crawl/community";
 
-export default class CommunityQueue extends BaseQueue {
+export default class CommunityListQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "community") {
     const processor: IJobProcessor = async ({ baseUrl }) => {
       const startTime = Date.now();

@@ -1,19 +1,19 @@
 import logging from "../lib/logging";
 
 import InstanceQueue from "../queue/instance";
-import CommunityQueue from "../queue/community";
-import SingleCommunityQueue from "../queue/check_comm";
+import CommunityQueue from "../queue/community_list";
+import SingleCommunityQueue from "../queue/community_single";
 import KBinQueue from "../queue/kbin";
 
 import CrawlOutput from "../output/output";
 import { syncCheckpoint } from "../output/sync_s3";
 
-import CrawlAged from "../crawl/aged";
 import CrawlUptime from "../crawl/uptime";
 import CrawlFediseer from "../crawl/fediseer";
-
-import Failures from "../crawl/failures";
 import CrawlKBin from "../crawl/kbin";
+
+import CrawlAged from "../util/aged";
+import Failures from "../util/failures";
 
 import storage from "../storage";
 
@@ -129,13 +129,12 @@ export default async function runTask(taskName: ITaskName) {
       ]);
 
       // record health
-
       const agedAge = new CrawlAged();
       await agedAge.recordAges();
 
       break;
 
-    // adds ages domain jobs immediately
+    // adds ages domain jobs to queue
     case "aged":
       const aged = new CrawlAged();
       await aged.createJobs();

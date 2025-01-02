@@ -1,4 +1,4 @@
-import isValidDomain from "is-valid-domain";
+import validator from "validator";
 
 import logging from "./logging";
 
@@ -9,11 +9,13 @@ export function isValidLemmyDomain(domain: string) {
     throw new Error("domain is not a string");
   }
 
-  return isValidDomain(domain, {
-    subdomain: true,
-    allowUnicode: true,
-    topLevel: true,
-  });
+  return validator.isFQDN(domain, { allow_numeric_tld: true });
+
+  // return isValidDomain(domain, {
+  //   subdomain: true,
+  //   allowUnicode: true,
+  //   topLevel: true,
+  // });
 }
 
 export function getActorBaseUrl(actorId: string) {

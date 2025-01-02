@@ -10,9 +10,16 @@ import CommunityCrawler from "../crawl/community";
 export default class SingleCommunityQueue extends BaseQueue {
   constructor(isWorker = false, queueName = "one_community") {
     const processor: IJobProcessor = async ({ baseUrl, community }) => {
-      await storage.connect();
+      // await storage.connect();
 
       let communityData: any = null;
+
+      if (!baseUrl || !community) {
+        logging.error(
+          `[OneCommunity] [${baseUrl}] Missing baseUrl or community`
+        );
+        return null;
+      }
 
       try {
         const crawler = new CommunityCrawler(baseUrl);
@@ -44,7 +51,7 @@ export default class SingleCommunityQueue extends BaseQueue {
       }
 
       // close redis connection on end of job
-      await storage.close();
+      // await storage.close();
 
       return communityData;
     };
