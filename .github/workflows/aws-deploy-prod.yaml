@@ -63,6 +63,10 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ap-southeast-2
 
+      # log the sha 256 hash of the redis dump
+      - name: Log Redis Dump Hash
+        run: sha256sum ./.redis/dump.rdb
+        working-directory: ./crawler
 
       # start redis & check if it is running
       - name: Start Redis
@@ -73,22 +77,22 @@ jobs:
       - working-directory: ./crawler
         run: docker compose -f "docker-compose.github.yaml" logs redis
 
-
-      # install npm dependencies
-      - name: Cache NPM Modules
+      # Install + Cache Crawler Dependencies
+      - name: Load Node Modules Cache | Crawler
         id: cache-crawler-npm
         uses: actions/cache@v3
         env:
           cache-name: cache-crawler-npm
         with:
           path: ./crawler/node_modules/
-          key: cache-crawler-npm-${{ hashFiles('crawler/package-lock.json') }}
+          key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
-      - name: Install Dependencies
+      - name: Install Node Modules | Crawler
         if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
-        run: npm ci
+        run: yarn --frozen-lockfile
         working-directory: ./crawler
 
+      # Run Crawler Output Script
       - name: Run Health Script
         run: node index.js --health
         working-directory: ./crawler
@@ -97,9 +101,8 @@ jobs:
         run: node index.js --out
         working-directory: ./crawler
 
-
-      # install npm dependencies
-      - name: Cache NPM Modules
+      # Install + Cache Frontend Dependencies
+      - name: Cache Node Modules | Frontend
         id: cache-frontend-npm
         uses: actions/cache@v3
         env:
@@ -108,7 +111,7 @@ jobs:
           path: ./frontend/node_modules/
           key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install Dependencies
+      - name: Install Node Modules | Frontend
         if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./frontend
@@ -132,8 +135,8 @@ jobs:
           name: "config.json"
           json: ${{ vars.CONFIG_JSON }}
 
-      # install npm dependencies
-      - name: Cache NPM Modules
+      # Install + Cache CDK Dependencies
+      - name: Cache Node Modules | CDK
         id: cache-cdk-npm
         uses: actions/cache@v3
         env:
@@ -142,7 +145,7 @@ jobs:
           path: ./cdk/node_modules/
           key: cache-cdk-npm-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install CDK Dependencies
+      - name: Install Node Modules | CDK
         if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./cdk
