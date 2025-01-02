@@ -10,6 +10,13 @@ import storage from "../storage";
 import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const";
 
 export default class CrawlAged {
+  private agedInstanceBaseUrls: string[];
+
+  private instanceCrawler: InstanceQueue;
+  private communityCrawler: CommunityQueue;
+  private singleCommunityCrawler: SingleCommunityQueue;
+  private kbinCrawler: KBinQueue;
+
   constructor() {
     this.agedInstanceBaseUrls = [];
 
@@ -31,7 +38,7 @@ export default class CrawlAged {
     const errors = await storage.tracking.getAllErrors("*");
     const lastCrawls = await storage.tracking.listAllLastCrawl();
 
-    const healthData = [];
+    const healthData: any = [];
 
     // get age distribution
     function getAgeDistribution(records, attribute) {
@@ -152,7 +159,7 @@ export default class CrawlAged {
     ]);
   }
 
-  addInstance(instanceBaseUrl) {
+  addInstance(instanceBaseUrl: string) {
     if (!this.agedInstanceBaseUrls.includes(instanceBaseUrl)) {
       this.agedInstanceBaseUrls.push(instanceBaseUrl);
     }

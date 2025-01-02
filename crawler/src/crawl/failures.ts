@@ -15,9 +15,8 @@
 
 import storage from "../storage";
 
-import { getActorBaseUrl } from "../lib/validator";
-
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
+import { getActorBaseUrl } from "../lib/validator";
 
 // @TODO these should no longer be in the database to start with, not really required...
 export default class FailureCrawl {

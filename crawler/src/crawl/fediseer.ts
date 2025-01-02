@@ -1,35 +1,21 @@
-import axios, { AxiosInstance } from "axios";
-
 import logging from "../lib/logging";
 import storage from "../storage";
 
-import {
-  CRAWLER_USER_AGENT,
-  CRAWLER_ATTRIB_URL,
-  AXIOS_REQUEST_TIMEOUT,
-} from "../lib/const";
+import CrawlClient from "../lib/CrawlClient";
 
 export default class CrawlFediseer {
-  private axios: AxiosInstance;
+  private client: CrawlClient;
 
   constructor() {
-    this.axios = axios.create({
-      baseURL: "https://fediseer.com/api/v1/",
-      // timeout: 6000,
-      timeout: AXIOS_REQUEST_TIMEOUT,
-      headers: {
-        "User-Agent": CRAWLER_USER_AGENT,
-        "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
-      },
-    });
+    this.client = new CrawlClient("https://fediseer.com/api/v1/");
   }
 
   async getAllPagesData(page = 1) {
-    let mergedInstances = [];
+    let mergedInstances: any = [];
 
     const perPage = 100;
 
-    const fediseerWhitelist = await this.axios.get(
+    const fediseerWhitelist = await this.client.getUrl(
       `/whitelist?endorsements=0&guarantors=0&page=${page}&limit=${perPage}&software_csv=lemmy`
     );
     //   //  {
@@ -79,7 +65,7 @@ export default class CrawlFediseer {
      *   how many instances this one has endorsed
      */
 
-    const fediseerTopTagsData = await this.axios.get(`/tags`);
+    const fediseerTopTagsData = await this.client.getUrl(`/tags`);
     console.log(`fediseer top tags total: ${fediseerTopTagsData.data.length}`);
 
     const fediseerWhitelist = await this.getAllPagesData();

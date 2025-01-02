@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-function hoursToMs(hours) {
+function hoursToMs(hours: number) {
   return hours * 60 * 60 * 1000;
 }
 

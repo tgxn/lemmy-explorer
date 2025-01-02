@@ -4,7 +4,8 @@ import removeMd from "remove-markdown";
 
 import { OUTPUT_MAX_AGE } from "../lib/const";
 import logging from "../lib/logging";
-import AxiosClient from "../lib/axios";
+
+import CrawlClient from "../lib/CrawlClient";
 
 import storage from "../storage";
 
@@ -315,7 +316,7 @@ export default class CrawlOutput {
     await this.fileWriter.storeMetaData(metaData);
 
     // get previous run  from current production data
-    const client = new AxiosClient();
+    const client = new CrawlClient();
     let previousRun = await client.getUrl(
       "https://lemmyverse.net/data/meta.json"
     );

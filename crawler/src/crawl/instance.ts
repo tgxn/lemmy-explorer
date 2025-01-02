@@ -5,23 +5,30 @@ import { getActorBaseUrl } from "../lib/validator";
 
 import storage from "../storage";
 
-import AxiosClient from "../lib/axios";
+import CrawlClient from "../lib/CrawlClient";
 
 import KBinQueue from "../queue/kbin";
 
 export default class InstanceCrawler {
-  constructor(crawlDomain) {
+  private crawlDomain: string;
+  private logPrefix: string;
+
+  private kbinQueue: KBinQueue;
+
+  private client: CrawlClient;
+
+  constructor(crawlDomain: string) {
     this.crawlDomain = crawlDomain;
     this.logPrefix = `[Instance] [${this.crawlDomain}]`;
 
     this.kbinQueue = new KBinQueue(false);
 
-    this.client = new AxiosClient();
+    this.client = new CrawlClient();
   }
 
   // fully process the instance crawl, called from bequeue and errors are handled above this
   async crawl() {
-    const instanceData = await this.crawlInstance(this.crawlDomain);
+    const instanceData = await this.crawlInstance();
 
     if (instanceData) {
       // store/update the instance
@@ -136,7 +143,7 @@ export default class InstanceCrawler {
      */
 
     function mapLangsToCodes(allLangsArray, discussionIdsArray) {
-      const discussionLangs = [];
+      const discussionLangs: string[] = [];
 
       if (!allLangsArray) return [];
       if (!discussionIdsArray) return [];

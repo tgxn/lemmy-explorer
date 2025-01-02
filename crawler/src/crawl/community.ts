@@ -4,7 +4,7 @@ import { CrawlError } from "../lib/error";
 
 import storage from "../storage";
 
-import AxiosClient from "../lib/axios";
+import CrawlClient from "../lib/CrawlClient";
 
 const TIME_BETWEEN_PAGES = 2000;
 
@@ -20,15 +20,20 @@ const PAGE_TIMEOUT = 5000;
  * Each instance is a unique baseURL
  */
 export default class CommunityCrawler {
-  constructor(crawlDomain) {
+  private crawlDomain: string;
+  private logPrefix: string;
+
+  private client: CrawlClient;
+
+  constructor(crawlDomain: string) {
     this.crawlDomain = crawlDomain;
     this.logPrefix = `[CommunityList] [${this.crawlDomain}]`;
 
-    this.client = new AxiosClient();
+    this.client = new CrawlClient();
   }
 
   // the actor id for the community should match the domain https://lemmy.fmhy.ml/c/freemediaheckyeah
-  splitCommunityActorParts(actorId) {
+  splitCommunityActorParts(actorId: string) {
     const splitActorId = actorId.split("/");
     const basePart = splitActorId[2];
     const communityPart = splitActorId[4];
@@ -119,7 +124,7 @@ export default class CommunityCrawler {
     return true;
   }
 
-  async crawlSingle(communityName) {
+  async crawlSingle(communityName: string) {
     try {
       logging.debug(`${this.logPrefix} Starting Crawl: ${communityName}`);
 
@@ -134,7 +139,7 @@ export default class CommunityCrawler {
     }
   }
 
-  async getSingleCommunityData(communityName, attempt = 0) {
+  async getSingleCommunityData(communityName: string, attempt: number = 0) {
     try {
       const communityData = await this.client.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community",
@@ -213,7 +218,7 @@ export default class CommunityCrawler {
     }
   }
 
-  async crawlCommunityPaginatedList(pageNumber = 1) {
+  async crawlCommunityPaginatedList(pageNumber: number = 1) {
     const communities = await this.getPageData(pageNumber);
 
     logging.debug(
@@ -221,7 +226,7 @@ export default class CommunityCrawler {
     );
 
     //  promises track the upsert of community data
-    let promises = [];
+    let promises: Promise<any>[] = [];
 
     for (var community of communities) {
       promises.push(this.storeCommunityData(community));
@@ -243,7 +248,7 @@ export default class CommunityCrawler {
     return promises;
   }
 
-  async getPageData(pageNumber = 1) {
+  async getPageData(pageNumber: number = 1) {
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
 
     let communityList;

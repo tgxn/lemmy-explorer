@@ -49,7 +49,6 @@ export default class KBinQueue extends BaseQueue {
           time: Date.now(),
         };
 
-        // if (error instanceof CrawlError || error instanceof AxiosError) {
         await storage.tracking.upsertError("kbin", baseUrl, errorDetail);
 
         logging.error(

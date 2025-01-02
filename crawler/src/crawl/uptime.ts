@@ -6,15 +6,17 @@ import logging from "../lib/logging";
 
 import storage from "../storage";
 
-import AxiosClient from "../lib/axios";
+import CrawlClient from "../lib/CrawlClient";
 
 export default class CrawlUptime {
+  private client: CrawlClient;
+
   constructor() {
-    this.client = new AxiosClient();
+    this.client = new CrawlClient();
   }
 
   async crawl() {
-    const instances = await this.client.axios.post(
+    const instances = await this.client.postUrl(
       "https://api.fediverse.observer/",
       {
         query: `query{

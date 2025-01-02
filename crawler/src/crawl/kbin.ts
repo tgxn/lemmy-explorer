@@ -1,3 +1,7 @@
+import path from "path";
+import util from "util";
+import { exec } from "node:child_process";
+
 import logging from "../lib/logging";
 
 import storage from "../storage";
@@ -7,26 +11,25 @@ import { CrawlError, CrawlTooRecentError } from "../lib/error";
 import KBinQueue from "../queue/kbin";
 import InstanceQueue from "../queue/instance";
 
-import AxiosClient from "../lib/axios";
-
-// const util = require("util");
-// const execAsync = util.promisify(require("child_process").exec);
-
-import path from "path";
-
-import util from "util";
-import { exec } from "child_process";
+import CrawlClient from "../lib/CrawlClient";
 
 const execAsync = util.promisify(exec);
 
 export default class CrawlKBin {
+  private fediverseData: any;
+  private logPrefix: string;
+
+  private instanceQueue: InstanceQueue;
+
+  private client: CrawlClient;
+
   constructor() {
     this.fediverseData = null;
     this.logPrefix = `[CrawlKBin]`;
 
     this.instanceQueue = new InstanceQueue(false);
 
-    this.client = new AxiosClient();
+    this.client = new CrawlClient();
   }
 
   // scan the full list of fediverse marked instances with "kbin"
@@ -173,7 +176,9 @@ export default class CrawlKBin {
     const mappedArray = results.stdout.split("\n");
 
     if (!Array.isArray(mappedArray)) {
-      throw new CrawlError("failed to get sketch", e);
+      throw new CrawlError(
+        `failed to get sketch (${baseUrl}): ${results.stdout}`
+      );
     }
 
     return mappedArray;
