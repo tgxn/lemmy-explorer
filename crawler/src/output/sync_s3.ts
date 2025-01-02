@@ -3,21 +3,13 @@ import { rm, mkdir, readFile, copyFile } from "node:fs/promises";
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-import {
-  AWS_REGION,
-  PUBLISH_S3_BUCKET,
-  CHECKPOINT_DIR,
-  REDIS_DUMP_FILE,
-} from "../lib/const";
+import { AWS_REGION, PUBLISH_S3_BUCKET, CHECKPOINT_DIR, REDIS_DUMP_FILE } from "../lib/const";
 
 // upload a copy of the file in REDIS_DUMP_FILE to S3
 export async function syncCheckpoint() {
   try {
     const checkpointName = `checkpoint-${Date.now()}.rdb`;
-    const checkpointPath = path.join(
-      path.resolve(CHECKPOINT_DIR),
-      checkpointName
-    );
+    const checkpointPath = path.join(path.resolve(CHECKPOINT_DIR), checkpointName);
     console.log("checkpointPath", checkpointPath);
 
     // copy the file to a save point

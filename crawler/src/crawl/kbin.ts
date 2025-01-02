@@ -78,34 +78,24 @@ export default class CrawlKBin {
     });
 
     console.log(
-      `${this.logPrefix} [${kbinBaseUrl}] local: ${localMagazines.length} others: ${nonLocalMagazines.length} `
+      `${this.logPrefix} [${kbinBaseUrl}] local: ${localMagazines.length} others: ${nonLocalMagazines.length} `,
     );
 
     if (localMagazines.length > 0) {
       for (const mag of localMagazines) {
         try {
           // check for recent scan of this magazine
-          const lastCrawl = await storage.tracking.getLastCrawl(
-            "magazine",
-            `${kbinBaseUrl}:${mag}`
-          );
+          const lastCrawl = await storage.tracking.getLastCrawl("magazine", `${kbinBaseUrl}:${mag}`);
           if (lastCrawl) {
             const lastCrawledMsAgo = Date.now() - lastCrawl.time;
             throw new CrawlTooRecentError(
-              `Skipping - Crawled too recently (${
-                lastCrawledMsAgo / 1000
-              }s ago)`
+              `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`,
             );
           }
 
           await this.getStoreMag(kbinBaseUrl, mag);
         } catch (e) {
-          console.error(
-            `${this.logPrefix} error scanning kbin MAG`,
-            kbinBaseUrl,
-            mag,
-            e.message
-          );
+          console.error(`${this.logPrefix} error scanning kbin MAG`, kbinBaseUrl, mag, e.message);
         }
         // await new Promise((resolve) => setTimeout(resolve, 1000));
       }
@@ -164,21 +154,14 @@ export default class CrawlKBin {
   // this calls the current method from here https://github.com/tgxn/lemmy-explorer/issues/100#issuecomment-1617444934
   async getSketch(baseUrl) {
     var currentPath = process.cwd();
-    const printHelloCommand = `/bin/bash ${path.join(
-      currentPath,
-      "src",
-      "crawl",
-      "sketch.sh"
-    )} ${baseUrl}`;
+    const printHelloCommand = `/bin/bash ${path.join(currentPath, "src", "crawl", "sketch.sh")} ${baseUrl}`;
     const results = await execAsync(printHelloCommand);
     // console.log(results.stdout);
 
     const mappedArray = results.stdout.split("\n");
 
     if (!Array.isArray(mappedArray)) {
-      throw new CrawlError(
-        `failed to get sketch (${baseUrl}): ${results.stdout}`
-      );
+      throw new CrawlError(`failed to get sketch (${baseUrl}): ${results.stdout}`);
     }
 
     return mappedArray;
@@ -186,10 +169,7 @@ export default class CrawlKBin {
 
   // uses non-documented api on instances to get a json list of all kbin magazine data
   async getMagazineInfo(baseUrl, magazineName) {
-    console.log(
-      `${this.logPrefix} getMagazineInfo`,
-      "https://" + baseUrl + "/m/" + magazineName
-    );
+    console.log(`${this.logPrefix} getMagazineInfo`, "https://" + baseUrl + "/m/" + magazineName);
     const magazineInfo = await this.client.getUrlWithRetry(
       "https://" + baseUrl + "/m/" + magazineName,
       {
@@ -198,7 +178,7 @@ export default class CrawlKBin {
           Accept: "application/ld+json",
         },
       },
-      1
+      1,
     );
 
     return magazineInfo.data;
@@ -213,7 +193,7 @@ export default class CrawlKBin {
           Accept: "application/ld+json",
         },
       },
-      3
+      3,
     );
     return wellKnownInfo.data;
   }

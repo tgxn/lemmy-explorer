@@ -46,15 +46,11 @@ export default class Instance {
   }
 
   // use these to track instance attributes over time
-  async setTrackedAttribute(
-    baseUrl: string,
-    attributeName: string,
-    attributeValue: string
-  ) {
+  async setTrackedAttribute(baseUrl: string, attributeName: string, attributeValue: string) {
     await this.storage.redisZAdd(
       `attributes:instance:${baseUrl}:${attributeName}`,
       Date.now(),
-      attributeValue
+      attributeValue,
     );
   }
 
@@ -65,10 +61,7 @@ export default class Instance {
   }
 
   async getAttributeWithScores(baseUrl: string, attributeName: string) {
-    const keys = await this.storage.getAttributesWithScores(
-      baseUrl,
-      attributeName
-    );
+    const keys = await this.storage.getAttributesWithScores(baseUrl, attributeName);
 
     return keys;
   }

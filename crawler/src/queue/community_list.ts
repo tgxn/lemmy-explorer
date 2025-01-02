@@ -15,7 +15,7 @@ export default class CommunityListQueue extends BaseQueue {
       {
         baseUrl: trimmedUrl,
       },
-      onSuccess
+      onSuccess,
     );
   }
 }

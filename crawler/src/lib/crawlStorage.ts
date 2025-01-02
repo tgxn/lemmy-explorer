@@ -64,11 +64,7 @@ export class CrawlStorage {
     return this.client.set(key, JSON.stringify(value));
   }
 
-  async putRedisTTL(
-    key: string,
-    value: any,
-    expireInSeconds: number
-  ): Promise<any> {
+  async putRedisTTL(key: string, value: any, expireInSeconds: number): Promise<any> {
     await this.client.set(key, JSON.stringify(value));
     return this.client.expire(key, expireInSeconds);
   }
@@ -94,7 +90,7 @@ export class CrawlStorage {
       keys.map(async (key) => {
         const json = await this.client.get(key);
         object[key] = json ? JSON.parse(json) : null;
-      })
+      }),
     );
     return object;
   }
@@ -106,7 +102,7 @@ export class CrawlStorage {
       keys.map(async (key) => {
         const json = await this.client.get(key);
         return json ? JSON.parse(json) : null;
-      })
+      }),
     );
   }
 
@@ -121,32 +117,26 @@ export class CrawlStorage {
     return this.client.del(key);
   }
 
-  async getAttributeArray(
-    baseUrl: string,
-    attributeName: string
-  ): Promise<any> {
+  async getAttributeArray(baseUrl: string, attributeName: string): Promise<any> {
     const start = Date.now() - this.attributeMaxAge;
     const end = Date.now();
 
     const keys = await this.client.zRangeByScore(
       `attributes:instance:${baseUrl}:${attributeName}`,
       start,
-      end
+      end,
     );
     return keys;
   }
 
-  async getAttributesWithScores(
-    baseUrl: string,
-    attributeName: string
-  ): Promise<any> {
+  async getAttributesWithScores(baseUrl: string, attributeName: string): Promise<any> {
     const start = Date.now() - this.attributeMaxAge;
     const end = Date.now();
 
     const keys = await this.client.zRangeByScoreWithScores(
       `attributes:instance:${baseUrl}:${attributeName}`,
       start,
-      end
+      end,
     );
     return keys;
   }

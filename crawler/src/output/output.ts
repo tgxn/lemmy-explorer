@@ -109,7 +109,7 @@ class OutputUtils {
     returnCommunityArray,
     kbinInstanceArray,
     kbinMagazineArray,
-    returnStats
+    returnStats,
   ) {
     const issues: string[] = [];
 
@@ -129,9 +129,7 @@ class OutputUtils {
     for (let i = 0; i < returnInstanceArray.length; i++) {
       const instance = returnInstanceArray[i];
 
-      const found = returnInstanceArray.find(
-        (i) => i.baseurl === instance.baseurl
-      );
+      const found = returnInstanceArray.find((i) => i.baseurl === instance.baseurl);
 
       if (found && found !== instance) {
         console.log("Duplicate Instance", instance.baseurl);
@@ -242,9 +240,7 @@ export default class CrawlOutput {
   async loadAllData() {
     this.uptimeData = await crawlStorage.uptime.getLatest();
     this.instanceErrors = await crawlStorage.tracking.getAllErrors("instance");
-    this.communityErrors = await crawlStorage.tracking.getAllErrors(
-      "community"
-    );
+    this.communityErrors = await crawlStorage.tracking.getAllErrors("community");
     this.instanceList = await crawlStorage.instance.getAll();
     this.communityList = await crawlStorage.community.getAll();
     this.fediverseData = await crawlStorage.fediverse.getAll();
@@ -269,16 +265,14 @@ export default class CrawlOutput {
     const returnInstanceArray = await this.getInstanceArray();
     await this.fileWriter.storeInstanceData(returnInstanceArray);
 
-    const returnCommunityArray = await this.getCommunityArray(
-      returnInstanceArray
-    );
+    const returnCommunityArray = await this.getCommunityArray(returnInstanceArray);
     await this.fileWriter.storeCommunityData(returnCommunityArray);
 
     // generate instance-level metrics `instance.com.json` for each instance
     await Promise.all(
       returnInstanceArray.map(async (instance) => {
         return this.generateInstanceMetrics(instance, returnCommunityArray);
-      })
+      }),
     );
 
     // fediverse data
@@ -293,9 +287,7 @@ export default class CrawlOutput {
 
     // STORE RUN METADATA
     const packageJson = JSON.parse(
-      (
-        await readFile(new URL("../../package.json", import.meta.url))
-      ).toString()
+      (await readFile(new URL("../../package.json", import.meta.url))).toString(),
     );
 
     const metaData = {
@@ -319,9 +311,7 @@ export default class CrawlOutput {
 
     // get previous run  from current production data
     const client = new CrawlClient();
-    let previousRun = await client.getUrl(
-      "https://lemmyverse.net/data/meta.json"
-    );
+    let previousRun = await client.getUrl("https://lemmyverse.net/data/meta.json");
     previousRun = previousRun.data;
 
     console.log("Done; Total vs. Output");
@@ -340,40 +330,28 @@ export default class CrawlOutput {
           Total: this.instanceList.length,
           Output: returnInstanceArray.length,
           Previous: previousRun.instances,
-          Change: calcChangeDisplay(
-            returnInstanceArray.length,
-            previousRun.instances
-          ),
+          Change: calcChangeDisplay(returnInstanceArray.length, previousRun.instances),
         },
         Communities: {
           ExportName: "Communities",
           Total: this.communityList.length,
           Output: returnCommunityArray.length,
           Previous: previousRun.communities,
-          Change: calcChangeDisplay(
-            returnCommunityArray.length,
-            previousRun.communities
-          ),
+          Change: calcChangeDisplay(returnCommunityArray.length, previousRun.communities),
         },
         KBinInstances: {
           ExportName: "KBin Instances",
           Total: "N/A",
           Output: kbinInstanceArray.length,
           Previous: previousRun.kbin_instances,
-          Change: calcChangeDisplay(
-            kbinInstanceArray.length,
-            previousRun.kbin_instances
-          ),
+          Change: calcChangeDisplay(kbinInstanceArray.length, previousRun.kbin_instances),
         },
         Magazines: {
           ExportName: "Magazines",
           Total: this.kbinData.length,
           Output: kbinMagazineArray.length,
           Previous: previousRun.magazines,
-          Change: calcChangeDisplay(
-            kbinMagazineArray.length,
-            previousRun.magazines
-          ),
+          Change: calcChangeDisplay(kbinMagazineArray.length, previousRun.magazines),
         },
         Fediverse: {
           ExportName: "Fediverse Servers",
@@ -393,7 +371,7 @@ export default class CrawlOutput {
           Output: susSiteList.length,
         },
       },
-      ["Total", "Output", "Previous", "Change"]
+      ["Total", "Output", "Previous", "Change"],
     );
 
     const validateOutput = await OutputUtils.validateOutput(
@@ -402,7 +380,7 @@ export default class CrawlOutput {
       returnCommunityArray,
       kbinInstanceArray,
       kbinMagazineArray,
-      returnStats
+      returnStats,
     );
 
     return validateOutput;
@@ -418,10 +396,7 @@ export default class CrawlOutput {
   findFail(baseUrl) {
     const keyName = `error:instance:${baseUrl}`;
 
-    const value =
-      this.instanceErrors[
-        Object.keys(this.instanceErrors).find((k) => k === keyName)
-      ];
+    const value = this.instanceErrors[Object.keys(this.instanceErrors).find((k) => k === keyName)];
 
     if (value) {
       return value;
@@ -432,22 +407,10 @@ export default class CrawlOutput {
 
   async generateInstanceMetrics(instance, storeCommunityData) {
     // get timeseries
-    const usersSeries = await crawlStorage.instance.getAttributeWithScores(
-      instance.baseurl,
-      "users"
-    );
-    const postsSeries = await crawlStorage.instance.getAttributeWithScores(
-      instance.baseurl,
-      "posts"
-    );
-    const commentsSeries = await crawlStorage.instance.getAttributeWithScores(
-      instance.baseurl,
-      "comments"
-    );
-    const versionSeries = await crawlStorage.instance.getAttributeWithScores(
-      instance.baseurl,
-      "version"
-    );
+    const usersSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "users");
+    const postsSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "posts");
+    const commentsSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "comments");
+    const versionSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "version");
 
     // generate array with time -> value
     const users = usersSeries.map((item) => {
@@ -477,9 +440,7 @@ export default class CrawlOutput {
 
     await this.fileWriter.storeInstanceMetricsData(instance.baseurl, {
       instance,
-      communityCount: storeCommunityData.filter(
-        (community) => community.baseurl === instance.baseurl
-      ).length,
+      communityCount: storeCommunityData.filter((community) => community.baseurl === instance.baseurl).length,
       users,
       posts,
       comments,
@@ -499,8 +460,7 @@ export default class CrawlOutput {
         const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
 
         const incomingBlocks = this.trust.blockedFederation[siteBaseUrl] || 0;
-        const outgoingBlocks =
-          instance.siteData.federated?.blocked?.length || 0;
+        const outgoingBlocks = instance.siteData.federated?.blocked?.length || 0;
 
         const instanceTrustData = this.trust.getInstance(siteBaseUrl);
 
@@ -514,10 +474,7 @@ export default class CrawlOutput {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
-          desc: OutputUtils.stripMarkdownSubStr(
-            instance.siteData.site.description,
-            350
-          ),
+          desc: OutputUtils.stripMarkdownSubStr(instance.siteData.site.description, 350),
 
           // config
           downvotes: instance.siteData.config?.enable_downvotes,
@@ -537,9 +494,7 @@ export default class CrawlOutput {
           langs: instance.langs,
 
           date: instance.siteData.site.published, // TO BE DEPRECATED
-          published: this.parseLemmyTimeToUnix(
-            instance.siteData?.site?.published
-          ),
+          published: this.parseLemmyTimeToUnix(instance.siteData?.site?.published),
 
           time: instance.lastCrawled || null,
           score: score,
@@ -558,7 +513,7 @@ export default class CrawlOutput {
           },
           blocked: instance.siteData.federated?.blocked || [],
         };
-      })
+      }),
     );
 
     // add trust
@@ -605,9 +560,7 @@ export default class CrawlOutput {
     });
 
     // filter blank
-    storeData = storeData.filter(
-      (instance) => instance.url !== "" || instance.name !== ""
-    );
+    storeData = storeData.filter((instance) => instance.url !== "" || instance.name !== "");
 
     // logging.info(
     //   `Instances ${this.instanceList.length} -> ${storeData.length}`
@@ -646,18 +599,12 @@ export default class CrawlOutput {
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
-        const score = await this.trust.calcCommunityScore(
-          siteBaseUrl,
-          community
-        );
+        const score = await this.trust.calcCommunityScore(siteBaseUrl, community);
 
         const relatedInstance = this.instanceList.find(
-          (instance) =>
-            instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl
+          (instance) => instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl,
         );
-        const isInstanceSus = await this.trust.getInstanceSusReasons(
-          relatedInstance
-        );
+        const isInstanceSus = await this.trust.getInstanceSusReasons(relatedInstance);
 
         // // calculate community published time
         // let publishTime = null;
@@ -693,10 +640,7 @@ export default class CrawlOutput {
           url: community.community.actor_id,
           name: community.community.name,
           title: community.community.title,
-          desc: OutputUtils.stripMarkdownSubStr(
-            community.community.description,
-            350
-          ),
+          desc: OutputUtils.stripMarkdownSubStr(community.community.description, 350),
           icon: community.community.icon,
           banner: community.community.banner,
           nsfw: community.community.nsfw,
@@ -707,7 +651,7 @@ export default class CrawlOutput {
           isSuspicious: isInstanceSus.length > 0 ? true : false,
           score: score,
         };
-      })
+      }),
     );
 
     // remove those with errors that happened before updated time
@@ -758,7 +702,7 @@ export default class CrawlOutput {
       let preFilterInstance = storeCommunityData.length;
       storeCommunityData = storeCommunityData.filter((community) => {
         const relatedInstance = returnInstanceArray.find(
-          (instance) => instance.baseurl === community.baseurl
+          (instance) => instance.baseurl === community.baseurl,
         );
 
         if (!relatedInstance) {
@@ -772,15 +716,12 @@ export default class CrawlOutput {
 
         return true;
       });
-      console.log(
-        `Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`
-      );
+      console.log(`Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`);
     }
 
     // filter blank
     storeCommunityData = storeCommunityData.filter(
-      (community) =>
-        community.url !== "" || community.name !== "" || community.title !== ""
+      (community) => community.url !== "" || community.name !== "" || community.title !== "",
     );
 
     // logging.info(
@@ -840,12 +781,7 @@ export default class CrawlOutput {
       return b.count - a.count;
     });
 
-    await this.fileWriter.storeFediverseData(
-      returnStats,
-      softwareNames,
-      softwareBaseUrls,
-      tagCounts
-    );
+    await this.fileWriter.storeFediverseData(returnStats, softwareNames, softwareBaseUrls, tagCounts);
 
     return returnStats;
   }

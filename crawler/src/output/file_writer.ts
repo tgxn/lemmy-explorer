@@ -83,11 +83,7 @@ export default class OutputFileWriter {
   }
 
   async storeInstanceData(instanceArray) {
-    await this.storeChunkedData(
-      "instance",
-      this.instancesPerFile,
-      instanceArray
-    );
+    await this.storeChunkedData("instance", this.instancesPerFile, instanceArray);
 
     // minified version, just names and base urls
     const minInstanceArray = instanceArray.map((instance) => {
@@ -98,24 +94,14 @@ export default class OutputFileWriter {
       };
     });
 
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/instance.min.json`,
-      JSON.stringify(minInstanceArray)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/instance.min.json`, JSON.stringify(minInstanceArray));
   }
 
   async storeCommunityData(communityArray) {
-    await this.storeChunkedData(
-      "community",
-      this.communitiesPerFile,
-      communityArray
-    );
+    await this.storeChunkedData("community", this.communitiesPerFile, communityArray);
 
     for (let i = 0; i < communityArray.length; i++) {
-      await this.storeCommunityMetricsData(
-        communityArray[i].baseurl,
-        communityArray[i]
-      );
+      await this.storeCommunityMetricsData(communityArray[i].baseurl, communityArray[i]);
     }
   }
 
@@ -127,10 +113,7 @@ export default class OutputFileWriter {
    * @param {array} dataArray - the data array to split
    */
   async storeChunkedData(chunkName: string, perFile: number, dataArray: any) {
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/${chunkName}.full.json`,
-      JSON.stringify(dataArray)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/${chunkName}.full.json`, JSON.stringify(dataArray));
 
     // mapped versions and the metadata
     await mkdir(path.join(this.publicDataFolder, chunkName), {
@@ -143,7 +126,7 @@ export default class OutputFileWriter {
 
       await this.writeJsonFile(
         `${this.publicDataFolder}/${chunkName}/${fileCount}.json`,
-        JSON.stringify(chunk)
+        JSON.stringify(chunk),
       );
       fileCount++;
     }
@@ -152,7 +135,7 @@ export default class OutputFileWriter {
       `${this.publicDataFolder}/${chunkName}.json`,
       JSON.stringify({
         count: fileCount,
-      })
+      }),
     );
   }
 
@@ -163,30 +146,19 @@ export default class OutputFileWriter {
    * @param {object} softwareData - the fediverse software data
    * @param {object} softwareBaseUrls - the fediverse software base urls
    */
-  async storeFediverseData(
-    data: any,
-    softwareData: any,
-    softwareBaseUrls: any,
-    fediTags: any
-  ) {
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/fediverse.json`,
-      JSON.stringify(data)
-    );
+  async storeFediverseData(data: any, softwareData: any, softwareBaseUrls: any, fediTags: any) {
+    await this.writeJsonFile(`${this.publicDataFolder}/fediverse.json`, JSON.stringify(data));
     await this.writeJsonFile(
       `${this.publicDataFolder}/fediverse_software_counts.json`,
-      JSON.stringify(softwareData)
+      JSON.stringify(softwareData),
     );
     await this.writeJsonFile(
       `${this.publicDataFolder}/fediverse_software_sites.json`,
-      JSON.stringify(softwareBaseUrls)
+      JSON.stringify(softwareBaseUrls),
     );
 
     // write tags meta
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/tags.meta.json`,
-      JSON.stringify(fediTags)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/tags.meta.json`, JSON.stringify(fediTags));
   }
 
   /**
@@ -200,10 +172,7 @@ export default class OutputFileWriter {
       recursive: true,
     });
 
-    await this.writeJsonFile(
-      `${this.metricsPath}/${instanceBaseUrl}.meta.json`,
-      JSON.stringify(data)
-    );
+    await this.writeJsonFile(`${this.metricsPath}/${instanceBaseUrl}.meta.json`, JSON.stringify(data));
   }
 
   /**
@@ -219,36 +188,24 @@ export default class OutputFileWriter {
 
     await this.writeJsonFile(
       `${this.communityMetricsPath}/${instanceBaseUrl}/${communityData.name}.meta.json`,
-      JSON.stringify(communityData)
+      JSON.stringify(communityData),
     );
   }
 
   async storeMetaData(data: any) {
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/meta.json`,
-      JSON.stringify(data)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/meta.json`, JSON.stringify(data));
   }
 
   async storeInstanceErrors(data: any) {
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/instanceErrors.json`,
-      JSON.stringify(data)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/instanceErrors.json`, JSON.stringify(data));
   }
 
   async storeSuspicousData(data: any) {
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/sus.json`,
-      JSON.stringify(data)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/sus.json`, JSON.stringify(data));
   }
 
   async storeKbinInstanceList(data: any) {
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/kbin.min.json`,
-      JSON.stringify(data)
-    );
+    await this.writeJsonFile(`${this.publicDataFolder}/kbin.min.json`, JSON.stringify(data));
   }
 
   async storeKBinMagazineData(data: any) {

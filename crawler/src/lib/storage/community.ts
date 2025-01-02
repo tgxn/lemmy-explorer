@@ -54,26 +54,16 @@ export default class Community {
       ...community,
       lastCrawled: Date.now(),
     };
-    return this.storage.putRedis(
-      `community:${baseUrl}:${community.community.name.toLowerCase()}`,
-      storeData
-    );
+    return this.storage.putRedis(`community:${baseUrl}:${community.community.name.toLowerCase()}`, storeData);
   }
 
-  async delete(
-    baseUrl: string,
-    communityName: string,
-    reason: string = "unknown"
-  ) {
+  async delete(baseUrl: string, communityName: string, reason: string = "unknown") {
     const oldRecord = await this.getOne(baseUrl, communityName);
-    await this.storage.putRedis(
-      `deleted:community:${baseUrl}:${communityName}`,
-      {
-        ...oldRecord,
-        deletedAt: Date.now(),
-        deleteReason: reason,
-      }
-    );
+    await this.storage.putRedis(`deleted:community:${baseUrl}:${communityName}`, {
+      ...oldRecord,
+      deletedAt: Date.now(),
+      deleteReason: reason,
+    });
 
     return this.storage.deleteRedis(`community:${baseUrl}:${communityName}`);
   }
@@ -83,12 +73,12 @@ export default class Community {
     baseUrl: string,
     communityName: string,
     attributeName: string,
-    attributeValue: string
+    attributeValue: string,
   ) {
     return this.storage.redisZAdd(
       `attributes:community:${baseUrl}:${communityName}:${attributeName}`,
       Date.now(),
-      attributeValue
+      attributeValue,
     );
   }
 }

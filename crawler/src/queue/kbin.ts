@@ -17,9 +17,7 @@ export default class KBinQueue extends BaseQueue {
         const lastCrawl = await storage.tracking.getLastCrawl("kbin", baseUrl);
         if (lastCrawl) {
           const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-          throw new CrawlTooRecentError(
-            `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
-          );
+          throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
         }
 
         const crawler = new KBinCrawler();
@@ -32,9 +30,7 @@ export default class KBinQueue extends BaseQueue {
         return kbinInstance;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
-          logging.warn(
-            `[KBinQueue] [${baseUrl}] CrawlTooRecentError: ${error.message}`
-          );
+          logging.warn(`[KBinQueue] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
           return true;
         }
 
@@ -48,10 +44,7 @@ export default class KBinQueue extends BaseQueue {
 
         await storage.tracking.upsertError("kbin", baseUrl, errorDetail);
 
-        logging.error(
-          `[KBinQueue] [${baseUrl}] Error: ${error.message}`,
-          error
-        );
+        logging.error(`[KBinQueue] [${baseUrl}] Error: ${error.message}`, error);
       }
 
       return false;

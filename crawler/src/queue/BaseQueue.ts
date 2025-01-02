@@ -6,10 +6,7 @@ import crawlStorage from "../lib/crawlStorage";
 import { CrawlTooRecentError } from "../lib/error";
 import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";
 
-export type IJobProcessor = (processorConfig: {
-  baseUrl: string;
-  community?: string;
-}) => Promise<any>;
+export type IJobProcessor = (processorConfig: { baseUrl: string; community?: string }) => Promise<any>;
 
 export type ISuccessCallback = ((resultData: any) => void) | null;
 // export type ISuccessCallback1 = ISuccessCallback | null;
@@ -21,11 +18,7 @@ export default class BaseQueue {
 
   protected jobProcessor: IJobProcessor;
 
-  constructor(
-    isWorker: boolean,
-    queueName: string,
-    jobProcessor: IJobProcessor
-  ) {
+  constructor(isWorker: boolean, queueName: string, jobProcessor: IJobProcessor) {
     this.queueName = queueName;
 
     this.queue = new BeeQueue(queueName, {
@@ -42,11 +35,7 @@ export default class BaseQueue {
 
     // report failures!
     this.queue.on("failed", (job, err) => {
-      logging.error(
-        `${this.logPrefix} job:${job.id} failed with error: ${err.message}`,
-        job,
-        err
-      );
+      logging.error(`${this.logPrefix} job:${job.id} failed with error: ${err.message}`, job, err);
     });
 
     if (isWorker) this.process();
@@ -70,16 +59,12 @@ export default class BaseQueue {
 
       let resultData = null;
       try {
-        logging.info(
-          `${this.logPrefix} [${job.data.baseUrl}] Running Processor`
-        );
+        logging.info(`${this.logPrefix} [${job.data.baseUrl}] Running Processor`);
 
         resultData = await this.jobProcessor(job.data);
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
-          logging.warn(
-            `${this.logPrefix} [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`
-          );
+          logging.warn(`${this.logPrefix} [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`);
         } else {
           // store all other errors
           const errorDetail = {
@@ -91,16 +76,9 @@ export default class BaseQueue {
           };
 
           // if (error instanceof CrawlError || error instanceof AxiosError) {
-          await crawlStorage.tracking.upsertError(
-            this.queueName,
-            job.data.baseUrl,
-            errorDetail
-          );
+          await crawlStorage.tracking.upsertError(this.queueName, job.data.baseUrl, errorDetail);
 
-          logging.error(
-            `${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`,
-            error
-          );
+          logging.error(`${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`, error);
         }
       }
 

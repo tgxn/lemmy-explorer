@@ -52,8 +52,9 @@ export default class OutputTrust {
     this.endorsements = this.getAllInstanceEndorsements();
 
     // parse all federated instance data
-    const [linkedFederation, allowedFederation, blockedFederation] =
-      this.getFederationLists(this.instanceList);
+    const [linkedFederation, allowedFederation, blockedFederation] = this.getFederationLists(
+      this.instanceList,
+    );
 
     this.linkedFederation = linkedFederation;
     this.allowedFederation = allowedFederation;
@@ -80,20 +81,11 @@ export default class OutputTrust {
 
         const instanceMetrics = await this.calculateInstanceMetrics(instance);
 
-        const instanceGuarantor = this.fediseerData.find(
-          (instance) => instance.domain === baseUrl
-        );
+        const instanceGuarantor = this.fediseerData.find((instance) => instance.domain === baseUrl);
 
         let guarantor = null;
-        if (
-          instanceGuarantor !== undefined &&
-          instanceGuarantor.guarantor !== null
-        ) {
-          console.log(
-            baseUrl,
-            "instanceGuarantor",
-            instanceGuarantor.guarantor
-          );
+        if (instanceGuarantor !== undefined && instanceGuarantor.guarantor !== null) {
+          console.log(baseUrl, "instanceGuarantor", instanceGuarantor.guarantor);
           guarantor = instanceGuarantor.guarantor;
         }
 
@@ -117,19 +109,15 @@ export default class OutputTrust {
           guarantor,
           endorsements: this.endorsements[baseUrl] || 0,
         };
-      })
+      }),
     );
 
     // get all metrics into one object
     this.allInstanceMetrics = {
-      userActivityScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.userActivityScore
-      ),
-      activityUserScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.activityUserScore
-      ),
+      userActivityScores: this.instancesWithMetrics.map((instance) => instance.metrics.userActivityScore),
+      activityUserScores: this.instancesWithMetrics.map((instance) => instance.metrics.activityUserScore),
       userActiveMonthScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.userActiveMonthScore
+        (instance) => instance.metrics.userActiveMonthScore,
       ),
     };
 
@@ -138,10 +126,7 @@ export default class OutputTrust {
     // add reasons to each instance after deviations are calculated
     this.instancesWithMetrics = await Promise.all(
       this.instancesWithMetrics.map(async (instance) => {
-        const susReasons = await this.instanceSusReasonList(
-          instance.baseurl,
-          instance.metrics
-        );
+        const susReasons = await this.instanceSusReasonList(instance.baseurl, instance.metrics);
 
         const instanceScore = this.calcInstanceScore(instance.baseurl);
 
@@ -150,7 +135,7 @@ export default class OutputTrust {
           score: instanceScore,
           reasons: susReasons,
         };
-      })
+      }),
     );
   }
 
@@ -158,9 +143,7 @@ export default class OutputTrust {
     let tags = [];
 
     const baseUrl = instance.siteData.site.actor_id.split("/")[2];
-    const fediseerData = this.fediseerData.find(
-      (instance) => instance.domain === baseUrl
-    );
+    const fediseerData = this.fediseerData.find((instance) => instance.domain === baseUrl);
 
     if (fediseerData && fediseerData.tags) {
       tags = fediseerData.tags.map((tag) => tag.tag);
@@ -195,9 +178,7 @@ export default class OutputTrust {
       usersMonth: instance.siteData.counts.users_active_month || 1,
       usersWeek: instance.siteData.counts.users_active_week || 1,
 
-      totalActivity:
-        instance.nodeData.usage.localPosts +
-          instance.nodeData.usage.localComments || 1,
+      totalActivity: instance.nodeData.usage.localPosts + instance.nodeData.usage.localComments || 1,
       localPosts: instance.nodeData.usage.localPosts || 1,
       localComments: instance.nodeData.usage.localComments || 1,
     };
@@ -205,8 +186,7 @@ export default class OutputTrust {
     // using the history, calculate how much it increses each crawl
     // and then how many users per minute that is...
     // also calculate how much increase growth % per scan
-    let instanceUserHistory =
-      await crawlStorage.instance.getAttributeWithScores(baseUrl, "users");
+    let instanceUserHistory = await crawlStorage.instance.getAttributeWithScores(baseUrl, "users");
 
     // console.log("getAttributeWithScores", instanceUserHistory);
     if (instanceUserHistory.length > 0) {
@@ -300,8 +280,7 @@ export default class OutputTrust {
         }
       }
 
-      metrics.averagePerMinute =
-        Number((totalPerMinute / totalIncreases).toFixed(5)) || -1;
+      metrics.averagePerMinute = Number((totalPerMinute / totalIncreases).toFixed(5)) || -1;
       // console.log(
       //   this.baseUrl,
       //   "averagePerMinute",
@@ -329,11 +308,7 @@ export default class OutputTrust {
     // console.log(this.baseUrl, "metrics", metrics);
 
     // if less than x, skip
-    if (
-      metrics.usersTotal < 1000 &&
-      metrics.localPosts < 1000 &&
-      metrics.localComments < 1000
-    ) {
+    if (metrics.usersTotal < 1000 && metrics.localPosts < 1000 && metrics.localComments < 1000) {
       return [];
     }
 
@@ -351,7 +326,7 @@ export default class OutputTrust {
     const SUS_LEVEL = 20;
     if (metrics.userActivityScore > SUS_LEVEL) {
       reasons.push(
-        `Total Users vs. Total Activity is LOW: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`
+        `Total Users vs. Total Activity is LOW: ${metrics.usersTotal} / ${metrics.totalActivity} = ${metrics.userActivityScore}`,
       );
     }
 
@@ -369,7 +344,7 @@ export default class OutputTrust {
     const susMaxPercent = 500;
     if (metrics.userActiveMonthScore > susMaxPercent) {
       reasons.push(
-        `MAU Count is LOW: ${metrics.usersTotal} / ${metrics.usersMonth} = ${metrics.userActiveMonthScore}`
+        `MAU Count is LOW: ${metrics.usersTotal} / ${metrics.usersMonth} = ${metrics.userActiveMonthScore}`,
       );
     }
 
@@ -396,7 +371,7 @@ export default class OutputTrust {
       if (reasons.length > 0) {
         console.log(
           `skipping sus checks for instance: ${baseUrl} with guarantor: ${instanceGuarantor} (that sould have been marked as sus otherwise!)`,
-          reasons
+          reasons,
         );
       }
 
@@ -410,9 +385,7 @@ export default class OutputTrust {
 
   // getters for the data
   getInstanceGuarantor(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find(
-      (instance) => instance.baseurl === baseUrl
-    );
+    const instanceGuarantor = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
 
     if (instanceGuarantor?.guarantor) {
       return instanceGuarantor.guarantor;
@@ -434,9 +407,7 @@ export default class OutputTrust {
   // }
 
   getInstance(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find(
-      (instance) => instance.baseurl === baseUrl
-    );
+    const instanceGuarantor = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
 
     if (instanceGuarantor) {
       return instanceGuarantor;
@@ -469,9 +440,7 @@ export default class OutputTrust {
   }
 
   getInstanceSusReasons(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find(
-      (instance) => instance.baseurl === baseUrl
-    );
+    const instanceGuarantor = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
 
     if (instanceGuarantor?.reasons) {
       return instanceGuarantor.reasons;
@@ -492,18 +461,9 @@ export default class OutputTrust {
   */
   async calcInstanceDeviation() {
     // these returns an array of deviations for each value in the array
-    let response1 = divinator.zscore(
-      this.allInstanceMetrics.userActivityScores,
-      0.75
-    );
-    let response2 = divinator.zscore(
-      this.allInstanceMetrics.activityUserScores,
-      0.75
-    );
-    let response3 = divinator.zscore(
-      this.allInstanceMetrics.userActiveMonthScores,
-      0.75
-    );
+    let response1 = divinator.zscore(this.allInstanceMetrics.userActivityScores, 0.75);
+    let response2 = divinator.zscore(this.allInstanceMetrics.activityUserScores, 0.75);
+    let response3 = divinator.zscore(this.allInstanceMetrics.userActiveMonthScores, 0.75);
 
     // deviations are stored as arrays of booleans (true if they are outside the allowed range)
     const deviations = {};
@@ -521,14 +481,9 @@ export default class OutputTrust {
       }
 
       if (baseUrlDeviations.length > 0) {
-        console.log(
-          "instance deviates!!",
-          this.instancesWithMetrics[index].baseurl,
-          baseUrlDeviations
-        );
+        console.log("instance deviates!!", this.instancesWithMetrics[index].baseurl, baseUrlDeviations);
 
-        deviations[this.instancesWithMetrics[index].baseurl] =
-          baseUrlDeviations;
+        deviations[this.instancesWithMetrics[index].baseurl] = baseUrlDeviations;
       }
     }
 
@@ -586,16 +541,13 @@ export default class OutputTrust {
       "literature.cafe",
       "enterprise.lemmy.ml",
     ];
-    if (log.includes(baseUrl))
-      console.log(baseUrl, "scores", scores, "overall", score);
+    if (log.includes(baseUrl)) console.log(baseUrl, "scores", scores, "overall", score);
 
     return score;
   }
 
   async calcCommunityScore(baseUrl, community) {
-    const instanceMetrics = this.instancesWithMetrics.find(
-      (instance) => instance.baseurl === baseUrl
-    );
+    const instanceMetrics = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
 
     // multiply score based subscribers
     const activityScore = community.counts.subscribers;

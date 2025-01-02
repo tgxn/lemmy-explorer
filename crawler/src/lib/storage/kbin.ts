@@ -32,10 +32,7 @@ export default class KBinStore {
       ...magazine,
       lastCrawled: Date.now(),
     };
-    return this.storage.putRedis(
-      `magazine:${baseUrl}:${magazine.name.toLowerCase()}`,
-      storeData
-    );
+    return this.storage.putRedis(`magazine:${baseUrl}:${magazine.name.toLowerCase()}`, storeData);
   }
 
   async delete(baseUrl, magazineName, reason = "unknown") {
@@ -50,16 +47,11 @@ export default class KBinStore {
   }
 
   // use these to track magazine attributes over time
-  async setTrackedAttribute(
-    baseUrl,
-    magazineName,
-    attributeName,
-    attributeValue
-  ) {
+  async setTrackedAttribute(baseUrl, magazineName, attributeName, attributeValue) {
     return await this.storage.redisZAdd(
       `attributes:magazine:${baseUrl}:${magazineName}:${attributeName}`,
       Date.now(),
-      attributeValue
+      attributeValue,
     );
   }
 }

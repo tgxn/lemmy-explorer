@@ -43,9 +43,7 @@ export default class InstanceCrawler {
         lastCrawled: Date.now(),
       });
 
-      logging.info(
-        `${this.logPrefix} Completed OK (Found "${instanceData?.siteData?.site?.name}")`
-      );
+      logging.info(`${this.logPrefix} Completed OK (Found "${instanceData?.siteData?.site?.name}")`);
 
       return instanceData;
     }
@@ -54,14 +52,13 @@ export default class InstanceCrawler {
   }
 
   async getNodeInfo() {
-    const wellKnownUrl =
-      "https://" + this.crawlDomain + "/.well-known/nodeinfo";
+    const wellKnownUrl = "https://" + this.crawlDomain + "/.well-known/nodeinfo";
     const wellKnownInfo = await this.client.getUrlWithRetry(
       wellKnownUrl,
       {
         timeout: 10000, // smaller for nodeinfo
       },
-      2
+      2,
     );
 
     let nodeinfoUrl;
@@ -86,9 +83,7 @@ export default class InstanceCrawler {
   }
 
   async getSiteInfo() {
-    const siteInfo = await this.client.getUrlWithRetry(
-      "https://" + this.crawlDomain + "/api/v3/site"
-    );
+    const siteInfo = await this.client.getUrlWithRetry("https://" + this.crawlDomain + "/api/v3/site");
 
     return [siteInfo.data, siteInfo.headers];
   }
@@ -115,10 +110,7 @@ export default class InstanceCrawler {
     }
 
     // only allow lemmy instances
-    if (
-      nodeInfo.software.name != "lemmy" &&
-      nodeInfo.software.name != "lemmybb"
-    ) {
+    if (nodeInfo.software.name != "lemmy" && nodeInfo.software.name != "lemmybb") {
       throw new CrawlError(`not a lemmy instance (${nodeInfo.software.name})`);
     }
 
@@ -127,20 +119,16 @@ export default class InstanceCrawler {
 
     const actorBaseUrl = getActorBaseUrl(siteInfo.site_view.site.actor_id);
     if (!actorBaseUrl) {
-      console.error(
-        `${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`
-      );
-      throw new CrawlError(
-        `${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`
-      );
+      console.error(`${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
+      throw new CrawlError(`${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
     }
 
     if (actorBaseUrl !== this.crawlDomain) {
       console.error(
-        `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`
+        `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`,
       );
       throw new CrawlError(
-        `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`
+        `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`,
       );
     }
 
@@ -171,10 +159,7 @@ export default class InstanceCrawler {
       return discussionLangs;
     }
 
-    const discussionLangs = mapLangsToCodes(
-      siteInfo.all_languages,
-      siteInfo.discussion_languages
-    );
+    const discussionLangs = mapLangsToCodes(siteInfo.all_languages, siteInfo.discussion_languages);
 
     //   logging.info(siteInfo);
     const instanceData = {
@@ -198,45 +183,41 @@ export default class InstanceCrawler {
 
     try {
       // store versioned attributes
-      await crawlStorage.instance.setTrackedAttribute(
-        this.crawlDomain,
-        "version",
-        siteInfo.version
-      );
+      await crawlStorage.instance.setTrackedAttribute(this.crawlDomain, "version", siteInfo.version);
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users",
-        siteInfo.site_view.counts.users
+        siteInfo.site_view.counts.users,
       );
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "posts",
-        siteInfo.site_view.counts.posts
+        siteInfo.site_view.counts.posts,
       );
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "comments",
-        siteInfo.site_view.counts.comments
+        siteInfo.site_view.counts.comments,
       );
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "communities",
-        siteInfo.site_view.counts.communities
+        siteInfo.site_view.counts.communities,
       );
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users_active_day",
-        siteInfo.site_view.counts.users_active_day
+        siteInfo.site_view.counts.users_active_day,
       );
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users_active_week",
-        siteInfo.site_view.counts.users_active_week
+        siteInfo.site_view.counts.users_active_week,
       );
       await crawlStorage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users_active_month",
-        siteInfo.site_view.counts.users_active_month
+        siteInfo.site_view.counts.users_active_month,
       );
     } catch (e) {
       console.error(e);
@@ -341,9 +322,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     logging.debug(`[Instance] [${baseUrl}] Starting Crawl`);
 
     // check if it's known to not be running lemmy (recan it if it's been a while)
-    const knownFediverseServer = await crawlStorage.fediverse.getOne(
-      instanceBaseUrl
-    );
+    const knownFediverseServer = await crawlStorage.fediverse.getOne(instanceBaseUrl);
     if (knownFediverseServer) {
       if (
         knownFediverseServer.name !== "lemmy" &&
@@ -353,33 +332,23 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
         Date.now() - knownFediverseServer.time < CRAWL_AGED_TIME.FEDIVERSE // re-scan fedi servers to check their status
       ) {
         throw new CrawlTooRecentError(
-          `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}"`
+          `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}"`,
         );
       }
     }
 
     //  last crawl if it's been successfully too recently
-    const lastCrawl = await crawlStorage.tracking.getLastCrawl(
-      "instance",
-      instanceBaseUrl
-    );
+    const lastCrawl = await crawlStorage.tracking.getLastCrawl("instance", instanceBaseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(
-        `Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`
-      );
+      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
     }
 
     // check when the latest entry to errors was too recent
-    const lastErrorTs = await crawlStorage.tracking.getOneError(
-      "instance",
-      instanceBaseUrl
-    );
+    const lastErrorTs = await crawlStorage.tracking.getOneError("instance", instanceBaseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
-      throw new CrawlTooRecentError(
-        `Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`
-      );
+      throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
     }
 
     const crawler = new InstanceCrawler(instanceBaseUrl);
@@ -387,19 +356,13 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
 
     // start crawl jobs for federated instances
     if (instanceData.siteData?.federated?.linked.length > 0) {
-      const countFederated = await crawlFederatedInstanceJobs(
-        instanceData.siteData.federated
-      );
+      const countFederated = await crawlFederatedInstanceJobs(instanceData.siteData.federated);
 
-      logging.info(
-        `[Instance] [${baseUrl}] Created ${countFederated.length} federated instance jobs`
-      );
+      logging.info(`[Instance] [${baseUrl}] Created ${countFederated.length} federated instance jobs`);
     }
 
     // create job to scan the instance for communities once a crawl succeeds
-    logging.info(
-      `[Instance] [${baseUrl}] Creating community crawl job for ${instanceBaseUrl}`
-    );
+    logging.info(`[Instance] [${baseUrl}] Creating community crawl job for ${instanceBaseUrl}`);
     const crawlCommunity = new CommunityListQueue();
     await crawlCommunity.createJob(instanceBaseUrl);
 
@@ -409,16 +372,12 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     });
 
     const endTime = Date.now();
-    logging.info(
-      `[Instance] [${baseUrl}] Finished in ${(endTime - startTime) / 1000}s`
-    );
+    logging.info(`[Instance] [${baseUrl}] Finished in ${(endTime - startTime) / 1000}s`);
 
     return instanceData;
   } catch (error) {
     if (error instanceof CrawlTooRecentError) {
-      logging.warn(
-        `[Instance] [${baseUrl}] CrawlTooRecentError: ${error.message}`
-      );
+      logging.warn(`[Instance] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
     } else if (error instanceof HTTPError) {
       const errorDetail = {
         error: error.message,

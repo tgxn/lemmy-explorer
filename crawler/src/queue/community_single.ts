@@ -7,11 +7,7 @@ export default class SingleCommunityQueue extends BaseQueue {
     super(isWorker, queueName, singleCommunityProcessor);
   }
 
-  async createJob(
-    baseUrl: string,
-    communityName: string,
-    onSuccess: ISuccessCallback = null
-  ) {
+  async createJob(baseUrl: string, communityName: string, onSuccess: ISuccessCallback = null) {
     const trimmedUrl = baseUrl.trim();
 
     return await super.createJob(
@@ -20,7 +16,7 @@ export default class SingleCommunityQueue extends BaseQueue {
         baseUrl: trimmedUrl,
         community: communityName,
       },
-      onSuccess
+      onSuccess,
     );
   }
 }

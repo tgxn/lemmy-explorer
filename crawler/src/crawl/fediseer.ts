@@ -16,7 +16,7 @@ export default class CrawlFediseer {
     const perPage = 100;
 
     const fediseerWhitelist = await this.client.getUrl(
-      `/whitelist?endorsements=0&guarantors=0&page=${page}&limit=${perPage}&software_csv=lemmy`
+      `/whitelist?endorsements=0&guarantors=0&page=${page}&limit=${perPage}&software_csv=lemmy`,
     );
     //   //  {
     //   //   query: `query{
@@ -37,9 +37,7 @@ export default class CrawlFediseer {
 
     mergedInstances = [...fediseerWhitelist.data.instances];
 
-    console.log(
-      `got ${fediseerWhitelist.data.instances.length} instances from page ${page}`
-    );
+    console.log(`got ${fediseerWhitelist.data.instances.length} instances from page ${page}`);
 
     if (fediseerWhitelist.data.instances.length != perPage) {
       return mergedInstances;
@@ -78,12 +76,9 @@ export default class CrawlFediseer {
     // map "rank" into tags, based on data from fediseerTopTagsData [{ tag, count }]
     fediseerWhitelist.forEach((instance) => {
       instance.tags = instance.tags.map((tag) => {
-        const fediseerTag = fediseerTopTagsData.data.find(
-          (fediseerTag) => fediseerTag.tag == tag
-        );
+        const fediseerTag = fediseerTopTagsData.data.find((fediseerTag) => fediseerTag.tag == tag);
 
-        if (!fediseerTag)
-          console.log("fediseerTag not found in top tags", tag, fediseerTag);
+        if (!fediseerTag) console.log("fediseerTag not found in top tags", tag, fediseerTag);
 
         return { tag: tag, rank: fediseerTag ? fediseerTag.count : 0 };
       });

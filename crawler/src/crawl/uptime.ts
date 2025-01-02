@@ -16,10 +16,8 @@ export default class CrawlUptime {
   }
 
   async crawl() {
-    const instances = await this.client.postUrl(
-      "https://api.fediverse.observer/",
-      {
-        query: `query{
+    const instances = await this.client.postUrl("https://api.fediverse.observer/", {
+      query: `query{
             nodes (softwarename: "lemmy") {
             domain
             latency
@@ -32,8 +30,7 @@ export default class CrawlUptime {
             status
             }
         }`,
-      }
-    );
+    });
     logging.info(instances.data);
 
     await crawlStorage.uptime.addNew({

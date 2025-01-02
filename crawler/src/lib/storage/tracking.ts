@@ -49,7 +49,7 @@ export default class TrackingStore {
     return this.storage.putRedisTTL(
       `${this.failureKey}:${type}:${baseUrl}`,
       errorDetail,
-      RECORD_TTL_TIMES_SECONDS.ERROR
+      RECORD_TTL_TIMES_SECONDS.ERROR,
     );
   }
 
@@ -68,7 +68,7 @@ export default class TrackingStore {
     return this.storage.putRedisTTL(
       `${this.historyKey}:${type}:${baseUrl}`,
       { time: Date.now(), ...data },
-      RECORD_TTL_TIMES_SECONDS.LAST_CRAWL
+      RECORD_TTL_TIMES_SECONDS.LAST_CRAWL,
     );
   }
 }

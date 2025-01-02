@@ -17,16 +17,7 @@ import CrawlKBin from "../crawl/kbin";
 import CrawlAged from "../util/aged";
 import Failures from "../util/failures";
 
-type ITaskName =
-  | "out"
-  | "sync"
-  | "clean"
-  | "fedi"
-  | "init"
-  | "health"
-  | "aged"
-  | "kbin"
-  | "uptime";
+type ITaskName = "out" | "sync" | "clean" | "fedi" | "init" | "health" | "aged" | "kbin" | "uptime";
 
 // used to run tasks against db that exist after they are complete
 export default async function runTask(taskName: ITaskName) {
@@ -118,13 +109,7 @@ export default async function runTask(taskName: ITaskName) {
       });
 
       console.info("Queue Health Metrics");
-      console.table(healthData, [
-        "queue",
-        "waiting",
-        "active",
-        "succeeded",
-        "failed",
-      ]);
+      console.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
 
       // record health
       const agedAge = new CrawlAged();

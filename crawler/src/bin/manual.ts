@@ -5,11 +5,7 @@ import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import KBinQueue from "../queue/kbin";
 
-export default async function runManualWorker(
-  workerName: string,
-  firstParam: string,
-  secondParam: string
-) {
+export default async function runManualWorker(workerName: string, firstParam: string, secondParam: string) {
   // scan one instance
   if (workerName == "i" || workerName == "instance") {
     logging.info(`Running Instance Crawl for ${firstParam}`);
