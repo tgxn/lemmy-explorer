@@ -1,7 +1,5 @@
-import { open } from "node:fs/promises";
 import path from "node:path";
-
-import { rm, mkdir } from "node:fs/promises";
+import { open, rm, mkdir } from "node:fs/promises";
 
 /**
  * OutputFileWriter - This class handles writing the output JSON files.
@@ -61,6 +59,14 @@ import { rm, mkdir } from "node:fs/promises";
 
 // should do all the things needed to transform the redis data into data for frontend
 export default class OutputFileWriter {
+  private publicDataFolder: string;
+  private metricsPath: string;
+  private communityMetricsPath: string;
+
+  private communitiesPerFile: number;
+  private instancesPerFile: number;
+  private magazinesPerFile: number;
+
   constructor() {
     this.publicDataFolder = `../frontend/public/data`;
 
@@ -120,7 +126,7 @@ export default class OutputFileWriter {
    * @param {number} perFile - how many entries per file
    * @param {array} dataArray - the data array to split
    */
-  async storeChunkedData(chunkName, perFile, dataArray) {
+  async storeChunkedData(chunkName: string, perFile: number, dataArray: any) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/${chunkName}.full.json`,
       JSON.stringify(dataArray)
@@ -157,7 +163,12 @@ export default class OutputFileWriter {
    * @param {object} softwareData - the fediverse software data
    * @param {object} softwareBaseUrls - the fediverse software base urls
    */
-  async storeFediverseData(data, softwareData, softwareBaseUrls, fediTags) {
+  async storeFediverseData(
+    data: any,
+    softwareData: any,
+    softwareBaseUrls: any,
+    fediTags: any
+  ) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/fediverse.json`,
       JSON.stringify(data)
@@ -184,7 +195,7 @@ export default class OutputFileWriter {
    * @param {string} instanceBaseUrl - the base url of the instance
    * @param {object} data - the instance metrics data
    */
-  async storeInstanceMetricsData(instanceBaseUrl, data) {
+  async storeInstanceMetricsData(instanceBaseUrl: String, data: any) {
     await mkdir(this.metricsPath, {
       recursive: true,
     });
@@ -201,7 +212,7 @@ export default class OutputFileWriter {
    * @param {string} instanceBaseUrl - the base url of the instance
    * @param {object} data - the instance metrics data
    */
-  async storeCommunityMetricsData(instanceBaseUrl, communityData) {
+  async storeCommunityMetricsData(instanceBaseUrl: string, communityData: any) {
     await mkdir(`${this.communityMetricsPath}/${instanceBaseUrl}`, {
       recursive: true,
     });
@@ -212,35 +223,35 @@ export default class OutputFileWriter {
     );
   }
 
-  async storeMetaData(data) {
+  async storeMetaData(data: any) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/meta.json`,
       JSON.stringify(data)
     );
   }
 
-  async storeInstanceErrors(data) {
+  async storeInstanceErrors(data: any) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/instanceErrors.json`,
       JSON.stringify(data)
     );
   }
 
-  async storeSuspicousData(data) {
+  async storeSuspicousData(data: any) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/sus.json`,
       JSON.stringify(data)
     );
   }
 
-  async storeKbinInstanceList(data) {
+  async storeKbinInstanceList(data: any) {
     await this.writeJsonFile(
       `${this.publicDataFolder}/kbin.min.json`,
       JSON.stringify(data)
     );
   }
 
-  async storeKBinMagazineData(data) {
+  async storeKBinMagazineData(data: any) {
     await this.storeChunkedData("magazines", this.magazinesPerFile, data);
   }
 
@@ -249,11 +260,12 @@ export default class OutputFileWriter {
     await mkdir(this.publicDataFolder, { recursive: true });
   }
 
-  async writeJsonFile(filename, data) {
-    let filehandle = null;
+  async writeJsonFile(filename: string, data: any) {
+    let filehandle: any = null;
     try {
       filehandle = await open(filename, "w");
-      await filehandle.writeFile(data);
+
+      await filehandle?.writeFile(data);
     } finally {
       await filehandle?.close();
     }

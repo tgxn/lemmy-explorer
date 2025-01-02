@@ -1,7 +1,7 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
 import path from "node:path";
 import { rm, mkdir, readFile, copyFile } from "node:fs/promises";
+
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import {
   AWS_REGION,

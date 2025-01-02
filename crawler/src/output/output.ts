@@ -1,20 +1,19 @@
 import { readFile } from "node:fs/promises";
+
 import removeMd from "remove-markdown";
 
 import { OUTPUT_MAX_AGE } from "../lib/const";
-
-import AxiosClient from "../lib/axios";
 import logging from "../lib/logging";
+import AxiosClient from "../lib/axios";
+
 import storage from "../storage";
 
 import OutputFileWriter from "./file_writer";
 import OutputTrust from "./trust";
 
 class OutputUtils {
-  constructor() {}
-
   // strip markdown, optionally substring
-  stripMarkdownSubStr(text, maxLength = -1) {
+  static stripMarkdownSubStr(text: string, maxLength: number = -1) {
     const stripped = removeMd(text);
 
     if (maxLength > 0) {
@@ -25,7 +24,7 @@ class OutputUtils {
   }
 
   // given an error message from redis, figure out what it relates to..
-  findErrorType(errorMessage) {
+  static findErrorType(errorMessage: string) {
     if (
       errorMessage.includes("ENOENT") ||
       errorMessage.includes("ECONNREFUSED") ||
@@ -103,7 +102,7 @@ class OutputUtils {
   }
 
   // ensure the output is okay for the website
-  async validateOutput(
+  static async validateOutput(
     previousRun,
     returnInstanceArray,
     returnCommunityArray,
@@ -111,7 +110,7 @@ class OutputUtils {
     kbinMagazineArray,
     returnStats
   ) {
-    const issues = [];
+    const issues: string[] = [];
 
     // check that there is data in all arrays
     if (
@@ -157,7 +156,7 @@ class OutputUtils {
     };
 
     // check that the output is not too different from the previous run
-    const data = [];
+    const data: any = [];
     data.push({
       type: "instances",
       new: returnInstanceArray.length,
@@ -220,6 +219,9 @@ class OutputUtils {
  * it conencts to redis and pulls lists of all the data we have stored
  */
 export default class CrawlOutput {
+  private fileWriter: OutputFileWriter;
+  private trust: OutputTrust;
+
   constructor() {
     this.uptimeData = null;
     this.instanceErrors = null;
@@ -229,7 +231,7 @@ export default class CrawlOutput {
     this.fediverseData = null;
     this.kbinData = null;
 
-    this.utils = new OutputUtils();
+    // this.utils = new OutputUtils();
 
     this.fileWriter = new OutputFileWriter();
     this.trust = new OutputTrust();
@@ -288,7 +290,9 @@ export default class CrawlOutput {
 
     // STORE RUN METADATA
     const packageJson = JSON.parse(
-      await readFile(new URL("../../package.json", import.meta.url))
+      (
+        await readFile(new URL("../../package.json", import.meta.url))
+      ).toString()
     );
 
     const metaData = {
@@ -296,7 +300,7 @@ export default class CrawlOutput {
       communities: returnCommunityArray.length,
       kbin_instances: kbinInstanceArray.length,
       magazines: kbinMagazineArray.length,
-      kbin_instances: kbinInstanceArray.length,
+      // kbin_instances: kbinInstanceArray.length,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -389,7 +393,7 @@ export default class CrawlOutput {
       ["Total", "Output", "Previous", "Change"]
     );
 
-    const validateOutput = await this.utils.validateOutput(
+    const validateOutput = await OutputUtils.validateOutput(
       previousRun,
       returnInstanceArray,
       returnCommunityArray,
@@ -507,7 +511,7 @@ export default class CrawlOutput {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
-          desc: this.utils.stripMarkdownSubStr(
+          desc: OutputUtils.stripMarkdownSubStr(
             instance.siteData.site.description,
             350
           ),
@@ -686,7 +690,7 @@ export default class CrawlOutput {
           url: community.community.actor_id,
           name: community.community.name,
           title: community.community.title,
-          desc: this.utils.stripMarkdownSubStr(
+          desc: OutputUtils.stripMarkdownSubStr(
             community.community.description,
             350
           ),
@@ -871,7 +875,7 @@ export default class CrawlOutput {
         error: value.error,
         time: value.time,
       };
-      instanceData.type = this.utils.findErrorType(value.error);
+      instanceData.type = OutputUtils.findErrorType(value.error);
 
       if (errorTypes[instanceData.type] === undefined) {
         errorTypes[instanceData.type] = 0;
@@ -928,7 +932,7 @@ export default class CrawlOutput {
 
         baseurl: kbin.id.split("/")[2],
 
-        summary: this.utils.stripMarkdownSubStr(kbin.summary, 350),
+        summary: OutputUtils.stripMarkdownSubStr(kbin.summary, 350),
         sensitive: kbin.sensitive,
         postingRestrictedToMods: kbin.postingRestrictedToMods,
 

@@ -1,6 +1,6 @@
-import storage from "../storage";
-
 import divinator from "divinator";
+
+import storage from "../storage";
 
 // used to calculate instance overall rating, as well as several instance and community metrics
 // it is meant to take some of the trust assertion logic out of the main output script
@@ -26,6 +26,19 @@ import divinator from "divinator";
 
 // create a new isntance for the overall output, and call methods on it
 export default class OutputTrust {
+  private instanceList;
+
+  public fediseerData;
+  public endorsements;
+
+  public linkedFederation;
+  public allowedFederation;
+  public blockedFederation;
+
+  public instancesWithMetrics;
+  public allInstanceMetrics;
+  public deviations;
+
   // init  this once per output
   constructor() {
     this.instanceList = null;
