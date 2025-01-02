@@ -2,13 +2,11 @@ name: check-style
 
 on:
   push:
-    branches:
-      - main
-      - develop
 
 jobs:
   check_crawler_style:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
