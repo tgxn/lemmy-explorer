@@ -67,7 +67,6 @@ jobs:
       # log the sha 256 hash of the redis dump
       - name: Log Redis Dump Hash
         run: sha256sum ./.redis/dump.rdb
-        working-directory: ./crawler
 
       # start redis & check if it is running
       - name: Start Redis
