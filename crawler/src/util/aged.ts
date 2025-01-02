@@ -15,7 +15,7 @@ export default class CrawlAged {
   private instanceCrawler: InstanceQueue;
   private communityCrawler: CommunityQueue;
   private singleCommunityCrawler: SingleCommunityQueue;
-  private kbinCrawler: KBinQueue;
+  // private kbinCrawler: KBinQueue;
 
   constructor() {
     this.agedInstanceBaseUrls = [];
@@ -25,7 +25,7 @@ export default class CrawlAged {
     this.singleCommunityCrawler = new SingleCommunityQueue(false);
 
     // @TODO scan for aged kbin magazines
-    this.kbinCrawler = new KBinQueue(false);
+    // this.kbinCrawler = new KBinQueue(false);
   }
 
   async recordAges() {

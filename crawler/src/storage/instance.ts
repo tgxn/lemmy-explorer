@@ -14,7 +14,7 @@ export type InstanceData = {
   lastCrawled: number;
 };
 
-export type InstanceKeyValue = {
+export type InstanceDataKeyValue = {
   [key: string]: InstanceData;
 };
 
@@ -29,7 +29,7 @@ export default class Instance {
     return this.storage.listRedis(`instance:*`);
   }
 
-  async getAllWithKeys(): Promise<InstanceKeyValue> {
+  async getAllWithKeys(): Promise<InstanceDataKeyValue> {
     return this.storage.listRedisWithKeys(`instance:*`);
   }
 

@@ -1,11 +1,19 @@
 import { CrawlStorage } from "../crawlStorage";
 
-// type TrackingData = {
-//   error: string;
-//   stack: string;
-//   isAxiosError: boolean;
-//   time: number;
-// };
+export type ErrorData = {
+  error: string;
+  stack: string;
+  isAxiosError?: boolean;
+  time: number;
+};
+
+export type ErrorDataKeyValue = {
+  [key: string]: ErrorData;
+};
+
+export type LastCrawlData = {
+  time: number;
+};
 
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 
@@ -23,15 +31,15 @@ export default class TrackingStore {
   }
 
   // track errors
-  async getAllErrors(type) {
+  async getAllErrors(type: string): Promise<ErrorDataKeyValue> {
     return this.storage.listRedisWithKeys(`${this.failureKey}:${type}:*`);
   }
 
-  async getOneError(type, key) {
+  async getOneError(type: string, key: string): Promise<ErrorData> {
     return this.storage.getRedis(`${this.failureKey}:${type}:${key}`);
   }
 
-  async upsertError(type, baseUrl, errorDetail) {
+  async upsertError(type: string, baseUrl: string, errorDetail: ErrorData) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
     return this.storage.putRedisTTL(
@@ -42,7 +50,10 @@ export default class TrackingStore {
   }
 
   // track last scans for instance and communities
-  async getLastCrawl(type, baseUrl) {
+  async getLastCrawl(
+    type: string,
+    baseUrl: string
+  ): Promise<LastCrawlData | null> {
     const lastCrawlRecord = await this.storage.getRedis(
       `${this.historyKey}:${type}:${baseUrl}`
     );

@@ -9,7 +9,7 @@ export type FediverseData = {
   homepage?: string;
 };
 
-export type FediverseKeyValue = {
+export type FediverseDataKeyValue = {
   [key: string]: FediverseData;
 };
 
@@ -20,7 +20,7 @@ export default class Fediverse {
     this.storage = storage;
   }
 
-  async getAll(): Promise<FediverseKeyValue> {
+  async getAll(): Promise<FediverseDataKeyValue> {
     return this.storage.listRedisWithKeys(`fediverse:*`);
   }
 

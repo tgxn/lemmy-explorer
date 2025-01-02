@@ -154,7 +154,7 @@ export default class InstanceCrawler {
         allSelected = true;
       }
       if (!allSelected) {
-        discussionIdsArray.forEach((id) => {
+        discussionIdsArray.forEach((id: string) => {
           const languageData = allLangsArray.find((lang) => lang.id === id);
           discussionLangs.push(languageData.code);
         });

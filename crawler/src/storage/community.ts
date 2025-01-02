@@ -26,7 +26,7 @@ export type CommunityData = {
   lastCrawled: number;
 };
 
-export type CommunityKeyValue = {
+export type CommunityDataKeyValue = {
   [key: string]: CommunityData;
 };
 
@@ -41,7 +41,7 @@ export default class Community {
     return this.storage.listRedis(`community:*`);
   }
 
-  async getAllWithKeys(): Promise<CommunityKeyValue> {
+  async getAllWithKeys(): Promise<CommunityDataKeyValue> {
     return this.storage.listRedisWithKeys(`community:*`);
   }
 
