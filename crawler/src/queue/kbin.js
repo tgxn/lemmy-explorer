@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 import { CrawlTooRecentError } from "../lib/error.js";
 
 import storage from "../storage.js";

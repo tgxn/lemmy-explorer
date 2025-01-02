@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import { CrawlError } from "../lib/error.js";
 import { getActorBaseUrl } from "../lib/validator.js";

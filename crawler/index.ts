@@ -1,10 +1,10 @@
 // wrapper for cli
 
-import task from "./src/bin/task.js";
-import worker from "./src/bin/worker.js";
-import manual from "./src/bin/manual.js";
+import task from "./src/bin/task";
+import worker from "./src/bin/worker";
+import manual from "./src/bin/manual";
 
-function start(args) {
+function start(args: string[]) {
   // run single tasks for --task `--aged`
   if (args.length === 1 && args[0].startsWith("--")) {
     task(args[0].substring(2));

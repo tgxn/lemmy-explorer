@@ -11,14 +11,15 @@
     "logs": "pm2 logs",
     "stop": "pm2 stop ecosystem.config.cjs",
     "delete": "pm2 delete ecosystem.config.cjs",
-    "start:dev": "node index.js",
-    "start:init": "node index.js --init",
-    "start:dev:instance": "node index.js -q instance",
-    "start:dev:community": "node index.js -q community",
-    "out": "node index.js --out"
+    "start:dev": "tsx index.ts",
+    "start:init": "tsx index.ts --init",
+    "start:dev:instance": "tsx index.ts -q instance",
+    "start:dev:community": "tsx index.ts -q community",
+    "out": "tsx index.ts --out"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.717.0",
+    "@tsconfig/recommended": "^1.0.8",
     "axios": "1.7.9",
     "bee-queue": "1.7.1",
     "divinator": "^1.0.1",
@@ -28,6 +29,7 @@
     "pm2": "5.4.3",
     "redis": "4.7.0",
     "remove-markdown": "0.6.0",
+    "tsx": "^4.19.2",
     "z-score": "^1.0.6"
   },
   "devDependencies": {

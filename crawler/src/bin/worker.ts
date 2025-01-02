@@ -1,6 +1,6 @@
 import cron from "node-cron";
 
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";

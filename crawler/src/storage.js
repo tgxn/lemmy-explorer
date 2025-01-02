@@ -1,4 +1,4 @@
-import logging from "./lib/logging.js";
+// import logging from "./lib/logging";
 
 import { createClient } from "redis";
 
@@ -12,7 +12,7 @@ import KBinStore from "./storage/kbin.js";
 import UptimeStore from "./storage/uptime.js";
 
 import TrackingStore from "./storage/tracking.js";
-import FediseerStore from "./storage/fediseer.js";
+import FediseerStore from "./storage/fediseer";
 
 class Storage {
   constructor() {

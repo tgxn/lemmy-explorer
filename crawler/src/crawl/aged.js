@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";
@@ -47,10 +47,8 @@ export default class CrawlAged {
 
       const now = Date.now();
       const ages = records.map((record) => {
-
         // not sure why this would fail, but it seems that sometimes fediseer{"time"] is empty.
         try {
-
           const age = now - record[attribute];
 
           // sort into hourly buckets: 1-2 hours, 2-4 hours, 4-6 hours, 6+ hours
@@ -71,11 +69,10 @@ export default class CrawlAged {
           }
 
           return age;
-
         } catch (e) {
           console.error(e);
           console.log(record);
-          
+
           return 0;
         }
       });
@@ -123,7 +120,7 @@ export default class CrawlAged {
       table: "Fediverse",
       ...fediverseAgeDistribution.buckets,
     });
-    
+
     const lastCrawlAgeDistribution = getAgeDistribution(
       Object.values(lastCrawls),
       "time"

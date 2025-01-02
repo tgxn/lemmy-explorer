@@ -1,5 +1,5 @@
 import Queue from "bee-queue";
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import { isValidLemmyDomain } from "../lib/validator.js";
 import storage from "../storage.js";

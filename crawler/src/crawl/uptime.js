@@ -2,7 +2,7 @@
  *
  * Meant to run max 1/day and get all uptime from api.fediverse.observer
  */
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import storage from "../storage.js";
 

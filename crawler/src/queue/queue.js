@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import Queue from "bee-queue";
 

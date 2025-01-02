@@ -4,7 +4,7 @@ import removeMd from "remove-markdown";
 import { OUTPUT_MAX_AGE } from "../lib/const.js";
 
 import AxiosClient from "../lib/axios.js";
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 import storage from "../storage.js";
 
 import OutputFileWriter from "./file_writer.js";

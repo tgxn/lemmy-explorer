@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";
@@ -6,9 +6,9 @@ import SingleCommunityQueue from "../queue/check_comm.js";
 import KBinQueue from "../queue/kbin.js";
 
 export default async function runManualWorker(
-  workerName,
-  firstParam,
-  secondParam
+  workerName: string,
+  firstParam: string,
+  secondParam: string
 ) {
   // scan one instance
   if (workerName == "i" || workerName == "instance") {

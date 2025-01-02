@@ -1,4 +1,4 @@
-import logging from "./logging.js";
+import logging from "./logging";
 import axios from "axios";
 
 import { CrawlError } from "./error.js";

@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import { CrawlError } from "../lib/error.js";
 
@@ -189,7 +189,7 @@ export default class CommunityCrawler {
 
       logging.error(`${this.logPrefix} communityData error`, e.type, e.message);
       // return false;
-      
+
       throw e;
     }
   }

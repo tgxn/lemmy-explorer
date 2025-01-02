@@ -1,5 +1,6 @@
-import logging from "../lib/logging.js";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
+
+import logging from "../lib/logging";
 import storage from "../storage.js";
 
 import {
@@ -9,10 +10,12 @@ import {
 } from "../lib/const.js";
 
 export default class CrawlFediseer {
+  private axios: AxiosInstance;
+
   constructor() {
     this.axios = axios.create({
       baseURL: "https://fediseer.com/api/v1/",
-      timeout: 6000,
+      // timeout: 6000,
       timeout: AXIOS_REQUEST_TIMEOUT,
       headers: {
         "User-Agent": CRAWLER_USER_AGENT,

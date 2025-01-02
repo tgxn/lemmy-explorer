@@ -1,4 +1,4 @@
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 
 import InstanceQueue from "../queue/instance.js";
 import CommunityQueue from "../queue/community.js";
@@ -10,7 +10,7 @@ import { syncCheckpoint } from "../output/sync_s3.js";
 
 import CrawlAged from "../crawl/aged.js";
 import CrawlUptime from "../crawl/uptime.js";
-import CrawlFediseer from "../crawl/fediseer.js";
+import CrawlFediseer from "../crawl/fediseer";
 
 import Failures from "../crawl/failures.js";
 import CrawlKBin from "../crawl/kbin.js";
@@ -20,7 +20,7 @@ import storage from "../storage.js";
 import { START_URLS } from "../lib/const.js";
 
 // used to run tasks against db that exist after they are complete
-export default async function runTask(taskName = null) {
+export default async function runTask(taskName: string = null) {
   logging.silly("Running Task:", taskName);
 
   if (taskName == null) {

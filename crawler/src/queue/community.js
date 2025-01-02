@@ -2,7 +2,7 @@ import BaseQueue from "./queue.js";
 
 import CommunityCrawler from "../crawl/community.js";
 
-import logging from "../lib/logging.js";
+import logging from "../lib/logging";
 import storage from "../storage.js";
 
 import { CrawlTooRecentError } from "../lib/error.js";

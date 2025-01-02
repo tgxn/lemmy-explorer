@@ -1,0 +1,16 @@
+{
+    "extends": "@tsconfig/recommended/tsconfig.json",
+    "compilerOptions": {
+ 
+      "declaration": false,
+      "declarationMap": false,
+
+      "noImplicitAny": false,
+      "allowSyntheticDefaultImports": true,
+
+      "esModuleInterop": true
+    },
+    "exclude": ["node_modules/"],
+    "allowJs": true,
+    "checkJs": true
+  }
