@@ -135,7 +135,7 @@ export default class CommunityCrawler {
     }
   }
 
-  async getSingleCommunityData(communityName: string, attempt: number = 0): Promise<any> {
+  async getSingleCommunityData(communityName: string): Promise<any> {
     try {
       const communityData = await this.client.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community",

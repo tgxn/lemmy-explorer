@@ -33,7 +33,7 @@ module.exports = {
       output: "./.data/logs/single.log",
       name: "crawl-one-community",
       args: ["-w", "single"],
-      instances: 4,
+      instances: 6,
     },
     {
       ...defaultOptions,
