@@ -125,13 +125,13 @@ export default class CommunityCrawler {
 
   async crawlSingle(communityName: string) {
     try {
-      logging.debug(`${this.logPrefix} Starting Crawl: ${communityName}`);
+      logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
 
       await this.getSingleCommunityData(communityName);
 
-      logging.info(`${this.logPrefix} Ended Success: ${communityName}`);
+      logging.info(`${this.logPrefix} crawlSingle Ended Success: ${communityName}`);
     } catch (error) {
-      logging.trace(`${this.logPrefix} ERROR Community: ${communityName}`, error.message);
+      logging.error(`${this.logPrefix} crawlSingle ERROR Community: ${communityName}`, error.message);
     }
   }
 
