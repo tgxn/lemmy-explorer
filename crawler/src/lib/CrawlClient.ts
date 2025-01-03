@@ -62,7 +62,7 @@ export default class CrawlClient {
       if (current < maxRetries) {
         const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
 
-        logging.debug(`retrying url ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`);
+        logging.silly(`retrying url ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`);
 
         await new Promise((resolve) => setTimeout(resolve, delaySeconds));
 

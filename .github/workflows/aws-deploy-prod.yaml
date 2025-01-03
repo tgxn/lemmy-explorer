@@ -92,11 +92,11 @@ jobs:
 
       # Run Crawler Output Script
       - name: Run Health Script
-        run: node index.js --health
+        run: yarn health
         working-directory: ./crawler
 
       - name: Run Output Script
-        run: node index.js --out
+        run: yarn output
         working-directory: ./crawler
 
       # Install + Cache Frontend Dependencies
