@@ -223,11 +223,11 @@ class OutputUtils {
   // ensure the output is okay for the website
   static async validateOutput(
     previousRun,
-    returnInstanceArray,
-    returnCommunityArray,
-    kbinInstanceArray,
-    kbinMagazineArray,
-    returnStats,
+    returnInstanceArray: IInstanceDataOutput[],
+    returnCommunityArray: ICommunityDataOutput[],
+    kbinInstanceArray: string[],
+    kbinMagazineArray: IKBinMagazineOutput[],
+    returnStats: IFediverseDataOutput[],
   ) {
     const issues: string[] = [];
 
@@ -253,6 +253,18 @@ class OutputUtils {
         console.log("Duplicate Instance", instance.baseurl);
         issues.push("Duplicate Instance: " + instance.baseurl);
       }
+    }
+
+    // check if lovecraft is visible on lemmy.world
+    const lovecraft = returnCommunityArray.find(
+      (community) => community.url === "https://lemmy.world/c/lovecraft_mythos",
+    );
+
+    if (lovecraft) {
+      console.log("Lovecraft on Lemmy.World", lovecraft);
+    } else {
+      console.log("Lovecraft not on Lemmy.World");
+      issues.push("Lovecraft not on Lemmy.World");
     }
 
     // check values are < 10% different
