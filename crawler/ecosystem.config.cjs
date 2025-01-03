@@ -1,8 +1,9 @@
 const defaultOptions = {
   log_type: "raw",
-  output: "./logs/out.log",
-  script: "index.js",
+  output: "./.data/logs/out.log",
+  script: "index.ts",
   exec_mode: "fork",
+  interpreter: "tsx",
 };
 
 module.exports = {
