@@ -413,7 +413,22 @@ export default class CrawlOutput {
     // delete existing data from the output directory
     await this.fileWriter.cleanData();
 
-    const susSiteList = this.trust.getSusInstances();
+    let susSiteList = this.trust.getSusInstances();
+
+    // remove sus sites not updated in 24h
+    susSiteList = susSiteList.filter((instance) => {
+      if (!instance.lastCrawled) return false; // record needs time
+
+      // remove communities with age more than the max
+      const recordAge = Date.now() - instance.lastCrawled;
+      if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
+        console.log("Sus Site too old", instance.base);
+        return false;
+      }
+
+      return true;
+    });
+
     await this.fileWriter.storeSuspicousData(susSiteList);
 
     const returnInstanceArray = await this.getInstanceArray();
@@ -627,11 +642,21 @@ export default class CrawlOutput {
 
         const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
 
+        if (!this.trust.blockedFederation) {
+          throw new Error("No blocked federation data");
+        }
+
+        // incoming blocks are fetched from the trust store
         const incomingBlocks = this.trust.blockedFederation[siteBaseUrl] || 0;
+
+        // outgoign blocks come frrom siteData
         const outgoingBlocks = instance.siteData.federated?.blocked?.length || 0;
+
+        // console.log("outgoingBlocks", outgoingBlocks);
 
         const instanceTrustData = this.trust.getInstance(siteBaseUrl);
 
+        // console.log("instanceTrustData", instanceTrustData);
         const score = instanceTrustData.score;
 
         // ignore instances that have no data
@@ -759,7 +784,15 @@ export default class CrawlOutput {
         // }
 
         const relatedInstance = returnInstanceArray.find((instance) => instance.baseurl === siteBaseUrl);
-        const isInstanceSus: [] = relatedInstance?.trust || []; //await this.trust.getInstanceSusReasons(relatedInstance);
+        let isInstanceSus: boolean = false;
+        if (relatedInstance) {
+          isInstanceSus = relatedInstance.isSuspicious;
+        }
+
+        // if (siteBaseUrl.includes("zerobytes")) {
+        //   console.log("siteBaseUrl", siteBaseUrl, isInstanceSus, relatedInstance);
+        // }
+        // const isInstanceSus: boolean = relatedInstance.isSuspicious || false; //await this.trust.getInstanceSusReasons(relatedInstance);
 
         // // calculate community published time
         // let publishTime = null;trust
@@ -794,7 +827,7 @@ export default class CrawlOutput {
           published: OutputUtils.parseLemmyTimeToUnix(community.community?.published),
           time: community.lastCrawled || 0,
 
-          isSuspicious: isInstanceSus.length > 0 ? true : false,
+          isSuspicious: isInstanceSus,
           score: score,
         };
 

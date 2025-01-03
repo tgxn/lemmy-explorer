@@ -1,6 +1,20 @@
 import divinator from "divinator";
 
 import storage from "../lib/crawlStorage";
+import { IInstanceData, IInstanceDataKeyValue } from "../lib/storage/instance";
+import { ICommunityData, ICommunityDataKeyValue } from "../lib/storage/community";
+import { IMagazineData, IMagazineDataKeyValue } from "../lib/storage/kbin";
+import { IFediverseData, IFediverseDataKeyValue } from "../lib/storage/fediverse";
+import { IFediseerData } from "../lib/storage/fediseer";
+import {
+  IErrorData,
+  IErrorDataKeyValue,
+  ILastCrawlData,
+  ILastCrawlDataKeyValue,
+} from "../lib/storage/tracking";
+import { IUptimeNodeData, IFullUptimeData } from "../lib/storage/uptime";
+
+import { OUTPUT_MAX_AGE } from "../lib/const";
 
 // used to calculate instance overall rating, as well as several instance and community metrics
 // it is meant to take some of the trust assertion logic out of the main output script
@@ -26,14 +40,14 @@ import storage from "../lib/crawlStorage";
 
 // create a new isntance for the overall output, and call methods on it
 export default class OutputTrust {
-  private instanceList;
+  private instanceList: IInstanceData[] | null;
 
-  public fediseerData;
+  public fediseerData: IFediseerData[] | null = null;
   public endorsements;
 
-  public linkedFederation;
-  public allowedFederation;
-  public blockedFederation;
+  public linkedFederation: { [key: string]: number } | null = null;
+  public allowedFederation: { [key: string]: number } | null = null;
+  public blockedFederation: { [key: string]: number } | null = null;
 
   public instancesWithMetrics;
   public allInstanceMetrics;
@@ -45,7 +59,7 @@ export default class OutputTrust {
   }
 
   // loads the initial data into the trust library
-  async setupSources(instanceList) {
+  async setupSources(instanceList: IInstanceData[]) {
     this.instanceList = instanceList;
 
     this.fediseerData = await storage.fediseer.getLatest();
@@ -64,26 +78,40 @@ export default class OutputTrust {
     await this.getInstancesWithMetrics();
   }
 
-  getAllInstanceEndorsements() {
-    const endorsements = {};
+  getAllInstanceEndorsements(): { [key: string]: number } {
+    if (!this.fediseerData) {
+      throw new Error("fediseerData not loaded in getAllInstanceEndorsements");
+    }
+
+    const endorsements: { [key: string]: number } = {};
+
     this.fediseerData.forEach((instance) => {
       if (instance.endorsements) {
         endorsements[instance.domain] = instance.endorsements;
       }
     });
+
     return endorsements;
   }
 
   async getInstancesWithMetrics() {
+    if (!this.instanceList) {
+      throw new Error("instanceList not loaded in getInstancesWithMetrics");
+    }
+
     this.instancesWithMetrics = await Promise.all(
       this.instanceList.map(async (instance) => {
         const baseUrl = instance.siteData.site.actor_id.split("/")[2];
 
         const instanceMetrics = await this.calculateInstanceMetrics(instance);
 
+        if (!this.fediseerData) {
+          throw new Error("fediseerData not loaded in getInstancesWithMetrics");
+        }
+
         const instanceGuarantor = this.fediseerData.find((instance) => instance.domain === baseUrl);
 
-        let guarantor = null;
+        let guarantor: string | null = null;
         if (instanceGuarantor !== undefined && instanceGuarantor.guarantor !== null) {
           console.log(baseUrl, "instanceGuarantor", instanceGuarantor.guarantor);
           guarantor = instanceGuarantor.guarantor;
@@ -91,6 +119,8 @@ export default class OutputTrust {
 
         return {
           // ...instance,
+
+          lastCrawled: instance.lastCrawled,
 
           baseurl: baseUrl,
           metrics: instanceMetrics,
@@ -139,7 +169,11 @@ export default class OutputTrust {
     );
   }
 
-  getInstanceTags(instance) {
+  getInstanceTags(instance): string[] {
+    if (!this.fediseerData) {
+      throw new Error("fediseerData not loaded in getInstanceTags");
+    }
+
     let tags: string[] = [];
 
     const baseUrl = instance.siteData.site.actor_id.split("/")[2];
@@ -406,11 +440,11 @@ export default class OutputTrust {
   //   return null;
   // }
 
-  getInstance(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
+  getInstance(baseUrl: string) {
+    const instanceTrustDetails = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
 
-    if (instanceGuarantor) {
-      return instanceGuarantor;
+    if (instanceTrustDetails) {
+      return instanceTrustDetails;
     }
 
     return null;
@@ -432,9 +466,23 @@ export default class OutputTrust {
           actor_id: instance.actor_id,
           metrics: instance.metrics,
           reasons: instance.reasons,
+          lastCrawled: instance.lastCrawled,
         });
       }
     }
+
+    // remove instances not updated in 24h
+    // this.instanceList = this.instanceList.filter((instance) => {
+    //   if (!instance.lastCrawled) return false; // record needs time
+
+    //   // remove communities with age more than the max
+    //   const recordAge = Date.now() - instance.lastCrawled;
+    //   if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
+    //     return false;
+    //   }
+
+    //   return true;
+    // });
 
     return susInstances;
   }
@@ -494,13 +542,13 @@ export default class OutputTrust {
 
   // run domain through this to get scores
   // this generates the "smart sort" score that is used by default
-  calcInstanceScore(baseUrl) {
+  calcInstanceScore(baseUrl: string) {
     let score = 0;
 
     const scores: any = {};
 
     // having a linked instance gives you a point for each link
-    if (this.linkedFederation[baseUrl]) {
+    if (this.linkedFederation && this.linkedFederation[baseUrl]) {
       scores.linked = this.linkedFederation[baseUrl] / 2;
       score += scores.linked;
     }
@@ -512,13 +560,13 @@ export default class OutputTrust {
     }
 
     // each allowed instance gives you points
-    if (this.allowedFederation[baseUrl]) {
+    if (this.allowedFederation && this.allowedFederation[baseUrl]) {
       scores.allowed = this.allowedFederation[baseUrl] * 3;
       score += scores.allowed;
     }
 
     // each blocked instance takes away points
-    if (this.blockedFederation[baseUrl]) {
+    if (this.blockedFederation && this.blockedFederation[baseUrl]) {
       scores.blocked = parseInt("-" + this.blockedFederation[baseUrl] * 10);
       score += scores.blocked;
     }
@@ -554,23 +602,30 @@ export default class OutputTrust {
 
     const activeScore = community.counts.users_active_month * 20;
 
+    // console.log("instanceMetricsinstanceMetrics", instanceMetrics);
+
     const score = instanceMetrics.score * activityScore * activeScore;
 
     return score;
   }
 
   // given an array, get a d-duped list of all the baseurls, returns three arrays with counts for each
-  getFederationLists(instances) {
+  getFederationLists(
+    instances,
+  ): [{ [key: string]: number }, { [key: string]: number }, { [key: string]: number }] {
     // count instances by list
-    let linkedFederation = {};
-    let allowedFederation = {};
-    let blockedFederation = {};
+    let linkedFederation: { [key: string]: number } = {};
+    let allowedFederation: { [key: string]: number } = {};
+    let blockedFederation: { [key: string]: number } = {};
 
-    function dedupAddItem(list, baseUrl) {
+    function dedupAddItem(list: { [key: string]: number }, baseUrl: string) {
       // only add strings
       if (typeof baseUrl !== "string") {
         return;
       }
+
+      // trim
+      baseUrl = baseUrl.trim();
 
       if (!list[baseUrl]) {
         list[baseUrl] = 1;

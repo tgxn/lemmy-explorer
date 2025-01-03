@@ -1,3 +1,8 @@
 {
-    "recommendations": ["ms-vscode.vscode-typescript-next"]
+    "recommendations": [
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.vscode-typescript-next",
+        "ms-playwright.playwright",
+        "esbenp.prettier-vscode"
+    ]
 }
