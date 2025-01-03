@@ -95,7 +95,7 @@ export type IInstanceDataOutput = {
   metrics: Object | null;
   tags: string[];
   susReason: string[];
-  trust: Object;
+  trust: [];
   blocks: {
     incoming: number;
     outgoing: number;
@@ -741,7 +741,9 @@ export default class CrawlOutput {
 
   // COMMUNITY
 
-  private async getCommunityArray(returnInstanceArray): Promise<ICommunityDataOutput[]> {
+  private async getCommunityArray(
+    returnInstanceArray: IInstanceDataOutput[],
+  ): Promise<ICommunityDataOutput[]> {
     if (!this.communityList) {
       throw new Error("No community List");
     }
@@ -752,26 +754,15 @@ export default class CrawlOutput {
 
         const score = await this.trust.calcCommunityScore(siteBaseUrl, community);
 
-        if (!this.instanceList) {
-          throw new Error("No instance List");
-        }
+        // if (!this.instanceList) {
+        //   throw new Error("No instance List");
+        // }
 
-        const relatedInstance = this.instanceList.find(
-          (instance) => instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl,
-        );
-        const isInstanceSus = await this.trust.getInstanceSusReasons(relatedInstance);
+        const relatedInstance = returnInstanceArray.find((instance) => instance.baseurl === siteBaseUrl);
+        const isInstanceSus: [] = relatedInstance?.trust || []; //await this.trust.getInstanceSusReasons(relatedInstance);
 
         // // calculate community published time
-        // let publishTime = null;
-        // if (community.community.published) {
-        //   try {
-        //     // why do some instances have Z on the end -.-
-        //     publishTime = new Date(
-        //       community.community.published.replace(/(\.\d{6}Z?)/, "Z")
-        //     ).getTime();
-
-        //     // if not a number
-        //     if (isNaN(publishTime)) {
+        // let publishTime = null;trust
         //       console.error(
         //         "error parsing publish time",
         //         community.community.published
