@@ -11,7 +11,7 @@ export default class SingleCommunityQueue extends BaseQueue {
     const trimmedUrl = baseUrl.trim();
 
     return await super.createJob(
-      trimmedUrl,
+      trimmedUrl + ":" + communityName,
       {
         baseUrl: trimmedUrl,
         community: communityName,

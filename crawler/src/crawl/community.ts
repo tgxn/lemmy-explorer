@@ -144,7 +144,7 @@ export default class CommunityCrawler {
             name: communityName,
           },
         },
-        2,
+        1,
       );
 
       if (communityData.data.community_view) {
@@ -176,17 +176,6 @@ export default class CommunityCrawler {
         return null;
       }
 
-      // e.code ENOTFOUND
-      if (e.code == "ENOTFOUND" || e.response?.data?.includes("404 Not Found")) {
-        logging.error(
-          `${this.logPrefix} ENOTFOUND error, deleting community community:${this.crawlDomain}:${communityName}`,
-        );
-
-        await storage.community.delete(this.crawlDomain, communityName, "ENOTFOUND");
-
-        return null;
-      }
-
       // data contains `Argo Tunnel error`
       if (e.response?.data && e.response.data.includes("Argo Tunnel error")) {
         logging.error(
@@ -198,13 +187,13 @@ export default class CommunityCrawler {
         return null;
       }
 
-      // data contains `Service Unavailable`
-      if (e.response?.data && e.response.statusText.includes("Service Unavailable")) {
+      // e.code
+      if (e.isAxiosError && e.code) {
         logging.error(
-          `${this.logPrefix} Service Unavailable error, deleting community community:${this.crawlDomain}:${communityName}`,
+          `${this.logPrefix} ${e.code} error, deleting community community:${this.crawlDomain}:${communityName}`,
         );
 
-        await storage.community.delete(this.crawlDomain, communityName, "Service Unavailable");
+        await storage.community.delete(this.crawlDomain, communityName, e.code);
 
         return null;
       }
@@ -216,17 +205,6 @@ export default class CommunityCrawler {
         );
 
         await storage.community.delete(this.crawlDomain, communityName, "<!DOCTYPE html>");
-
-        return null;
-      }
-
-      // Hostname/IP does not match certificate's altnames
-      if (e.code == "ERR_TLS_CERT_ALTNAME_INVALID") {
-        logging.error(
-          `${this.logPrefix} ERR_TLS_CERT_ALTNAME_INVALID error, deleting community community:${this.crawlDomain}:${communityName}`,
-        );
-
-        await storage.community.delete(this.crawlDomain, communityName, "ERR_TLS_CERT_ALTNAME_INVALID");
 
         return null;
       }
