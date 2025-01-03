@@ -31,10 +31,10 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Use Node.js 18.15.0
+      - name: Use Node.js 22.12.0
         uses: actions/setup-node@v3
         with:
-          node-version: 18.15.0
+          node-version: 22.12.0
 
       # download latest redis database
       - name: get current hour for cache busting
@@ -47,7 +47,7 @@ jobs:
         env:
           cache-name: cache-redis
         with:
-          path: ./.redis/
+          path: ./.redis/dump.rdb
           key: cache-redis-${{ steps.cache-hour.outputs.hour }}
 
       # download redis db dump from s3

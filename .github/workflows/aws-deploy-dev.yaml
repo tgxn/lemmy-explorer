@@ -48,7 +48,7 @@ jobs:
         env:
           cache-name: cache-redis
         with:
-          path: ./.redis/
+          path: ./.redis/dump.rdb
           key: cache-redis-${{ steps.cache-hour.outputs.hour }}
 
       # download redis db dump from s3
