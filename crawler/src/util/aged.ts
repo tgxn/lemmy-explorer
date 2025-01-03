@@ -5,7 +5,7 @@ import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import KBinQueue from "../queue/kbin";
 
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import { CRAWL_AGED_TIME, CRAWL_DELETE_TIME } from "../lib/const";
 
@@ -31,12 +31,12 @@ export default class CrawlAged {
   async recordAges() {
     // get all communities, instances, fediverse and magazine records, and get age distribution
 
-    const instances = await crawlStorage.instance.getAll();
-    const communities = await crawlStorage.community.getAll();
-    const magazines = await crawlStorage.kbin.getAll();
-    const fediverse = await crawlStorage.fediverse.getAll();
-    const errors = await crawlStorage.tracking.getAllErrors("*");
-    const lastCrawls = await crawlStorage.tracking.listAllLastCrawl();
+    const instances = await storage.instance.getAll();
+    const communities = await storage.community.getAll();
+    const magazines = await storage.kbin.getAll();
+    const fediverse = await storage.fediverse.getAll();
+    const errors = await storage.tracking.getAllErrors("*");
+    const lastCrawls = await storage.tracking.listAllLastCrawl();
 
     const healthData: any = [];
 
@@ -150,7 +150,7 @@ export default class CrawlAged {
   async getAged() {
     logging.info("Fetching Aged Instances");
 
-    const instances = await crawlStorage.instance.getAll();
+    const instances = await storage.instance.getAll();
 
     const agedInstances = instances.filter((instance) => {
       if (!instance.lastCrawled) return true; // not set
@@ -174,7 +174,7 @@ export default class CrawlAged {
     /// Lemmy Communities
     ///
 
-    const communities = await crawlStorage.community.getAll();
+    const communities = await storage.community.getAll();
 
     // remove communities not updated in 24h
     let byBase = {};

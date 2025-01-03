@@ -1,6 +1,6 @@
 import { START_URLS } from "../lib/const";
 import logging from "../lib/logging";
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
@@ -17,10 +17,8 @@ import CrawlKBin from "../crawl/kbin";
 import CrawlAged from "../util/aged";
 import Failures from "../util/failures";
 
-type ITaskName = "out" | "sync" | "clean" | "fedi" | "init" | "health" | "aged" | "kbin" | "uptime";
-
 // used to run tasks against db that exist after they are complete
-export default async function runTask(taskName: ITaskName) {
+export default async function runTask(taskName: string) {
   logging.silly("Running Task:", taskName);
 
   if (taskName == null) {
@@ -28,7 +26,7 @@ export default async function runTask(taskName: ITaskName) {
     throw new Error("taskName is null");
   }
 
-  await crawlStorage.connect();
+  await storage.connect();
 
   switch (taskName) {
     // generate output .json files from data stored in redis
@@ -140,7 +138,7 @@ export default async function runTask(taskName: ITaskName) {
   }
 
   logging.silly("Task Complete:", taskName);
-  await crawlStorage.close();
+  await storage.close();
 
   return process.exit(0);
 }

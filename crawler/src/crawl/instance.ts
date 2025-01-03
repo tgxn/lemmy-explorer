@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import { CRAWL_AGED_TIME } from "../lib/const";
 import { HTTPError, CrawlError, CrawlTooRecentError } from "../lib/error";
@@ -38,7 +38,7 @@ export default class InstanceCrawler {
 
     if (instanceData) {
       // store/update the instance
-      await crawlStorage.instance.upsert(this.crawlDomain, {
+      await storage.instance.upsert(this.crawlDomain, {
         ...instanceData,
         lastCrawled: Date.now(),
       });
@@ -101,7 +101,7 @@ export default class InstanceCrawler {
     }
 
     // store all fediverse instance software for easy metrics
-    await crawlStorage.fediverse.upsert(this.crawlDomain, nodeInfo.software);
+    await storage.fediverse.upsert(this.crawlDomain, nodeInfo.software);
 
     // scan kbin instances that are found
     if (nodeInfo.software.name == "kbin") {
@@ -183,38 +183,30 @@ export default class InstanceCrawler {
 
     try {
       // store versioned attributes
-      await crawlStorage.instance.setTrackedAttribute(this.crawlDomain, "version", siteInfo.version);
-      await crawlStorage.instance.setTrackedAttribute(
-        this.crawlDomain,
-        "users",
-        siteInfo.site_view.counts.users,
-      );
-      await crawlStorage.instance.setTrackedAttribute(
-        this.crawlDomain,
-        "posts",
-        siteInfo.site_view.counts.posts,
-      );
-      await crawlStorage.instance.setTrackedAttribute(
+      await storage.instance.setTrackedAttribute(this.crawlDomain, "version", siteInfo.version);
+      await storage.instance.setTrackedAttribute(this.crawlDomain, "users", siteInfo.site_view.counts.users);
+      await storage.instance.setTrackedAttribute(this.crawlDomain, "posts", siteInfo.site_view.counts.posts);
+      await storage.instance.setTrackedAttribute(
         this.crawlDomain,
         "comments",
         siteInfo.site_view.counts.comments,
       );
-      await crawlStorage.instance.setTrackedAttribute(
+      await storage.instance.setTrackedAttribute(
         this.crawlDomain,
         "communities",
         siteInfo.site_view.counts.communities,
       );
-      await crawlStorage.instance.setTrackedAttribute(
+      await storage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users_active_day",
         siteInfo.site_view.counts.users_active_day,
       );
-      await crawlStorage.instance.setTrackedAttribute(
+      await storage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users_active_week",
         siteInfo.site_view.counts.users_active_week,
       );
-      await crawlStorage.instance.setTrackedAttribute(
+      await storage.instance.setTrackedAttribute(
         this.crawlDomain,
         "users_active_month",
         siteInfo.site_view.counts.users_active_month,
@@ -249,7 +241,7 @@ const crawlFederatedInstanceJobs = async (federatedData) => {
 
 // returns a amount os ms since we last crawled it, false if all good
 // async getLastCrawlMsAgo(instanceBaseUrl: string) {
-//   const existingInstance = await crawlStorage.instance.getOne(
+//   const existingInstance = await storage.instance.getOne(
 //     instanceBaseUrl
 //   );
 
@@ -263,7 +255,7 @@ const crawlFederatedInstanceJobs = async (federatedData) => {
 //   }
 
 //   // check for recent error
-//   const lastError = await crawlStorage.tracking.getOneError(
+//   const lastError = await storage.tracking.getOneError(
 //     "instance",
 //     instanceBaseUrl
 //   );
@@ -322,7 +314,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     logging.debug(`[Instance] [${baseUrl}] Starting Crawl`);
 
     // check if it's known to not be running lemmy (recan it if it's been a while)
-    const knownFediverseServer = await crawlStorage.fediverse.getOne(instanceBaseUrl);
+    const knownFediverseServer = await storage.fediverse.getOne(instanceBaseUrl);
     if (knownFediverseServer) {
       if (
         knownFediverseServer.name !== "lemmy" &&
@@ -338,14 +330,14 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     }
 
     //  last crawl if it's been successfully too recently
-    const lastCrawl = await crawlStorage.tracking.getLastCrawl("instance", instanceBaseUrl);
+    const lastCrawl = await storage.tracking.getLastCrawl("instance", instanceBaseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
       throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
     }
 
     // check when the latest entry to errors was too recent
-    const lastErrorTs = await crawlStorage.tracking.getOneError("instance", instanceBaseUrl);
+    const lastErrorTs = await storage.tracking.getOneError("instance", instanceBaseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
       throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
@@ -367,7 +359,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     await crawlCommunity.createJob(instanceBaseUrl);
 
     // set last successful crawl
-    await crawlStorage.tracking.setLastCrawl("instance", baseUrl, {
+    await storage.tracking.setLastCrawl("instance", baseUrl, {
       duration: (Date.now() - startTime) / 1000,
     });
 
@@ -391,7 +383,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
 
       logging.error(`[Instance] [${baseUrl}] CrawlError: ${error.message}`);
 
-      await crawlStorage.tracking.upsertError("instance", baseUrl, errorDetail);
+      await storage.tracking.upsertError("instance", baseUrl, errorDetail);
     } else {
       // console.log("error", error);
 
@@ -409,7 +401,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
 
       logging.error(`[Instance] [${baseUrl}] Error: ${error.message}`);
 
-      await crawlStorage.tracking.upsertError("instance", baseUrl, errorDetail);
+      await storage.tracking.upsertError("instance", baseUrl, errorDetail);
     }
   }
 

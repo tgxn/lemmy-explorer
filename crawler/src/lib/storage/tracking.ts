@@ -1,6 +1,8 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type ErrorData = {
+import { RECORD_TTL_TIMES_SECONDS } from "../const";
+
+export type IErrorData = {
   time: number;
   error: string;
   stack?: string;
@@ -11,15 +13,19 @@ export type ErrorData = {
   duration?: number;
 };
 
-export type ErrorDataKeyValue = {
-  [key: string]: ErrorData;
+export type IErrorDataKeyValue = {
+  [key: string]: IErrorData;
 };
 
-export type LastCrawlData = {
+export type ILastCrawlData = {
   time: number;
+  duration?: number;
+  [key: string]: any;
 };
 
-import { RECORD_TTL_TIMES_SECONDS } from "../const";
+export type ILastCrawlDataKeyValue = {
+  [key: string]: ILastCrawlData;
+};
 
 export default class TrackingStore {
   private storage: CrawlStorage;
@@ -35,15 +41,15 @@ export default class TrackingStore {
   }
 
   // track errors
-  async getAllErrors(type: string): Promise<ErrorDataKeyValue> {
+  async getAllErrors(type: string): Promise<IErrorDataKeyValue> {
     return this.storage.listRedisWithKeys(`${this.failureKey}:${type}:*`);
   }
 
-  async getOneError(type: string, key: string): Promise<ErrorData> {
+  async getOneError(type: string, key: string): Promise<IErrorData> {
     return this.storage.getRedis(`${this.failureKey}:${type}:${key}`);
   }
 
-  async upsertError(type: string, baseUrl: string, errorDetail: ErrorData) {
+  async upsertError(type: string, baseUrl: string, errorDetail: IErrorData) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
     return this.storage.putRedisTTL(
@@ -54,15 +60,15 @@ export default class TrackingStore {
   }
 
   // track last scans for instance and communities
-  async getLastCrawl(type: string, baseUrl: string): Promise<LastCrawlData> {
+  async getLastCrawl(type: string, baseUrl: string): Promise<ILastCrawlData> {
     return await this.storage.getRedis(`${this.historyKey}:${type}:${baseUrl}`);
   }
 
-  async listAllLastCrawl() {
+  async listAllLastCrawl(): Promise<ILastCrawlDataKeyValue> {
     return this.storage.listRedisWithKeys(`${this.historyKey}:*`);
   }
 
-  async setLastCrawl(type, baseUrl, data: any = {}) {
+  async setLastCrawl(type: string, baseUrl: string, data: Partial<ILastCrawlData>) {
     if (!baseUrl) throw new Error("baseUrl is required");
 
     return this.storage.putRedisTTL(

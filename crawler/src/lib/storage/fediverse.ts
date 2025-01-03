@@ -1,6 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type FediverseData = {
+export type IFediverseData = {
   time?: number;
   baseurl?: string;
   name?: string;
@@ -9,8 +9,8 @@ export type FediverseData = {
   homepage?: string;
 };
 
-export type FediverseDataKeyValue = {
-  [key: string]: FediverseData;
+export type IFediverseDataKeyValue = {
+  [key: string]: IFediverseData;
 };
 
 export default class Fediverse {
@@ -20,15 +20,15 @@ export default class Fediverse {
     this.storage = storage;
   }
 
-  async getAll(): Promise<FediverseDataKeyValue> {
+  async getAll(): Promise<IFediverseDataKeyValue> {
     return this.storage.listRedisWithKeys(`fediverse:*`);
   }
 
-  async getOne(baseUrl: string): Promise<FediverseData> {
+  async getOne(baseUrl: string): Promise<IFediverseData> {
     return this.storage.getRedis(`fediverse:${baseUrl}`);
   }
 
-  async upsert(baseUrl: string, data: FediverseData) {
+  async upsert(baseUrl: string, data: IFediverseData) {
     const dd = { baseurl: baseUrl, time: Date.now(), ...data };
     return this.storage.putRedis(`fediverse:${baseUrl}`, dd);
   }

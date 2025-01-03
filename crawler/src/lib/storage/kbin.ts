@@ -1,12 +1,16 @@
 import { CrawlStorage } from "../crawlStorage";
 
-// export type KBinData = {
-//   name: string;
-//   baseUrl: string;
-//   description: string;
-//   lastCrawled: number;
-//   [key: string]: any;
-// };
+export type IMagazineData = {
+  baseUrl: string;
+  name: string;
+  description: string;
+  lastCrawled: number;
+  [key: string]: any;
+};
+
+export type IMagazineDataKeyValue = {
+  [key: string]: IMagazineData;
+};
 
 export default class KBinStore {
   private storage: CrawlStorage;
@@ -15,19 +19,19 @@ export default class KBinStore {
     this.storage = storage;
   }
 
-  async getAll() {
+  async getAll(): Promise<IMagazineData[]> {
     return this.storage.listRedis(`magazine:*`);
   }
 
-  async getAllWithKeys() {
+  async getAllWithKeys(): Promise<IMagazineDataKeyValue> {
     return this.storage.listRedisWithKeys(`magazine:*`);
   }
 
-  async getOne(baseUrl, magazineName) {
+  async getOne(baseUrl: string, magazineName: string) {
     return this.storage.getRedis(`magazine:${baseUrl}:${magazineName}`);
   }
 
-  async upsert(baseUrl, magazine) {
+  async upsert(baseUrl: string, magazine: IMagazineData) {
     const storeData = {
       ...magazine,
       lastCrawled: Date.now(),
@@ -35,7 +39,7 @@ export default class KBinStore {
     return this.storage.putRedis(`magazine:${baseUrl}:${magazine.name.toLowerCase()}`, storeData);
   }
 
-  async delete(baseUrl, magazineName, reason = "unknown") {
+  async delete(baseUrl: string, magazineName: string, reason = "unknown") {
     const oldRecord = await this.getOne(baseUrl, magazineName);
     await this.storage.putRedis(`deleted:magazine:${baseUrl}:${magazineName}`, {
       ...oldRecord,
@@ -47,7 +51,12 @@ export default class KBinStore {
   }
 
   // use these to track magazine attributes over time
-  async setTrackedAttribute(baseUrl, magazineName, attributeName, attributeValue) {
+  async setTrackedAttribute(
+    baseUrl: string,
+    magazineName: string,
+    attributeName: string,
+    attributeValue: string,
+  ) {
     return await this.storage.redisZAdd(
       `attributes:magazine:${baseUrl}:${magazineName}:${attributeName}`,
       Date.now(),

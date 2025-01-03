@@ -45,8 +45,6 @@ jobs:
     # run when crawler changes
     # if: ${{ contains(github.event.head_commit.modified, 'crawler/') }}
 
-    continue-on-error: true
-
     steps:
       - uses: actions/checkout@v3
 
@@ -71,7 +69,7 @@ jobs:
         working-directory: ${{ github.workspace }}/crawler
 
       - name: Check Style | Crawler
-        run: yarn check:type
+        run: yarn check:ts
         working-directory: ${{ github.workspace }}/crawler/
 
   # check_frontend_style:

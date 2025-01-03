@@ -6,7 +6,7 @@ import { CrawlTooRecentError } from "../lib/error";
 
 import { IJobProcessor } from "../queue/BaseQueue";
 
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import CrawlClient from "../lib/CrawlClient";
 
@@ -57,7 +57,7 @@ export default class CommunityCrawler {
       return false;
     }
 
-    await crawlStorage.community.setTrackedAttribute(
+    await storage.community.setTrackedAttribute(
       this.crawlDomain,
       communityPart,
       "subscribers",
@@ -65,7 +65,7 @@ export default class CommunityCrawler {
     );
 
     if (community.counts.hot_rank) {
-      await crawlStorage.community.setTrackedAttribute(
+      await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "hot_rank",
@@ -74,7 +74,7 @@ export default class CommunityCrawler {
     }
 
     if (community.counts.posts) {
-      await crawlStorage.community.setTrackedAttribute(
+      await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "posts",
@@ -83,7 +83,7 @@ export default class CommunityCrawler {
     }
 
     if (community.counts.comments) {
-      await crawlStorage.community.setTrackedAttribute(
+      await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "comments",
@@ -92,7 +92,7 @@ export default class CommunityCrawler {
     }
 
     if (community.counts.users_active_day) {
-      await crawlStorage.community.setTrackedAttribute(
+      await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "users_active_day",
@@ -101,7 +101,7 @@ export default class CommunityCrawler {
     }
 
     if (community.counts.users_active_week) {
-      await crawlStorage.community.setTrackedAttribute(
+      await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "users_active_week",
@@ -110,7 +110,7 @@ export default class CommunityCrawler {
     }
 
     if (community.counts.users_active_month) {
-      await crawlStorage.community.setTrackedAttribute(
+      await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "users_active_month",
@@ -118,7 +118,7 @@ export default class CommunityCrawler {
       );
     }
 
-    await crawlStorage.community.upsert(this.crawlDomain, community);
+    await storage.community.upsert(this.crawlDomain, community);
 
     return true;
   }
@@ -130,8 +130,8 @@ export default class CommunityCrawler {
       await this.getSingleCommunityData(communityName);
 
       logging.info(`${this.logPrefix} Ended Success: ${communityName}`);
-    } catch (e) {
-      logging.trace(`${this.logPrefix} ERROR Community: ${communityName}`, e.message);
+    } catch (error) {
+      logging.trace(`${this.logPrefix} ERROR Community: ${communityName}`, error.message);
     }
   }
 
@@ -159,13 +159,13 @@ export default class CommunityCrawler {
       if (e.data && e.data.error == "couldnt_find_community") {
         logging.warn("DELETE community error", e.data.error);
 
-        await crawlStorage.community.delete(this.crawlDomain, communityName, e.data.error);
+        await storage.community.delete(this.crawlDomain, communityName, e.data.error);
         return;
       } else if (e.data) {
         logging.warn("OTHER community error");
 
         // only delete unless explicit
-        // await crawlStorage.community.delete(
+        // await storage.community.delete(
         //   this.crawlDomain,
         //   communityName,
         //   e.data.error
@@ -269,14 +269,14 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
 
   try {
     // check if community's instance has already been crawled revcently (these expire from redis)
-    const lastCrawl = await crawlStorage.tracking.getLastCrawl("community", baseUrl);
+    const lastCrawl = await storage.tracking.getLastCrawl("community", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
       throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
     }
 
     // check when the latest entry to errors was too recent
-    const lastErrorTs = await crawlStorage.tracking.getOneError("community", baseUrl);
+    const lastErrorTs = await storage.tracking.getOneError("community", baseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
       throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
@@ -287,7 +287,7 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
     const communityData = await crawler.crawlList();
 
     // set last successful crawl
-    await crawlStorage.tracking.setLastCrawl("community", baseUrl, {
+    await storage.tracking.setLastCrawl("community", baseUrl, {
       duration: (Date.now() - startTime) / 1000,
       resultCount: communityData.length,
     });
@@ -312,7 +312,7 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
       logging.error(`[Community] [${baseUrl}] Error: ${error.message}`);
 
       // if (error instanceof CrawlError || error instanceof AxiosError) {
-      await crawlStorage.tracking.upsertError("community", baseUrl, errorDetail);
+      await storage.tracking.upsertError("community", baseUrl, errorDetail);
     }
   }
 
@@ -344,7 +344,7 @@ export const singleCommunityProcessor: IJobProcessor = async ({ baseUrl, communi
       };
 
       // if (error instanceof CrawlError || error instanceof AxiosError) {
-      await crawlStorage.tracking.upsertError("one_community", baseUrl, errorDetail);
+      await storage.tracking.upsertError("one_community", baseUrl, errorDetail);
 
       logging.error(`[OneCommunity] [${baseUrl}] Error: ${error.message}`);
     }

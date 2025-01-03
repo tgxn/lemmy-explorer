@@ -1,6 +1,6 @@
 import divinator from "divinator";
 
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 // used to calculate instance overall rating, as well as several instance and community metrics
 // it is meant to take some of the trust assertion logic out of the main output script
@@ -48,7 +48,7 @@ export default class OutputTrust {
   async setupSources(instanceList) {
     this.instanceList = instanceList;
 
-    this.fediseerData = await crawlStorage.fediseer.getLatest();
+    this.fediseerData = await storage.fediseer.getLatest();
     this.endorsements = this.getAllInstanceEndorsements();
 
     // parse all federated instance data
@@ -140,7 +140,7 @@ export default class OutputTrust {
   }
 
   getInstanceTags(instance) {
-    let tags = [];
+    let tags: string[] = [];
 
     const baseUrl = instance.siteData.site.actor_id.split("/")[2];
     const fediseerData = this.fediseerData.find((instance) => instance.domain === baseUrl);
@@ -172,7 +172,7 @@ export default class OutputTrust {
   async calculateInstanceMetrics(instance) {
     const baseUrl = instance.siteData.site.actor_id.split("/")[2];
 
-    const metrics = {
+    const metrics: any = {
       usersTotal: instance.siteData.counts.users || 1,
 
       usersMonth: instance.siteData.counts.users_active_month || 1,
@@ -186,18 +186,18 @@ export default class OutputTrust {
     // using the history, calculate how much it increses each crawl
     // and then how many users per minute that is...
     // also calculate how much increase growth % per scan
-    let instanceUserHistory = await crawlStorage.instance.getAttributeWithScores(baseUrl, "users");
+    let instanceUserHistory = await storage.instance.getAttributeWithScores(baseUrl, "users");
 
     // console.log("getAttributeWithScores", instanceUserHistory);
     if (instanceUserHistory.length > 0) {
       // used to track as we check the history
-      let totalUserCount = 0; // used for average
+      let totalUserCount: number = 0; // used for average
 
       let lastRecord = instanceUserHistory[0];
 
-      let biggestJump = 0;
+      let biggestJump: number = 0;
 
-      let increases = [];
+      let increases: any = [];
 
       for (let i = 0; i < instanceUserHistory.length; i++) {
         const userCount = Number(instanceUserHistory[i].value);
@@ -318,7 +318,7 @@ export default class OutputTrust {
       // reasons.push("no data in usersTotal");
     }
 
-    const reasons = [];
+    const reasons: any = [];
 
     // checks for total users vs. posts+comments
     // const postActivityFail = this.isPostActivityLow();
@@ -421,7 +421,7 @@ export default class OutputTrust {
    *
    */
   getSusInstances() {
-    const susInstances = [];
+    const susInstances: any = [];
 
     for (const instance of this.instancesWithMetrics) {
       if (instance.reasons.length > 0) {
@@ -468,7 +468,7 @@ export default class OutputTrust {
     // deviations are stored as arrays of booleans (true if they are outside the allowed range)
     const deviations = {};
     for (const index in this.instancesWithMetrics) {
-      const baseUrlDeviations = [];
+      const baseUrlDeviations: string[] = [];
 
       if (response1[index]) {
         baseUrlDeviations.push("userActivityScore");
@@ -497,7 +497,7 @@ export default class OutputTrust {
   calcInstanceScore(baseUrl) {
     let score = 0;
 
-    const scores = {};
+    const scores: any = {};
 
     // having a linked instance gives you a point for each link
     if (this.linkedFederation[baseUrl]) {

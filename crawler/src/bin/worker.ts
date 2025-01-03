@@ -2,7 +2,7 @@ import cron from "node-cron";
 
 import { AUTO_UPLOAD_S3, CRON_SCHEDULES } from "../lib/const";
 import logging from "../lib/logging";
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
@@ -19,7 +19,7 @@ import { syncCheckpoint } from "../output/sync_s3";
 /**
  * Queue worker and CRON tasks are started here.
  */
-export default async function startWorker(startWorkerName = null) {
+export default async function startWorker(startWorkerName: string) {
   if (startWorkerName == null) {
     logging.error("startWorkerName is null");
     throw new Error("startWorkerName is null");
@@ -48,12 +48,12 @@ export default async function startWorker(startWorkerName = null) {
     cron.schedule(CRON_SCHEDULES.AGED, async (time) => {
       try {
         console.log("Running Aged Cron Task", time);
-        await crawlStorage.connect();
+        await storage.connect();
 
         const aged = new CrawlAged();
         await aged.createJobs();
 
-        await crawlStorage.close();
+        await storage.close();
       } catch (e) {
         console.log("Error in Aged Cron Task", e);
       }
@@ -74,35 +74,35 @@ export default async function startWorker(startWorkerName = null) {
     logging.info("Creating KBin Cron Task", CRON_SCHEDULES.KBIN);
     cron.schedule(CRON_SCHEDULES.KBIN, async (time) => {
       console.log("Running KBin Cron Task", time);
-      await crawlStorage.connect();
+      await storage.connect();
 
       const kbinScan = new CrawlKBin();
       await kbinScan.createJobsAllKBin();
 
-      await crawlStorage.close();
+      await storage.close();
     });
 
     logging.info("Creating Uptime Cron Task", CRON_SCHEDULES.UPTIME);
     cron.schedule(CRON_SCHEDULES.UPTIME, async (time) => {
       console.log("Running Uptime Cron Task", time);
-      await crawlStorage.connect();
+      await storage.connect();
 
       const uptime = new CrawlUptime();
       await uptime.crawl();
 
-      await crawlStorage.close();
+      await storage.close();
     });
 
     // Crawl Fediseer
     logging.info("Creating CrawlFediseer Cron Task", CRON_SCHEDULES.FEDISEER);
     cron.schedule(CRON_SCHEDULES.FEDISEER, async (time) => {
       console.log("Running CrawlFediseer Cron Task", time);
-      await crawlStorage.connect();
+      await storage.connect();
 
       const fediseerCrawl = new CrawlFediseer();
       await fediseerCrawl.crawl();
 
-      await crawlStorage.close();
+      await storage.close();
     });
 
     logging.info("Cron Tasks Created");

@@ -120,6 +120,14 @@ These start a worker that will run a single job, then exit.
 
 Crawlers are tasks created to perform an action, which could be crawling an instance, community, or other data.
 
+| Crawler     | Description        |
+| ----------- | ------------------ |
+| `instance`  | Instance Crawling  |
+| `community` | Community Crawling |
+| `fediseer`  | Fediseer Crawling  |
+| `uptime`    | Uptime Crawling    |
+| `kbin`      | Kbin Crawling      |
+
 ### Queues
 
 Queues are where Tasks can be placed to be processed.

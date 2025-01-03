@@ -1,8 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "module": "es2022",
+    "moduleResolution": "node",
+    // "target": "es2016",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -12,6 +13,8 @@
     "declarationMap": false,
 
     "noImplicitAny": false,
+
+    "useUnknownInCatchVariables": false,
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules/"],

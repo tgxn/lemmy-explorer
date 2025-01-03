@@ -1,5 +1,5 @@
 import logging from "../lib/logging";
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
 
 import CrawlClient from "../lib/CrawlClient";
 
@@ -87,7 +87,7 @@ export default class CrawlFediseer {
 
     // const instances = [...fediseerWhitelist];
 
-    await crawlStorage.fediseer.addNew(fediseerWhitelist);
+    await storage.fediseer.addNew(fediseerWhitelist);
 
     // let domainGuarantees = {};
     // for (var instance of instances) {

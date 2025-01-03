@@ -5,6 +5,7 @@ import { exec } from "node:child_process";
 import logging from "../lib/logging";
 
 import storage from "../lib/crawlStorage";
+import { IFediverseDataKeyValue } from "../lib/storage/fediverse";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
@@ -16,7 +17,7 @@ import CrawlClient from "../lib/CrawlClient";
 const execAsync = util.promisify(exec);
 
 export default class CrawlKBin {
-  private fediverseData: any;
+  private fediverseData: IFediverseDataKeyValue | null;
   private logPrefix: string;
 
   private instanceQueue: InstanceQueue;
@@ -121,7 +122,7 @@ export default class CrawlKBin {
     return;
   }
 
-  async getStoreMag(kbinBaseUrl, mag) {
+  async getStoreMag(kbinBaseUrl: string, mag) {
     const magazineInfo = await this.getMagazineInfo(kbinBaseUrl, mag);
 
     if (magazineInfo.type === "Group") {
@@ -141,7 +142,9 @@ export default class CrawlKBin {
         name: mag,
       };
       await storage.kbin.upsert(kbinBaseUrl, saveGroup);
-      await storage.tracking.setLastCrawl("magazine", `${kbinBaseUrl}:${mag}`);
+      await storage.tracking.setLastCrawl("magazine", `${kbinBaseUrl}:${mag}`, {
+        followers,
+      });
 
       logging.info(`${this.logPrefix} mag: ${mag} Saved KBin Magazine`);
     } else {

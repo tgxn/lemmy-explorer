@@ -6,7 +6,7 @@ import { CrawlStorage } from "../crawlStorage";
  * Each instance is stored as a JSON object with the following fields:
  */
 
-export type InstanceData = {
+export type IInstanceData = {
   nodeData: any;
   siteData: any;
   headers: any;
@@ -14,8 +14,8 @@ export type InstanceData = {
   lastCrawled: number;
 };
 
-export type InstanceDataKeyValue = {
-  [key: string]: InstanceData;
+export type IInstanceDataKeyValue = {
+  [key: string]: IInstanceData;
 };
 
 export default class Instance {
@@ -25,19 +25,19 @@ export default class Instance {
     this.storage = storage;
   }
 
-  async getAll(): Promise<InstanceData[]> {
+  async getAll(): Promise<IInstanceData[]> {
     return this.storage.listRedis(`instance:*`);
   }
 
-  async getAllWithKeys(): Promise<InstanceDataKeyValue> {
+  async getAllWithKeys(): Promise<IInstanceDataKeyValue> {
     return this.storage.listRedisWithKeys(`instance:*`);
   }
 
-  async getOne(key: string): Promise<InstanceData> {
+  async getOne(key: string): Promise<IInstanceData> {
     return this.storage.getRedis(`instance:${key}`);
   }
 
-  async upsert(baseUrl: string, value: InstanceData) {
+  async upsert(baseUrl: string, value: IInstanceData) {
     return this.storage.putRedis(`instance:${baseUrl}`, value);
   }
 

@@ -7,7 +7,19 @@ import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import crawlStorage from "../lib/crawlStorage";
+import storage from "../lib/crawlStorage";
+import { IInstanceData, IInstanceDataKeyValue } from "../lib/storage/instance";
+import { ICommunityData, ICommunityDataKeyValue } from "../lib/storage/community";
+import { IMagazineData, IMagazineDataKeyValue } from "../lib/storage/kbin";
+import { IFediverseData, IFediverseDataKeyValue } from "../lib/storage/fediverse";
+import { IFediseerData } from "../lib/storage/fediseer";
+import {
+  IErrorData,
+  IErrorDataKeyValue,
+  ILastCrawlData,
+  ILastCrawlDataKeyValue,
+} from "../lib/storage/tracking";
+import { IUptimeNodeData, IFullUptimeData } from "../lib/storage/uptime";
 
 import OutputFileWriter from "./file_writer";
 import OutputTrust from "./trust";
@@ -22,6 +34,31 @@ class OutputUtils {
     }
 
     return stripped;
+  }
+  // calculate community published time epoch
+  static parseLemmyTimeToUnix(lemmyFormatTime: string) {
+    let publishTime: number | null = null;
+
+    if (lemmyFormatTime) {
+      try {
+        // why do some instances have Z on the end -.-
+        publishTime = new Date(lemmyFormatTime.replace(/(\.\d{6}Z?)/, "Z")).getTime();
+
+        // if not a number
+        if (isNaN(publishTime)) {
+          console.error("error parsing publish time", lemmyFormatTime);
+          publishTime = null;
+        }
+
+        // console.log("publishTime", publishTime);
+      } catch (e) {
+        console.error("error parsing publish time", lemmyFormatTime);
+      }
+    } else {
+      console.error("no publish time", lemmyFormatTime);
+    }
+
+    return publishTime;
   }
 
   // given an error message from redis, figure out what it relates to..
@@ -218,13 +255,13 @@ class OutputUtils {
  * it conencts to redis and pulls lists of all the data we have stored
  */
 export default class CrawlOutput {
-  private uptimeData: any;
-  private instanceErrors: any;
-  private communityErrors: any;
-  private instanceList: any;
-  private communityList: any;
-  private fediverseData: any;
-  private kbinData: any;
+  private uptimeData: IFullUptimeData | null;
+  private instanceErrors: IErrorDataKeyValue | null;
+
+  private instanceList: IInstanceData[] | null;
+  private communityList: ICommunityData[] | null;
+  private fediverseData: IFediverseDataKeyValue | null;
+  private kbinData: IMagazineData[] | null;
 
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
@@ -232,7 +269,7 @@ export default class CrawlOutput {
   constructor() {
     this.uptimeData = null;
     this.instanceErrors = null;
-    this.communityErrors = null;
+    // this.communityErrors = null;
     this.instanceList = null;
     this.communityList = null;
     this.fediverseData = null;
@@ -246,13 +283,13 @@ export default class CrawlOutput {
 
   // load all required data from redis
   async loadAllData() {
-    this.uptimeData = await crawlStorage.uptime.getLatest();
-    this.instanceErrors = await crawlStorage.tracking.getAllErrors("instance");
-    this.communityErrors = await crawlStorage.tracking.getAllErrors("community");
-    this.instanceList = await crawlStorage.instance.getAll();
-    this.communityList = await crawlStorage.community.getAll();
-    this.fediverseData = await crawlStorage.fediverse.getAll();
-    this.kbinData = await crawlStorage.kbin.getAll();
+    this.uptimeData = await storage.uptime.getLatest();
+    this.instanceErrors = await storage.tracking.getAllErrors("instance");
+    // this.communityErrors = await storage.tracking.getAllErrors("community");
+    this.instanceList = await storage.instance.getAll();
+    this.communityList = await storage.community.getAll();
+    this.fediverseData = await storage.fediverse.getAll();
+    this.kbinData = await storage.kbin.getAll();
   }
 
   /**
@@ -395,13 +432,13 @@ export default class CrawlOutput {
   }
 
   /// find updatenode for given baseurl
-  getBaseUrlUptime(baseUrl) {
+  private getBaseUrlUptime(baseUrl: string) {
     const foundKey = this.uptimeData.nodes.find((k) => k.domain == baseUrl);
     return foundKey;
   }
 
   // find a failure for a given baseurl
-  findFail(baseUrl) {
+  private findFail(baseUrl: string) {
     const keyName = `error:instance:${baseUrl}`;
 
     const value = this.instanceErrors[Object.keys(this.instanceErrors).find((k) => k === keyName)];
@@ -413,12 +450,12 @@ export default class CrawlOutput {
     return null;
   }
 
-  async generateInstanceMetrics(instance, storeCommunityData) {
+  private async generateInstanceMetrics(instance, storeCommunityData) {
     // get timeseries
-    const usersSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "users");
-    const postsSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "posts");
-    const commentsSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "comments");
-    const versionSeries = await crawlStorage.instance.getAttributeWithScores(instance.baseurl, "version");
+    const usersSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "users");
+    const postsSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "posts");
+    const commentsSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "comments");
+    const versionSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "version");
 
     // generate array with time -> value
     const users = usersSeries.map((item) => {
@@ -456,7 +493,7 @@ export default class CrawlOutput {
     });
   }
 
-  async getInstanceArray() {
+  private async getInstanceArray() {
     let storeData = await Promise.all(
       this.instanceList.map(async (instance) => {
         if (!instance.siteData?.site?.actor_id) {
@@ -502,7 +539,7 @@ export default class CrawlOutput {
           langs: instance.langs,
 
           date: instance.siteData.site.published, // TO BE DEPRECATED
-          published: this.parseLemmyTimeToUnix(instance.siteData?.site?.published),
+          published: OutputUtils.parseLemmyTimeToUnix(instance.siteData?.site?.published),
 
           time: instance.lastCrawled || null,
           score: score,
@@ -577,32 +614,7 @@ export default class CrawlOutput {
     return storeData;
   }
 
-  parseLemmyTimeToUnix(time) {
-    // calculate community published time
-    let publishTime = null;
-    if (time) {
-      try {
-        // why do some instances have Z on the end -.-
-        publishTime = new Date(time.replace(/(\.\d{6}Z?)/, "Z")).getTime();
-
-        // if not a number
-        if (isNaN(publishTime)) {
-          console.error("error parsing publish time", time);
-          publishTime = null;
-        }
-
-        // console.log("publishTime", publishTime);
-      } catch (e) {
-        console.error("error parsing publish time", time);
-      }
-    } else {
-      console.error("no publish time", time);
-    }
-
-    return publishTime;
-  }
-
-  async getCommunityArray(returnInstanceArray) {
+  private async getCommunityArray(returnInstanceArray) {
     let storeCommunityData = await Promise.all(
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
@@ -653,7 +665,7 @@ export default class CrawlOutput {
           banner: community.community.banner,
           nsfw: community.community.nsfw,
           counts: community.counts,
-          published: this.parseLemmyTimeToUnix(community.community?.published),
+          published: OutputUtils.parseLemmyTimeToUnix(community.community?.published),
           time: community.lastCrawled || null,
 
           isSuspicious: isInstanceSus.length > 0 ? true : false,
@@ -739,7 +751,7 @@ export default class CrawlOutput {
     return storeCommunityData;
   }
 
-  async outputFediverseData(outputInstanceData) {
+  private async outputFediverseData(outputInstanceData) {
     let returnStats = [];
 
     let softwareNames = {};
@@ -794,7 +806,7 @@ export default class CrawlOutput {
     return returnStats;
   }
 
-  async outputKBinInstanceList(returnStats) {
+  private async outputKBinInstanceList(returnStats) {
     let kbinInstances = returnStats
       .map((fediverse) => {
         // const fediverse = this.fediverseData[fediKey];
@@ -811,7 +823,7 @@ export default class CrawlOutput {
     return kbinInstances;
   }
 
-  async outputClassifiedErrors() {
+  private async outputClassifiedErrors() {
     let instanceErrors = [];
 
     // key value in errors
@@ -855,7 +867,7 @@ export default class CrawlOutput {
   }
 
   // generate a list of all the instances that are suspicious and the reasons
-  async outputKBinMagazineList() {
+  private async outputKBinMagazineList() {
     const output = [];
 
     // filter old data

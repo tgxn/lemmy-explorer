@@ -1,6 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type CommunityData = {
+export type ICommunityData = {
   community: {
     id: number;
     name: string;
@@ -26,8 +26,8 @@ export type CommunityData = {
   lastCrawled: number;
 };
 
-export type CommunityDataKeyValue = {
-  [key: string]: CommunityData;
+export type ICommunityDataKeyValue = {
+  [key: string]: ICommunityData;
 };
 
 export default class Community {
@@ -37,19 +37,19 @@ export default class Community {
     this.storage = storage;
   }
 
-  async getAll(): Promise<CommunityData[]> {
+  async getAll(): Promise<ICommunityData[]> {
     return this.storage.listRedis(`community:*`);
   }
 
-  async getAllWithKeys(): Promise<CommunityDataKeyValue> {
+  async getAllWithKeys(): Promise<ICommunityDataKeyValue> {
     return this.storage.listRedisWithKeys(`community:*`);
   }
 
-  async getOne(baseUrl: string, communityName: string): Promise<CommunityData> {
+  async getOne(baseUrl: string, communityName: string): Promise<ICommunityData> {
     return this.storage.getRedis(`community:${baseUrl}:${communityName}`);
   }
 
-  async upsert(baseUrl: string, community: CommunityData) {
+  async upsert(baseUrl: string, community: ICommunityData) {
     const storeData = {
       ...community,
       lastCrawled: Date.now(),

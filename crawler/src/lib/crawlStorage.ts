@@ -142,5 +142,5 @@ export class CrawlStorage {
   }
 }
 
-const crawlStorage: CrawlStorage = new CrawlStorage();
-export default crawlStorage;
+const storage: CrawlStorage = new CrawlStorage();
+export default storage;
