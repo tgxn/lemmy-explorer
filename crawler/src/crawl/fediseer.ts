@@ -1,5 +1,6 @@
 import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
+import { IFediseerInstanceData, IFediseerTag } from "../lib/storage/fediseer";
 
 import CrawlClient from "../lib/CrawlClient";
 
@@ -10,30 +11,14 @@ export default class CrawlFediseer {
     this.client = new CrawlClient("https://fediseer.com/api/v1/");
   }
 
-  async getAllPagesData(page = 1) {
-    let mergedInstances: any = [];
+  async getAllPagesData(page: number = 1): Promise<IFediseerInstanceData[]> {
+    let mergedInstances: IFediseerInstanceData[] = [];
 
-    const perPage = 100;
+    const perPage: number = 100;
 
     const fediseerWhitelist = await this.client.getUrl(
       `/whitelist?endorsements=0&guarantors=0&page=${page}&limit=${perPage}&software_csv=lemmy`,
     );
-    //   //  {
-    //   //   query: `query{
-    //   //         nodes (softwarename: "lemmy") {
-    //   //         domain
-    //   //         latency
-    //   //         countryname
-    //   //         uptime_alltime
-    //   //         date_created
-    //   //         date_updated
-    //   //         date_laststats
-    //   //         score
-    //   //         status
-    //   //         }
-    //   //     }`,
-    //   // }
-    // );
 
     mergedInstances = [...fediseerWhitelist.data.instances];
 
@@ -76,7 +61,9 @@ export default class CrawlFediseer {
     // map "rank" into tags, based on data from fediseerTopTagsData [{ tag, count }]
     fediseerWhitelist.forEach((instance) => {
       instance.tags = instance.tags.map((tag) => {
-        const fediseerTag = fediseerTopTagsData.data.find((fediseerTag) => fediseerTag.tag == tag);
+        const fediseerTag = fediseerTopTagsData.data.find(
+          (fediseerTag: IFediseerTag) => fediseerTag.tag == tag,
+        );
 
         if (!fediseerTag) console.log("fediseerTag not found in top tags", tag, fediseerTag);
 
