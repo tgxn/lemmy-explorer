@@ -12,6 +12,7 @@ import Box from "@mui/joy/Box";
 
 import Overview from "../components/Inspector/Overview";
 import Versions from "../components/Inspector/Versions";
+import VersionList from "../components/Inspector/VersionList";
 import Sus from "../components/Inspector/Sus";
 
 export default function Inspector() {
@@ -32,13 +33,17 @@ export default function Inspector() {
         setTabIndex(1);
         break;
 
-      case "/inspect/sus":
+      case "/inspect/version_list":
         setTabIndex(2);
         break;
 
-      case "/inspect/debug":
+      case "/inspect/sus":
         setTabIndex(3);
         break;
+
+      // case "/inspect/debug":
+      //   setTabIndex(4);
+      //   break;
     }
   }, []);
 
@@ -54,12 +59,16 @@ export default function Inspector() {
         break;
 
       case 2:
-        navigate("sus");
+        navigate("version_list");
         break;
 
       case 3:
-        navigate("debug");
+        navigate("sus");
         break;
+
+      // case 4:
+      //   navigate("debug");
+      //   break;
     }
   };
 
@@ -83,6 +92,9 @@ export default function Inspector() {
             Version Distribution
           </Tab>
           <Tab variant={"soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
+            Version List
+          </Tab>
+          <Tab variant={"soft"} color={tabIndex === 3 ? "primary" : "neutral"}>
             Suspicious Instances
           </Tab>
           {/* <Tab>Instance Debugger</Tab> */}
@@ -112,9 +124,17 @@ export default function Inspector() {
               }
             />
             <Route
-              path="/sus"
+              path="/version_list"
               element={
                 <TabPanel value={2}>
+                  <Versions />
+                </TabPanel>
+              }
+            />
+            <Route
+              path="/sus"
+              element={
+                <TabPanel value={3}>
                   <Sus />
                 </TabPanel>
               }
