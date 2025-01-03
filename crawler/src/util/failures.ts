@@ -65,7 +65,9 @@ export default class FailureCrawl {
     for (const [key, value] of Object.entries(allLastCrawl)) {
       const normalTTL = RECORD_TTL_TIMES_SECONDS.LAST_CRAWL * 1000; // how old a record can exist for
 
-      const shouldExpireAtMs = value + normalTTL;
+      const recordTime = value.time;
+      const shouldExpireAtMs = recordTime + normalTTL;
+
       const ttlFromNowSeconds = Math.round((shouldExpireAtMs - Date.now()) / 1000);
 
       if (ttlFromNowSeconds < 0) {
