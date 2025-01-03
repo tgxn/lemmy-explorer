@@ -1,12 +1,19 @@
 export type IHTTPClientError = {
-  isAxiosError: boolean;
-  code: string;
-  url: string;
-  request: any;
-  response: any;
+  isAxiosError?: boolean;
+  code?: string;
+  url?: string;
+  request?: any;
+  response?: any;
 };
 
 export class HTTPError extends Error {
+  public isAxiosError?: boolean;
+  public code?: string;
+  public url?: string;
+
+  public request?: any;
+  public response?: any;
+
   constructor(message: string, data: IHTTPClientError) {
     super(message);
     this.name = "HTTPError";

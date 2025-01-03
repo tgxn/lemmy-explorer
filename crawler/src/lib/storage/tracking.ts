@@ -8,7 +8,7 @@ export type IErrorData = {
   stack?: string;
   isAxiosError?: boolean;
   requestUrl?: string;
-  code?: number;
+  code?: string;
   url?: string;
   duration?: number;
 };

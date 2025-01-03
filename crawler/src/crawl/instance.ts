@@ -1,5 +1,11 @@
 import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
+import {
+  IErrorData,
+  IErrorDataKeyValue,
+  ILastCrawlData,
+  ILastCrawlDataKeyValue,
+} from "../lib/storage/tracking";
 
 import { CRAWL_AGED_TIME } from "../lib/const";
 import { HTTPError, CrawlError, CrawlTooRecentError } from "../lib/error";
@@ -371,7 +377,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[Instance] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
     } else if (error instanceof HTTPError) {
-      const errorDetail = {
+      const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,
         isAxiosError: error.isAxiosError,

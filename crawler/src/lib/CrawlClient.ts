@@ -1,5 +1,5 @@
 import logging from "./logging";
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
 import { HTTPError } from "./error";
 
@@ -30,8 +30,8 @@ export default class CrawlClient {
         isAxiosError: true,
         code: e.code,
         url: e.config.url,
-        request: e.request || null,
-        response: e.response || null,
+        request: e.request || undefined,
+        response: e.response || undefined,
       });
     }
   }

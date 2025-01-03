@@ -24,6 +24,85 @@ import { IUptimeNodeData, IFullUptimeData } from "../lib/storage/uptime";
 import OutputFileWriter from "./file_writer";
 import OutputTrust from "./trust";
 
+export type IKBinMagazineOutput = {
+  actor_id: string;
+  title: string;
+  name: string;
+  preferred: string;
+  baseurl: string;
+  summary: string;
+  sensitive: boolean;
+  postingRestrictedToMods: boolean;
+  icon: string;
+  published: string;
+  updated: string;
+  followers: number;
+  time: number;
+};
+
+export type IFediverseDataOutput = {
+  url: string;
+  software: string;
+  version: string;
+};
+
+export type IClassifiedErrorOutput = {
+  baseurl: string;
+  time: number;
+  error: string;
+  type?: string;
+};
+
+export type ICommunityDataOutput = {
+  baseurl: string;
+  url: string;
+  name: string;
+  title: string;
+  desc: string;
+  icon: string | null;
+  banner: string | null;
+  nsfw: boolean;
+  counts: Object;
+  published: number;
+  time: number;
+  isSuspicious: boolean;
+  score: number;
+};
+
+export type IInstanceDataOutput = {
+  baseurl: string;
+  url: string;
+  name: string;
+  desc: string;
+  downvotes: boolean;
+  nsfw: boolean;
+  create_admin: boolean;
+  private: boolean;
+  fed: boolean;
+  version: string;
+  open: boolean;
+  usage: number;
+  counts: Object;
+  icon: string;
+  banner: string;
+  langs: string[];
+  date: string;
+  published: number;
+  time: number;
+  score: number;
+  uptime?: IUptimeNodeData;
+  isSuspicious: boolean;
+  metrics: Object | null;
+  tags: string[];
+  susReason: string[];
+  trust: Object;
+  blocks: {
+    incoming: number;
+    outgoing: number;
+  };
+  blocked: string[];
+};
+
 class OutputUtils {
   // strip markdown, optionally substring
   static stripMarkdownSubStr(text: string, maxLength: number = -1) {
@@ -35,9 +114,10 @@ class OutputUtils {
 
     return stripped;
   }
+
   // calculate community published time epoch
-  static parseLemmyTimeToUnix(lemmyFormatTime: string) {
-    let publishTime: number | null = null;
+  static parseLemmyTimeToUnix(lemmyFormatTime: string): number {
+    let publishTime: number = 0;
 
     if (lemmyFormatTime) {
       try {
@@ -47,7 +127,7 @@ class OutputUtils {
         // if not a number
         if (isNaN(publishTime)) {
           console.error("error parsing publish time", lemmyFormatTime);
-          publishTime = null;
+          publishTime = 0;
         }
 
         // console.log("publishTime", publishTime);
@@ -62,7 +142,7 @@ class OutputUtils {
   }
 
   // given an error message from redis, figure out what it relates to..
-  static findErrorType(errorMessage: string) {
+  static findErrorType(errorMessage: string): string {
     if (
       errorMessage.includes("ENOENT") ||
       errorMessage.includes("ECONNREFUSED") ||
@@ -137,6 +217,7 @@ class OutputUtils {
     }
 
     logging.silly("unhandled error", errorMessage);
+    return "unknown";
   }
 
   // ensure the output is okay for the website
@@ -298,6 +379,22 @@ export default class CrawlOutput {
   async start() {
     await this.loadAllData();
 
+    if (!this.instanceList) {
+      throw new Error("No instance List");
+    }
+
+    if (!this.communityList) {
+      throw new Error("No community List");
+    }
+
+    if (!this.fediverseData) {
+      throw new Error("No fediverse Data");
+    }
+
+    if (!this.kbinData) {
+      throw new Error("No kbin Data");
+    }
+
     // setup trust data
     await this.trust.setupSources(this.instanceList);
 
@@ -433,18 +530,25 @@ export default class CrawlOutput {
 
   /// find updatenode for given baseurl
   private getBaseUrlUptime(baseUrl: string) {
+    if (!this.uptimeData) {
+      throw new Error("No uptime Data");
+    }
+
     const foundKey = this.uptimeData.nodes.find((k) => k.domain == baseUrl);
     return foundKey;
   }
 
   // find a failure for a given baseurl
-  private findFail(baseUrl: string) {
+  private findFail(baseUrl: string): IErrorData | null {
     const keyName = `error:instance:${baseUrl}`;
 
-    const value = this.instanceErrors[Object.keys(this.instanceErrors).find((k) => k === keyName)];
+    if (!this.instanceErrors) {
+      throw new Error("No instance Errors");
+    }
 
-    if (value) {
-      return value;
+    const matchingKey = Object.keys(this.instanceErrors).find((k) => k === keyName);
+    if (matchingKey) {
+      return this.instanceErrors[matchingKey];
     }
 
     return null;
@@ -493,13 +597,20 @@ export default class CrawlOutput {
     });
   }
 
-  private async getInstanceArray() {
-    let storeData = await Promise.all(
+  // INSTANCES
+
+  private async getInstanceArray(): Promise<IInstanceDataOutput[]> {
+    if (!this.instanceList) {
+      throw new Error("No instance List");
+    }
+
+    let storeData: IInstanceDataOutput[] = await Promise.all(
       this.instanceList.map(async (instance) => {
         if (!instance.siteData?.site?.actor_id) {
           logging.error("no actor_id", instance);
-          return null;
+          throw new Error("no actor_id");
         }
+
         let siteBaseUrl = instance.siteData.site.actor_id.split("/")[2];
 
         const siteUptime = this.getBaseUrlUptime(siteBaseUrl);
@@ -515,7 +626,7 @@ export default class CrawlOutput {
         const susReason = instanceTrustData.reasons;
 
         // console.log("instanceTrustData.tags", instanceTrustData.tags);
-        return {
+        const instanceDataOut: IInstanceDataOutput = {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
@@ -541,7 +652,7 @@ export default class CrawlOutput {
           date: instance.siteData.site.published, // TO BE DEPRECATED
           published: OutputUtils.parseLemmyTimeToUnix(instance.siteData?.site?.published),
 
-          time: instance.lastCrawled || null,
+          time: instance.lastCrawled || 0,
           score: score,
           uptime: siteUptime,
 
@@ -558,6 +669,8 @@ export default class CrawlOutput {
           },
           blocked: instance.siteData.federated?.blocked || [],
         };
+
+        return instanceDataOut;
       }),
     );
 
@@ -614,12 +727,22 @@ export default class CrawlOutput {
     return storeData;
   }
 
-  private async getCommunityArray(returnInstanceArray) {
-    let storeCommunityData = await Promise.all(
+  // COMMUNITY
+
+  private async getCommunityArray(returnInstanceArray): Promise<ICommunityDataOutput[]> {
+    if (!this.communityList) {
+      throw new Error("No community List");
+    }
+
+    let storeCommunityData: ICommunityDataOutput[] = await Promise.all(
       this.communityList.map(async (community) => {
         let siteBaseUrl = community.community.actor_id.split("/")[2];
 
         const score = await this.trust.calcCommunityScore(siteBaseUrl, community);
+
+        if (!this.instanceList) {
+          throw new Error("No instance List");
+        }
 
         const relatedInstance = this.instanceList.find(
           (instance) => instance.siteData.site.actor_id.split("/")[2] === siteBaseUrl,
@@ -655,7 +778,7 @@ export default class CrawlOutput {
         //   console.error("no publish time", community.community);
         // }
 
-        return {
+        const communityDataOutput: ICommunityDataOutput = {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
           name: community.community.name,
@@ -666,11 +789,13 @@ export default class CrawlOutput {
           nsfw: community.community.nsfw,
           counts: community.counts,
           published: OutputUtils.parseLemmyTimeToUnix(community.community?.published),
-          time: community.lastCrawled || null,
+          time: community.lastCrawled || 0,
 
           isSuspicious: isInstanceSus.length > 0 ? true : false,
           score: score,
         };
+
+        return communityDataOutput;
       }),
     );
 
@@ -751,85 +876,19 @@ export default class CrawlOutput {
     return storeCommunityData;
   }
 
-  private async outputFediverseData(outputInstanceData) {
-    let returnStats = [];
+  // ERRORS
 
-    let softwareNames = {};
-    let softwareBaseUrls = {};
+  private async outputClassifiedErrors(): Promise<IClassifiedErrorOutput[]> {
+    let instanceErrors: IClassifiedErrorOutput[] = [];
 
-    Object.keys(this.fediverseData).forEach((fediKey) => {
-      const fediverse = this.fediverseData[fediKey];
-      const baseUrl = fediKey.replace("fediverse:", "");
-      if (fediverse.name) {
-        if (!softwareBaseUrls[fediverse.name]) {
-          softwareBaseUrls[fediverse.name] = [baseUrl];
-        } else {
-          softwareBaseUrls[fediverse.name].push(baseUrl);
-        }
-
-        if (!softwareNames[fediverse.name]) {
-          softwareNames[fediverse.name] = 1;
-        } else {
-          softwareNames[fediverse.name] += 1;
-        }
-
-        returnStats.push({
-          url: baseUrl,
-          software: fediverse.name,
-          version: fediverse.version,
-        });
-      }
-    });
-
-    // count total tags in instance array and output tags meta file
-    let tagCounts = []; // { tag: "name", count: 0 }
-    outputInstanceData.forEach((instance) => {
-      instance.tags.forEach((tag) => {
-        const foundTag = tagCounts.find((t) => t.tag === tag);
-        if (foundTag) {
-          foundTag.count++;
-        } else {
-          tagCounts.push({ tag: tag, count: 1 });
-        }
-      });
-
-      // add tags to software
-    });
-
-    // sort tags by count
-    tagCounts = tagCounts.sort((a, b) => {
-      return b.count - a.count;
-    });
-
-    await this.fileWriter.storeFediverseData(returnStats, softwareNames, softwareBaseUrls, tagCounts);
-
-    return returnStats;
-  }
-
-  private async outputKBinInstanceList(returnStats) {
-    let kbinInstances = returnStats
-      .map((fediverse) => {
-        // const fediverse = this.fediverseData[fediKey];
-
-        if (fediverse.software && fediverse.software === "kbin") {
-          return fediverse.url;
-        }
-        return null;
-      })
-      .filter((instance) => instance !== null);
-
-    await this.fileWriter.storeKbinInstanceList(kbinInstances);
-
-    return kbinInstances;
-  }
-
-  private async outputClassifiedErrors() {
-    let instanceErrors = [];
+    if (!this.instanceErrors) {
+      throw new Error("No instance Errors");
+    }
 
     // key value in errors
     let errorTypes = {};
     for (const [key, value] of Object.entries(this.instanceErrors)) {
-      const instanceData = {
+      const instanceData: IClassifiedErrorOutput = {
         baseurl: key.replace("error:instance:", ""),
         error: value.error,
         time: value.time,
@@ -859,27 +918,109 @@ export default class CrawlOutput {
     console.log("Error Types by Count");
     console.table(errorTypes);
 
-    // logging.info("instanceErrors", instanceErrors.length, errorTypes);
+    logging.debug("instanceErrors", instanceErrors.length, errorTypes);
 
     await this.fileWriter.storeInstanceErrors(instanceErrors);
 
     return instanceErrors;
   }
 
+  // FEDIVERSE
+
+  private async outputFediverseData(outputInstanceData): Promise<IFediverseDataOutput[]> {
+    let returnStats: IFediverseDataOutput[] = [];
+
+    let softwareNames = {};
+    let softwareBaseUrls = {};
+
+    if (!this.fediverseData) {
+      throw new Error("No fediverse Data");
+    }
+
+    for (const [fediKey, fediValue] of Object.entries(this.fediverseData)) {
+      // const fediverse = this.fediverseData[fediKey];
+
+      const baseUrl = fediKey.replace("fediverse:", "");
+      if (fediValue.name) {
+        if (!softwareBaseUrls[fediValue.name]) {
+          softwareBaseUrls[fediValue.name] = [baseUrl];
+        } else {
+          softwareBaseUrls[fediValue.name].push(baseUrl);
+        }
+
+        if (!softwareNames[fediValue.name]) {
+          softwareNames[fediValue.name] = 1;
+        } else {
+          softwareNames[fediValue.name] += 1;
+        }
+
+        returnStats.push({
+          url: baseUrl,
+          software: fediValue.name,
+          version: fediValue.version || "",
+        });
+      }
+    }
+
+    // count total tags in instance array and output tags meta file
+    let tagCounts: { tag: string; count: number }[] = []; // { tag: "name", count: 0 }
+    outputInstanceData.forEach((instance) => {
+      instance.tags.forEach((tag) => {
+        const foundTag = tagCounts.find((t) => t.tag === tag);
+        if (foundTag) {
+          foundTag.count++;
+        } else {
+          tagCounts.push({ tag: tag, count: 1 });
+        }
+      });
+
+      // add tags to software
+    });
+
+    // sort tags by count
+    tagCounts = tagCounts.sort((a, b) => {
+      return b.count - a.count;
+    });
+
+    await this.fileWriter.storeFediverseData(returnStats, softwareNames, softwareBaseUrls, tagCounts);
+
+    return returnStats;
+  }
+
+  // KBIN
+
+  private async outputKBinInstanceList(returnStats: IFediverseDataOutput[]): Promise<string[]> {
+    let kbinInstanceUrls: string[] = returnStats
+      .map((fediverse) => {
+        // const fediverse = this.fediverseData[fediKey];
+
+        if (fediverse.software && fediverse.software === "kbin") {
+          return fediverse.url;
+        }
+
+        return null;
+      })
+      .filter((instance) => instance !== null);
+
+    await this.fileWriter.storeKbinInstanceList(kbinInstanceUrls);
+
+    return kbinInstanceUrls;
+  }
+
   // generate a list of all the instances that are suspicious and the reasons
-  private async outputKBinMagazineList() {
-    const output = [];
+  private async outputKBinMagazineList(): Promise<IKBinMagazineOutput[]> {
+    const output: IKBinMagazineOutput[] = [];
+
+    if (!this.kbinData) {
+      throw new Error("No KBin data");
+    }
 
     // filter old data
     const filteredKBins = this.kbinData.filter((kbin) => {
       return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE.MAGAZINE;
     });
 
-    // logging.info(
-    //   "KBin Magazines filteredKBins",
-    //   this.kbinData.length,
-    //   filteredKBins.length
-    // );
+    logging.info("KBin Magazines filteredKBins", this.kbinData.length, filteredKBins.length);
 
     for (const kbin of filteredKBins) {
       output.push({
@@ -900,12 +1041,12 @@ export default class CrawlOutput {
         updated: kbin.updated,
         followers: kbin.followerCount,
 
-        time: kbin.lastCrawled,
+        time: kbin.lastCrawled || 0,
       });
     }
 
     await this.fileWriter.storeKBinMagazineData(output);
 
-    return filteredKBins;
+    return output;
   }
 }
