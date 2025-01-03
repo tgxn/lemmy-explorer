@@ -5,7 +5,7 @@ import { IInstanceData, IInstanceDataKeyValue } from "../lib/storage/instance";
 import { ICommunityData, ICommunityDataKeyValue } from "../lib/storage/community";
 import { IMagazineData, IMagazineDataKeyValue } from "../lib/storage/kbin";
 import { IFediverseData, IFediverseDataKeyValue } from "../lib/storage/fediverse";
-import { IFediseerData } from "../lib/storage/fediseer";
+import { IFediseerInstanceData } from "../lib/storage/fediseer";
 import {
   IErrorData,
   IErrorDataKeyValue,
@@ -42,7 +42,7 @@ import { OUTPUT_MAX_AGE } from "../lib/const";
 export default class OutputTrust {
   private instanceList: IInstanceData[] | null;
 
-  public fediseerData: IFediseerData[] | null = null;
+  public fediseerData: IFediseerInstanceData[] | null = null;
   public endorsements;
 
   public linkedFederation: { [key: string]: number } | null = null;
