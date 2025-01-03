@@ -261,7 +261,7 @@ class OutputUtils {
     );
 
     if (lovecraft) {
-      console.log("Lovecraft on Lemmy.World", lovecraft);
+      // console.log("Lovecraft on Lemmy.World", lovecraft);
     } else {
       console.log("Lovecraft not on Lemmy.World");
       issues.push("Lovecraft not on Lemmy.World");
