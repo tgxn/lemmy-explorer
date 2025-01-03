@@ -197,7 +197,7 @@ export default class CommunityCrawler {
 
       return resultPromises;
     } catch (e) {
-      logging.error(`${this.logPrefix} Ended: Error`, e);
+      logging.error(`${this.logPrefix} Crawl List Failed: `, e.message);
       throw new CrawlError(e.message, e);
       // throw e;
     }
@@ -256,7 +256,7 @@ export default class CommunityCrawler {
 
     // must be an array
     if (!Array.isArray(communities)) {
-      logging.trace(`${this.logPrefix}`, communityList.data);
+      logging.error(`${this.logPrefix} Community list not an array:`, communityList.data.substr(0, 15));
       throw new CrawlError(`Community list not an array: ${communities}`);
     }
 
