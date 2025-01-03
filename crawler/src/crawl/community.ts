@@ -37,7 +37,7 @@ export default class CommunityCrawler {
   }
 
   // the actor id for the community should match the domain https://lemmy.fmhy.ml/c/freemediaheckyeah
-  splitCommunityActorParts(actorId: string) {
+  private splitCommunityActorParts(actorId: string): { basePart: string; communityPart: string } {
     const splitActorId = actorId.split("/");
     const basePart = splitActorId[2];
     const communityPart = splitActorId[4];
@@ -127,15 +127,15 @@ export default class CommunityCrawler {
     try {
       logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
 
-      await this.getSingleCommunityData(communityName);
+      const communityData = await this.getSingleCommunityData(communityName);
 
-      logging.info(`${this.logPrefix} crawlSingle Ended Success: ${communityName}`);
+      logging.info(`${this.logPrefix} crawlSingle Ended Success: ${communityName}`, communityData);
     } catch (error) {
       logging.error(`${this.logPrefix} crawlSingle ERROR Community: ${communityName}`, error.message);
     }
   }
 
-  async getSingleCommunityData(communityName: string, attempt: number = 0) {
+  async getSingleCommunityData(communityName: string, attempt: number = 0): Promise<any> {
     try {
       const communityData = await this.client.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community",
@@ -144,7 +144,7 @@ export default class CommunityCrawler {
             name: communityName,
           },
         },
-        0,
+        2,
       );
 
       if (communityData.data.community_view) {
@@ -154,34 +154,85 @@ export default class CommunityCrawler {
 
         return communityData.data.community_view;
       }
+
+      logging.error(
+        `${this.logPrefix} getSingleCommunityData no community_view, deleting!`,
+        communityData.data,
+      );
+      await storage.community.delete(this.crawlDomain, communityName, "no community_view");
+
+      return null;
     } catch (e) {
-      // dont retry if the community doesnt exist
-      if (e.data && e.data.error == "couldnt_find_community") {
-        logging.warn("DELETE community error", e.data.error);
+      logging.error(`${this.logPrefix} getSingleCommunityData error: `, e.message, e.code);
 
-        await storage.community.delete(this.crawlDomain, communityName, e.data.error);
-        return;
-      } else if (e.data) {
-        logging.warn("OTHER community error");
+      // delete the community if it's no longer found
+      if (e.response?.data?.error && e.response.data.error == "couldnt_find_community") {
+        logging.info(
+          `${this.logPrefix} couldnt_find_community, deleting community community:${this.crawlDomain}:${communityName}`,
+        );
 
-        // only delete unless explicit
-        // await storage.community.delete(
-        //   this.crawlDomain,
-        //   communityName,
-        //   e.data.error
-        // );
-        return;
+        await storage.community.delete(this.crawlDomain, communityName, e.response.data.error);
+
+        return null;
       }
 
-      // re-try overall
-      if (attempt < RETRY_COUNT) {
-        await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_RETRIES));
-        return await this.getSingleCommunityData(communityName, attempt + 1);
+      // e.code ENOTFOUND
+      if (e.code == "ENOTFOUND" || e.response?.data?.includes("404 Not Found")) {
+        logging.error(
+          `${this.logPrefix} ENOTFOUND error, deleting community community:${this.crawlDomain}:${communityName}`,
+        );
+
+        await storage.community.delete(this.crawlDomain, communityName, "ENOTFOUND");
+
+        return null;
       }
 
-      logging.error(`${this.logPrefix} communityData error`, e.type, e.message);
-      // return false;
+      // data contains `Argo Tunnel error`
+      if (e.response?.data && e.response.data.includes("Argo Tunnel error")) {
+        logging.error(
+          `${this.logPrefix} Argo Tunnel error, deleting community community:${this.crawlDomain}:${communityName}`,
+        );
 
+        await storage.community.delete(this.crawlDomain, communityName, "Argo Tunnel error");
+
+        return null;
+      }
+
+      // data contains `Service Unavailable`
+      if (e.response?.data && e.response.statusText.includes("Service Unavailable")) {
+        logging.error(
+          `${this.logPrefix} Service Unavailable error, deleting community community:${this.crawlDomain}:${communityName}`,
+        );
+
+        await storage.community.delete(this.crawlDomain, communityName, "Service Unavailable");
+
+        return null;
+      }
+
+      // api returned <!DOCTYPE html>
+      if (e.response?.data && e.response.data.toLowerCase().includes("<!doctype html>")) {
+        logging.error(
+          `${this.logPrefix} <!DOCTYPE html> error, deleting community community:${this.crawlDomain}:${communityName}`,
+        );
+
+        await storage.community.delete(this.crawlDomain, communityName, "<!DOCTYPE html>");
+
+        return null;
+      }
+
+      // Hostname/IP does not match certificate's altnames
+      if (e.code == "ERR_TLS_CERT_ALTNAME_INVALID") {
+        logging.error(
+          `${this.logPrefix} ERR_TLS_CERT_ALTNAME_INVALID error, deleting community community:${this.crawlDomain}:${communityName}`,
+        );
+
+        await storage.community.delete(this.crawlDomain, communityName, "ERR_TLS_CERT_ALTNAME_INVALID");
+
+        return null;
+      }
+
+      // other unknown error!
+      logging.error(`${this.logPrefix} communityData unknown error`, e.message, e);
       throw e;
     }
   }
