@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 
+import ListItemDecorator from "@mui/joy/ListItemDecorator";
+import ListDivider from "@mui/joy/ListDivider";
+
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 // import OutlinedInput from "@mui/joy/OutlinedInput";
@@ -8,7 +11,7 @@ import Option from "@mui/joy/Option";
 // import InputLabel from "@mui/joy/InputLabel";
 import MenuItem from "@mui/joy/MenuItem";
 // import FormControl from "@mui/joy/FormControl";
-// import ListItemText from "@mui/joy/ListItemText";
+// import ListItemText from "@mui/base/ListItemText";
 // import Select from "@mui/joy/Select";
 import Checkbox from "@mui/joy/Checkbox";
 
@@ -16,12 +19,17 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }) => {
   // console.log("RegistrationModeFilter", DEFAULT_LANGS, languageCodes, setLanguageCodes);
 
   const handleChange = (event) => {
-    console.log("handleChange", event);
+    if (!event) return;
 
-    const {
-      target: { value },
-    } = event;
-    const preventDuplicate = value.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+    console.log("handleChange event", event);
+
+    const value = event.target.value;
+    console.log("handleChange value", value);
+
+    // const {
+    //   target: { value },
+    // } = event;
+    // const preventDuplicate = value.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
 
     // const filterdValue = value.filter((item) => variantName.findIndex((o) => o.id === item.id) >= 0);
     // let duplicatesRemoved = value.filter((item, itemIndex) =>
@@ -101,12 +109,22 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }) => {
       renderValue={(selected) => selected.map((x) => x.name).join(", ")}
       MenuProps={MenuProps}
     >
-      {menuOptions.map((option) => (
-        <MenuItem key={option.value} value={option}>
-          <Checkbox checked={regMode.findIndex((item) => item.value === option.value) >= 0} />
-          {/* <ListItemText primary={option.name} /> */}
-          {option.name}
-        </MenuItem>
+      {menuOptions.map((option, index) => (
+        // <Option key={option.value} value={option.value}>
+        //   <Checkbox checked={regMode.findIndex((item) => item.value === option.value) >= 0} />
+        //   {/* <ListItemText primary={option.name} /> */}
+        //   {option.name}
+        // </Option>
+        <React.Fragment key={option.value}>
+          {index !== 0 ? <ListDivider role="none" inset="startContent" /> : null}
+          <Option value={option.value} label={option.name}>
+            <ListItemDecorator>
+              {/* <Avatar size="sm" src={option.src} /> */}
+              <Checkbox checked={regMode.findIndex((item) => item.value === option.value) >= 0} />
+            </ListItemDecorator>
+            {option.name}
+          </Option>
+        </React.Fragment>
       ))}
     </Select>
   );
