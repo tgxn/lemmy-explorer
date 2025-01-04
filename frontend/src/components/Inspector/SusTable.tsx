@@ -54,7 +54,26 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-function EnhancedTableHead(props) {
+// EnhancedTableHead.propTypes = {
+//   numSelected?: PropTypes.number.isRequired,
+//   onRequestSort: PropTypes.func.isRequired,
+//   onSelectAllClick?: PropTypes.func.isRequired,
+//   order: PropTypes.oneOf(["asc", "desc"]).isRequired,
+//   orderBy: PropTypes.string.isRequired,
+//   rowCount: PropTypes.number.isRequired,
+// };
+
+type IEnhancedTableHeadProps = {
+  headCells: Array<{ id: string; label: string; numeric?: boolean }>;
+  onSelectAllClick?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  order: "asc" | "desc";
+  orderBy: string;
+  numSelected?: number;
+  rowCount: number;
+  onRequestSort: (event: React.MouseEvent, property: string) => void;
+};
+
+function EnhancedTableHead(props: IEnhancedTableHeadProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -68,7 +87,7 @@ function EnhancedTableHead(props) {
           return (
             <th
               key={headCell.id}
-              aria-sort={active ? { asc: "ascending", desc: "descending" }[order] : undefined}
+              // aria-sort={active ? { asc: "ascending", desc: "descending" }[order] : undefined}
             >
               {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <Link
@@ -107,16 +126,11 @@ function EnhancedTableHead(props) {
   );
 }
 
-EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
+type IEnhancedTableToolbarProps = {
+  title: string;
 };
 
-function EnhancedTableToolbar(props) {
+function EnhancedTableToolbar(props: IEnhancedTableToolbarProps) {
   return (
     <Box
       sx={{
@@ -137,15 +151,15 @@ function EnhancedTableToolbar(props) {
   );
 }
 
-EnhancedTableToolbar.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-};
+// EnhancedTableToolbar.propTypes = {
+//   numSelected: PropTypes.number.isRequired,
+// };
 
 export default function SusTable({ susRows, headCells, renderRow, defaultSortRow = "name" }) {
   const columnCount = headCells.length;
 
   const [orderBy, setOrderBy] = React.useState(defaultSortRow);
-  const [order, setOrder] = React.useState("asc");
+  const [order, setOrder] = React.useState<"asc" | "desc">("asc");
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -209,7 +223,7 @@ export default function SusTable({ susRows, headCells, renderRow, defaultSortRow
             <tr
               style={{
                 height: `calc(${emptyRows} * 40px)`,
-                "--TableRow-hoverBackground": "transparent",
+                // "--TableRow-hoverBackground": "transparent",
               }}
             >
               <td colSpan={columnCount} />

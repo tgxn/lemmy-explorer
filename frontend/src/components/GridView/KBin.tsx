@@ -6,7 +6,11 @@ import { useWindowSize } from "@react-hook/window-size";
 
 import KBinCard from "./KBinCard";
 
-const KBinGrid = React.memo(function ({ items }) {
+type KBinGridProps = {
+  items: any[];
+};
+
+const KBinGrid = React.memo(function ({ items }: KBinGridProps) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();

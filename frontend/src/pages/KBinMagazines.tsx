@@ -253,9 +253,9 @@ function KBinMagazines() {
               showing{" "}
               <SimpleNumberFormat
                 value={magazinesData.length}
-                displayType={"text"}
-                decimalScale={2}
-                thousandSeparator={","}
+                // displayType={"text"}
+                // decimalScale={2}
+                // thousandSeparator={","}
               />{" "}
               magazines
             </Typography>

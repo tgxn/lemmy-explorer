@@ -171,7 +171,7 @@ export default function Join() {
           >
             <thead>
               <tr>
-                <th width="45px"></th>
+                <th style={{ width: "45px" }}></th>
                 <th>Name</th>
                 <th>Users</th>
                 <th>Communities</th>

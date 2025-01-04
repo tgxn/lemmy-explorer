@@ -32,7 +32,12 @@ import HomeInstanceButton from "./HomeInstanceButton";
 
 import { setFilterSuspicious } from "../../reducers/configReducer";
 
-function ColorSchemeToggle({ onClick, variant, ...props }) {
+type IColorSchemeToggleProps = {
+  onClick?: (event: React.MouseEvent) => void;
+  variant?: "menu";
+};
+
+function ColorSchemeToggle({ onClick, variant, ...props }: IColorSchemeToggleProps) {
   const { mode, setMode } = useColorScheme();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
@@ -54,7 +59,7 @@ function ColorSchemeToggle({ onClick, variant, ...props }) {
           } else {
             setMode("light");
           }
-          onClick?.(event);
+          onClick && onClick(event);
         }}
       >
         <ListItemDecorator>
@@ -88,7 +93,12 @@ function ColorSchemeToggle({ onClick, variant, ...props }) {
   );
 }
 
-function HeaderSideMenu({ filterSuspicious, dispatch }) {
+type IHeaderSideMenuProps = {
+  filterSuspicious: boolean;
+  dispatch: Function;
+};
+
+function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -261,7 +271,6 @@ function HeaderSideMenu({ filterSuspicious, dispatch }) {
     </>
   );
 }
-
 const mapStateToProps = (state) => ({
   filterSuspicious: state.configReducer.filterSuspicious,
 });

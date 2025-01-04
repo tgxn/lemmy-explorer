@@ -3,7 +3,13 @@ import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Responsive
 
 import { Treemap } from "recharts";
 
-const CustomTooltip = ({ active, payload, label }) => {
+type ICustomTooltipProps = {
+  active: boolean;
+  payload: any;
+  label?: any;
+};
+
+const CustomTooltip = ({ active, payload, label }: ICustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div
@@ -26,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const CustomTooltip1 = ({ active, payload, label }) => {
+const CustomTooltip1 = ({ active, payload, label }: ICustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div
@@ -48,7 +54,11 @@ const CustomTooltip1 = ({ active, payload, label }) => {
   return null;
 };
 
-export function ScatterGrid({ instances }) {
+type IScatterGridProps = {
+  instances: any[];
+};
+
+export function ScatterGrid({ instances }: IScatterGridProps) {
   // x: instance users userActiveMonthScore
   // y: instance sus score userActivityScore
 
@@ -84,14 +94,14 @@ export function ScatterGrid({ instances }) {
         <CartesianGrid />
         <XAxis type="number" dataKey="x" name="userActiveMonthScore" unit="" />
         <YAxis type="number" dataKey="y" name="averagePerMinute" unit="" />
-        <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />} />
+        {/* <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />} /> */}
         <Scatter name="A school" data={data} fill="#8884d8" />
       </ScatterChart>
     </ResponsiveContainer>
   );
 }
 
-export function ScatterGrid1({ instances }) {
+export function ScatterGrid1({ instances }: IScatterGridProps) {
   // x: instance users userActiveMonthScore
   // y: instance sus score userActivityScore
 
@@ -127,7 +137,7 @@ export function ScatterGrid1({ instances }) {
         <CartesianGrid />
         <XAxis type="number" dataKey="x" name="totalActivity" unit="" />
         <YAxis type="number" dataKey="y" name="totalUsers" unit="" />
-        <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip1 />} />
+        {/* <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip1 />} /> */}
         <Scatter name="A school" data={data} fill="#8884d8" />
       </ScatterChart>
     </ResponsiveContainer>

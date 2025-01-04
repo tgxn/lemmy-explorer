@@ -20,7 +20,11 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-export default React.memo(function KBinCard({ magazine }) {
+type KBinCardProps = {
+  magazine: any;
+};
+
+export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
   return (
     <Card
       variant="outlined"
@@ -32,7 +36,7 @@ export default React.memo(function KBinCard({ magazine }) {
       {/* Community Title */}
       <CardOverflow
         variant="outlined"
-        orientation="horizontal"
+        // orientation="horizontal"
         sx={{
           py: 1.75,
           px: 2,

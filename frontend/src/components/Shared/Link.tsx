@@ -41,54 +41,68 @@ export function CopyLink({ copyText, linkProps }) {
   );
 }
 
-const CommunityLink = React.memo(({ baseType, community, homeBaseUrl, instanceType, ...props }) => {
-  const [instanceLink, tooltipTitle] = React.useMemo(() => {
-    let instanceLink = `https://${community.baseurl}/c/${community.name}`;
-    let tooltipTitle = `${community.baseurl}/c/${community.name}`;
+type ICommunityLinkProps = {
+  baseType: string;
+  community: {
+    baseurl: string;
+    name: string;
+    title: string;
+  };
+  homeBaseUrl: string;
+  instanceType: string;
+  [key: string]: any;
+};
 
-    if (baseType == "kbin") {
-      instanceLink = `https://${community.baseurl}/m/${community.name}`;
-      tooltipTitle = `${community.baseurl}/m/${community.name}`;
-    }
+const CommunityLink = React.memo(
+  ({ baseType, community, homeBaseUrl, instanceType, ...props }: ICommunityLinkProps) => {
+    const [instanceLink, tooltipTitle] = React.useMemo(() => {
+      let instanceLink = `https://${community.baseurl}/c/${community.name}`;
+      let tooltipTitle = `${community.baseurl}/c/${community.name}`;
 
-    // user has a home instance
-    if (homeBaseUrl) {
-      // if the user is
-      if (instanceType == "kbin") {
-        instanceLink = `https://${homeBaseUrl}/m/${community.name}`;
-        tooltipTitle = `${homeBaseUrl}/m/${community.name}`;
-      } else {
-        instanceLink = `https://${homeBaseUrl}/c/${community.name}`;
-        tooltipTitle = `${homeBaseUrl}/c/${community.name}`;
+      if (baseType == "kbin") {
+        instanceLink = `https://${community.baseurl}/m/${community.name}`;
+        tooltipTitle = `${community.baseurl}/m/${community.name}`;
       }
 
-      // if this community isn't on their instance, add the qualifier
-      if (homeBaseUrl != community.baseurl) {
-        instanceLink = `${instanceLink}@${community.baseurl}`;
-        tooltipTitle = `${tooltipTitle}@${community.baseurl}`;
+      // user has a home instance
+      if (homeBaseUrl) {
+        // if the user is
+        if (instanceType == "kbin") {
+          instanceLink = `https://${homeBaseUrl}/m/${community.name}`;
+          tooltipTitle = `${homeBaseUrl}/m/${community.name}`;
+        } else {
+          instanceLink = `https://${homeBaseUrl}/c/${community.name}`;
+          tooltipTitle = `${homeBaseUrl}/c/${community.name}`;
+        }
+
+        // if this community isn't on their instance, add the qualifier
+        if (homeBaseUrl != community.baseurl) {
+          instanceLink = `${instanceLink}@${community.baseurl}`;
+          tooltipTitle = `${tooltipTitle}@${community.baseurl}`;
+        }
       }
-    }
 
-    return [instanceLink, tooltipTitle];
-  }, [community, homeBaseUrl, instanceType]);
+      return [instanceLink, tooltipTitle];
+    }, [community, homeBaseUrl, instanceType]);
 
-  return (
-    <Tooltip title={tooltipTitle} variant="soft" placement="top-start">
-      <Link
-        level="body1"
-        variant="plain"
-        alt={community.title}
-        color="neutral"
-        href={instanceLink}
-        target="_blank"
-        {...props}
-      >
-        {community.title}
-        <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-      </Link>
-    </Tooltip>
-  );
-});
+    return (
+      <Tooltip title={tooltipTitle} variant="soft" placement="top-start">
+        <Link
+          level="body1"
+          variant="plain"
+          alt={community.title}
+          color="neutral"
+          href={instanceLink}
+          target="_blank"
+          {...props}
+        >
+          {community.title}
+          <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+        </Link>
+      </Tooltip>
+    );
+  },
+);
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
   instanceType: state.configReducer.instanceType,
@@ -104,7 +118,7 @@ export function ExtLink({ linkName, linkUrl, target = "_blank", ...props }) {
     <Link
       level="body1"
       variant="plain"
-      alt={linkName}
+      // alt={linkName}
       color="neutral"
       href={linkUrl}
       target={target}

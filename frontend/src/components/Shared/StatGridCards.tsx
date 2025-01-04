@@ -3,6 +3,8 @@ import React from "react";
 import useCachedMultipart from "../../hooks/useCachedMultipart";
 import useQueryCache from "../../hooks/useQueryCache";
 
+import { ColorPaletteProp } from "@mui/joy/styles/types/colorSystem";
+
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
 import CardContent from "@mui/joy/CardContent";
@@ -13,7 +15,23 @@ import Typography from "@mui/joy/Typography";
 
 import { SimpleNumberFormat } from "../Shared/Display";
 
-export function StringStat({ title, value, icon = false, color = "primary", description = "", sx = {} }) {
+type IStringStatProps = {
+  title: string;
+  value: React.ReactNode;
+  icon?: React.ReactElement;
+  color?: ColorPaletteProp;
+  description?: React.ReactElement | string;
+  sx?: object;
+};
+
+export function StringStat({
+  title,
+  value,
+  icon = undefined,
+  color = "primary",
+  description = "",
+  sx = {},
+}: IStringStatProps) {
   let iconClone = null;
 
   if (icon)
@@ -54,7 +72,7 @@ export function StringStat({ title, value, icon = false, color = "primary", desc
     >
       {iconClone && (
         <CardContent
-          variant="solid"
+          // variant="solid"
           color={color}
           sx={{
             ...sx,
@@ -77,7 +95,7 @@ export function StringStat({ title, value, icon = false, color = "primary", desc
         </CardContent>
       )}
       <CardContent
-        variant="solid"
+        // variant="solid"
         color={color}
         sx={{
           ...sx,
@@ -89,7 +107,7 @@ export function StringStat({ title, value, icon = false, color = "primary", desc
           alignItems: "center",
           // width: "100%",
           flexDirection: "column",
-          justifyContent: "center",
+          // justifyContent: "center",
           px: 1,
         }}
       >
@@ -103,6 +121,10 @@ export function StringStat({ title, value, icon = false, color = "primary", desc
   );
 }
 
-export function NumberStat({ value, ...props }) {
+type INumberStatProps = {
+  value: number;
+} & IStringStatProps;
+
+export function NumberStat({ value, ...props }: INumberStatProps) {
   return <StringStat {...props} value={<SimpleNumberFormat value={value} />} />;
 }

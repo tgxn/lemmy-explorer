@@ -1,7 +1,15 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
-export default function useQueryCache(queryKey, dataFile) {
+export type IQueryCache = {
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  error: any;
+  data: any;
+};
+
+export default function useQueryCache(queryKey: string, dataFile: string): IQueryCache {
   const { isSuccess, isLoading, isError, error, data, isFetching } = useQuery({
     queryKey: ["cache", queryKey], // single string key
     queryFn: () =>

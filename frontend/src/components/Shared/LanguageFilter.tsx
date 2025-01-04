@@ -7,13 +7,18 @@ import LanguageIcon from "@mui/icons-material/Language";
 
 import { DEFAULT_LANGS, BETTER_LANGS_LIST } from "../../lib/const";
 
-const LanguageFilter = React.memo(({ languageCodes, setLanguageCodes }) => {
-  console.log("LanguageFilter", DEFAULT_LANGS, languageCodes, setLanguageCodes);
+type ILanguageFilterProps = {
+  languageCodes: string[];
+  setLanguageCodes: (codes: string[]) => void;
+};
+
+const LanguageFilter = React.memo(({ languageCodes, setLanguageCodes }: ILanguageFilterProps) => {
+  // console.log("LanguageFilter", DEFAULT_LANGS, languageCodes, setLanguageCodes);
   return (
     <Autocomplete
       multiple
       startDecorator={<LanguageIcon />}
-      indicator={<KeyboardArrowDown />}
+      // indicator={<KeyboardArrowDown />}
       id="tags-default"
       sx={{
         width: { xs: "100%", sm: "auto" },
@@ -21,9 +26,9 @@ const LanguageFilter = React.memo(({ languageCodes, setLanguageCodes }) => {
       }}
       placeholder="Filter Languages"
       options={Object.values(BETTER_LANGS_LIST)}
-      getOptionLabel={(option) => `${option.name} (${option.nativeName})`}
+      getOptionLabel={(option: any) => `${option.name} (${option.nativeName})`}
       // custom search
-      filterOptions={(options, params) => {
+      filterOptions={(options: any, params) => {
         const filtered = options.filter((option) => {
           if (params.inputValue === "") return true;
           if (option.name.toLowerCase().includes(params.inputValue.toLowerCase())) return true;
@@ -33,7 +38,7 @@ const LanguageFilter = React.memo(({ languageCodes, setLanguageCodes }) => {
         return filtered;
       }}
       value={languageCodes}
-      onChange={(event, newValue) => {
+      onChange={(event, newValue: any) => {
         console.log("onChange", newValue);
         setLanguageCodes(newValue);
       }}

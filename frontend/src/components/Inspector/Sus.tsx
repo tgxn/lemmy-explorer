@@ -77,7 +77,7 @@ export default function InspectorOverview() {
           mb: 2,
         }}
       >
-        <Typography color="danger" variant="h4">
+        <Typography color="danger">
           This page lists instances that could be dangerous, it is provided for visibilty.
         </Typography>
       </Box>
@@ -153,7 +153,7 @@ export default function InspectorOverview() {
           mb: 2,
         }}
       >
-        <Typography color="info" variant="h4">
+        <Typography color="info">
           Instance users growth per minute average vs. User monthly active score
         </Typography>
       </Box>
@@ -168,7 +168,7 @@ export default function InspectorOverview() {
           mb: 2,
         }}
       >
-        <Typography color="info" variant="h4">
+        <Typography color="info">
           Instance users growth per minute average vs. User monthly active score
         </Typography>
       </Box>

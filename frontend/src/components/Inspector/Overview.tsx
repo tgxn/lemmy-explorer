@@ -1,7 +1,7 @@
 import React from "react";
 
 import useCachedMultipart from "../../hooks/useCachedMultipart";
-import useQueryCache from "../../hooks/useQueryCache";
+import useQueryCache, { IQueryCache } from "../../hooks/useQueryCache";
 
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
@@ -20,7 +20,7 @@ export default function InspectorOverview() {
     isError: isErrorSus,
     error: errorSus,
     data: dataSus,
-  } = useQueryCache("susData", "sus");
+  }: IQueryCache = useQueryCache("susData", "sus");
 
   const {
     isLoading: isLoadingIns,

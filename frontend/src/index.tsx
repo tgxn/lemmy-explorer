@@ -1,6 +1,6 @@
 import React from "react";
-
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
+// import ReactDOM from "react-dom/client";
 
 import { CssVarsProvider } from "@mui/joy/styles";
 
@@ -21,4 +21,10 @@ export default function Index() {
 }
 
 const rootElement = document.getElementById("root");
-ReactDOM.createRoot(rootElement).render(<Index />);
+const root = createRoot(rootElement);
+
+root.render(
+  <React.StrictMode>
+    <Index />
+  </React.StrictMode>,
+);

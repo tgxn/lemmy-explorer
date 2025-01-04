@@ -17,7 +17,12 @@ class Storage {
     }
   }
 
-  writeConfig() {
+  /**
+   * Write the config to localstorage
+   *
+   * @returns {void}
+   */
+  writeConfig(): void {
     const writeConfigData = JSON.stringify(this.store);
 
     console.log("wrote config", writeConfigData);
@@ -25,7 +30,14 @@ class Storage {
     return localStorage.setItem(this.keyName, writeConfigData);
   }
 
-  get(configKey, defaultValue = false) {
+  /**
+   * Get a config value
+   *
+   * @param configKey {string}
+   * @param defaultValue {any}
+   * @returns {any}
+   */
+  get(configKey: string, defaultValue: any = false): any {
     if (this.store.hasOwnProperty(configKey)) {
       return this.store[configKey];
     }
@@ -33,12 +45,26 @@ class Storage {
     return defaultValue;
   }
 
-  set(configKey, configValue) {
+  /**
+   * Set a config value
+   *
+   * @param configKey {string}
+   * @param configValue {any}
+   * @returns {void}
+   */
+  set(configKey: string, configValue: any): void {
     this.store[configKey] = configValue;
 
     return this.writeConfig();
   }
-  remove(configKey) {
+
+  /**
+   * Remove a config value
+   *
+   * @param configKey {string}
+   * @returns {void}
+   */
+  remove(configKey: string): void {
     delete this.store[configKey];
 
     return this.writeConfig();

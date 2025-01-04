@@ -42,12 +42,12 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
 
   const [viewType, setViewType] = useStorage("community.viewType", "grid");
 
-  const [orderBy, setOrderBy] = React.useState("smart");
-  const [showNSFW, setShowNSFW] = React.useState(false);
+  const [orderBy, setOrderBy] = React.useState<string>("smart");
+  const [showNSFW, setShowNSFW] = React.useState<boolean | null>(false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 250);
+  const [filterText, setFilterText] = React.useState<string>("");
+  const debounceFilterText = useDebounce<string>(filterText, 250);
 
   // load query params
   useEffect(() => {
@@ -125,11 +125,11 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
       // split the value on spaces, look for values starting with "-"
       // if found, remove the "-" and add to the exclude list
       // if not found, apend to the search query
-      let exclude = [];
-      let include = [];
+      let exclude: string[] = [];
+      let include: string[] = [];
 
       let searchTerms = debounceFilterText.toLowerCase().split(" ");
-      searchTerms.forEach((term) => {
+      searchTerms.forEach((term: string) => {
         if (term.startsWith("-") && term.substring(1) !== "") {
           exclude.push(term.substring(1));
         } else if (term !== "") {
@@ -234,7 +234,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
           startDecorator={<SortIcon />}
           indicator={<KeyboardArrowDown />}
           value={orderBy}
-          onChange={(event, newValue) => {
+          onChange={(event, newValue: string) => {
             setOrderBy(newValue);
           }}
           sx={{
@@ -285,9 +285,9 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
               showing{" "}
               <SimpleNumberFormat
                 value={communitiesData.length}
-                displayType={"text"}
-                decimalScale={2}
-                thousandSeparator={","}
+                // displayType={"text"}
+                // decimalScale={2}
+                // thousandSeparator={","}
               />{" "}
               communities
             </Typography>

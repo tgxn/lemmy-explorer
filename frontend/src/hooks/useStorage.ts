@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 
 import storage from "../lib/storage";
 
-export default function useStorage(storageKey, defaultValue) {
-  const [storageValue, _setStorageValue] = useState(storage.get(storageKey, defaultValue));
+export default function useStorage(storageKey: string, defaultValue: any) {
+  const [storageValue, _setStorageValue] = useState<any>(storage.get(storageKey, defaultValue));
 
-  const setStorageValue = (value) => {
+  const setStorageValue = (value: any) => {
     storage.set(storageKey, value);
     _setStorageValue(value);
   };

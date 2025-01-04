@@ -109,7 +109,14 @@ function renderRow(props) {
   );
 }
 
-const InstanceDialog = React.memo(({ isOpen, onClose, filterSuspicious, dispatch }) => {
+type IInstanceDialogProps = {
+  isOpen: boolean;
+  onClose: any;
+  filterSuspicious: boolean;
+  dispatch: any;
+};
+
+const InstanceDialog = React.memo(({ isOpen, onClose, filterSuspicious, dispatch }: IInstanceDialogProps) => {
   const {
     isLoading: loadingIns,
     error: errorIns,
@@ -225,11 +232,15 @@ const InstanceDialog = React.memo(({ isOpen, onClose, filterSuspicious, dispatch
     </Modal>
   );
 });
-const ConnectedDialog = connect((state) => ({
+const ConnectedDialog = connect((state: any) => ({
   filterSuspicious: state.configReducer.filterSuspicious,
 }))(InstanceDialog);
 
-const InstanceFilter = React.memo(({ filteredInstances }) => {
+type IInstanceFilterProps = {
+  filteredInstances: any[];
+};
+
+const InstanceFilter = React.memo(({ filteredInstances }: IInstanceFilterProps) => {
   const [filterOpen, setFilterOpen] = React.useState(false);
 
   return (

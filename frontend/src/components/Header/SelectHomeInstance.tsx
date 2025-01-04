@@ -24,7 +24,7 @@ import { setHomeInstance } from "../../reducers/configReducer";
 
 const filterOptions = createFilterOptions({
   //   matchFrom: "start",
-  stringify: (option) => option.base,
+  stringify: (option: any) => option.base,
   trim: true,
   ignoreCase: true,
 });
@@ -68,7 +68,7 @@ const OuterElementType = React.forwardRef((props, ref) => {
       {...props}
       {...outerProps}
       component="div"
-      ref={ref}
+      // ref={ref}
       sx={{
         // zIndex: 1300,
         "& ul": {
@@ -82,9 +82,17 @@ const OuterElementType = React.forwardRef((props, ref) => {
   );
 });
 
+type IListboxComponentProps = {
+  children: any;
+  anchorEl: any;
+  open: boolean;
+  modifiers: any;
+  ref: any;
+};
+
 // Adapter for react-window
-const ListboxComponent = React.forwardRef(function ListboxComponent(props, ref) {
-  const { children, anchorEl, open, modifiers, ...other } = props;
+const ListboxComponent = React.forwardRef(function ListboxComponent(props: IListboxComponentProps) {
+  const { children, anchorEl, open, modifiers, ref, ...other } = props;
   const itemData = [];
 
   children[0].forEach((item) => {
@@ -192,7 +200,7 @@ function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
         }}
         options={data || []}
         loading={data == null}
-        getOptionSelected={(option, value) => option.code === value.code}
+        // getOptionSelected={(option, value) => option.code === value.code}
         renderOption={(props, option) => [props, option]}
         // TODO: Post React 18 update - validate this conversion, look like a hidden bug
         // renderGroup={(params) => params}

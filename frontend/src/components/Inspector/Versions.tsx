@@ -9,7 +9,13 @@ import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = ["#8889DD", "#9597E4", "#8DC77B", "#A5D297", "#E2CF45", "#F8C12D"];
 
-const CustomTooltip = ({ active, payload, label }) => {
+type ICustomTooltipProps = {
+  active: boolean;
+  payload: any;
+  label?: any;
+};
+
+const CustomTooltip = ({ active, payload, label }: ICustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div
@@ -28,8 +34,10 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 class CustomizedContent extends PureComponent {
+  public props: any;
+
   render() {
-    const { root, depth, x, y, width, height, index, payload, colors, rank, name } = this.props;
+    const { root, depth, x, y, width, height, index, payload, rank, name } = this.props;
     console.log("versCustomizedContent", root.children[index]);
 
     return (
@@ -40,7 +48,7 @@ class CustomizedContent extends PureComponent {
           width={width}
           height={height}
           style={{
-            fill: depth < 2 ? colors[Math.floor((index / root.children.length) * 6)] : "#ffffff00",
+            fill: depth < 2 ? COLORS[Math.floor((index / root.children.length) * 6)] : "#ffffff00",
             stroke: "#fff",
             strokeWidth: 2 / (depth + 1e-10),
             strokeOpacity: 1 / (depth + 1e-10),
@@ -122,9 +130,9 @@ function VersionDist({ instances }) {
         stroke="#fff"
         fill="#8884d8"
         animationDuration={0}
-        content={<CustomizedContent colors={COLORS} />}
+        content={<CustomizedContent />}
       >
-        <Tooltip cursor={{ strokeDasharray: "3 3" }} content={<CustomTooltip />} />
+        <Tooltip cursor={{ strokeDasharray: "3 3" }} content={CustomTooltip} />
       </Treemap>
     </ResponsiveContainer>
   );

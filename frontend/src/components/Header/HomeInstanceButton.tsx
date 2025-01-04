@@ -78,7 +78,7 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
           }}
         >
           <ListItemDecorator sx={{ p: 1, alignSelf: "center" }}>
-            {homeBaseUrl ? <CottageIcon color={"success"} /> : <HomeIcon color={"neutral"} />}
+            {homeBaseUrl ? <CottageIcon color={"success"} /> : <HomeIcon />}
           </ListItemDecorator>
           <ListItemContent>
             <Typography>Choose Home Instance</Typography>

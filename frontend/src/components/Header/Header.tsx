@@ -62,7 +62,7 @@ export default function Header() {
 
   const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "meta");
 
-  const [index, setIndex] = React.useState(0);
+  const [index, setIndex] = React.useState<number | null>(0);
 
   const navigate = useNavigate();
 
@@ -137,7 +137,7 @@ export default function Header() {
       <Box sx={{ flexGrow: 1 }} />
       <Tabs
         value={index}
-        onChange={(event, value) => {
+        onChange={(event, value: number) => {
           console.log("value", value);
           setIndex(value);
 
