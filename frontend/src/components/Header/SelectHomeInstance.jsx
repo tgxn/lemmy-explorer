@@ -5,7 +5,7 @@ import useQueryCache from "../../hooks/useQueryCache";
 
 import { FixedSizeList } from "react-window";
 
-import Popper from "@mui/base/Popper";
+import { Popper } from "@mui/base/Popper";
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
 import AutocompleteListbox from "@mui/joy/AutocompleteListbox";
 import AutocompleteOption from "@mui/joy/AutocompleteOption";
