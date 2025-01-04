@@ -32,9 +32,8 @@ export default function useCachedMultipart(queryKey, metadataPath) {
 
   const [pageQueries, setPageQueries] = useState([]);
 
-  const results = useQueries({
+  const results: any = useQueries({
     queries: pageQueries,
-    enabled: false,
   });
 
   useEffect(() => {

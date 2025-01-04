@@ -46,7 +46,7 @@ const initialState = {
   filterSuspicious: storage.get("config.filterSuspicious", true),
 };
 
-const configReducer = (state = initialState, action = {}) => {
+const configReducer = (state = initialState, action: any = {}) => {
   switch (action.type) {
     case "setHomeInstance":
       const baseUrl = action.payload.baseUrl;

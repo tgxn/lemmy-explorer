@@ -53,7 +53,14 @@ import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Tooltip } from "@mui/joy";
 
-const CustomFilterToggle = React.memo((props) => {
+type ICustomFilterToggleProps = {
+  tagValue: string;
+  filteredTags: any;
+  dispatch: any;
+  [key: string]: any;
+};
+
+const CustomFilterToggle = React.memo((props: ICustomFilterToggleProps) => {
   const { tagValue, filteredTags, dispatch, ...other } = props;
 
   const currentFilter = React.useMemo(() => {
@@ -141,7 +148,8 @@ const CustomFilterToggle = React.memo((props) => {
     </ButtonGroup>
   );
 });
-const ConnectedFilterToggle = connect((state) => ({
+
+const ConnectedFilterToggle = connect((state: any) => ({
   filteredTags: state.configReducer.filteredTags,
 }))(CustomFilterToggle);
 
@@ -149,7 +157,7 @@ function renderRow(props) {
   const { data, index, style } = props;
   const dataSet = data[index];
 
-  const filteredTags = useSelector((state) => state.configReducer.filteredTags);
+  const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
   const currentFilter = React.useMemo(() => {
     return filteredTags.find((instance) => instance.tag == dataSet.tag);
   }, [filteredTags, dataSet]);
@@ -208,7 +216,7 @@ function renderRow(props) {
   );
 }
 
-const TagDialog = React.memo(({ isOpen, onClose }) => {
+const TagDialog = React.memo(({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const dispatch = useDispatch();
 
   const {
@@ -327,7 +335,7 @@ const TagDialog = React.memo(({ isOpen, onClose }) => {
 const TagFilter = React.memo(() => {
   const [filterOpen, setFilterOpen] = React.useState(false);
 
-  const filteredTags = useSelector((state) => state.configReducer.filteredTags);
+  const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
 
   return (
     <>

@@ -16,7 +16,7 @@ const initialState = {
   instanceData: {},
 };
 
-const modalReducer = (state = initialState, action = {}) => {
+const modalReducer = (state = initialState, action: any = {}) => {
   switch (action.type) {
     case "showInstanceModal":
       return {

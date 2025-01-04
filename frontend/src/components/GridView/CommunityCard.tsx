@@ -31,7 +31,7 @@ function CommunityCard({ community }) {
       {/* Community Title */}
       <CardOverflow
         variant="outlined"
-        orientation="horizontal"
+        // orientation="horizontal"
         sx={{
           py: 1.75,
           px: 2,

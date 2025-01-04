@@ -9,7 +9,7 @@ import HomeIcon from "@mui/icons-material/Home";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
-export const IconAvatar = React.memo(function ({ src, alt }) {
+export const IconAvatar = React.memo(function ({ src, alt }: { src: string; alt: string }) {
   let style = {
     display: "flex",
     borderRadius: 8,
@@ -18,12 +18,20 @@ export const IconAvatar = React.memo(function ({ src, alt }) {
   return <Avatar alt={alt} src={src} size="lg" sx={style} />;
 });
 
-const InstanceAvatarBase = React.memo(function ({ instance, homeBaseUrl, dispatch }) {
+const InstanceAvatarBase = React.memo(function ({
+  instance,
+  homeBaseUrl,
+  dispatch,
+}: {
+  instance: any;
+  homeBaseUrl: string;
+  dispatch: any;
+}) {
   const [isHover, setIsHover] = React.useState(false);
   const isHomeUrl = homeBaseUrl == instance.baseurl;
 
   const style = React.useMemo(() => {
-    let style = {
+    let style: any = {
       display: "flex",
       borderRadius: 8,
       bgcolor: "background.level1",

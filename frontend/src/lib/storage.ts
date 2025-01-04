@@ -1,6 +1,10 @@
 /* global localStorage */
 
 class Storage {
+  private keyName: string;
+  private store: any;
+  private userConfig: any;
+
   constructor() {
     this.keyName = "explorer_storage";
     this.store = {};

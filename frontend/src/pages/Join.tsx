@@ -212,7 +212,7 @@ export default function Join() {
 
                     <td
                       style={{
-                        p: 1,
+                        padding: 1,
                         cursor: "default",
 
                         display: "inline-flex",

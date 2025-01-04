@@ -29,7 +29,14 @@ import { setFilteredInstances } from "../../reducers/configReducer";
 
 const LISTBOX_PADDING = 6; // px
 
-const CustomSwitch = React.memo((props) => {
+type ICustomSwitchProps = {
+  baseUrl: string;
+  filteredInstances: string[];
+  dispatch: any;
+  // [key: string]: any;
+};
+
+const CustomSwitch = React.memo((props: ICustomSwitchProps) => {
   const { baseUrl, filteredInstances, dispatch, ...other } = props;
 
   const filtered = filteredInstances.indexOf(baseUrl) !== -1;
@@ -50,7 +57,7 @@ const CustomSwitch = React.memo((props) => {
     <Switch {...other} checked={!filtered} onChange={(event) => changeValue(event)} sx={{ ml: "auto" }} />
   );
 });
-const ConnectedSwitch = connect((state) => ({
+const ConnectedSwitch = connect((state: any) => ({
   filteredInstances: state.configReducer.filteredInstances,
 }))(CustomSwitch);
 

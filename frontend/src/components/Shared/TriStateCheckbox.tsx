@@ -9,9 +9,28 @@ import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import Checkbox from "@mui/joy/Checkbox";
 
+import { ColorPaletteProp } from "@mui/joy/styles/types/colorSystem";
+
 import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 
 import useStorage from "../../hooks/useStorage";
+
+type ICongirmDialogProps = {
+  open: boolean;
+  title: string;
+  message: string;
+  buttonMessage: string;
+  color?: ColorPaletteProp;
+
+  extraElements?: any[];
+
+  disabled?: boolean;
+
+  loading?: boolean;
+  error?: any;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
 
 export const ConfirmDialog = ({
   open,
@@ -28,7 +47,7 @@ export const ConfirmDialog = ({
   error,
   onConfirm,
   onCancel,
-}) => {
+}: ICongirmDialogProps) => {
   return (
     <Modal open={open} onClose={() => onCancel()}>
       <ModalDialog
@@ -86,7 +105,7 @@ export const ConfirmDialog = ({
   );
 };
 
-const TriStateCheckbox = ({ checked, onChange, children }, ref) => {
+const TriStateCheckbox = ({ checked, onChange }) => {
   // local checked state
   const [localChecked, setLocalChecked] = useState(checked ?? null);
   useEffect(() => setLocalChecked(checked ?? null), [checked]);
@@ -159,6 +178,7 @@ const TriStateCheckbox = ({ checked, onChange, children }, ref) => {
           onChange={handleChange}
         />
       </Tooltip>
+
       <ConfirmDialog
         key="save-confirm"
         open={confirmShowNSFW}

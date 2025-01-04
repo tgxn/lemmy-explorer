@@ -61,7 +61,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
 
   // update query params
   useEffect(() => {
-    const parms = {};
+    const parms: any = {};
 
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
@@ -263,7 +263,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
         {!filterBaseUrl && <InstanceFilter />}
 
         <Box sx={{ display: "flex", gap: 3 }}>
-          <TriStateCheckbox checked={showNSFW} onChange={(checked) => setShowNSFW(checked)} />
+          <TriStateCheckbox checked={showNSFW} onChange={(checked: boolean) => setShowNSFW(checked)} />
         </Box>
 
         <Box

@@ -57,7 +57,7 @@ function KBinMagazines() {
 
   // update query params
   useEffect(() => {
-    const parms = {};
+    const parms: any = {};
 
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
