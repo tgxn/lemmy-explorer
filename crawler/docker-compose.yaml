@@ -1,4 +1,3 @@
-
 networks:
   crawler:
     name: crawler
@@ -10,12 +9,11 @@ services:
     networks:
       - crawler
     ports:
-      - '6379:6379'
-    volumes: 
+      - "6379:6379"
+    volumes:
       - ./.data/redis:/data
 
   crawler:
-    image: crawler:local
     build: .
     restart: always
     depends_on:
@@ -23,7 +21,7 @@ services:
     networks:
       - crawler
     volumes:
-      - ./.data/logs:/logs:rw 
+      - ./.data/logs:/usr/src/app/.data/logs:rw
       - ./.data/redis:/redis:ro
     environment:
       REDIS_URL: redis://redis:6379

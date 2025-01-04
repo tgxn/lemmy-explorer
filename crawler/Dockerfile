@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:22
 
 RUN apt-get update
 RUN apt-get install bash
@@ -10,13 +10,18 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Install App
-COPY index.js .
-COPY package*.json .
+COPY index.ts .
+COPY package.json .
+COPY yarn.lock .
 COPY ecosystem.config.cjs .
 COPY src src/
 
 # Install Dependencies
+RUN yarn global add tsx
+
 RUN yarn global add pm2
+# RUN pm2 install typescript
+
 RUN yarn install
 
 # Run App
