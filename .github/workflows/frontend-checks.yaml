@@ -1,0 +1,74 @@
+name: frontend-checks
+
+on:
+  push:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  frontend-checks-style:
+    runs-on: ubuntu-latest
+
+    # run when crawler changes
+    # if: ${{ contains(github.event.head_commit.modified, 'crawler/') }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 22.12.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.12.0
+
+      # Install + Cache Frontend Dependencies
+      - name: Cache Node Modules | Frontend
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ${{ github.workspace }}/frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/yarn.lock') }}
+
+      - name: Install Node Modules | Frontend
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ${{ github.workspace }}/frontend
+
+      - name: Check Style | Frontend
+        run: yarn format:check
+        working-directory: ${{ github.workspace }}/frontend
+
+  frontend-checks-types:
+    runs-on: ubuntu-latest
+
+    # run when crawler changes
+    # if: ${{ contains(github.event.head_commit.modified, 'crawler/') }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 22.12.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.12.0
+
+      # Install + Cache Frontend Dependencies
+      - name: Cache Node Modules | Frontend
+        id: cache-frontend-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-frontend-npm
+        with:
+          path: ${{ github.workspace }}/frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/yarn.lock') }}
+
+      - name: Install Node Modules | Frontend
+        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ${{ github.workspace }}/frontend
+
+      - name: Check Types | Frontend
+        run: yarn check:ts
+        working-directory: ${{ github.workspace }}/frontend

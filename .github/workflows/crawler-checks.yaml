@@ -1,4 +1,4 @@
-name: check-style
+name: crawler-checks
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_crawler_style:
+  crawler-checks-style:
     runs-on: ubuntu-latest
 
     # run when crawler changes
@@ -38,8 +38,9 @@ jobs:
 
       - name: Check Style | Crawler
         run: yarn format
-        working-directory: ${{ github.workspace }}/crawler/
-  check_crawler_types:
+        working-directory: ${{ github.workspace }}/crawler
+
+  crawler-checks-types:
     runs-on: ubuntu-latest
 
     # run when crawler changes
@@ -70,41 +71,4 @@ jobs:
 
       - name: Check Style | Crawler
         run: yarn check:ts
-        working-directory: ${{ github.workspace }}/crawler/
-
-  # check_frontend_style:
-  #   runs-on: ubuntu-latest
-  #   steps:
-
-  #     - uses: actions/checkout@v3
-
-  #     - name: Use Node.js 22.12.0
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 22.12.0
-
-  #     - name: Cache NPM Modules
-  #       id: cache-frontend-npm
-  #       uses: actions/cache@v3
-  #       env:
-  #         cache-name: cache-frontend-npm
-  #       with:
-  #         path: ./frontend/node_modules/
-  #         key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
-
-  #     - name: Install Dependencies
-  #       if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-  #       run: npm ci
-  #       working-directory: ./frontend
-
-  #     - name: Check Frontend Style
-  #       working-directory: ${{ github.workspace }}/frontend/
-  #       run: yarn format
-
-  # - name: Check Crawler Style
-  #   uses: creyD/prettier_action@v4.3
-  #   with:
-  #     working_directory: ${{ github.workspace }}/crawler/
-  #     dry: true
-  #     github_token: ${{ github.token }}
-  #     prettier_options: --check ./src/**/*.js
+        working-directory: ${{ github.workspace }}/crawler
