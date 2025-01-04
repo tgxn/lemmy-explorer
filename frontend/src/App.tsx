@@ -33,7 +33,7 @@ import AppStore from "./store";
 const queryClient = new QueryClient();
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient} contextSharing={true}>
+    <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
       <Provider store={AppStore}>
         <Container

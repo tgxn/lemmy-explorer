@@ -99,7 +99,7 @@ export function ExtInstanceLink({ instance, ...props }) {
   return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
 }
 
-export function ExtLink({ linkName, linkUrl, target="_blank", ...props }) {
+export function ExtLink({ linkName, linkUrl, target = "_blank", ...props }) {
   return (
     <Link
       level="body1"

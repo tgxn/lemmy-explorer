@@ -47,4 +47,3 @@ const SvgResult = (props) => (
   </svg>
 );
 export default SvgResult;
-
