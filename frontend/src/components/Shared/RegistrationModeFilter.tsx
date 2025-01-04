@@ -15,8 +15,15 @@ import MenuItem from "@mui/joy/MenuItem";
 // import Select from "@mui/joy/Select";
 import Checkbox from "@mui/joy/Checkbox";
 
-const RegistrationModeFilter = React.memo(({ regMode, setRegMode }) => {
+type IRegistrationModeProps = {
+  regMode: any;
+  setRegMode: any;
+};
+
+const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistrationModeProps) => {
   // console.log("RegistrationModeFilter", DEFAULT_LANGS, languageCodes, setLanguageCodes);
+
+  const [selectedValue, setSelectedValue] = useState<string[]>(["all"]);
 
   const handleChange = (event) => {
     if (!event) return;
@@ -101,13 +108,13 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }) => {
 
       // labelId="demo-multiple-checkbox-label"
       // id="demo-multiple-checkbox"
-      multiple
+      // multiple
       value={regMode}
       onChange={handleChange}
       variant="outlined"
       // input={<OutlinedInput label="Tag" />}
-      renderValue={(selected) => selected.map((x) => x.name).join(", ")}
-      MenuProps={MenuProps}
+      // renderValue={(selected) => selected.map((x) => x.name).join(", ")}
+      // MenuProps={MenuProps}
     >
       {menuOptions.map((option, index) => (
         // <Option key={option.value} value={option.value}>
