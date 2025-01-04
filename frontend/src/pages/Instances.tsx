@@ -323,9 +323,9 @@ function Instances({ filterSuspicious, filteredTags }) {
               showing{" "}
               <SimpleNumberFormat
                 value={instancesData.length}
-                displayType={"text"}
-                decimalScale={2}
-                thousandSeparator={","}
+                // displayType={"text"}
+                // decimalScale={2}
+                // thousandSeparator={","}
               />{" "}
               instances
             </Typography>

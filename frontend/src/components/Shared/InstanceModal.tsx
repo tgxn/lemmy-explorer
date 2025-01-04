@@ -9,7 +9,7 @@ import ModalClose from "@mui/joy/ModalClose";
 import Typography from "@mui/joy/Typography";
 import Sheet from "@mui/joy/Sheet";
 
-import { hideInstanceModal } from "../../reducers/modalReducer";
+import { showInstanceModal } from "../../reducers/modalReducer";
 
 function InstanceModal({ isOpen, setOpen, instance }) {
   return (
@@ -56,7 +56,7 @@ const mapStateToProps = (state) => ({
   instance: state.modalReducer.instanceData,
 });
 const mapDispatchToProps = (dispatch) => ({
-  setOpen: (isOpen) => dispatch(hideInstanceModal(isOpen)),
+  setOpen: (instanceData) => dispatch(showInstanceModal(instanceData)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(InstanceModal);

@@ -90,10 +90,11 @@ const CommunityLink = React.memo(
         <Link
           level="body1"
           variant="plain"
-          alt={community.title}
+          // alt={community.title}
           color="neutral"
           href={instanceLink}
           target="_blank"
+          component={"a"}
           {...props}
         >
           {community.title}

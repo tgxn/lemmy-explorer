@@ -81,10 +81,11 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
             <Link
               level="body1"
               variant="plain"
-              alt={instance.name}
+              // alt={instance.name}
               color="neutral"
               href={instance.url}
               target="_blank"
+              component={"a"}
               // sx={{
               //   fontWeight: "bold",
               //   fontSize: "16px",

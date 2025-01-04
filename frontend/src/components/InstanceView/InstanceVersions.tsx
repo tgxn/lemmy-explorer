@@ -15,7 +15,7 @@ import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates";
 
 export default function InstanceVersions({ instance, versionSeries }) {
   versionSeries = versionSeries.sort((a, b) => {
-    return new Date(b.time) - new Date(a.time);
+    return new Date(b.time).getTime() - new Date(a.time).getTime();
   });
 
   return (
@@ -23,7 +23,7 @@ export default function InstanceVersions({ instance, versionSeries }) {
       {/* <pre>{JSON.stringify(versionSeries, null, 4)}</pre> */}
       <Alert
         sx={{ alignItems: "flex-start" }}
-        startDecorator={<InfoIcon sx={{ mt: "2px", mx: "4px" }} fontSize="xl2" />}
+        startDecorator={<InfoIcon sx={{ mt: "2px", mx: "4px" }} />}
         variant="soft"
         color={"primary"}
       >

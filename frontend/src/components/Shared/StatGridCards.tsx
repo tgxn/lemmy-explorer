@@ -16,7 +16,7 @@ import Typography from "@mui/joy/Typography";
 import { SimpleNumberFormat } from "../Shared/Display";
 
 type IStringStatProps = {
-  title: string;
+  title: string | React.ReactElement;
   value: React.ReactNode;
   icon?: React.ReactElement;
   color?: ColorPaletteProp;
