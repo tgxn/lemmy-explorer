@@ -1,9 +1,9 @@
 name: frontend-checks
 
 on:
-  push:
-    paths:
-      - frontend/**
+  # push:
+  #   paths:
+  #     - frontend/**
 
   pull_request:
     paths:

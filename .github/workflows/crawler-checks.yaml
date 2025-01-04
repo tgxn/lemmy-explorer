@@ -1,9 +1,9 @@
 name: crawler-checks
 
 on:
-  push:
-    paths:
-      - crawler/**
+  # push:
+  #   paths:
+  #     - crawler/**
 
   pull_request:
     paths:
