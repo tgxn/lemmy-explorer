@@ -27,13 +27,8 @@ module.exports = {
   ],
   module: {
     rules: [
-      // {
-      //   test: /\.tsx?$/,
-      //   use: "ts-loader",
-      //   exclude: /node_modules/,
-      // },
       {
-        test: /\.m?[jt]sx?$/,
+        test: /\.tsx?$/,
         exclude: /(node_modules)/,
         use: {
           loader: "babel-loader",
@@ -41,21 +36,6 @@ module.exports = {
             presets: ["@babel/preset-env", "@babel/preset-react", "@babel/preset-typescript"],
           },
         },
-      },
-      {
-        test: /\.s?[ac]ss$/i,
-        use: ["style-loader", "css-loader", "sass-loader"],
-      },
-      {
-        test: /\.(png|jp(e*)g|svg|gif)$/,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              name: "images/[hash]-[name].[ext]",
-            },
-          },
-        ],
       },
     ],
   },
