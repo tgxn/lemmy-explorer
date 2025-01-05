@@ -107,17 +107,17 @@ jobs:
         env:
           cache-name: cache-frontend-npm
         with:
-          path: ./frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+          path: ${{ github.workspace }}/frontend/node_modules/
+          key: cache-frontend-npm-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
         if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ./frontend
+        run: yarn --frozen-lockfile
+        working-directory: ${{ github.workspace }}/frontend
 
       - name: Build the Frontend
-        run: npm run build
-        working-directory: ./frontend
+        run: yarn build
+        working-directory: ${{ github.workspace }}/frontend
 
       - name: Create CDK Config JSON
         id: create-json
@@ -135,7 +135,7 @@ jobs:
           cache-name: cache-cdk-npm
         with:
           path: ./cdk/node_modules/
-          key: cache-cdk-npm-${{ hashFiles('frontend/package-lock.json') }}
+          key: cache-cdk-npm-${{ hashFiles('cdk/package-lock.json') }}
 
       - name: Install Node Modules | CDK
         if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
