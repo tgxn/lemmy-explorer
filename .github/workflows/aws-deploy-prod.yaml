@@ -62,10 +62,6 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ap-southeast-2
 
-      # log the sha 256 hash of the redis dump
-      - name: Log Redis Dump Hash
-        run: sha256sum ./.redis/dump.rdb
-
       # start redis & check if it is running
       - name: Start Redis
         working-directory: ./crawler
@@ -77,16 +73,16 @@ jobs:
 
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
-        id: cache-crawler-npm
+        id: cache-crawler-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-crawler-npm
+          cache-name: cache-crawler-yarn
         with:
           path: ./crawler/node_modules/
           key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
       - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ./crawler
 
@@ -101,16 +97,16 @@ jobs:
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
-        id: cache-frontend-npm
+        id: cache-frontend-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-frontend-npm
+          cache-name: cache-frontend-yarn
         with:
           path: ${{ github.workspace }}/frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/yarn.lock') }}
+          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ${{ github.workspace }}/frontend
 

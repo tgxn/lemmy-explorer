@@ -26,16 +26,16 @@ jobs:
 
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
-        id: cache-crawler-npm
+        id: cache-crawler-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-crawler-npm
+          cache-name: cache-crawler-yarn
         with:
           path: ${{ github.workspace }}/crawler/node_modules/
           key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
       - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ${{ github.workspace }}/crawler
 
@@ -56,16 +56,16 @@ jobs:
 
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
-        id: cache-crawler-npm
+        id: cache-crawler-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-crawler-npm
+          cache-name: cache-crawler-yarn
         with:
           path: ${{ github.workspace }}/crawler/node_modules/
           key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
       - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ${{ github.workspace }}/crawler
 

@@ -26,16 +26,16 @@ jobs:
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
-        id: cache-frontend-npm
+        id: cache-frontend-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-frontend-npm
+          cache-name: cache-frontend-yarn
         with:
           path: ${{ github.workspace }}/frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/yarn.lock') }}
+          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ${{ github.workspace }}/frontend
 
@@ -56,16 +56,16 @@ jobs:
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
-        id: cache-frontend-npm
+        id: cache-frontend-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-frontend-npm
+          cache-name: cache-frontend-yarn
         with:
           path: ${{ github.workspace }}/frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/yarn.lock') }}
+          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
+        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ${{ github.workspace }}/frontend
 
