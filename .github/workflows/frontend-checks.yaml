@@ -31,17 +31,17 @@ jobs:
         env:
           cache-name: cache-frontend-yarn
         with:
-          path: ${{ github.workspace }}/frontend/node_modules/
+          path: ./frontend/node_modules/
           key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
         if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ${{ github.workspace }}/frontend
+        working-directory: ./frontend
 
       - name: Check Style | Frontend
         run: yarn format:check
-        working-directory: ${{ github.workspace }}/frontend
+        working-directory: ./frontend
 
   frontend-checks-types:
     runs-on: ubuntu-latest
@@ -61,14 +61,14 @@ jobs:
         env:
           cache-name: cache-frontend-yarn
         with:
-          path: ${{ github.workspace }}/frontend/node_modules/
+          path: ./frontend/node_modules/
           key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
         if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ${{ github.workspace }}/frontend
+        working-directory: ./frontend
 
       - name: Check Types | Frontend
         run: yarn check:ts
-        working-directory: ${{ github.workspace }}/frontend
+        working-directory: ./frontend

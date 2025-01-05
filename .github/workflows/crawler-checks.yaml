@@ -31,17 +31,17 @@ jobs:
         env:
           cache-name: cache-crawler-yarn
         with:
-          path: ${{ github.workspace }}/crawler/node_modules/
+          path: ./crawler/node_modules/
           key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
       - name: Install Node Modules | Crawler
         if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ${{ github.workspace }}/crawler
+        working-directory: ./crawler
 
       - name: Check Style | Crawler
         run: yarn format
-        working-directory: ${{ github.workspace }}/crawler
+        working-directory: ./crawler
 
   crawler-checks-types:
     runs-on: ubuntu-latest
@@ -61,14 +61,14 @@ jobs:
         env:
           cache-name: cache-crawler-yarn
         with:
-          path: ${{ github.workspace }}/crawler/node_modules/
+          path: ./crawler/node_modules/
           key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
       - name: Install Node Modules | Crawler
         if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ${{ github.workspace }}/crawler
+        working-directory: ./crawler
 
       - name: Check Style | Crawler
         run: yarn check:ts
-        working-directory: ${{ github.workspace }}/crawler
+        working-directory: ./crawler
