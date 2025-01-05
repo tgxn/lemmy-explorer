@@ -17,18 +17,21 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 
 import useQueryCache from "./hooks/useQueryCache";
 
-const SimpleNumberFormat = React.memo(({ value }) => {
-  return (
-    <NumericFormat
-      displayType="text"
-      value={value}
-      allowLeadingZeros
-      thousandSeparator=","
-    />
-  );
+type ISimpleNumberFormatProps = {
+  value: number | string;
+};
+
+const SimpleNumberFormat = React.memo(({ value }: ISimpleNumberFormatProps) => {
+  return <NumericFormat displayType="text" value={value} allowLeadingZeros thousandSeparator="," />;
 });
 
-function LinkLine({ file, count = null, chip = null }) {
+type ILinkLineProps = {
+  file: any;
+  count: number;
+  chip: string;
+};
+
+function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
   return (
     <ListItem
       key={file.path}
@@ -139,12 +142,7 @@ export default function App() {
     },
   ];
 
-  const {
-    isLoading,
-    isSuccess,
-    isError,
-    data: metaData,
-  } = useQueryCache("metaData", "meta");
+  const { isLoading, isSuccess, isError, data: metaData } = useQueryCache("metaData", "meta");
 
   return (
     <Container
@@ -193,33 +191,19 @@ export default function App() {
           if (file.count && metaData) {
             count = metaData[file.count];
           }
-          return (
-            <LinkLine
-              file={file}
-              count={count}
-              key={file.path}
-              chip={file.chip}
-            />
-          );
+          return <LinkLine file={file} count={count} key={file.path} chip={file.chip} />;
         })}
       </List>
 
       <h2>Secondary (Partial, Supporting) Files</h2>
 
       <List>
-        {partialFiles.map((file) => {
-          let count = null;
+        {partialFiles.map((file: any) => {
+          let count: number = null;
           if (file.count && metaData) {
             count = metaData[file.count];
           }
-          return (
-            <LinkLine
-              file={file}
-              count={count}
-              key={file.path}
-              chip={file.chip}
-            />
-          );
+          return <LinkLine file={file} count={count} key={file.path} chip={file.chip} />;
         })}
       </List>
       <Box
