@@ -1,19 +1,19 @@
-name: frontend-checks
+name: pages-checks
 
 on:
   # push:
   #   paths:
-  #     - frontend/**
+  #     - pages/**
 
   pull_request:
     paths:
-      - frontend/**
+      - pages/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  frontend-checks-style:
+  pages-checks-style:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,24 +26,24 @@ jobs:
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
-        id: cache-frontend-yarn
+        id: cache-pages-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-frontend-yarn
+          cache-name: cache-pages-yarn
         with:
-          path: ./frontend/node_modules/
-          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
+          path: ./pages/node_modules/
+          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
+        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ./frontend
+        working-directory: ./pages
 
       - name: Check Style | Frontend
         run: yarn format:check
-        working-directory: ./frontend
+        working-directory: ./pages
 
-  frontend-checks-types:
+  pages-checks-types:
     runs-on: ubuntu-latest
 
     steps:
@@ -56,19 +56,19 @@ jobs:
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
-        id: cache-frontend-yarn
+        id: cache-pages-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-frontend-yarn
+          cache-name: cache-pages-yarn
         with:
-          path: ./frontend/node_modules/
-          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
+          path: ./pages/node_modules/
+          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
+        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ./frontend
+        working-directory: ./pages
 
       - name: Check Types | Frontend
         run: yarn check:ts
-        working-directory: ./frontend
+        working-directory: ./pages
