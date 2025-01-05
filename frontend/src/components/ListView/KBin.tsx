@@ -15,7 +15,11 @@ import VirtualTable from "./VirtualTable";
 import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-const KBin = React.memo(function ({ items }) {
+type IKBinListProps = {
+  items: any[];
+};
+
+const KBinList = React.memo(function ({ items }: IKBinListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -110,4 +114,4 @@ const KBin = React.memo(function ({ items }) {
     </VirtualTable>
   );
 });
-export default KBin;
+export default KBinList;

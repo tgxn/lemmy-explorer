@@ -22,7 +22,11 @@ import VirtualTable from "./VirtualTable";
 import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
-const InstanceList = React.memo(function ({ items }) {
+type IInstanceListProps = {
+  items: any[];
+};
+
+const InstanceList = React.memo(function ({ items }: IInstanceListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
