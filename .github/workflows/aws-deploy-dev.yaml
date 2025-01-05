@@ -64,8 +64,8 @@ jobs:
           aws_region: ap-southeast-2
 
       # log the sha 256 hash of the redis dump
-      - name: Log Redis Dump Hash
-        run: sha256sum ./.redis/dump.rdb
+      # - name: Log Redis Dump Hash
+      #   run: sha256sum ./.redis/dump.rdb
 
       # start redis & check if it is running
       - name: Start Redis
