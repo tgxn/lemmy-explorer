@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-// import "source-map-support/register";
-import * as cdk from "aws-cdk-lib";
 
-// import { Aspects } from "aws-cdk-lib";
+import * as cdk from "aws-cdk-lib";
 
 import { CertStack } from "../lib/cert-stack";
 import { FrontendStack } from "../lib/frontend-stack";

@@ -1,6 +1,6 @@
 import * as s3 from "aws-cdk-lib/aws-s3";
 
-import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
 import { AnyPrincipal, Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
