@@ -122,49 +122,49 @@ jobs:
         id: create-json
         uses: jsdaniell/create-json@v1.2.2
         with:
-          dir: ./cdk
+          dir: ${{ github.workspace }}/cdk
           name: "config.json"
           json: ${{ vars.CONFIG_JSON }}
 
       # Install + Cache CDK Dependencies
       - name: Cache Node Modules | CDK
-        id: cache-cdk-npm
+        id: cache-cdk-yarn
         uses: actions/cache@v3
         env:
-          cache-name: cache-cdk-npm
+          cache-name: cache-cdk-yarn
         with:
-          path: ./cdk/node_modules/
-          key: cache-cdk-npm-${{ hashFiles('cdk/package-lock.json') }}
+          path: ${{ github.workspace }}/cdk/node_modules/
+          key: cache-cdk-yarn-${{ hashFiles('cdk/yarn.lock') }}
 
       - name: Install Node Modules | CDK
-        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ./cdk
+        if: steps.cache-cdk-yarn.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ${{ github.workspace }}/cdk
 
       - name: CDK Bootstrap
-        run: ./node_modules/.bin/cdk bootstrap
-        working-directory: ./cdk
+        run: yarn bootstrap
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Synth
-        run: ./node_modules/.bin/cdk synthesize --all
-        working-directory: ./cdk
+        run: yarn synth
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Diff
-        run: ./node_modules/.bin/cdk diff --all
-        working-directory: ./cdk
+        run: yarn diff
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Deploy
-        run: ./node_modules/.bin/cdk deploy --all --require-approval never
-        working-directory: ./cdk
+        run: yarn deploy:ci
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
