@@ -15,7 +15,11 @@ import VirtualTable from "./VirtualTable";
 import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-const CommunityList = React.memo(function ({ items }) {
+type ICommunityListProps = {
+  items: any[];
+};
+
+const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [

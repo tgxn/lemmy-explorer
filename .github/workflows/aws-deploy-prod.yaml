@@ -134,7 +134,7 @@ jobs:
           cache-name: cache-cdk-yarn
         with:
           path: ${{ github.workspace }}/cdk/node_modules/
-          key: cache-cdk-yarn-${{ hashFiles('frontend/yarn.lock') }}
+          key: cache-cdk-yarn-${{ hashFiles('cdk/yarn.lock') }}
 
       - name: Install Node Modules | CDK
         if: steps.cache-cdk-yarn.outputs.cache-hit != 'true'

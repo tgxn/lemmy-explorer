@@ -18,7 +18,7 @@ const RenderRow = ({
 }) => {
   const odd = !(index % 2);
 
-  const a11yProps = { "aria-rowindex": index + 1 };
+  const a11yProps: any = { "aria-rowindex": index + 1 };
 
   if (onRowClick || onRowDoubleClick || onRowMouseOut || onRowMouseOver || onRowRightClick) {
     a11yProps["aria-label"] = "row";
@@ -114,7 +114,12 @@ const RenderHeaderRow = ({ className, columns, style }) => {
   );
 };
 
-const VirtualTable = React.memo(function ({ items, children }) {
+type IVirtualTableProps = {
+  items: any[];
+  children: (props: { width: number }) => React.ReactNode;
+};
+
+const VirtualTable = React.memo(function ({ items, children }: IVirtualTableProps) {
   return (
     <WindowScroller>
       {({ height, scrollTop }) => (

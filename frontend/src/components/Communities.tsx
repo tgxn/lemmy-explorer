@@ -30,7 +30,7 @@ import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 import InstanceFilter from "../components/Shared/InstanceFilter";
 
 import CommunityGrid from "../components/GridView/Community";
-import CommunityList from "../components/ListView/Community";
+import CommunityList from "./ListView/Community";
 
 function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = false }) {
   const [searchParams, setSearchParams] = useSearchParams();

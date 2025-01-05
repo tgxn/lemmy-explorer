@@ -7,7 +7,11 @@ import { useWindowSize } from "@react-hook/window-size";
 
 import CommunityCard from "./CommunityCard";
 
-const CommunityGrid = function ({ items }) {
+type ICommunityGridProps = {
+  items: any[];
+};
+
+const CommunityGrid = function ({ items }: ICommunityGridProps) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
