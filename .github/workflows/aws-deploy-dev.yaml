@@ -124,7 +124,7 @@ jobs:
         id: create-json
         uses: jsdaniell/create-json@v1.2.2
         with:
-          dir: ./cdk
+          dir: ${{ github.workspace }}/cdk
           name: "config.json"
           json: ${{ vars.CONFIG_JSON }}
 
@@ -135,38 +135,38 @@ jobs:
         env:
           cache-name: cache-cdk-yarn
         with:
-          path: ./cdk/node_modules/
+          path: ${{ github.workspace }}/cdk/node_modules/
           key: cache-cdk-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | CDK
         if: steps.cache-cdk-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
-        working-directory: ./cdk
+        working-directory: ${{ github.workspace }}/cdk
 
       - name: CDK Bootstrap
         run: yarn bootstrap
-        working-directory: ./cdk
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Synth
         run: yarn synth
-        working-directory: ./cdk
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Diff
         run: yarn diff
-        working-directory: ./cdk
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Deploy
         run: yarn deploy:ci
-        working-directory: ./cdk
+        working-directory: ${{ github.workspace }}/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
