@@ -135,7 +135,7 @@ jobs:
           cache-name: cache-cdk-npm
         with:
           path: ./cdk/node_modules/
-          key: cache-cdk-npm-${{ hashFiles('frontend/package-lock.json') }}
+          key: cache-cdk-npm-${{ hashFiles('cdk/package-lock.json') }}
 
       - name: Install Node Modules | CDK
         if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
