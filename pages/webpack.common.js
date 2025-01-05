@@ -4,18 +4,18 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  entry: "./src/index.jsx",
+  entry: "./src/index.tsx",
   output: {
     path: path.join(__dirname, "dist"),
     publicPath: "/",
     clean: true,
   },
   resolve: {
-    extensions: [".js", ".jsx"],
+    extensions: [".tsx", ".jsx", ".ts", ".js"],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: "Lemmy Explorer",
+      title: "Lemmy Explorer - Data Access",
       template: "index.html",
     }),
     new CopyWebpackPlugin({
@@ -25,30 +25,41 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.s?[ac]ss$/i,
-        use: ["style-loader", "css-loader", "sass-loader"],
-      },
-      {
-        test: /\.(png|jp(e*)g|svg|gif)$/,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              name: "images/[hash]-[name].[ext]",
-            },
-          },
-        ],
-      },
-      {
-        test: /\.m?jsx$/,
+        test: /\.tsx?$/,
         exclude: /(node_modules)/,
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env", "@babel/preset-react"],
+            presets: ["@babel/preset-env", "@babel/preset-react", "@babel/preset-typescript"],
           },
         },
       },
+
+      // {
+      //   test: /\.s?[ac]ss$/i,
+      //   use: ["style-loader", "css-loader", "sass-loader"],
+      // },
+      // {
+      //   test: /\.(png|jp(e*)g|svg|gif)$/,
+      //   use: [
+      //     {
+      //       loader: "file-loader",
+      //       options: {
+      //         name: "images/[hash]-[name].[ext]",
+      //       },
+      //     },
+      //   ],
+      // },
+      // {
+      //   test: /\.m?jsx$/,
+      //   exclude: /(node_modules)/,
+      //   use: {
+      //     loader: "babel-loader",
+      //     options: {
+      //       presets: ["@babel/preset-env", "@babel/preset-react"],
+      //     },
+      //   },
+      // },
     ],
   },
 };
