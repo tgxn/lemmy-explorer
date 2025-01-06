@@ -85,7 +85,7 @@ export default class MBinStore {
     baseUrl: string,
     magazineName: string,
     attributeName: string,
-    attributeValue: string,
+    attributeValue: string | number,
   ) {
     return await this.storage.redisZAdd(
       `attributes:mbin_magazine:${baseUrl}:${magazineName}:${attributeName}`,

@@ -57,6 +57,7 @@ export const CRON_SCHEDULES = {
   AGED: "*/15 * * * *",
   UPTIME: "0 */12 * * *",
   KBIN: "0 */6 * * *",
+  MBIN: "0 */6 * * *",
   FEDISEER: "0 */12 * * *",
 };
 

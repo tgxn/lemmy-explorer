@@ -130,11 +130,10 @@ export default async function runTask(taskName: string) {
 
       break;
 
-    // create jobs for all known kbin instances
+    // create jobs for all known mbin instances
     case "mbin":
       const mbinScan = new CrawlMBin();
-      // await mbinScan.createJobsAllKBin();
-      await mbinScan.getInstances();
+      await mbinScan.createJobsAllMBin();
 
       break;
 

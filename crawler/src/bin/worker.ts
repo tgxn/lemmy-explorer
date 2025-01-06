@@ -8,11 +8,14 @@ import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import KBinQueue from "../queue/kbin";
+import MBinQueue from "../queue/mbin";
 
+// used to create scheduled instance checks
 import CrawlAged from "../util/aged";
 import CrawlFediseer from "../crawl/fediseer";
 import CrawlUptime from "../crawl/uptime";
 import CrawlKBin from "../crawl/kbin";
+import CrawlMBin from "../crawl/mbin";
 
 import { syncCheckpoint } from "../output/sync_s3";
 
@@ -38,6 +41,9 @@ export default async function startWorker(startWorkerName: string) {
   } else if (startWorkerName == "kbin") {
     logging.info("Starting KBinQueue Processor");
     new KBinQueue(true);
+  } else if (startWorkerName == "mbin") {
+    logging.info("Starting MBinQueue Processor");
+    new MBinQueue(true);
   }
 
   // cron worker
@@ -78,6 +84,18 @@ export default async function startWorker(startWorkerName: string) {
 
       const kbinScan = new CrawlKBin();
       await kbinScan.createJobsAllKBin();
+
+      await storage.close();
+    });
+
+    // shares CRON_SCHEDULES.KBIN
+    logging.info("Creating KBin Cron Task", CRON_SCHEDULES.KBIN);
+    cron.schedule(CRON_SCHEDULES.MBIN, async (time) => {
+      console.log("Running MBin Cron Task", time);
+      await storage.connect();
+
+      const kbinScan = new CrawlMBin();
+      await kbinScan.createJobsAllMBin();
 
       await storage.close();
     });

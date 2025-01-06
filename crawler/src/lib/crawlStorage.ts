@@ -110,7 +110,7 @@ export class CrawlStorage {
     );
   }
 
-  async redisZAdd(key: string, score: number, value: string): Promise<any> {
+  async redisZAdd(key: string, score: number, value: string | number): Promise<any> {
     if (typeof value !== "string") {
       value = JSON.stringify(value);
     }
