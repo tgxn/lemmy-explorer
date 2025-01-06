@@ -3,7 +3,6 @@ import logging from "../lib/logging";
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
-import KBinQueue from "../queue/kbin";
 import MBinQueue from "../queue/mbin";
 
 export default async function runManualWorker(workerName: string, firstParam: string, secondParam: string) {
@@ -33,16 +32,6 @@ export default async function runManualWorker(workerName: string, firstParam: st
     const crawlOneComm = new SingleCommunityQueue(true, "one_community_manual");
     await crawlOneComm.createJob(firstParam, secondParam, (resultData) => {
       logging.info("CrawlFinger Crawl Complete");
-      process.exit(0);
-    });
-  }
-
-  // scan one kbin
-  else if (workerName == "k" || workerName == "kbin") {
-    logging.info(`Running Singel Q Scan KBIN Crawl for ${firstParam}`);
-    const crawlKBinManual = new KBinQueue(true, "kbin_manual");
-    await crawlKBinManual.createJob(firstParam, (resultData) => {
-      logging.info("KBIN Crawl Complete");
       process.exit(0);
     });
   }

@@ -56,7 +56,6 @@ export const CRON_SCHEDULES = {
   PUBLISH_S3: process.env.PUBLISH_S3_CRON || "0 */4 * * *", // every 4 hours
   AGED: "*/15 * * * *",
   UPTIME: "0 */12 * * *",
-  KBIN: "0 */6 * * *",
   MBIN: "0 */6 * * *",
   FEDISEER: "0 */12 * * *",
 };

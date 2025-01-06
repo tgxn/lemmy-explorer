@@ -5,14 +5,13 @@ import storage from "../lib/crawlStorage";
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
-import KBinQueue from "../queue/kbin";
+import MBinQueue from "../queue/mbin";
 
 import CrawlOutput from "../output/output";
 import { syncCheckpoint } from "../output/sync_s3";
 
 import CrawlUptime from "../crawl/uptime";
 import CrawlFediseer from "../crawl/fediseer";
-import CrawlKBin from "../crawl/kbin";
 import CrawlMBin from "../crawl/mbin";
 
 import CrawlAged from "../util/aged";
@@ -100,11 +99,11 @@ export default async function runTask(taskName: string) {
         ...commSingleCounts,
       });
 
-      const kbinQHealthCrawl = new KBinQueue(false);
-      const kbinQHeCounts = await kbinQHealthCrawl.queue.checkHealth();
+      const mbinQHealthCrawl = new MBinQueue(false);
+      const mbinQHeCounts = await mbinQHealthCrawl.queue.checkHealth();
       healthData.push({
-        queue: "KBinQueue",
-        ...kbinQHeCounts,
+        queue: "MBinQueue",
+        ...mbinQHeCounts,
       });
 
       console.info("Queue Health Metrics");
@@ -120,13 +119,6 @@ export default async function runTask(taskName: string) {
     case "aged":
       const aged = new CrawlAged();
       await aged.createJobs();
-
-      break;
-
-    // create jobs for all known kbin instances
-    case "kbin":
-      const kbinScan = new CrawlKBin();
-      await kbinScan.createJobsAllKBin();
 
       break;
 
