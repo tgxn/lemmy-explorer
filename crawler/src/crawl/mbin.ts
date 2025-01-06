@@ -296,7 +296,7 @@ export default class CrawlMBin {
       return magazines;
     } catch (e) {
       // mbin will return a 404 at the end of results
-      if (e.response.status === 404 && pageNumber > 1) {
+      if (e.response?.status === 404 && pageNumber > 1) {
         return [];
       }
 
