@@ -5,14 +5,9 @@ import ListDivider from "@mui/joy/ListDivider";
 
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
-// import OutlinedInput from "@mui/joy/OutlinedInput";
+import Box from "@mui/joy/Box";
+import Chip from "@mui/joy/Chip";
 
-// import OutlinedInput from "@mui/joy/OutlinedInput";
-// import InputLabel from "@mui/joy/InputLabel";
-import MenuItem from "@mui/joy/MenuItem";
-// import FormControl from "@mui/joy/FormControl";
-// import ListItemText from "@mui/base/ListItemText";
-// import Select from "@mui/joy/Select";
 import Checkbox from "@mui/joy/Checkbox";
 
 type IRegistrationModeProps = {
@@ -20,43 +15,78 @@ type IRegistrationModeProps = {
   setRegMode: any;
 };
 
-const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistrationModeProps) => {
-  // console.log("RegistrationModeFilter", DEFAULT_LANGS, languageCodes, setLanguageCodes);
+const RegistrationModeFilter = React.memo(() => {
+  // string array of selected options
+  const [regMode, setRegMode] = useState<string[]>(["all"]);
+  // console.log("regMode", regMode);
 
-  const [selectedValue, setSelectedValue] = useState<string[]>(["all"]);
+  const handleChange1 = (event: React.SyntheticEvent | null, newValue: string | null) => {
+    console.log(`regMode chose "${newValue}"`);
 
-  const handleChange = (event) => {
-    if (!event) return;
+    // click all directly
+    if (newValue === "all") {
+      console.log("regMode all");
+      setRegMode(["all"]);
+      return;
+    }
 
-    console.log("handleChange event", event);
+    // if all was selected, and we select another option, replace the chosen option with the new one
+    if (regMode.length === 1 && regMode[0] === "all") {
+      console.log("regMode first change");
+      setRegMode([newValue]);
+      return;
+    }
 
-    const value = event.target.value;
-    console.log("handleChange value", value);
+    let newArray = [...regMode];
 
-    // const {
-    //   target: { value },
-    // } = event;
-    // const preventDuplicate = value.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+    // if the array already contains the option, remove or add it
+    const index = newArray.indexOf(newValue);
+    if (index === -1) {
+      newArray = [...newArray, newValue];
+    } else {
+      newArray = newArray.filter((item) => item !== newValue);
+    }
 
-    // const filterdValue = value.filter((item) => variantName.findIndex((o) => o.id === item.id) >= 0);
-    // let duplicatesRemoved = value.filter((item, itemIndex) =>
-    //   value.findIndex((o, oIndex) => o.id === item.id && oIndex !== itemIndex),
-    // );
-    // console.log(duplicatesRemoved);
-    // let map = {};
-    // for (let list of value) {
-    //   map[Object.values(list).join('')] = list;
-    // }
-    // console.log('Using Map', Object.values(map));
-    // let duplicateRemoved = [];
-    // value.forEach((item) => {
-    //   if (duplicateRemoved.findIndex((o) => o.id === item.id) >= 0) {
-    //     duplicateRemoved = duplicateRemoved.filter((x) => x.id === item.id);
-    //   } else {
-    //     duplicateRemoved.push(item);
+    // if the new array is empty, set it to all
+    if (newArray.length === 0) {
+      setRegMode(["all"]);
+      return;
+    }
+
+    // if all options are selected, set it to all
+    if (newArray.length === 3 && !newArray.includes("all")) {
+      setRegMode(["all"]);
+      return;
+    }
+
+    setRegMode(newArray);
+
+    // otherwise, update the new value into the aarry
+    // const newAr
+
+    // if (newValue === "all") {
+    //   setRegMode(["all"]);
+    //   return;
+    // } else {
+    //   // if we have all selected, and we select another option, remove all from the array
+    //   if (regMode.length === 1 && regMode[0] === "all") {
+    //     setRegMode([newValue]);
+    //     return;
     //   }
-    // });
-    // setVariantName(duplicateRemoved);
+    //   if (regMode.length === 3 && !regMode.includes("all")) {
+    //     setRegMode(["all"]);
+    //     return;
+    //   } else {
+    //     const index = regMode.indexOf(newValue);
+    //     if (index === -1) {
+    //       setRegMode([...regMode, newValue]);
+    //       return;
+    //     } else {
+    //       setRegMode(regMode.filter((item) => item !== newValue));
+    //       return;
+    //     }
+    //   }
+    // }
   };
 
   const ITEM_HEIGHT = 48;
@@ -80,7 +110,7 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
       value: "open",
     },
     {
-      name: "Application",
+      name: "By Application",
       value: "application",
     },
     {
@@ -90,6 +120,7 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
   ];
 
   return (
+    // @ts-ignore this component is missing definition for `multiple`
     <Select
       // placeholder="Registration Modes"
       // startDecorator={<SortIcon />}
@@ -109,12 +140,43 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
       // labelId="demo-multiple-checkbox-label"
       // id="demo-multiple-checkbox"
       // multiple
+      // // value={regMode}
+      // value={regMode}
+      // defaultValue={regMode}
+      // onChange={handleChange}
+      // variant="outlined"
+      // slotProps={{
+      //   listbox: {
+      //     sx: {
+      //       width: "100%",
+      //     },
+      //   },
+      // }}
+      // // input={<OutlinedInput label="Tag" />}
+      // renderValue={(selected) => {
+      //   console.log("regMode render", selected);
+      //   return selected.map((x: any) => x.name).join(", ");
+      // }}
+
+      multiple={true}
+      onChange={handleChange1}
+      // @ts-ignore
       value={regMode}
-      onChange={handleChange}
-      variant="outlined"
-      // input={<OutlinedInput label="Tag" />}
-      // renderValue={(selected) => selected.map((x) => x.name).join(", ")}
-      // MenuProps={MenuProps}
+      placeholder="Registration Modes"
+      // defaultValue={regMode}
+      renderValue={(selected) => {
+        // console.log("regMode render selected", selected);
+        return selected.join(", ");
+      }}
+      sx={{ minWidth: "15rem" }}
+      slotProps={{
+        listbox: {
+          sx: {
+            width: "100%",
+          },
+        },
+      }}
+      MenuProps={MenuProps}
     >
       {menuOptions.map((option, index) => (
         // <Option key={option.value} value={option.value}>
@@ -122,16 +184,17 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
         //   {/* <ListItemText primary={option.name} /> */}
         //   {option.name}
         // </Option>
-        <React.Fragment key={option.value}>
-          {index !== 0 ? <ListDivider role="none" inset="startContent" /> : null}
-          <Option value={option.value} label={option.name}>
-            <ListItemDecorator>
-              {/* <Avatar size="sm" src={option.src} /> */}
-              <Checkbox checked={regMode.findIndex((item) => item.value === option.value) >= 0} />
-            </ListItemDecorator>
-            {option.name}
-          </Option>
-        </React.Fragment>
+
+        <Option value={option.value} label={option.name}>
+          <ListItemDecorator>
+            {/* <Avatar size="sm" src={option.src} /> */}
+            <Checkbox
+              checked={regMode.findIndex((item) => item === option.value) >= 0}
+              value={option.value}
+            />
+          </ListItemDecorator>
+          {option.name}
+        </Option>
       ))}
     </Select>
   );
