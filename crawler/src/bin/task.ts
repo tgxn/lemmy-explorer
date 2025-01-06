@@ -13,6 +13,7 @@ import { syncCheckpoint } from "../output/sync_s3";
 import CrawlUptime from "../crawl/uptime";
 import CrawlFediseer from "../crawl/fediseer";
 import CrawlKBin from "../crawl/kbin";
+import CrawlMBin from "../crawl/mbin";
 
 import CrawlAged from "../util/aged";
 import Failures from "../util/failures";
@@ -126,6 +127,14 @@ export default async function runTask(taskName: string) {
     case "kbin":
       const kbinScan = new CrawlKBin();
       await kbinScan.createJobsAllKBin();
+
+      break;
+
+    // create jobs for all known kbin instances
+    case "mbin":
+      const mbinScan = new CrawlMBin();
+      // await mbinScan.createJobsAllKBin();
+      await mbinScan.getInstances();
 
       break;
 
