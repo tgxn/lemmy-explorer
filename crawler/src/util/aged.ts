@@ -3,7 +3,6 @@ import logging from "../lib/logging";
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
-import KBinQueue from "../queue/kbin";
 
 import storage from "../lib/crawlStorage";
 

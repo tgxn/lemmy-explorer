@@ -19,13 +19,13 @@ import InstanceQueue from "../queue/instance";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import KBinQueue from "../queue/kbin";
+import MBinQueue from "../queue/mbin";
 
 export default class InstanceCrawler {
   private crawlDomain: string;
   private logPrefix: string;
 
-  private kbinQueue: KBinQueue;
+  private mbinQueue: MBinQueue;
 
   private client: CrawlClient;
 
@@ -33,7 +33,7 @@ export default class InstanceCrawler {
     this.crawlDomain = crawlDomain;
     this.logPrefix = `[Instance] [${this.crawlDomain}]`;
 
-    this.kbinQueue = new KBinQueue(false);
+    this.mbinQueue = new MBinQueue(false);
 
     this.client = new CrawlClient();
   }
@@ -110,9 +110,9 @@ export default class InstanceCrawler {
     await storage.fediverse.upsert(this.crawlDomain, nodeInfo.software);
 
     // scan kbin instances that are found
-    if (nodeInfo.software.name == "kbin") {
-      console.log(`${this.crawlDomain}: found kbin instance  - creating job`);
-      await this.kbinQueue.createJob(this.crawlDomain);
+    if (nodeInfo.software.name == "mbin") {
+      console.log(`${this.crawlDomain}: found mbin instance  - creating job`);
+      await this.mbinQueue.createJob(this.crawlDomain);
     }
 
     // only allow lemmy instances

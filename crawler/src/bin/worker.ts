@@ -72,7 +72,7 @@ export default async function startWorker(startWorkerName: string) {
     }
 
     // shares CRON_SCHEDULES.MBIN
-    logging.info("Creating KBin Cron Task", CRON_SCHEDULES.KBIN);
+    logging.info("Creating MBin Cron Task", CRON_SCHEDULES.MBIN);
     cron.schedule(CRON_SCHEDULES.MBIN, async (time) => {
       console.log("Running MBin Cron Task", time);
       await storage.connect();
