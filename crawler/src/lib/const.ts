@@ -38,6 +38,8 @@ export const CRAWL_AGED_TIME = {
 
   // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
   FEDIVERSE: hoursToMs(2 * 24), // 2 days
+
+  MAGAZINE: hoursToMs(8),
 };
 
 // consider for deletion after they haven't been seen for this long

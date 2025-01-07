@@ -37,6 +37,7 @@ export type IMagazineData = {
   serverSoftwareVersion: any;
   isPostingRestrictedToMods: boolean;
   lastCrawled?: number;
+  baseurl: string;
 };
 export type IMagazineDataKeyValue = {
   [key: string]: IMagazineData;
@@ -50,7 +51,14 @@ export default class MBinStore {
   }
 
   async getAll(): Promise<IMagazineData[]> {
-    return this.storage.listRedis(`mbin_magazine:*`);
+    const magazineKeyValue = this.storage.listRedisWithKeys(`mbin_magazine:*`);
+
+    // put baseUrl into the magazine object
+    for (const key in magazineKeyValue) {
+      magazineKeyValue[key].baseurl = key.split(":")[1];
+    }
+
+    return Object.values(magazineKeyValue);
   }
 
   async getAllWithKeys(): Promise<IMagazineDataKeyValue> {

@@ -1,5 +1,7 @@
 import path from "node:path";
-import { open, rm, mkdir } from "node:fs/promises";
+import { open, rm, mkdir, FileHandle } from "node:fs/promises";
+
+import { IUptimeNodeData, IFullUptimeData } from "../lib/storage/uptime";
 
 /**
  * OutputFileWriter - This class handles writing the output JSON files.
@@ -9,6 +11,139 @@ import { open, rm, mkdir } from "node:fs/promises";
  */
 
 // love you all
+
+export type IMetaDataOutput = {
+  instances: number;
+  communities: number;
+  mbin_instances: number; // @ NEW
+  magazines: number;
+  fediverse: number;
+
+  time: number;
+  package: string;
+  version: string;
+
+  linked?: any;
+  allowed?: any;
+  blocked?: any;
+};
+
+export type IInstanceDataOutput = {
+  baseurl: string;
+  url: string;
+  name: string;
+  desc: string;
+  downvotes: boolean;
+  nsfw: boolean;
+  create_admin: boolean;
+  private: boolean;
+  fed: boolean;
+  version: string;
+  open: boolean;
+  usage: number;
+  counts: Object;
+  icon: string;
+  banner: string;
+  langs: string[];
+  date: string;
+  published: number;
+  time: number;
+  score: number;
+  uptime?: IUptimeNodeData;
+  isSuspicious: boolean;
+  metrics: Object | null;
+  tags: string[];
+  susReason: string[];
+  trust: [];
+  blocks: {
+    incoming: number;
+    outgoing: number;
+  };
+  blocked: string[];
+};
+
+export type ICommunityDataOutput = {
+  baseurl: string;
+  url: string;
+  name: string;
+  title: string;
+  desc: string;
+  icon: string | null;
+  banner: string | null;
+  nsfw: boolean;
+  counts: Object;
+  published: number;
+  time: number;
+  isSuspicious: boolean;
+  score: number;
+};
+
+export type IMBinInstanceOutput = {
+  // actor_id: string;
+  // title: string;
+  // name: string;
+  // preferred: string;
+  // baseurl: string;
+  // summary: string;
+  // sensitive: boolean;
+  // postingRestrictedToMods: boolean;
+  // icon: string;
+  // published: string;
+  // updated: string;
+  // followers: number;
+  // time: number;
+};
+
+export type IMBinMagazineOutput = {
+  baseUrl: string;
+  magazineId: number;
+  title: string;
+  name: string;
+  description: string;
+  isAdult: boolean;
+  postingRestrictedToMods: boolean;
+  icon: string;
+  subscriptions: number;
+  posts: number;
+  time: number;
+};
+
+export type IFediverseDataOutput = {
+  url: string;
+  software: string;
+  version: string;
+};
+
+export type IClassifiedErrorOutput = {
+  baseurl: string;
+  time: number;
+  error: string;
+  type?: string;
+};
+
+// type IInstanceOutput = {};
+
+// // minified version, only enough for sort/filter
+// // {
+// //     "base": "lemmy.ml",
+// //     "title": "Lemmy!",
+// //     "name": "lemmy",
+// //     "desc": "lemmy instance is cool and stuff!",
+// //     "sort": {
+// //       "score": 724,  //smart sort
+// //       "subscribers": 1,
+// //       "users": "users_active_week",
+// //       "posts": 0,
+// //       "comments": 0,
+// //      }
+// // }
+// type IInstanceMinOutput = {};
+// type IInstanceMetaOutput = {};
+
+// type ICommunityOutput = {};
+// type ICommunityMinOutput = {};
+
+// type IMagazineOutput = {};
 
 // split communities.json and instances.json into smaller files for easier loading
 
@@ -39,21 +174,6 @@ import { open, rm, mkdir } from "node:fs/promises";
 //     "isSuspicious": false,
 //     "score": 724
 //   }
-
-// minified version, only enough for sort/filter
-// {
-//     "base": "lemmy.ml",
-//     "title": "Lemmy!",
-//     "name": "lemmy",
-//     "desc": "lemmy instance is cool and stuff!",
-//     "sort": {
-//       "score": 724,  //smart sort
-//       "subscribers": 1,
-//       "users": "users_active_week",
-//       "posts": 0,
-//       "comments": 0,
-//      }
-// }
 
 // instance-index.json
 
@@ -106,13 +226,82 @@ export default class OutputFileWriter {
   }
 
   /**
-   * this method is used to split the data into smaller files for easier loading
-   *
-   * @param {string} chunkName - the name of the chunk, used for the filename
-   * @param {number} perFile - how many entries per file
-   * @param {array} dataArray - the data array to split
+   * this method is used to store the fediverse data
    */
-  async storeChunkedData(chunkName: string, perFile: number, dataArray: any) {
+  public async storeFediverseData(data: any, softwareData: any, softwareBaseUrls: any, fediTags: any) {
+    await this.writeJsonFile(`${this.publicDataFolder}/fediverse.json`, JSON.stringify(data));
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/fediverse_software_counts.json`,
+      JSON.stringify(softwareData),
+    );
+    await this.writeJsonFile(
+      `${this.publicDataFolder}/fediverse_software_sites.json`,
+      JSON.stringify(softwareBaseUrls),
+    );
+
+    // write tags meta
+    await this.writeJsonFile(`${this.publicDataFolder}/tags.meta.json`, JSON.stringify(fediTags));
+  }
+
+  /**
+   * this method is used to store the instance metrics data
+   */
+  public async storeInstanceMetricsData(instanceBaseUrl: String, data: any) {
+    await mkdir(this.metricsPath, {
+      recursive: true,
+    });
+
+    await this.writeJsonFile(`${this.metricsPath}/${instanceBaseUrl}.meta.json`, JSON.stringify(data));
+  }
+
+  /**
+   * this method is used to store the community metrics data
+   */
+  public async storeCommunityMetricsData(instanceBaseUrl: string, communityData: any) {
+    // make sure the directory exists for the instance
+    await mkdir(`${this.communityMetricsPath}/${instanceBaseUrl}`, {
+      recursive: true,
+    });
+
+    await this.writeJsonFile(
+      `${this.communityMetricsPath}/${instanceBaseUrl}/${communityData.name}.meta.json`,
+      JSON.stringify(communityData),
+    );
+  }
+
+  public async storeMetaData(data: IMetaDataOutput) {
+    await this.writeJsonFile(`${this.publicDataFolder}/meta.json`, JSON.stringify(data));
+  }
+
+  public async storeInstanceErrors(data: any) {
+    await this.writeJsonFile(`${this.publicDataFolder}/instanceErrors.json`, JSON.stringify(data));
+  }
+
+  public async storeSuspicousData(data: any) {
+    await this.writeJsonFile(`${this.publicDataFolder}/sus.json`, JSON.stringify(data));
+  }
+
+  // stores an array of the string baseUrl
+  public async storeMBinInstanceData(data: string[]) {
+    await this.writeJsonFile(`${this.publicDataFolder}/kbin.min.json`, JSON.stringify(data));
+  }
+
+  public async storeMBinMagazineData(data: any) {
+    await this.storeChunkedData("magazines", this.magazinesPerFile, data);
+  }
+
+  /**
+   * this method is used to clean (delete all files) the data folder
+   */
+  public async cleanData(): Promise<void> {
+    await rm(this.publicDataFolder, { recursive: true, force: true });
+    await mkdir(this.publicDataFolder, { recursive: true });
+  }
+
+  /**
+   * this method is used to split the data into smaller files for easier loading
+   */
+  private async storeChunkedData(chunkName: string, perFile: number, dataArray: []): Promise<void> {
     await this.writeJsonFile(`${this.publicDataFolder}/${chunkName}.full.json`, JSON.stringify(dataArray));
 
     // mapped versions and the metadata
@@ -140,87 +329,12 @@ export default class OutputFileWriter {
   }
 
   /**
-   * this method is used to store the fediverse data
-   *
-   * @param {object} data - the fediverse data
-   * @param {object} softwareData - the fediverse software data
-   * @param {object} softwareBaseUrls - the fediverse software base urls
+   * this method is used to write a JSON file
    */
-  async storeFediverseData(data: any, softwareData: any, softwareBaseUrls: any, fediTags: any) {
-    await this.writeJsonFile(`${this.publicDataFolder}/fediverse.json`, JSON.stringify(data));
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/fediverse_software_counts.json`,
-      JSON.stringify(softwareData),
-    );
-    await this.writeJsonFile(
-      `${this.publicDataFolder}/fediverse_software_sites.json`,
-      JSON.stringify(softwareBaseUrls),
-    );
-
-    // write tags meta
-    await this.writeJsonFile(`${this.publicDataFolder}/tags.meta.json`, JSON.stringify(fediTags));
-  }
-
-  /**
-   * this method is used to store the instance metrics data
-   *
-   * @param {string} instanceBaseUrl - the base url of the instance
-   * @param {object} data - the instance metrics data
-   */
-  async storeInstanceMetricsData(instanceBaseUrl: String, data: any) {
-    await mkdir(this.metricsPath, {
-      recursive: true,
-    });
-
-    await this.writeJsonFile(`${this.metricsPath}/${instanceBaseUrl}.meta.json`, JSON.stringify(data));
-  }
-
-  /**
-   * this method is used to store the community metrics data
-   *
-   * @param {string} instanceBaseUrl - the base url of the instance
-   * @param {object} data - the instance metrics data
-   */
-  async storeCommunityMetricsData(instanceBaseUrl: string, communityData: any) {
-    await mkdir(`${this.communityMetricsPath}/${instanceBaseUrl}`, {
-      recursive: true,
-    });
-
-    await this.writeJsonFile(
-      `${this.communityMetricsPath}/${instanceBaseUrl}/${communityData.name}.meta.json`,
-      JSON.stringify(communityData),
-    );
-  }
-
-  async storeMetaData(data: any) {
-    await this.writeJsonFile(`${this.publicDataFolder}/meta.json`, JSON.stringify(data));
-  }
-
-  async storeInstanceErrors(data: any) {
-    await this.writeJsonFile(`${this.publicDataFolder}/instanceErrors.json`, JSON.stringify(data));
-  }
-
-  async storeSuspicousData(data: any) {
-    await this.writeJsonFile(`${this.publicDataFolder}/sus.json`, JSON.stringify(data));
-  }
-
-  async storeKbinInstanceList(data: any) {
-    await this.writeJsonFile(`${this.publicDataFolder}/kbin.min.json`, JSON.stringify(data));
-  }
-
-  async storeKBinMagazineData(data: any) {
-    await this.storeChunkedData("magazines", this.magazinesPerFile, data);
-  }
-
-  async cleanData() {
-    await rm(this.publicDataFolder, { recursive: true, force: true });
-    await mkdir(this.publicDataFolder, { recursive: true });
-  }
-
-  async writeJsonFile(filename: string, data: any) {
-    let filehandle: any = null;
+  private async writeJsonFile(fileName: string, data: string): Promise<void> {
+    let filehandle: FileHandle | null = null;
     try {
-      filehandle = await open(filename, "w");
+      filehandle = await open(fileName, "w");
 
       await filehandle?.writeFile(data);
     } finally {

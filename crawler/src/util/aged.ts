@@ -3,7 +3,7 @@ import logging from "../lib/logging";
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
-// import KBinQueue from "../queue/kbin";
+import MBinQueue from "../queue/mbin";
 
 import storage from "../lib/crawlStorage";
 
@@ -15,7 +15,7 @@ export default class CrawlAged {
   private instanceCrawler: InstanceQueue;
   private communityCrawler: CommunityQueue;
   private singleCommunityCrawler: SingleCommunityQueue;
-  // private kbinCrawler: KBinQueue;
+  private mbinCrawler: MBinQueue;
 
   constructor() {
     this.agedInstanceBaseUrls = [];
@@ -24,8 +24,8 @@ export default class CrawlAged {
     this.communityCrawler = new CommunityQueue(false);
     this.singleCommunityCrawler = new SingleCommunityQueue(false);
 
-    // @TODO scan for aged kbin magazines
-    // this.kbinCrawler = new KBinQueue(false);
+    // scan for aged magazines
+    this.mbinCrawler = new MBinQueue(false);
   }
 
   async recordAges() {
@@ -33,7 +33,7 @@ export default class CrawlAged {
 
     const instances = await storage.instance.getAll();
     const communities = await storage.community.getAll();
-    const magazines = await storage.kbin.getAll();
+    const magazines = await storage.mbin.getAll();
     const fediverse = await storage.fediverse.getAll();
     const errors = await storage.tracking.getAllErrors("*");
     const lastCrawls = await storage.tracking.listAllLastCrawl();
@@ -219,7 +219,7 @@ export default class CrawlAged {
       return false;
     });
 
-    logging.info("Aged Communities By Base", Object.keys(byBase).length);
+    logging.info("Aged Communities By Base (showing over 100 communities)", Object.keys(byBase).length);
 
     const baseCounts = Object.keys(byBase)
       .map((base) => {
@@ -228,7 +228,8 @@ export default class CrawlAged {
           count: byBase[base].length,
         };
       })
-      .sort((a, b) => a.count - b.count);
+      .sort((a, b) => a.count - b.count)
+      .filter((a) => a.count > 100);
 
     console.table(baseCounts);
 
@@ -250,6 +251,32 @@ export default class CrawlAged {
     for (const baseUrl of this.agedInstanceBaseUrls) {
       await this.instanceCrawler.createJob(baseUrl);
       await this.communityCrawler.createJob(baseUrl);
+    }
+
+    // get aged magazines
+    const magazines = await storage.mbin.getAll();
+
+    const agedMagazines = Object.values(magazines).filter((magazine) => {
+      if (!magazine.lastCrawled) return true; // not set
+
+      if (Date.now() - magazine.lastCrawled > CRAWL_AGED_TIME.MAGAZINE) {
+        return true;
+      }
+
+      return false;
+    });
+
+    // get base url for each magazine
+    const agedMagazineBaseUrls = agedMagazines.map((magazine) => magazine.baseurl);
+
+    // filter those dupes
+    const uniqueAgedMagazineBaseUrls = [...new Set(agedMagazineBaseUrls)];
+
+    logging.info(
+      `Magazines Total: ${magazines.length} Aged ${agedMagazineBaseUrls.length}, Total Instances: ${uniqueAgedMagazineBaseUrls.length}`,
+    );
+    for (const baseUrl of uniqueAgedMagazineBaseUrls) {
+      this.mbinCrawler.createJob(baseUrl);
     }
 
     logging.info("Done Creating Aged Jobs");

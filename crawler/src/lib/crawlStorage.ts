@@ -6,7 +6,6 @@ import logging from "./logging";
 // core
 import InstanceStore from "./storage/instance";
 import CommunityStore from "./storage/community";
-import KBinStore from "./storage/kbin";
 import MBinStore from "./storage/mbin";
 
 // supporting
@@ -29,7 +28,6 @@ export class CrawlStorage {
   public fediverse: FediverseStore;
   public fediseer: FediseerStore;
   public tracking: TrackingStore;
-  public kbin: KBinStore;
   public mbin: MBinStore;
 
   constructor() {
@@ -46,7 +44,6 @@ export class CrawlStorage {
     this.fediverse = new FediverseStore(this);
     this.fediseer = new FediseerStore(this);
     this.tracking = new TrackingStore(this);
-    this.kbin = new KBinStore(this);
     this.mbin = new MBinStore(this);
   }
 
