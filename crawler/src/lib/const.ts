@@ -21,7 +21,7 @@ export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || "lemmyexplorer
 export const CRAWL_TIMEOUT = {
   INSTANCE: 30 * 60 * 1000, // 30 mins
   COMMUNITY: 120 * 60 * 1000, // 2 hours
-  KBIN: 60 * 60 * 1000, // one hour
+  MBIN: 60 * 60 * 1000, // one hour
 };
 
 // max age to be included in output

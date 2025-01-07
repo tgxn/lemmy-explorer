@@ -77,8 +77,8 @@ export default async function startWorker(startWorkerName: string) {
       console.log("Running MBin Cron Task", time);
       await storage.connect();
 
-      const kbinScan = new CrawlMBin();
-      await kbinScan.createJobsAllMBin();
+      const mbinScan = new CrawlMBin();
+      await mbinScan.createJobsAllMBin();
 
       await storage.close();
     });

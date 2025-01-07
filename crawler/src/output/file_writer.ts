@@ -283,7 +283,7 @@ export default class OutputFileWriter {
 
   // stores an array of the string baseUrl
   public async storeMBinInstanceData(data: string[]) {
-    await this.writeJsonFile(`${this.publicDataFolder}/kbin.min.json`, JSON.stringify(data));
+    await this.writeJsonFile(`${this.publicDataFolder}/mbin.min.json`, JSON.stringify(data));
   }
 
   public async storeMBinMagazineData(data: any) {

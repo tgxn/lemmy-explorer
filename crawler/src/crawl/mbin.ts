@@ -87,10 +87,10 @@ export default class CrawlMBin {
    * - `/api/magazine/{magazine_id}` to get magazine info
    */
 
-  // scan the full list of fediverse marked instances with "kbin"
+  // scan the full list of fediverse marked instances with "mbin"
   async createJobsAllMBin() {
     try {
-      // get all fedi kbin servers
+      // get all fedi mbin servers
       const mbinServers = await this.getInstances();
       logging.info(`MBin Instances Total: ${mbinServers.length}`);
 
@@ -102,7 +102,7 @@ export default class CrawlMBin {
         await mbinQueue.createJob(mbinServer.base);
       }
     } catch (e) {
-      console.error(`${this.logPrefix} error scanning kbin instance`, e);
+      console.error(`${this.logPrefix} error scanning mbin instance`, e);
     }
   }
 
@@ -338,7 +338,7 @@ export const mbinInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
   const startTime = Date.now();
 
   try {
-    // check for recent scan of this KBIN instance
+    // check for recent scan of this kbin instance
     const lastCrawl = await storage.tracking.getLastCrawl("mbin", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;

@@ -12,7 +12,7 @@ export default class MBinQueue extends BaseQueue {
     super(isWorker, queueName, mbinInstanceProcessor);
   }
 
-  // use as KBinQueue.createJob({ baseUrl: "https://kbin.io" });
+  // use as MBinQueue.createJob({ baseUrl: "https://fedia.io" });
   async createJob(baseUrl: string, onSuccess: ISuccessCallback | null = null) {
     await super.createJob(baseUrl, { baseUrl }, onSuccess);
   }

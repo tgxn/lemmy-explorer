@@ -109,7 +109,7 @@ export default class InstanceCrawler {
     // store all fediverse instance software for easy metrics
     await storage.fediverse.upsert(this.crawlDomain, nodeInfo.software);
 
-    // scan kbin instances that are found
+    // scan mbin instances that are found
     if (nodeInfo.software.name == "mbin") {
       console.log(`${this.crawlDomain}: found mbin instance  - creating job`);
       await this.mbinQueue.createJob(this.crawlDomain);
@@ -325,7 +325,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
       if (
         knownFediverseServer.name !== "lemmy" &&
         knownFediverseServer.name !== "lemmybb" &&
-        knownFediverseServer.name !== "kbin" &&
+        // knownFediverseServer.name !== "mbin" &&
         knownFediverseServer.time &&
         Date.now() - knownFediverseServer.time < CRAWL_AGED_TIME.FEDIVERSE // re-scan fedi servers to check their status
       ) {
