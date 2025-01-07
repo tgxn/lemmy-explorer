@@ -1,57 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type IMagazineData = {
-  magazineId: number;
-  owner: {
-    magazineId: number;
-    userId: number;
-    avatar: any;
-    username: string;
-    apId: any;
-  };
-  icon: {
-    storageUrl: string;
-    [key: string]: any;
-  };
-  name: string;
-  title: string;
-  description: string;
-  rules: string;
-  subscriptionsCount: number;
-  entryCount: number;
-  entryCommentCount: number;
-  postCount: number;
-  postCommentCount: number;
-  isAdult: boolean;
-  isUserSubscribed: any;
-  isBlockedByUser: any;
-  tags: string[];
-  badges: {
-    badgeId: number;
-    magazineId: number;
-    name: string;
-  }[];
-  moderators: {
-    magazineId: number;
-    userId: number;
-    avatar: {
-      storageUrl: string;
-      [key: string]: any;
-    };
-    username: string;
-    apId: any;
-  }[];
-  apId: any;
-  apProfileId: string;
-  serverSoftware: any;
-  serverSoftwareVersion: any;
-  isPostingRestrictedToMods: boolean;
-  lastCrawled?: number;
-  baseurl: string;
-};
-export type IMagazineDataKeyValue = {
-  [key: string]: IMagazineData;
-};
+import { IMagazineData, IMagazineDataKeyValue } from "../../../../types/storage";
 
 export default class MBinStore {
   private storage: CrawlStorage;

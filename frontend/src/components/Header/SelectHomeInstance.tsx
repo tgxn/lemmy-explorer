@@ -139,7 +139,7 @@ function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
     isLoading: loadingKbin,
     error: errorKbin,
     data: dataKbin,
-  } = useQueryCache("kbinMinData", "kbin.min");
+  } = useQueryCache("kbinMinData", "mbin.min");
 
   const data = React.useMemo(() => {
     if (loadingIns || loadingKbin) {

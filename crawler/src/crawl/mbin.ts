@@ -5,8 +5,8 @@ import { exec } from "node:child_process";
 import logging from "../lib/logging";
 
 import storage from "../lib/crawlStorage";
-import { IFediverseDataKeyValue } from "../lib/storage/fediverse";
-import { IMagazineData } from "../lib/storage/mbin";
+import { IFediverseDataKeyValue } from "../../../types/storage";
+import { IMagazineData } from "../../../types/storage";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
@@ -311,6 +311,8 @@ export default class CrawlMBin {
     const outMagazineData: IMagazineData = {
       baseurl: crawlDomain,
       ...magazineData,
+
+      icon: magazineData.icon.storageUrl ? magazineData.icon.storageUrl : null,
       lastCrawled: Date.now(),
     };
 

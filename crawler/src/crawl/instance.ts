@@ -5,7 +5,7 @@ import {
   IErrorDataKeyValue,
   ILastCrawlData,
   ILastCrawlDataKeyValue,
-} from "../lib/storage/tracking";
+} from "../../../types/storage";
 
 import { CRAWL_AGED_TIME } from "../lib/const";
 import { HTTPError, CrawlError, CrawlTooRecentError } from "../lib/error";

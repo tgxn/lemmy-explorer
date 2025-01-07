@@ -99,11 +99,11 @@ export default function App() {
       count: "communities",
     },
     {
-      name: "KBin Instances",
+      name: "MBin Instances",
       chip: "Min",
-      desc: "an array of known kbin instances",
-      path: "kbin.min.json",
-      count: "kbin_instances",
+      desc: "an array of known mbin instances",
+      path: "mbin.min.json",
+      count: "mbin_instances",
     },
     {
       name: "KBin Magazines",

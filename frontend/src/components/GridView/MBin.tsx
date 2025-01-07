@@ -4,7 +4,7 @@ import { useMasonry, usePositioner, useContainerPosition, useScroller } from "ma
 
 import { useWindowSize } from "@react-hook/window-size";
 
-import KBinCard from "./KBinCard";
+import KBinCard from "./MBinCard";
 
 type KBinGridProps = {
   items: any[];

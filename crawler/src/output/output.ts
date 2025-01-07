@@ -8,10 +8,10 @@ import logging from "../lib/logging";
 import CrawlClient from "../lib/CrawlClient";
 
 import storage from "../lib/crawlStorage";
-import { IInstanceData, IInstanceDataKeyValue } from "../lib/storage/instance";
-import { ICommunityData, ICommunityDataKeyValue } from "../lib/storage/community";
-import { IMagazineData, IMagazineDataKeyValue } from "../lib/storage/mbin";
-import { IFediverseData, IFediverseDataKeyValue } from "../lib/storage/fediverse";
+import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
+import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
+import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
+import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
 // import { IFediseerInstanceData } from "../lib/storage/fediseer";
 
 import {
@@ -19,10 +19,12 @@ import {
   IErrorDataKeyValue,
   ILastCrawlData,
   ILastCrawlDataKeyValue,
-} from "../lib/storage/tracking";
-import { IUptimeNodeData, IFullUptimeData } from "../lib/storage/uptime";
+} from "../../../types/storage";
+import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
 
-import OutputFileWriter, {
+import OutputFileWriter from "./file_writer";
+
+import {
   IMetaDataOutput,
   IInstanceDataOutput,
   ICommunityDataOutput,
@@ -30,7 +32,8 @@ import OutputFileWriter, {
   IMBinMagazineOutput,
   IFediverseDataOutput,
   IClassifiedErrorOutput,
-} from "./file_writer";
+} from "../../../types/output";
+
 import OutputTrust from "./trust";
 
 class OutputUtils {
@@ -991,7 +994,7 @@ export default class CrawlOutput {
 
     for (const mbin of filteredMBins) {
       output.push({
-        baseUrl: mbin.baseurl,
+        baseurl: mbin.baseurl,
         magazineId: mbin.magazineId,
 
         title: mbin.title, // display name
@@ -1002,7 +1005,7 @@ export default class CrawlOutput {
         isAdult: mbin.isAdult,
         postingRestrictedToMods: mbin.isPostingRestrictedToMods,
 
-        icon: mbin.icon ? mbin.icon.url : null,
+        icon: mbin.icon?.storageUrl ? mbin.icon.storageUrl : null,
         // published: mbin.published,
         // updated: mbin.updated,
         subscriptions: mbin.subscriptionsCount,
