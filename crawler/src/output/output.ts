@@ -974,7 +974,6 @@ export default class CrawlOutput {
     return mbinInstanceUrls;
   }
 
-  // generate a list of all the instances that are suspicious and the reasons
   private async outputMBinMagazineList(): Promise<IMBinMagazineOutput[]> {
     const output: IMBinMagazineOutput[] = [];
 

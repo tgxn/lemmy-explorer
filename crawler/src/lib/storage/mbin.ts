@@ -9,7 +9,10 @@ export type IMagazineData = {
     username: string;
     apId: any;
   };
-  icon: any;
+  icon: {
+    storageUrl: string;
+    [key: string]: any;
+  };
   name: string;
   title: string;
   description: string;
@@ -22,12 +25,19 @@ export type IMagazineData = {
   isAdult: boolean;
   isUserSubscribed: any;
   isBlockedByUser: any;
-  tags: any;
-  badges: any[];
+  tags: string[];
+  badges: {
+    badgeId: number;
+    magazineId: number;
+    name: string;
+  }[];
   moderators: {
     magazineId: number;
     userId: number;
-    avatar: any;
+    avatar: {
+      storageUrl: string;
+      [key: string]: any;
+    };
     username: string;
     apId: any;
   }[];
@@ -51,7 +61,7 @@ export default class MBinStore {
   }
 
   async getAll(): Promise<IMagazineData[]> {
-    const magazineKeyValue = this.storage.listRedisWithKeys(`mbin_magazine:*`);
+    const magazineKeyValue = await this.storage.listRedisWithKeys(`mbin_magazine:*`);
 
     // put baseUrl into the magazine object
     for (const key in magazineKeyValue) {

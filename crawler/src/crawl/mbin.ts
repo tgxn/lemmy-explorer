@@ -6,6 +6,7 @@ import logging from "../lib/logging";
 
 import storage from "../lib/crawlStorage";
 import { IFediverseDataKeyValue } from "../lib/storage/fediverse";
+import { IMagazineData } from "../lib/storage/mbin";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
@@ -307,7 +308,13 @@ export default class CrawlMBin {
 
   // validate the community is for the domain being scanned, and save it
   async storeMagazineData(crawlDomain: string, magazineData: IIncomingMagazineData) {
-    await storage.mbin.upsert(crawlDomain, magazineData);
+    const outMagazineData: IMagazineData = {
+      baseurl: crawlDomain,
+      ...magazineData,
+      lastCrawled: Date.now(),
+    };
+
+    await storage.mbin.upsert(crawlDomain, outMagazineData);
 
     await storage.mbin.setTrackedAttribute(
       crawlDomain,

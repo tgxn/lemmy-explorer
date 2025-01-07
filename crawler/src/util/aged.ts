@@ -38,6 +38,8 @@ export default class CrawlAged {
     const errors = await storage.tracking.getAllErrors("*");
     const lastCrawls = await storage.tracking.listAllLastCrawl();
 
+    console.log("Record Counts", magazines.length);
+
     const healthData: any = [];
 
     // get age distribution
