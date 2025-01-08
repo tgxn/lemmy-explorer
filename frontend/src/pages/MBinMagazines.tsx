@@ -162,8 +162,10 @@ function MBinMagazines() {
     console.log(`Filtered ${communties.length} magazines`);
 
     // sorting
-    if (orderBy === "followers") {
+    if (orderBy === "subscriptions") {
       communties = communties.sort((a, b) => b.subscriptions - a.subscriptions);
+    } else if (orderBy === "posts") {
+      communties = communties.sort((a, b) => b.posts - a.posts);
     } else if (orderBy === "name") {
       communties = communties.sort((a, b) => a.name.localeCompare(b.name));
     }
@@ -234,7 +236,8 @@ function MBinMagazines() {
           }}
         >
           {/* <Option value="smart">Smart Sort</Option> */}
-          <Option value="followers">Followers</Option>
+          <Option value="subscriptions">Subscriptions</Option>
+          <Option value="posts">Posts</Option>
           <Option value="name">Name</Option>
         </Select>
 

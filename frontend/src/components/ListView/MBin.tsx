@@ -35,7 +35,7 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
           headerStyle={{
             justifyContent: "left",
           }}
-          cellRenderer={({ rowData }) => {
+          cellRenderer={({ rowData }: { rowData: IMBinMagazineOutput }) => {
             // console.log(rowData);
             return (
               <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -78,15 +78,15 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
                       baseType="kbin"
                       community={{
                         baseurl: rowData.baseurl, // for link
-                        name: rowData.preferred, // for link
-                        title: rowData.name, // for display
+                        name: rowData.name, // for link
+                        title: rowData.title, // for display
                       }}
                     />
                   </Typography>
 
                   <Typography level="body3">
                     <CopyLink
-                      copyText={`!${rowData.preferred}@${rowData.baseurl}`}
+                      copyText={`!${rowData.name}@${rowData.baseurl}`}
                       linkProps={{
                         variant: "plain",
                         color: "neutral",
@@ -103,14 +103,24 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
         />,
 
         <Column
-          label="Followers"
-          dataKey="followers"
+          label="Subscriptions"
+          dataKey="subscriptions"
           width={width}
           style={{
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.followers} />}
+          cellRenderer={({ rowData }) => <TinyNumber value={rowData.subscriptions} />}
+        />,
+        <Column
+          label="Posts"
+          dataKey="posts"
+          width={width}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+          cellRenderer={({ rowData }) => <TinyNumber value={rowData.posts} />}
         />,
       ]}
     </VirtualTable>
