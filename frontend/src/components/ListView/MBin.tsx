@@ -75,7 +75,7 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
                     }}
                   >
                     <ExtCommunityLink
-                      baseType="kbin"
+                      baseType="mbin"
                       community={{
                         baseurl: rowData.baseurl, // for link
                         name: rowData.name, // for link

@@ -347,7 +347,7 @@ export const mbinInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
   const startTime = Date.now();
 
   try {
-    // check for recent scan of this kbin instance
+    // check for recent scan of this mbin instance
     const lastCrawl = await storage.tracking.getLastCrawl("mbin", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;

@@ -81,7 +81,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
             }}
           >
             <ExtCommunityLink
-              baseType="kbin"
+              baseType="mbin"
               community={{
                 baseurl: magazine.baseurl, // for link
                 name: magazine.name, // for link

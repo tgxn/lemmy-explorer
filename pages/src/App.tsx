@@ -106,9 +106,9 @@ export default function App() {
       count: "mbin_instances",
     },
     {
-      name: "KBin Magazines",
+      name: "MBin Magazines",
       chip: "Full",
-      desc: "an array of known kbin magazines",
+      desc: "an array of known mbin magazines",
       path: "magazines.full.json",
       count: "magazines",
     },

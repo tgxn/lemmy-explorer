@@ -16,7 +16,6 @@ import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListDivider from "@mui/joy/ListDivider";
 
 import SvgIcon from "@mui/material/SvgIcon";
-import KBinLogo from "./KBinIcon";
 import MBinIcon from "./MBinIcon";
 
 import MenuIcon from "@mui/icons-material/Menu";

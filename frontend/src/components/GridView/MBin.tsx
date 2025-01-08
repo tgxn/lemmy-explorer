@@ -4,13 +4,13 @@ import { useMasonry, usePositioner, useContainerPosition, useScroller } from "ma
 
 import { useWindowSize } from "@react-hook/window-size";
 
-import KBinCard from "./MBinCard";
+import NMBinCard from "./MBinCard";
 
-type KBinGridProps = {
+type MBinGridProps = {
   items: any[];
 };
 
-const KBinGrid = React.memo(function ({ items }: KBinGridProps) {
+const MBinGrid = React.memo(function ({ items }: MBinGridProps) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -20,7 +20,7 @@ const KBinGrid = React.memo(function ({ items }: KBinGridProps) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardAsCallback = React.useCallback((props) => <KBinCard magazine={props.data} />, [isScrolling]);
+  const CardAsCallback = React.useCallback((props) => <NMBinCard magazine={props.data} />, [isScrolling]);
 
   return useMasonry({
     containerRef,
@@ -33,4 +33,4 @@ const KBinGrid = React.memo(function ({ items }: KBinGridProps) {
     render: CardAsCallback,
   });
 });
-export default KBinGrid;
+export default MBinGrid;

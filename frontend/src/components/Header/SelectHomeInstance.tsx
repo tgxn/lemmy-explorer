@@ -128,7 +128,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   );
 });
 
-function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
+function SelectHomeInstance({ onSetMBin, homeBaseUrl, dispatch }) {
   const {
     isLoading: loadingIns,
     error: errorIns,
@@ -136,17 +136,17 @@ function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
   } = useQueryCache("instanceMinData", "instance.min");
 
   const {
-    isLoading: loadingKbin,
-    error: errorKbin,
-    data: dataKbin,
-  } = useQueryCache("kbinMinData", "mbin.min");
+    isLoading: loadingMBin,
+    error: errorMBin,
+    data: dataMBin,
+  } = useQueryCache("mbinMinData", "mbin.min");
 
   const data = React.useMemo(() => {
-    if (loadingIns || loadingKbin) {
+    if (loadingIns || loadingMBin) {
       return null;
     }
 
-    if (errorIns || errorKbin) {
+    if (errorIns || errorMBin) {
       return null;
     }
 
@@ -154,25 +154,25 @@ function SelectHomeInstance({ onSetKBin, homeBaseUrl, dispatch }) {
 
     data = data.concat(dataIns.map((item) => ({ ...item, type: "lemmy" })));
 
-    for (const item of dataKbin) {
+    for (const item of dataMBin) {
       data.push({
         base: item,
         name: item,
-        type: "kbin",
+        type: "mbin",
       });
     }
 
     return data;
-  }, [dataIns, dataKbin]);
+  }, [dataIns, dataMBin]);
 
   const onChange = (newValue) => {
     console.log("onChange", newValue);
 
-    if (newValue?.type === "kbin") {
-      onSetKBin(true);
+    if (newValue?.type === "mbin") {
+      onSetMBin(true);
       // return;
     } else if (newValue?.type === "lemmy") {
-      onSetKBin(false);
+      onSetMBin(false);
     }
 
     if (newValue == null) {
