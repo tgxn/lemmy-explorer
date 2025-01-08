@@ -20,11 +20,13 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-type KBinCardProps = {
-  magazine: any;
+import { IMBinMagazineOutput } from "../../../../types/output";
+
+type MBinCardProps = {
+  magazine: IMBinMagazineOutput;
 };
 
-export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
+const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
   return (
     <Card
       variant="outlined"
@@ -33,7 +35,7 @@ export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
         gap: 0,
       }}
     >
-      {/* Community Title */}
+      {/* Magazine Title */}
       <CardOverflow
         variant="outlined"
         // orientation="horizontal"
@@ -79,18 +81,18 @@ export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
             }}
           >
             <ExtCommunityLink
-              baseType="kbin"
+              baseType="mbin"
               community={{
                 baseurl: magazine.baseurl, // for link
-                name: magazine.preferred, // for link
-                title: magazine.name, // for display
+                name: magazine.name, // for link
+                title: magazine.title, // for display
               }}
             />
           </Typography>
 
           <Typography level="body3">
             <CopyLink
-              copyText={`!${magazine.preferred}@${magazine.baseurl}`}
+              copyText={`!${magazine.name}@${magazine.baseurl}`}
               linkProps={{
                 variant: "plain",
                 color: "neutral",
@@ -121,7 +123,7 @@ export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
             overflow: "hidden",
           }}
         >
-          {magazine.summary ? magazine.summary : ""}
+          {magazine.description ? magazine.description : ""}
         </Typography>
       </CardContent>
       <CardOverflow
@@ -151,10 +153,10 @@ export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
               }}
             >
               <RecordVoiceOverIcon />
-              <TinyNumber value={magazine.followers} />
+              <TinyNumber value={magazine.subscriptions} />
             </Typography>
           </Tooltip>
-          {/* <Divider orientation="vertical" />
+          <Divider orientation="vertical" />
           <Tooltip title="Posts" variant="soft">
             <Typography
               level="body3"
@@ -169,9 +171,10 @@ export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
               }}
             >
               <MessageIcon />
-              <TinyNumber value={community.counts.posts} />
+              <TinyNumber value={magazine.posts} />
             </Typography>
           </Tooltip>
+          {/* 
           <Divider orientation="vertical" />
           <Tooltip title="Comments" variant="soft">
             <Typography
@@ -214,3 +217,5 @@ export default React.memo(function KBinCard({ magazine }: KBinCardProps) {
     // </Grid>
   );
 });
+
+export default MBinCard;

@@ -37,10 +37,10 @@ module.exports = {
     },
     {
       ...defaultOptions,
-      output: "./.data/logs/kbin.log",
-      name: "crawl-kbin",
-      args: ["-w", "kbin"],
-      instances: 4,
+      output: "./.data/logs/mbin.log",
+      name: "crawl-mbin",
+      args: ["-w", "mbin"],
+      instances: 2,
     },
   ],
 };

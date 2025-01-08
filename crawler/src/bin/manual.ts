@@ -3,7 +3,7 @@ import logging from "../lib/logging";
 import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
-import KBinQueue from "../queue/kbin";
+import MBinQueue from "../queue/mbin";
 
 export default async function runManualWorker(workerName: string, firstParam: string, secondParam: string) {
   // scan one instance
@@ -36,12 +36,12 @@ export default async function runManualWorker(workerName: string, firstParam: st
     });
   }
 
-  // scan one kbin
-  else if (workerName == "k" || workerName == "kbin") {
-    logging.info(`Running Singel Q Scan KBIN Crawl for ${firstParam}`);
-    const crawlKBinManual = new KBinQueue(true, "kbin_manual");
-    await crawlKBinManual.createJob(firstParam, (resultData) => {
-      logging.info("KBIN Crawl Complete");
+  // scan one mbin
+  else if (workerName == "m" || workerName == "mbin") {
+    logging.info(`Running Single MBin Crawl for ${firstParam}`);
+    const crawlMBinManual = new MBinQueue(true, "mbin_manual");
+    await crawlMBinManual.createJob(firstParam, (resultData) => {
+      logging.info("MBIN Crawl Complete");
       process.exit(0);
     });
   }

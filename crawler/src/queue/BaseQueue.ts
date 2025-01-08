@@ -52,7 +52,7 @@ export default class BaseQueue {
       onSuccess && onSuccess(result);
     });
 
-    await job.timeout(CRAWL_TIMEOUT.KBIN).setId(jobId).save();
+    await job.timeout(CRAWL_TIMEOUT.MBIN).setId(jobId).save();
   }
 
   process() {

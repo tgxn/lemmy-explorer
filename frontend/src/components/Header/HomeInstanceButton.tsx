@@ -23,18 +23,18 @@ import { changeInstanceType } from "../../reducers/configReducer";
 import SelectHomeInstance from "./SelectHomeInstance";
 
 function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
-  const [isKbinInstance, _setIsKbinInstance] = React.useState(instanceType === "kbin");
+  const [isMBinInstance, _setIsMBinInstance] = React.useState<boolean>(instanceType === "mbin");
 
-  const setIsKbinInstance = (isKbin) => {
-    _setIsKbinInstance(isKbin);
-    dispatch(changeInstanceType(isKbin ? "kbin" : "lemmy"));
+  const setIsMBinInstance = (isMBin: boolean) => {
+    _setIsMBinInstance(isMBin);
+    dispatch(changeInstanceType(isMBin ? "mbin" : "lemmy"));
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
 
   useEffect(() => {
-    setIsKbinInstance(instanceType === "kbin");
+    setIsMBinInstance(instanceType === "mbin");
   }, [instanceType]);
 
   const handleClick = (event) => {
@@ -97,7 +97,7 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
             color: "text.secondary",
           }}
         >
-          <SelectHomeInstance onSetKBin={(isKbin) => setIsKbinInstance(isKbin)} />
+          <SelectHomeInstance onSetMBin={(isMBin: boolean) => setIsMBinInstance(isMBin)} />
         </Box>
 
         {homeBaseUrl && (
@@ -111,17 +111,17 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
           >
             <ListItemDecorator sx={{ p: 1, alignSelf: "center" }}>
               <Switch
-                color={isKbinInstance ? "warning" : "success"}
-                checked={isKbinInstance}
-                onChange={(event) => setIsKbinInstance(event.target.checked)}
+                color={isMBinInstance ? "warning" : "success"}
+                checked={isMBinInstance}
+                onChange={(event) => setIsMBinInstance(event.target.checked)}
                 // labelPlacement="end"
               />
             </ListItemDecorator>
             <Box sx={{ px: 2 }}>
-              {!isKbinInstance && <FormLabel>Lemmy Instance</FormLabel>}
-              {isKbinInstance && <FormLabel>KBin Instance</FormLabel>}
-              {!isKbinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>}
-              {isKbinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /m/</FormHelperText>}
+              {!isMBinInstance && <FormLabel>Lemmy Instance</FormLabel>}
+              {isMBinInstance && <FormLabel>MBin Instance</FormLabel>}
+              {!isMBinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>}
+              {isMBinInstance && <FormHelperText sx={{ mt: 0 }}>Instance links use /m/</FormHelperText>}
             </Box>
           </ListItem>
         )}

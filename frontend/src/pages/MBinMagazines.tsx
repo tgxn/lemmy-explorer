@@ -25,20 +25,28 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 
-import KBinGrid from "../components/GridView/KBin";
-import KBinList from "../components/ListView/KBin";
+import MBinGrid from "../components/GridView/MBin";
+import MBinList from "../components/ListView/MBin";
 
-function KBinMagazines() {
+import { IMBinMagazineOutput } from "../../../types/output";
+
+function MBinMagazines() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
-    "magazinesData",
-    "magazines",
-  );
+  const {
+    isLoading,
+    loadingPercent,
+    isSuccess,
+    isError,
+    error,
+    data: tyhisDatya,
+  } = useCachedMultipart("magazinesData", "magazines");
 
-  const [viewType, setViewType] = useStorage("kbin.viewType", "grid");
+  const magData: IMBinMagazineOutput[] = tyhisDatya;
 
-  const [orderBy, setOrderBy] = React.useState("followers");
+  const [viewType, setViewType] = useStorage("mbin.viewType", "grid");
+
+  const [orderBy, setOrderBy] = React.useState("subscriptions");
   const [showNSFW, setShowNSFW] = React.useState(false);
 
   // debounce the filter text input
@@ -69,34 +77,34 @@ function KBinMagazines() {
   // this applies the filtering and sorting to the data loaded from .json
   const magazinesData = React.useMemo(() => {
     if (isError) return [];
-    if (!data) return [];
+    if (!magData) return [];
 
     console.time("sort+filter magazines");
-    console.log(`Loaded ${data.length} magazines`);
+    console.log(`Loaded ${magData.length} magazines`);
 
-    let communties = [...data];
+    let communties = [...magData];
 
     console.log(`Sorting magazines by ${orderBy}`);
 
     // Variable "ShowNSFW" is used to drive this
     //  Default:    Hide NSFW     false
     if (showNSFW == false) {
-      console.log(`Hiding NSFW magazines`);
+      console.log(`Hiding isAdult magazines`);
       communties = communties.filter((community) => {
-        return !community.sensitive;
+        return !community.isAdult;
       });
     }
 
     //  One Click:  Include NSFW  null
     else if (showNSFW == null) {
-      console.log(`Including NSFW magazines`);
+      console.log(`Including isAdult magazines`);
     }
 
     //  Two Clicks: NSFW Only     true
     else if (showNSFW == true) {
       console.log(`Showing NSFW magazines`);
       communties = communties.filter((community) => {
-        return community.sensitive;
+        return community.isAdult;
       });
     }
 
@@ -130,7 +138,7 @@ function KBinMagazines() {
               (community.name && community.name.toLowerCase().includes(term)) ||
               (community.title && community.title.toLowerCase().includes(term)) ||
               (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.summary && community.summary.toLowerCase().includes(term))
+              (community.description && community.description.toLowerCase().includes(term))
             );
           });
         });
@@ -145,7 +153,7 @@ function KBinMagazines() {
               (community.name && community.name.toLowerCase().includes(term)) ||
               (community.title && community.title.toLowerCase().includes(term)) ||
               (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.summary && community.summary.toLowerCase().includes(term))
+              (community.description && community.description.toLowerCase().includes(term))
             );
           });
         });
@@ -154,17 +162,19 @@ function KBinMagazines() {
     console.log(`Filtered ${communties.length} magazines`);
 
     // sorting
-    if (orderBy === "followers") {
-      communties = communties.sort((a, b) => b.followers - a.followers);
+    if (orderBy === "subscriptions") {
+      communties = communties.sort((a, b) => b.subscriptions - a.subscriptions);
+    } else if (orderBy === "posts") {
+      communties = communties.sort((a, b) => b.posts - a.posts);
     } else if (orderBy === "name") {
-      communties = communties.sort((a, b) => b.name - a.name);
+      communties = communties.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     console.log(`Sorted ${communties.length} magazines`);
 
     console.log(
       `updating magazines data with ${communties.length} magazines, removed: ${
-        data.length - communties.length
+        magData.length - communties.length
       }`,
     );
 
@@ -172,7 +182,7 @@ function KBinMagazines() {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data]);
+  }, [magData]);
 
   return (
     <Container
@@ -226,7 +236,8 @@ function KBinMagazines() {
           }}
         >
           {/* <Option value="smart">Smart Sort</Option> */}
-          <Option value="followers">Followers</Option>
+          <Option value="subscriptions">Subscriptions</Option>
+          <Option value="posts">Posts</Option>
           <Option value="name">Name</Option>
         </Select>
 
@@ -304,10 +315,10 @@ function KBinMagazines() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <KBinGrid items={magazinesData} />}
-        {isSuccess && viewType == "list" && <KBinList items={magazinesData} />}
+        {isSuccess && viewType == "grid" && <MBinGrid items={magazinesData} />}
+        {isSuccess && viewType == "list" && <MBinList items={magazinesData} />}
       </Box>
     </Container>
   );
 }
-export default React.memo(KBinMagazines);
+export default React.memo(MBinMagazines);

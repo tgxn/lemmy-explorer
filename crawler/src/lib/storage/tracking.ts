@@ -2,30 +2,12 @@ import { CrawlStorage } from "../crawlStorage";
 
 import { RECORD_TTL_TIMES_SECONDS } from "../const";
 
-export type IErrorData = {
-  time: number;
-  error: string;
-  stack?: string;
-  isAxiosError?: boolean;
-  requestUrl?: string;
-  code?: string;
-  url?: string;
-  duration?: number;
-};
-
-export type IErrorDataKeyValue = {
-  [key: string]: IErrorData;
-};
-
-export type ILastCrawlData = {
-  time: number;
-  duration?: number;
-  [key: string]: any;
-};
-
-export type ILastCrawlDataKeyValue = {
-  [key: string]: ILastCrawlData;
-};
+import {
+  IErrorData,
+  IErrorDataKeyValue,
+  ILastCrawlData,
+  ILastCrawlDataKeyValue,
+} from "../../../../types/storage";
 
 export default class TrackingStore {
   private storage: CrawlStorage;
