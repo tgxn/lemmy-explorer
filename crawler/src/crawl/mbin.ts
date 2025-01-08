@@ -312,7 +312,7 @@ export default class CrawlMBin {
       baseurl: crawlDomain,
       ...magazineData,
 
-      icon: magazineData.icon.storageUrl ? magazineData.icon.storageUrl : null,
+      icon: magazineData?.icon?.storageUrl ? magazineData.icon.storageUrl : null,
       lastCrawled: Date.now(),
     };
 
