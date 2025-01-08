@@ -46,7 +46,7 @@ function MBinMagazines() {
 
   const [viewType, setViewType] = useStorage("mbin.viewType", "grid");
 
-  const [orderBy, setOrderBy] = React.useState("subscribers");
+  const [orderBy, setOrderBy] = React.useState("subscriptions");
   const [showNSFW, setShowNSFW] = React.useState(false);
 
   // debounce the filter text input
