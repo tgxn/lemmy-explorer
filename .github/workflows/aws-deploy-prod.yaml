@@ -116,7 +116,7 @@ jobs:
 
       - name: Create CDK Config JSON
         id: create-json
-        uses: jsdaniell/create-json@v1
+        uses: jsdaniell/create-json@v1.2.3
         with:
           dir: ./cdk
           name: "config.json"
