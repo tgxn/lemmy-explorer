@@ -198,7 +198,14 @@ export default function About() {
 
         <Typography>
           <ul>
-            <li>Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.</li>
+            <li>Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.</li>{" "}
+            <li>
+              Lemmy Developers and Community for creating{" "}
+              <Link component="a" href="https://github.com/LemmyNet" target="_lv_lemmy">
+                Lemmy
+              </Link>
+              .
+            </li>
           </ul>
         </Typography>
       </Box>
