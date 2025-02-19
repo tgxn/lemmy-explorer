@@ -42,13 +42,13 @@ jobs:
       - name: root suid tar
         run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
 
       - name: Use Node.js 22.12.0
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.12.0
 
@@ -58,7 +58,7 @@ jobs:
 
       - name: Cache Redis Dump
         id: cache-redis
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-redis
         with:
@@ -89,7 +89,7 @@ jobs:
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
         id: cache-crawler-yarn
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-crawler-yarn
         with:
@@ -117,7 +117,7 @@ jobs:
       # build pages frontend
       - name: Cache Node Modules | Pages
         id: cache-pages-yarn
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-pages-yarn
         with:
@@ -135,13 +135,13 @@ jobs:
 
       # upload pages
       - name: upload github pages artifacts
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./pages/dist/
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
 
       # stop redis
       - name: Stop Redis

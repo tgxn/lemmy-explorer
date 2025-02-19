@@ -30,10 +30,10 @@ jobs:
       - name: root suid tar
         run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js 22.12.0
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.12.0
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Cache Redis Dump
         id: cache-redis
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-redis
         with:
@@ -54,7 +54,7 @@ jobs:
       # download redis db dump from s3
       - name: Download the Redis Dump
         if: steps.cache-redis.outputs.cache-hit != 'true'
-        uses: keithweaver/aws-s3-github-action@v1.0.0
+        uses: keithweaver/aws-s3-github-action@v1
         with:
           command: cp
           source: s3://${{ vars.BUILD_S3_BUCKET }}/checkpoint/dump.rdb
@@ -75,7 +75,7 @@ jobs:
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
         id: cache-crawler-yarn
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-crawler-yarn
         with:
@@ -99,7 +99,7 @@ jobs:
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
         id: cache-frontend-yarn
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-frontend-yarn
         with:
@@ -118,7 +118,7 @@ jobs:
 
       - name: Create CDK Config JSON
         id: create-json
-        uses: jsdaniell/create-json@v1.2.2
+        uses: jsdaniell/create-json@v1
         with:
           dir: ./cdk
           name: "config.json"
@@ -127,7 +127,7 @@ jobs:
       # Install + Cache CDK Dependencies
       - name: Cache Node Modules | CDK
         id: cache-cdk-yarn
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-cdk-yarn
         with:
