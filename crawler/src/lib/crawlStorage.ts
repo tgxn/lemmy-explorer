@@ -6,7 +6,7 @@ import logging from "./logging";
 // core
 import InstanceStore from "./storage/instance";
 import CommunityStore from "./storage/community";
-import KBinStore from "./storage/kbin";
+import MBinStore from "./storage/mbin";
 
 // supporting
 import FediverseStore from "./storage/fediverse";
@@ -28,7 +28,7 @@ export class CrawlStorage {
   public fediverse: FediverseStore;
   public fediseer: FediseerStore;
   public tracking: TrackingStore;
-  public kbin: KBinStore;
+  public mbin: MBinStore;
 
   constructor() {
     logging.debug("CrawlStorage Constructed", REDIS_URL);
@@ -44,7 +44,7 @@ export class CrawlStorage {
     this.fediverse = new FediverseStore(this);
     this.fediseer = new FediseerStore(this);
     this.tracking = new TrackingStore(this);
-    this.kbin = new KBinStore(this);
+    this.mbin = new MBinStore(this);
   }
 
   async connect() {
@@ -107,7 +107,7 @@ export class CrawlStorage {
     );
   }
 
-  async redisZAdd(key: string, score: number, value: string): Promise<any> {
+  async redisZAdd(key: string, score: number, value: string | number): Promise<any> {
     if (typeof value !== "string") {
       value = JSON.stringify(value);
     }

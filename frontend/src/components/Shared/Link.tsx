@@ -59,7 +59,7 @@ const CommunityLink = React.memo(
       let instanceLink = `https://${community.baseurl}/c/${community.name}`;
       let tooltipTitle = `${community.baseurl}/c/${community.name}`;
 
-      if (baseType == "kbin") {
+      if (baseType == "mbin") {
         instanceLink = `https://${community.baseurl}/m/${community.name}`;
         tooltipTitle = `${community.baseurl}/m/${community.name}`;
       }
@@ -67,7 +67,7 @@ const CommunityLink = React.memo(
       // user has a home instance
       if (homeBaseUrl) {
         // if the user is
-        if (instanceType == "kbin") {
+        if (instanceType == "mbin") {
           instanceLink = `https://${homeBaseUrl}/m/${community.name}`;
           tooltipTitle = `${homeBaseUrl}/m/${community.name}`;
         } else {

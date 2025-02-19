@@ -1,22 +1,12 @@
 import { CrawlStorage } from "../crawlStorage";
 
+import { IInstanceData, IInstanceDataKeyValue } from "../../../../types/storage";
+
 /**
  * Stores each lemmy instance, keyed on baseUrl as `instance:baseUrl`.
  *
  * Each instance is stored as a JSON object with the following fields:
  */
-
-export type IInstanceData = {
-  nodeData: any;
-  siteData: any;
-  headers: any;
-  langs: Array<string>;
-  lastCrawled: number;
-};
-
-export type IInstanceDataKeyValue = {
-  [key: string]: IInstanceData;
-};
 
 export default class Instance {
   private storage: CrawlStorage;

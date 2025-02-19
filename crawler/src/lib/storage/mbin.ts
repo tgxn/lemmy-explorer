@@ -1,18 +1,8 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type IMagazineData = {
-  baseUrl: string;
-  name: string;
-  description: string;
-  lastCrawled: number;
-  [key: string]: any;
-};
+import { IMagazineData, IMagazineDataKeyValue } from "../../../../types/storage";
 
-export type IMagazineDataKeyValue = {
-  [key: string]: IMagazineData;
-};
-
-export default class KBinStore {
+export default class MBinStore {
   private storage: CrawlStorage;
 
   constructor(storage: CrawlStorage) {
@@ -20,15 +10,22 @@ export default class KBinStore {
   }
 
   async getAll(): Promise<IMagazineData[]> {
-    return this.storage.listRedis(`magazine:*`);
+    const magazineKeyValue = await this.storage.listRedisWithKeys(`mbin_magazine:*`);
+
+    // put baseUrl into the magazine object
+    for (const key in magazineKeyValue) {
+      magazineKeyValue[key].baseurl = key.split(":")[1];
+    }
+
+    return Object.values(magazineKeyValue);
   }
 
   async getAllWithKeys(): Promise<IMagazineDataKeyValue> {
-    return this.storage.listRedisWithKeys(`magazine:*`);
+    return this.storage.listRedisWithKeys(`mbin_magazine:*`);
   }
 
   async getOne(baseUrl: string, magazineName: string) {
-    return this.storage.getRedis(`magazine:${baseUrl}:${magazineName}`);
+    return this.storage.getRedis(`mbin_magazine:${baseUrl}:${magazineName}`);
   }
 
   async upsert(baseUrl: string, magazine: IMagazineData) {
@@ -36,18 +33,18 @@ export default class KBinStore {
       ...magazine,
       lastCrawled: Date.now(),
     };
-    return this.storage.putRedis(`magazine:${baseUrl}:${magazine.name.toLowerCase()}`, storeData);
+    return this.storage.putRedis(`mbin_magazine:${baseUrl}:${magazine.name.toLowerCase()}`, storeData);
   }
 
   async delete(baseUrl: string, magazineName: string, reason = "unknown") {
     const oldRecord = await this.getOne(baseUrl, magazineName);
-    await this.storage.putRedis(`deleted:magazine:${baseUrl}:${magazineName}`, {
+    await this.storage.putRedis(`deleted:mbin_magazine:${baseUrl}:${magazineName}`, {
       ...oldRecord,
       deletedAt: Date.now(),
       deleteReason: reason,
     });
 
-    return this.storage.deleteRedis(`magazine:${baseUrl}:${magazineName}`);
+    return this.storage.deleteRedis(`mbin_magazine:${baseUrl}:${magazineName}`);
   }
 
   // use these to track magazine attributes over time
@@ -55,10 +52,10 @@ export default class KBinStore {
     baseUrl: string,
     magazineName: string,
     attributeName: string,
-    attributeValue: string,
+    attributeValue: string | number,
   ) {
     return await this.storage.redisZAdd(
-      `attributes:magazine:${baseUrl}:${magazineName}:${attributeName}`,
+      `attributes:mbin_magazine:${baseUrl}:${magazineName}:${attributeName}`,
       Date.now(),
       attributeValue,
     );

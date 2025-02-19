@@ -1,6 +1,7 @@
 [![publish-pages](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml)
 
 # Lemmy Explorer https://lemmyverse.net/
+
 Data Dumps: https://data.lemmyverse.net/
 
 This project provides a simple way to explore Lemmy Instances and Communities.
@@ -8,6 +9,7 @@ This project provides a simple way to explore Lemmy Instances and Communities.
 ![List of Communities](./docs/images/communities.png)
 
 The project consists of four modules:
+
 1. Crawler (NodeJS, Redis) `/crawler`
 2. Frontend (ReactJS, MUI Joy, TanStack) `/frontend`
 3. Deploy (Amazon CDK v2) `/cdk`
@@ -20,16 +22,18 @@ The project consists of four modules:
 You can append `home_url` and (optionally) `home_type` to the URL to set the home instance and type.
 
 `?home_url=lemmy.example.com`
-`?home_url=kbin.example.com&home_type=kbin`
+`?home_url=mbin.example.com&home_type=mbin`
 
- > `home_type` supports "lemmy" and "kbin" (default is "lemmy")
+> `home_type` supports "lemmy" and "mbin" (default is "lemmy")
 
 ### Q: **How does discovery work?**
+
 It uses a [seed list of communities](https://github.com/tgxn/lemmy-explorer/blob/main/crawler/src/lib/const.js#L47) and scans the equivalent of the `/instances` federation lists, and then creates jobs to scan each of those servers.
 
 Additionally, instance tags and trust data is fetched from [Fediseer](https://gui.fediseer.com/).
 
 ### Q: **How does the NSFW filter work?**
+
 The NSFW filter is a client-side filter that filters out NSFW communities and instances from results by default.
 The "NSFW Toggle" checkbox has thress states that you can toggle through:
 | State | Filter | Value |
@@ -38,10 +42,10 @@ The "NSFW Toggle" checkbox has thress states that you can toggle through:
 | One Click | Include NSFW | null |
 | Two Clicks | NSFW Only | true |
 
-When you try to switch to a non-sfw state, a popup will appear to confirm your choice. You can save your response in your browsers cache and it will be remembered. 
-
+When you try to switch to a non-sfw state, a popup will appear to confirm your choice. You can save your response in your browsers cache and it will be remembered.
 
 ### Q: **How long till my instance shows up?**
+
 How long it takes to discover a new instance can vary depending on if you post content that's picked up by one of these servers.
 
 Since the crawler looks at lists of federated instances, we can't discover instances that aren't on those lists.
@@ -49,6 +53,7 @@ Since the crawler looks at lists of federated instances, we can't discover insta
 Additionally, the lists are cached for 24 hours, so it can take up to 24 hours for an instance to show up after it's been discovered till it shows up.
 
 ### Q: **Can I use your data in my app/website/project?**
+
 I do not own any of the data retrieved by the crawler, it is available from public endpoints on the source instances.
 
 You are free to pull data from the GitHub pages site:
@@ -66,21 +71,21 @@ You can also download [Latest ZIP](https://nightly.link/tgxn/lemmy-explorer/work
 
 `dist-json-bundle.zip` file contains the data in JSON format:
 
- - `communities.full.json` - list of all communities
- - `instances.full.json` - list of all instances
- - `overview.json` - metadata and counts
-
+- `communities.full.json` - list of all communities
+- `instances.full.json` - list of all instances
+- `overview.json` - metadata and counts
 
 ## Crawler
+
 [Crawler README](./crawler/README.md)
 
 ## Frontend
+
 [Frontend README](./frontend/README.md)
 
 ## Data Site
+
 [Data Site README](./pages/README.md)
-
-
 
 ## Deploy
 
@@ -89,9 +94,6 @@ The deploy is an Amazon CDK v2 project that deploys the crawler and frontend to 
 `config.example.json` has the configuration for the deploy.
 
 then run `cdk deploy --all` to deploy the frontend to AWS.
-
-
-
 
 ## Similar Sites
 
@@ -102,8 +104,8 @@ then run `cdk deploy --all` to deploy the frontend to AWS.
 - https://browse.toast.ooo/
 - https://lemmyfind.quex.cc/
 
-
 ## Lemmy Stats Pages
+
 - https://lemmy.fediverse.observer/dailystats
 - https://the-federation.info/platform/73
 - https://fedidb.org/software/lemmy
@@ -117,4 +119,3 @@ then run `cdk deploy --all` to deploy the frontend to AWS.
 # Credits
 
 Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.
-

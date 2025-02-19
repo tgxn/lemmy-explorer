@@ -15,11 +15,13 @@ import VirtualTable from "./VirtualTable";
 import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-type IKBinListProps = {
-  items: any[];
+import { IMBinMagazineOutput } from "../../../../types/output";
+
+type IMBinListProps = {
+  items: IMBinMagazineOutput[];
 };
 
-const KBinList = React.memo(function ({ items }: IKBinListProps) {
+const MBinList = React.memo(function ({ items }: IMBinListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -33,7 +35,7 @@ const KBinList = React.memo(function ({ items }: IKBinListProps) {
           headerStyle={{
             justifyContent: "left",
           }}
-          cellRenderer={({ rowData }) => {
+          cellRenderer={({ rowData }: { rowData: IMBinMagazineOutput }) => {
             // console.log(rowData);
             return (
               <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -73,18 +75,18 @@ const KBinList = React.memo(function ({ items }: IKBinListProps) {
                     }}
                   >
                     <ExtCommunityLink
-                      baseType="kbin"
+                      baseType="mbin"
                       community={{
                         baseurl: rowData.baseurl, // for link
-                        name: rowData.preferred, // for link
-                        title: rowData.name, // for display
+                        name: rowData.name, // for link
+                        title: rowData.title, // for display
                       }}
                     />
                   </Typography>
 
                   <Typography level="body3">
                     <CopyLink
-                      copyText={`!${rowData.preferred}@${rowData.baseurl}`}
+                      copyText={`!${rowData.name}@${rowData.baseurl}`}
                       linkProps={{
                         variant: "plain",
                         color: "neutral",
@@ -101,17 +103,27 @@ const KBinList = React.memo(function ({ items }: IKBinListProps) {
         />,
 
         <Column
-          label="Followers"
-          dataKey="followers"
+          label="Subscriptions"
+          dataKey="subscriptions"
           width={width}
           style={{
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.followers} />}
+          cellRenderer={({ rowData }) => <TinyNumber value={rowData.subscriptions} />}
+        />,
+        <Column
+          label="Posts"
+          dataKey="posts"
+          width={width}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+          cellRenderer={({ rowData }) => <TinyNumber value={rowData.posts} />}
         />,
       ]}
     </VirtualTable>
   );
 });
-export default KBinList;
+export default MBinList;

@@ -1,6 +1,7 @@
 import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
-import { IFediseerInstanceData, IFediseerTag } from "../lib/storage/fediseer";
+
+import { IFediseerInstanceData, IFediseerTag } from "../../../types/storage";
 
 import CrawlClient from "../lib/CrawlClient";
 
