@@ -9,8 +9,8 @@ import Link from "@mui/joy/Link";
 import Divider from "@mui/joy/Divider";
 
 import GitHubIcon from "@mui/icons-material/GitHub";
-import ForumIcon from "@mui/icons-material/Forum";
 import PaidIcon from "@mui/icons-material/Paid";
+import DataObjectIcon from "@mui/icons-material/DataObject";
 
 // this is a Button that links to a Lemmy instance
 // it should be outlined, green and have a Lemmy icon
@@ -73,17 +73,17 @@ export default function About() {
           target="_lv_paypal"
           component="a"
         >
-          Buy me a coffee
+          Donate
         </Button>
-        {/* <Button
-          startDecorator={<ForumIcon />}
-          color="info"
-          href="https://github.com/tgxn/lemmy-explorer/discussions"
-          target="_lv_github"
+        <Button
+          startDecorator={<DataObjectIcon />}
+          color="neutral"
+          href="https://data.lemmyverse.net"
+          target="_lv_data"
           component="a"
         >
-          Discussions on GitHub
-        </Button> */}
+          Data Access
+        </Button>
       </Box>
 
       {/* About section */}
