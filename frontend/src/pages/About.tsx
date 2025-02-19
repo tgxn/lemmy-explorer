@@ -12,6 +12,28 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
 import PaidIcon from "@mui/icons-material/Paid";
 
+// this is a Button that links to a Lemmy instance
+// it should be outlined, green and have a Lemmy icon
+function LemmyLink({ children }: { children: React.ReactNode }) {
+  return (
+    <Button
+      startDecorator={<img src="/icons/Lemmy_Logo.svg" alt="Lemmy" width="16" height="16" />}
+      color="success"
+      variant="outlined"
+      href="https://join-lemmy.org/"
+      component="a"
+      target="_lv_join-lemmy"
+      sx={{
+        mx: 1,
+        height: 28,
+        minHeight: 28,
+      }}
+    >
+      {children}
+    </Button>
+  );
+}
+
 export default function About() {
   return (
     <Container maxWidth={"md"} sx={{}}>
@@ -85,7 +107,8 @@ export default function About() {
         </Typography>
 
         <Typography>
-          This is a project that aims to provide a simple way to explore Lemmy Instances and Communities.
+          This is a project that aims to provide a simple way to explore <LemmyLink>Lemmy</LemmyLink>
+          Instances and Communities.
         </Typography>
 
         <Typography>
