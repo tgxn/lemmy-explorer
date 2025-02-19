@@ -52,7 +52,7 @@ export default class CommunityCrawler {
     // validate the community actor_id matches the domain
     if (basePart != this.crawlDomain || communityPart != community.community.name) {
       logging.error(
-        `${this.logPrefix} Community actor_id does not match domain: ${community.community.actor_id} ${community.community.name}`,
+        `${this.logPrefix} Community actor_id does not match domain: ${JSON.stringify(community.community)}`,
       );
       return false;
     }
