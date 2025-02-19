@@ -53,7 +53,7 @@ jobs:
       # download redis db dump from s3
       - name: Download the Redis Dump
         if: steps.cache-redis.outputs.cache-hit != 'true'
-        uses: keithweaver/aws-s3-github-action@v1
+        uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
           source: s3://${{ vars.BUILD_S3_BUCKET }}/checkpoint/dump.rdb
