@@ -355,7 +355,7 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - instance.lastCrawled;
       if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
-        console.log("Sus Site too old", instance.base);
+        console.log("Sus Site has expired, the age of the record is too old", instance.base);
         return false;
       }
 

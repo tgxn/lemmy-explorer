@@ -9,8 +9,30 @@ import Link from "@mui/joy/Link";
 import Divider from "@mui/joy/Divider";
 
 import GitHubIcon from "@mui/icons-material/GitHub";
-import ForumIcon from "@mui/icons-material/Forum";
 import PaidIcon from "@mui/icons-material/Paid";
+import DataObjectIcon from "@mui/icons-material/DataObject";
+
+// this is a Button that links to a Lemmy instance
+// it should be outlined, green and have a Lemmy icon
+function LemmyLink({ children }: { children: React.ReactNode }) {
+  return (
+    <Button
+      startDecorator={<img src="/icons/Lemmy_Logo.svg" alt="Lemmy" width="16" height="16" />}
+      color="success"
+      variant="outlined"
+      href="https://join-lemmy.org/"
+      component="a"
+      target="_lv_join-lemmy"
+      sx={{
+        mx: 1,
+        height: 28,
+        minHeight: 28,
+      }}
+    >
+      {children}
+    </Button>
+  );
+}
 
 export default function About() {
   return (
@@ -51,17 +73,17 @@ export default function About() {
           target="_lv_paypal"
           component="a"
         >
-          Buy me a coffee
+          Donate
         </Button>
-        {/* <Button
-          startDecorator={<ForumIcon />}
-          color="info"
-          href="https://github.com/tgxn/lemmy-explorer/discussions"
-          target="_lv_github"
+        <Button
+          startDecorator={<DataObjectIcon />}
+          color="neutral"
+          href="https://data.lemmyverse.net"
+          target="_lv_data"
           component="a"
         >
-          Discussions on GitHub
-        </Button> */}
+          Data Access
+        </Button>
       </Box>
 
       {/* About section */}
@@ -85,7 +107,8 @@ export default function About() {
         </Typography>
 
         <Typography>
-          This is a project that aims to provide a simple way to explore Lemmy Instances and Communities.
+          This is a project that aims to provide a simple way to explore <LemmyLink>Lemmy</LemmyLink>
+          Instances and Communities.
         </Typography>
 
         <Typography>
@@ -175,7 +198,14 @@ export default function About() {
 
         <Typography>
           <ul>
-            <li>Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.</li>
+            <li>Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.</li>{" "}
+            <li>
+              Lemmy Developers and Community for creating{" "}
+              <Link component="a" href="https://github.com/LemmyNet" target="_lv_lemmy">
+                Lemmy
+              </Link>
+              .
+            </li>
           </ul>
         </Typography>
       </Box>
