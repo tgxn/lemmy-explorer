@@ -34,6 +34,11 @@ module.exports = {
           },
         },
       },
+      // load markdown as file
+      {
+        test: /\.md$/,
+        use: "file-loader",
+      },
     ],
   },
 };
