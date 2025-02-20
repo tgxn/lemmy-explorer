@@ -51,7 +51,8 @@ function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
           {chip && (
             <Chip
               size={"sm"}
-              color={chip === "Full" ? "info" : "warning"}
+              variant="solid"
+              color={chip === "Full" ? "primary" : "warning"}
               sx={{
                 borderRadius: 0,
                 marginRight: 1,
@@ -62,11 +63,7 @@ function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
           )}
           <Link href={`data/${file.path}`}>{file.name}</Link>
         </Box>
-        {file.desc && (
-          <Typography level="body2" noWrap>
-            {file.desc}
-          </Typography>
-        )}
+        {file.desc && <Typography noWrap>{file.desc}</Typography>}
       </ListItemContent>
       <Typography>
         <SimpleNumberFormat value={count} />

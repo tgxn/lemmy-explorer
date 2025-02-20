@@ -238,17 +238,16 @@ class OutputUtils {
       old: previousRun.fediverse,
     });
 
-    // @TODO mbin checks are disabled till scanning is fixed
-    // data.push({
-    //   type: "magazines",
-    //   new: mbinMagazineArray.length,
-    //   old: previousRun.magazines,
-    // });
-    // data.push({
-    //   type: "mbin_instances",
-    //   new: mbinInstanceArray.length,
-    //   old: previousRun.mbin_instances,
-    // });
+    data.push({
+      type: "magazines",
+      new: mbinMagazineArray.length,
+      old: previousRun.magazines,
+    });
+    data.push({
+      type: "mbin_instances",
+      new: mbinInstanceArray.length,
+      old: previousRun.mbin_instances,
+    });
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
@@ -286,8 +285,10 @@ export default class CrawlOutput {
 
   private instanceList: IInstanceData[] | null;
   private communityList: ICommunityData[] | null;
+
   private fediverseData: IFediverseDataKeyValue | null;
-  private mbinData: IMagazineData[] | null;
+
+  private mbinMagazines: IMagazineData[] | null;
 
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
@@ -296,12 +297,13 @@ export default class CrawlOutput {
     this.uptimeData = null;
     this.instanceErrors = null;
     // this.communityErrors = null;
+
     this.instanceList = null;
     this.communityList = null;
-    this.fediverseData = null;
-    this.mbinData = null;
 
-    // this.utils = new OutputUtils();
+    this.fediverseData = null;
+
+    this.mbinMagazines = null;
 
     this.fileWriter = new OutputFileWriter();
     this.trust = new OutputTrust();
@@ -312,10 +314,13 @@ export default class CrawlOutput {
     this.uptimeData = await storage.uptime.getLatest();
     this.instanceErrors = await storage.tracking.getAllErrors("instance");
     // this.communityErrors = await storage.tracking.getAllErrors("community");
+
     this.instanceList = await storage.instance.getAll();
     this.communityList = await storage.community.getAll();
+
     this.fediverseData = await storage.fediverse.getAll();
-    this.mbinData = await storage.mbin.getAll();
+
+    this.mbinMagazines = await storage.mbin.getAll();
   }
 
   /**
@@ -336,7 +341,7 @@ export default class CrawlOutput {
       throw new Error("No fediverse Data");
     }
 
-    if (!this.mbinData) {
+    if (!this.mbinMagazines) {
       throw new Error("No mbin Data");
     }
 
@@ -443,14 +448,14 @@ export default class CrawlOutput {
 
         MBinInstances: {
           ExportName: "MBin Instances",
-          Total: "N/A",
+          Total: mbinInstanceArray.length,
           Output: mbinInstanceArray.length,
           Previous: previousRun.mbin_instances,
           Change: calcChangeDisplay(mbinInstanceArray.length, previousRun.mbin_instances),
         },
         Magazines: {
           ExportName: "Magazines",
-          Total: this.mbinData.length,
+          Total: this.mbinMagazines.length,
           Output: mbinMagazineArray.length,
           Previous: previousRun.magazines,
           Change: calcChangeDisplay(mbinMagazineArray.length, previousRun.magazines),
@@ -858,20 +863,25 @@ export default class CrawlOutput {
     // key value in errors
     let errorTypes = {};
     for (const [key, value] of Object.entries(this.instanceErrors)) {
-      const instanceData: IClassifiedErrorOutput = {
-        baseurl: key.replace("error:instance:", ""),
-        error: value.error,
-        time: value.time,
-      };
-      instanceData.type = OutputUtils.findErrorType(value.error);
+      try {
+        const instanceData: IClassifiedErrorOutput = {
+          baseurl: key.replace("error:instance:", ""),
+          error: value.error,
+          time: value.time,
+        };
+        instanceData.type = OutputUtils.findErrorType(value.error);
 
-      if (errorTypes[instanceData.type] === undefined) {
-        errorTypes[instanceData.type] = 0;
-      } else {
-        errorTypes[instanceData.type]++;
+        if (errorTypes[instanceData.type] === undefined) {
+          errorTypes[instanceData.type] = 0;
+        } else {
+          errorTypes[instanceData.type]++;
+        }
+
+        instanceErrors.push(instanceData);
+      } catch (e) {
+        console.error("error parsing error", key, value);
+        throw e;
       }
-
-      instanceErrors.push(instanceData);
     }
 
     // count each type
@@ -980,17 +990,17 @@ export default class CrawlOutput {
   private async outputMBinMagazineList(): Promise<IMBinMagazineOutput[]> {
     const output: IMBinMagazineOutput[] = [];
 
-    if (!this.mbinData) {
+    if (!this.mbinMagazines) {
       throw new Error("No MBin data");
     }
 
     // filter old data
-    const filteredMBins = this.mbinData.filter((mbin) => {
+    const filteredMBins = this.mbinMagazines.filter((mbin) => {
       if (!mbin.lastCrawled) return false; // record needs time
       return mbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE.MAGAZINE;
     });
 
-    logging.info("MBin Magazines filteredMBins", this.mbinData.length, filteredMBins.length);
+    logging.info("MBin Magazines filteredMBins", this.mbinMagazines.length, filteredMBins.length);
 
     for (const mbin of filteredMBins) {
       output.push({
