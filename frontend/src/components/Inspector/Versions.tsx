@@ -3,7 +3,7 @@ import React, { PureComponent } from "react";
 import useCachedMultipart from "../../hooks/useCachedMultipart";
 
 import Box from "@mui/joy/Box";
-import Typography from "@mui/joy/Typography";
+// import Typography from "@mui/joy/Typography";
 
 import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -75,6 +75,7 @@ function VersionDist({ instances }) {
 
     instances.map((instance) => {
       const version = instance.version;
+      console.log("version", version);
       if (versionsCounts[version]) {
         versionsCounts[version] += 1;
       } else {
@@ -97,11 +98,11 @@ function VersionDist({ instances }) {
         return { name: version, size: versionsCounts[version] };
       });
 
-    const unknown = Object.keys(versionsCounts)
-      .filter((version) => version === "" || version === "unknown version")
-      .map((version) => {
-        return { name: version, size: versionsCounts[version] };
-      });
+    // const unknown = Object.keys(versionsCounts)
+    //   .filter((version) => version === "" || version === "unknown version")
+    //   .map((version) => {
+    //     return { name: version, size: versionsCounts[version] };
+    //   });
 
     const data = [
       {
@@ -112,10 +113,10 @@ function VersionDist({ instances }) {
         name: "unstable",
         children: unstable,
       },
-      {
-        name: "unknown",
-        children: unknown,
-      },
+      // {
+      //   name: "unknown",
+      //   children: unknown,
+      // },
     ];
     console.log("vers data", data);
 

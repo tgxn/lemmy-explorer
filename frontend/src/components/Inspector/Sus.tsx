@@ -7,7 +7,7 @@ import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 
 import SusTable from "./SusTable";
-import { ScatterGrid, ScatterGrid1 } from "./ScatterGrid";
+// import { ScatterGrid, ScatterGrid1 } from "./ScatterGrid";
 
 export default function InspectorOverview() {
   const {
@@ -145,7 +145,7 @@ export default function InspectorOverview() {
         />
       )}
 
-      <Box
+      {/* <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
@@ -173,7 +173,7 @@ export default function InspectorOverview() {
         </Typography>
       </Box>
 
-      {isSuccessIns && <ScatterGrid1 instances={dataIns} />}
+      {isSuccessIns && <ScatterGrid1 instances={dataIns} />} */}
     </Box>
   );
 }
