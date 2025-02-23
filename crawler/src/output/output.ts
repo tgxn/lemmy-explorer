@@ -367,6 +367,12 @@ export default class CrawlOutput {
     const returnInstanceArray = await this.getInstanceArray();
     await this.fileWriter.storeInstanceData(returnInstanceArray);
 
+    // VERSIONS DATA
+    await this.outputAttributeHistory(
+      returnInstanceArray.map((i) => i.baseurl),
+      "version",
+    );
+
     const returnCommunityArray = await this.getCommunityArray(returnInstanceArray);
     await this.fileWriter.storeCommunityData(returnCommunityArray);
 
@@ -518,8 +524,21 @@ export default class CrawlOutput {
   private async generateInstanceMetrics(instance, storeCommunityData) {
     // get timeseries
     const usersSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "users");
+    const usersActiveDaySeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users_active_day",
+    );
+    const usersActiveMonthSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users_active_month",
+    );
+    const usersActiveWeekSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users_active_week",
+    );
     const postsSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "posts");
     const commentsSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "comments");
+    const communitiesSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "communities");
     const versionSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "version");
 
     // generate array with time -> value
@@ -529,6 +548,28 @@ export default class CrawlOutput {
         value: item.value,
       };
     });
+
+    const usersActiveDay = usersActiveDaySeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    const usersActiveMonth = usersActiveMonthSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    const usersActiveWeek = usersActiveWeekSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
     const posts = postsSeries.map((item) => {
       return {
         time: item.score,
@@ -541,6 +582,14 @@ export default class CrawlOutput {
         value: item.value,
       };
     });
+
+    const communities = communitiesSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
     const versions = versionSeries.map((item) => {
       return {
         time: item.score,
@@ -555,6 +604,10 @@ export default class CrawlOutput {
       posts,
       comments,
       versions,
+      usersActiveDay,
+      usersActiveMonth,
+      usersActiveWeek,
+      communities,
     });
   }
 
@@ -893,6 +946,104 @@ export default class CrawlOutput {
     await this.fileWriter.storeInstanceErrors(instanceErrors);
 
     return instanceErrors;
+  }
+
+  /// VERSION HISTORY
+
+  private async outputAttributeHistory(
+    countInstanceBaseURLs: string[],
+    metricToAggregate: string,
+  ): Promise<any> {
+    // this function needs to output and  aghgregated array of versions, and be able to show change over time
+    // this will be used to show version history on the website
+
+    // basically, it creates a snapshot each 12 hours, and calculates the total at that point in time
+    // maybe it shoudl use a floating window, so that it can show the change over time
+
+    // load all versions for all instances
+    let aggregateDataObject: {
+      time: number;
+      value: string;
+    }[] = [];
+
+    console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+
+    for (const baseURL of countInstanceBaseURLs) {
+      const attributeData = await storage.instance.getAttributeWithScores(baseURL, metricToAggregate);
+      // console.log("MM attributeData", attributeData);
+
+      if (attributeData) {
+        for (const merticEntry of attributeData) {
+          const time = merticEntry.score;
+          const value = merticEntry.value;
+
+          aggregateDataObject.push({ time, value });
+        }
+      }
+    }
+
+    console.log("aggregateDataObject", aggregateDataObject.length);
+
+    // console.log("aggregateDataObject", aggregateDataObject);
+
+    const snapshotWindow = 12 * 60 * 60 * 1000; // 12 hours
+    const totalWindows = 600; // 60 snapshots
+
+    // generate sliding window of x hours, look backwards
+    const currentTime = Date.now();
+
+    const buildWindowData = {};
+
+    let currentWindow = 0;
+    // let countingData = true;
+    while (currentWindow <= totalWindows) {
+      // console.log("currentWindow", currentWindow);
+      const windowOffset = currentWindow * snapshotWindow;
+
+      // get this
+      const windowStart = currentTime - windowOffset;
+      const windowEnd = windowStart - snapshotWindow;
+
+      // filter data
+      const windowData = aggregateDataObject.filter((entry) => {
+        // console.log("entry.time", entry.time, windowStart, windowEnd);
+        return entry.time < windowStart;
+      });
+      console.log("currentWindow", currentWindow, windowStart, windowEnd, windowData.length);
+
+      // // stop if no data
+      // if (windowData.length === 0) {
+      //   countingData = false;
+      //   break;
+      // }
+
+      // console.log("windowData", windowData);
+
+      // count data
+      const countData = {};
+      windowData.forEach((entry) => {
+        if (!countData[entry.value]) {
+          countData[entry.value] = 1;
+        } else {
+          countData[entry.value]++;
+        }
+      });
+
+      // console.log("countData", countData);
+
+      // store data
+      buildWindowData[windowStart] = countData;
+
+      currentWindow++;
+    }
+
+    console.log("buildWindowData", buildWindowData);
+
+    await this.fileWriter.storeMetricsSeries({
+      versions: buildWindowData,
+    });
+
+    // throw new Error("Not Implemented");
   }
 
   // FEDIVERSE
