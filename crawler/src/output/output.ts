@@ -274,6 +274,28 @@ class OutputUtils {
 
     return true;
   }
+
+  static versionValid(version: string): string | false {
+    // strip quotation marks that come either first or last
+    if (version.startsWith('"')) {
+      version = version.substring(1);
+    }
+    if (version.endsWith('"')) {
+      version = version.substring(0, version.length - 1);
+    }
+
+    // skip containing "unknown"
+    if (version.includes("unknown")) {
+      return false;
+    }
+
+    // skip if the value doesn't contain at least one `.` OR `-`
+    if (!version.includes(".") && !version.includes("-")) {
+      return false;
+    }
+
+    return version;
+  }
 }
 
 /**
@@ -975,7 +997,10 @@ export default class CrawlOutput {
       if (attributeData) {
         for (const merticEntry of attributeData) {
           const time = merticEntry.score;
-          const value = merticEntry.value;
+          let value = OutputUtils.versionValid(merticEntry.value);
+          if (!value) {
+            continue;
+          }
 
           aggregateDataObject.push({ time, value });
         }
@@ -1039,8 +1064,16 @@ export default class CrawlOutput {
 
     console.log("buildWindowData", buildWindowData);
 
+    // map the time into each obecjt, and return as an array
+    const outputVersionsArray = Object.keys(buildWindowData).map((time) => {
+      return {
+        time: time,
+        ...buildWindowData[time],
+      };
+    });
+
     await this.fileWriter.storeMetricsSeries({
-      versions: buildWindowData,
+      versions: outputVersionsArray,
     });
 
     // throw new Error("Not Implemented");
