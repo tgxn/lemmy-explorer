@@ -1,39 +1,67 @@
 import React from "react";
-import { useColorScheme } from "@mui/joy/styles";
 
-import Badge from "@mui/joy/Badge";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab from "@mui/joy/Tab";
-import Breadcrumbs from "@mui/joy/Breadcrumbs";
-import Link from "@mui/joy/Link";
-import Container from "@mui/joy/Container";
-import Box from "@mui/joy/Box";
-import Typography from "@mui/joy/Typography";
-
-import moment from "moment";
-
-// import { ResponsiveContainer, Line, LineChart, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
-
-import LineGraph from "../Shared/LineGraph";
-
-// const CustomTooltip = ({ active, payload, label }) => {
-//   console.info(payload);
-//   if (active && payload && payload.length) {
-//     return (
-//       <Box>
-//         {payload.map((i) => (
-//           <p className="label">{`${i.name} : ${i.value}`}</p>
-//         ))}
-//       </Box>
-//     );
-//   }
-
-//   return null;
-// };
+import MultiDataLineGraph from "../Shared/MultiDataLineGraph";
 
 export default function InstanceUserGrowth({ metricsData }) {
   console.log("userSeries", metricsData);
 
-  return <LineGraph dataSeries={metricsData.users} />;
+  // round to closest 1000
+  const minUsers = Math.floor(Number(metricsData.users[0].value) / 1000) * 1000;
+  const maxUsers = Math.ceil(Number(metricsData.users[metricsData.users.length - 1].value) / 1000) * 1000;
+
+  const minPosts = Math.floor(Number(metricsData.posts[0].value) / 1000) * 1000;
+  const maxPosts = Math.ceil(Number(metricsData.posts[metricsData.posts.length - 1].value) / 1000) * 1000;
+
+  // merge the arrays, with any that have the same time going into the same object
+
+  const singleStatsArray = [];
+
+  for (const seriesIndex in metricsData.users) {
+    singleStatsArray.push({
+      time: metricsData.users[seriesIndex].time,
+      users: metricsData.users[seriesIndex].value,
+    });
+  }
+
+  for (const seriesIndex in metricsData.posts) {
+    const time = metricsData.posts[seriesIndex].time;
+    const posts = metricsData.posts[seriesIndex].value;
+
+    const existing = singleStatsArray.find((i) => i.time === time);
+    if (existing) {
+      existing.posts = posts;
+    } else {
+      singleStatsArray.push({
+        time,
+        posts,
+      });
+    }
+  }
+
+  // order by time
+  singleStatsArray.sort((a, b) => a.time - b.time);
+
+  console.log("singleStatsArray", singleStatsArray);
+
+  return (
+    <MultiDataLineGraph
+      dataSeries={singleStatsArray}
+      dataSeriesInfo={[
+        {
+          yAxisName: "Users",
+          yAxisKey: "users",
+
+          minValue: minUsers,
+          maxValue: maxUsers,
+        },
+        {
+          yAxisName: "Posts",
+          yAxisKey: "posts",
+
+          minValue: minPosts,
+          maxValue: maxPosts,
+        },
+      ]}
+    />
+  );
 }
