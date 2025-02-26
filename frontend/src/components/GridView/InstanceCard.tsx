@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 
 import Moment from "react-moment";
+import { useColorScheme } from "@mui/joy/styles";
 
 import { useNavigate } from "react-router-dom";
 
@@ -27,21 +28,23 @@ import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
 import { InstanceAvatar } from "../Shared/Avatar";
 
-function InstanceCard({ instance }) {
+import CardStatBox from "../Shared/CardStatBox";
+
+export default function InstanceCard({ instance }) {
   const navigate = useNavigate();
+  const { mode } = useColorScheme();
 
   return (
     <Card
       variant="outlined"
       sx={{
-        height: "350px",
+        height: "365px",
         gap: 0,
       }}
     >
       {/* Header */}
       <CardOverflow
         variant="outlined"
-        // orientation="horizontal"
         sx={{
           py: 1.75,
           px: 2,
@@ -126,7 +129,10 @@ function InstanceCard({ instance }) {
       {/* Banner */}
       <CardOverflow
         sx={(theme) => ({
-          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
+          background:
+            mode == "dark"
+              ? "linear-gradient(0deg, rgba(20,20,20,0.5) 0%, rgba(5,5,5,0.15) 100%)"
+              : "linear-gradient(0deg, rgba(179, 179, 179, 0.5) 0%, rgba(202, 202, 202, 0.15) 100%)",
           p: 0,
           height: "125px",
           overflow: "hidden",
@@ -173,107 +179,29 @@ function InstanceCard({ instance }) {
           orientation="horizontal"
           sx={{
             justifyContent: "space-around",
+            my: 0.75,
+            padding: 0,
           }}
         >
-          <Tooltip title="Total Users" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "nowrap",
-                gap: 0.5,
-              }}
-            >
-              <PersonIcon />
-              <TinyNumber value={instance.usage.users.total} />
-            </Typography>
-          </Tooltip>
-          <Divider orientation="vertical" />
-          <Tooltip title="Posts" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "nowrap",
-                gap: 0.5,
-              }}
-            >
-              <MessageIcon />
-              <TinyNumber value={instance.usage.localPosts} />
-            </Typography>
-          </Tooltip>
-          <Divider orientation="vertical" />
-          <Tooltip title="Comments" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "nowrap",
-                gap: 0.5,
-              }}
-            >
-              <ForumIcon />
-              <TinyNumber value={instance.usage.localComments} />
-            </Typography>
-          </Tooltip>
+          <CardStatBox name="Users" icon={<PersonIcon />} value={instance.usage.users.total} />
+
           <Divider orientation="vertical" />
 
-          <Tooltip
-            title={
-              <>
-                Uptime{" "}
-                {instance.uptime?.uptime_alltime ? (
-                  <>
-                    (First seen <Moment fromNow>{instance.uptime?.date_created}</Moment>)
-                  </>
-                ) : (
-                  <>(Unknown instance)</>
-                )}
-              </>
-            }
-            variant="soft"
-          >
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "nowrap",
-                gap: 0.5,
-              }}
-            >
-              {instance.uptime?.uptime_alltime && (
-                <>
-                  <TrendingUpIcon />
-                  {instance.uptime?.uptime_alltime}%
-                </>
-              )}
+          <CardStatBox name="Posts" icon={<MessageIcon />} value={instance.usage.localPosts} />
 
-              {!instance.uptime?.uptime_alltime && (
-                <>
-                  <ThumbDownIcon />
-                </>
-              )}
-            </Typography>
-          </Tooltip>
+          <Divider orientation="vertical" />
+
+          <CardStatBox name="Comments" icon={<ForumIcon />} value={instance.usage.localComments} />
+
+          <Divider orientation="vertical" />
+
+          <CardStatBox
+            name="Uptime"
+            icon={instance.uptime?.uptime_alltime ? <TrendingUpIcon /> : <ThumbDownIcon />}
+            value={instance.uptime?.uptime_alltime ? `${instance.uptime?.uptime_alltime}%` : `~~`}
+          />
         </CardContent>
       </CardOverflow>
     </Card>
   );
 }
-export default InstanceCard;

@@ -20,6 +20,14 @@ export function CopyLink({ copyText, linkProps }) {
     <Tooltip title={copied ? "👍 Copied!" : "Click to Copy"} variant="soft" placement="bottom">
       <Link
         level="body3"
+        style={{
+          // fontSize: "13px",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+
+          textOverflow: "ellipsis",
+          // pb: 0.5,
+        }}
         {...linkProps}
         onClick={(e) => {
           e.preventDefault();
@@ -111,7 +119,22 @@ const mapStateToProps = (state) => ({
 export const ExtCommunityLink = connect(mapStateToProps)(CommunityLink);
 
 export function ExtInstanceLink({ instance, ...props }) {
-  return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
+  return (
+    <ExtLink
+      linkName={instance.name}
+      linkUrl={instance.url}
+      style={{
+        fontWeight: "bold",
+        fontSize: "14px",
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+
+        textOverflow: "ellipsis",
+        pb: 0.5,
+      }}
+      {...props}
+    />
+  );
 }
 
 export function ExtLink({ linkName, linkUrl, target = "_blank", ...props }) {
