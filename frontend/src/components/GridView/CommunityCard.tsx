@@ -122,11 +122,12 @@ export default function CommunityCard({ community }) {
           level="body3"
           sx={{
             display: "-webkit-box",
-            // "-webkit-box-orient": "vertical",
-            // "-webkit-line-clamp": "3",
             height: "54px",
             maxHeight: "90px",
             overflow: "hidden",
+            flexGrow: 1,
+            flexShrink: 1,
+            color: "text.primary",
           }}
         >
           {community.desc ? community.desc : ""}
