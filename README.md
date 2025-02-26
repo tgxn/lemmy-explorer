@@ -6,7 +6,7 @@ Data Dumps: https://data.lemmyverse.net/
 
 This project provides a simple way to explore Lemmy Instances and Communities.
 
-![List of Communities](./docs/images/communities.png)
+![List of Communities](./docs/images/0.10.0-communities.png)
 
 The project consists of four modules:
 
