@@ -119,22 +119,7 @@ const mapStateToProps = (state) => ({
 export const ExtCommunityLink = connect(mapStateToProps)(CommunityLink);
 
 export function ExtInstanceLink({ instance, ...props }) {
-  return (
-    <ExtLink
-      linkName={instance.name}
-      linkUrl={instance.url}
-      style={{
-        fontWeight: "bold",
-        fontSize: "14px",
-        overflow: "hidden",
-        whiteSpace: "nowrap",
-
-        textOverflow: "ellipsis",
-        pb: 0.5,
-      }}
-      {...props}
-    />
-  );
+  return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
 }
 
 export function ExtLink({ linkName, linkUrl, target = "_blank", ...props }) {
