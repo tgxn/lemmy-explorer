@@ -122,7 +122,7 @@ jobs:
           cache-name: cache-pages-yarn
         with:
           path: ./pages/node_modules/
-          key: cache-pages-yarn-${{ hashFiles('pages/package-lock.json') }}
+          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
 
       - name: Install Dependencies
         if: steps.cache-pages-yarn.outputs.cache-hit != 'true'

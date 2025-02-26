@@ -32,8 +32,8 @@ import LineGraph from "../Shared/LineGraph";
 //   return null;
 // };
 
-export default function InstanceUserGrowth({ metricsData }) {
-  console.log("userSeries", metricsData);
+export default function InstanceContentGrowth({ userSeries }) {
+  console.log("userSeries", userSeries);
 
-  return <LineGraph dataSeries={metricsData.users} />;
+  return <LineGraph dataSeries={userSeries} />;
 }

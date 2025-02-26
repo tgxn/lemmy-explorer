@@ -20,7 +20,6 @@ export default function InstanceVersions({ instance, versionSeries }) {
 
   return (
     <Box>
-      {/* <pre>{JSON.stringify(versionSeries, null, 4)}</pre> */}
       <Alert
         sx={{ alignItems: "flex-start" }}
         startDecorator={<InfoIcon sx={{ mt: "2px", mx: "4px" }} />}
@@ -45,8 +44,8 @@ export default function InstanceVersions({ instance, versionSeries }) {
             <ListItemContent>
               <Typography>
                 <Moment
-                  // Monday, July 25, 2103
-                  format="HH:mm - dddd, MMMM Do, YYYY"
+                  // Monday, July 25, 2103, 25:22
+                  format="MMMM Do, YYYY - HH:mm"
                 >
                   {version.time}
                 </Moment>

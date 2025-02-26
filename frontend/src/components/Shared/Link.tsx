@@ -20,6 +20,14 @@ export function CopyLink({ copyText, linkProps }) {
     <Tooltip title={copied ? "👍 Copied!" : "Click to Copy"} variant="soft" placement="bottom">
       <Link
         level="body3"
+        style={{
+          // fontSize: "13px",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+
+          textOverflow: "ellipsis",
+          // pb: 0.5,
+        }}
         {...linkProps}
         onClick={(e) => {
           e.preventDefault();

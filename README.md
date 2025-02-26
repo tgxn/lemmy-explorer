@@ -6,14 +6,20 @@ Data Dumps: https://data.lemmyverse.net/
 
 This project provides a simple way to explore Lemmy Instances and Communities.
 
-![List of Communities](./docs/images/communities.png)
+![List of Communities](./docs/images/0.10.0-communities.png)
 
-The project consists of four modules:
+## Project Structure
 
-1. Crawler (NodeJS, Redis) `/crawler`
-2. Frontend (ReactJS, MUI Joy, TanStack) `/frontend`
-3. Deploy (Amazon CDK v2) `/cdk`
-4. Data Site (GitHub Pages) `/pages`
+The project consists of the following modules:
+
+| Module Description                            | Path        | Readme                         |
+| --------------------------------------------- | ----------- | ------------------------------ |
+| Crawler _(NodeJS, Redis)_                     | `/crawler`  | [README](./crawler/README.md)  |
+| Frontend _(ReactJS, MUI Joy, TanStack)_       | `/frontend` | [README](./frontend/README.md) |
+| Deployment _(Amazon CDK v2)_                  | `/cdk`      | [README](./cdk/README.md)      |
+| Data Dump Site _(ReactJS, MUI, GitHub Pages)_ | `/pages`    | [README](./pages/README.md)    |
+
+Each module has its own README with more details.
 
 ## FAQ
 
@@ -36,11 +42,12 @@ Additionally, instance tags and trust data is fetched from [Fediseer](https://gu
 
 The NSFW filter is a client-side filter that filters out NSFW communities and instances from results by default.
 The "NSFW Toggle" checkbox has thress states that you can toggle through:
-| State | Filter | Value |
-| --- | --- | --- |
-| Default | Hide NSFW | false |
-| One Click | Include NSFW | null |
-| Two Clicks | NSFW Only | true |
+
+| State      | Filter       | Value |
+| ---------- | ------------ | ----- |
+| Default    | Hide NSFW    | false |
+| One Click  | Include NSFW | null  |
+| Two Clicks | NSFW Only    | true  |
 
 When you try to switch to a non-sfw state, a popup will appear to confirm your choice. You can save your response in your browsers cache and it will be remembered.
 
@@ -75,47 +82,26 @@ You can also download [Latest ZIP](https://nightly.link/tgxn/lemmy-explorer/work
 - `instances.full.json` - list of all instances
 - `overview.json` - metadata and counts
 
-## Crawler
+## Awesome Lemmy Links
 
-[Crawler README](./crawler/README.md)
+### General
 
-## Frontend
-
-[Frontend README](./frontend/README.md)
-
-## Data Site
-
-[Data Site README](./pages/README.md)
-
-## Deploy
-
-The deploy is an Amazon CDK v2 project that deploys the crawler and frontend to AWS.
-
-`config.example.json` has the configuration for the deploy.
-
-then run `cdk deploy --all` to deploy the frontend to AWS.
-
-## Similar Sites
-
-- https://browse.feddit.de/
 - https://join-lemmy.org/instances
 - https://github.com/maltfield/awesome-lemmy-instances
-- https://lemmymap.feddit.de/
-- https://browse.toast.ooo/
-- https://lemmyfind.quex.cc/
 
-## Lemmy Stats Pages
+### Lemmy Stats Pages
 
 - https://lemmy.fediverse.observer/dailystats
 - https://the-federation.info/platform/73
 - https://fedidb.org/software/lemmy
 - https://fedidb.org/current-events/threadiverse
 
-## Thanks / Related Lemmy Tools
+### Thanks / Related Lemmy Tools
 
 - https://github.com/db0/fediseer
 - https://github.com/LemmyNet/lemmy-stats-crawler
 
 # Credits
 
-Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.
+- Logo made by Andy Cuccaro (@andycuccaro) under the CC-BY-SA 4.0 license.
+- Lemmy Developers and Community for creating [Lemmy](https://github.com/LemmyNet).
