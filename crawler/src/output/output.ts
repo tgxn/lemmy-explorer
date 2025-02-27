@@ -273,6 +273,28 @@ class OutputUtils {
 
     return true;
   }
+
+  static validateVersion(version: string): string | false {
+    // strip quotation marks that come either first or last
+    if (version.startsWith('"')) {
+      version = version.substring(1);
+    }
+    if (version.endsWith('"')) {
+      version = version.substring(0, version.length - 1);
+    }
+
+    // skip containing "unknown"
+    if (version.includes("unknown")) {
+      return false;
+    }
+
+    // skip if the value doesn't contain at least one `.` OR `-`
+    if (!version.includes(".") && !version.includes("-")) {
+      return false;
+    }
+
+    return version;
+  }
 }
 
 /**
@@ -970,87 +992,114 @@ export default class CrawlOutput {
     // basically, it creates a snapshot each 12 hours, and calculates the total at that point in time
     // maybe it shoudl use a floating window, so that it can show the change over time
 
-    // load all versions for all instances
-    let aggregateDataObject: {
-      time: number;
-      value: string;
-    }[] = [];
+    // anything earlier then take the latest
 
-    console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+    // load all versions for all instances
+    let aggregateDataObject: any = {};
+
+    // console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+
+    const snapshotWindow = 24 * 60 * 60 * 1000; // 24 hours
+    const totalWindows = 365 * 2; // 2 years
+
+    const currentTime = Date.now();
 
     for (const baseURL of countInstanceBaseURLs) {
       const attributeData = await storage.instance.getAttributeWithScores(baseURL, metricToAggregate);
-      // console.log("MM attributeData", attributeData);
 
-      if (attributeData) {
-        for (const merticEntry of attributeData) {
-          const time = merticEntry.score;
-          const value = merticEntry.value;
+      // generate sliding window of x hours, look backwards
 
-          aggregateDataObject.push({ time, value });
+      let currentWindow = 0;
+      while (currentWindow <= totalWindows) {
+        // console.log("currentWindow", currentWindow);
+        const windowOffset = currentWindow * snapshotWindow;
+
+        // get this
+        const windowStart = currentTime - windowOffset;
+        // const windowEnd = windowStart - snapshotWindow;
+
+        // filter data before this period
+        const windowData = attributeData.filter((entry) => {
+          return entry.score < windowStart;
+        });
+        const newestEntries = windowData.sort((a, b) => {
+          return b.score - a.score;
+        });
+
+        let newestEntryValue: any = null;
+        for (const thisEntry of newestEntries) {
+          const value = OutputUtils.validateVersion(thisEntry.value);
+          if (value) {
+            newestEntryValue = value;
+            break;
+          }
         }
+
+        if (!newestEntryValue) {
+          currentWindow++;
+          continue;
+        }
+
+        if (!aggregateDataObject[windowStart]) {
+          aggregateDataObject[windowStart] = {};
+        }
+
+        if (!aggregateDataObject[windowStart][newestEntryValue]) {
+          aggregateDataObject[windowStart][newestEntryValue] = 1;
+        } else {
+          aggregateDataObject[windowStart][newestEntryValue]++;
+        }
+        // console.log("newestEntryValue", newestEntryValue);
+
+        currentWindow++;
       }
     }
 
-    console.log("aggregateDataObject", aggregateDataObject.length);
+    // order each sub-array by count
+    for (const time in aggregateDataObject) {
+      const timeData = aggregateDataObject[time];
 
-    // console.log("aggregateDataObject", aggregateDataObject);
+      const orderedTimeData = Object.keys(timeData)
+        .filter((key) => timeData[key] > 1)
+        .sort((a, b) => {
+          return timeData[b] - timeData[a];
+        })
+        .reduce((obj, key) => {
+          obj[key] = timeData[key];
+          return obj;
+        }, {});
 
-    const snapshotWindow = 12 * 60 * 60 * 1000; // 12 hours
-    const totalWindows = 600; // 60 snapshots
-
-    // generate sliding window of x hours, look backwards
-    const currentTime = Date.now();
-
-    const buildWindowData = {};
-
-    let currentWindow = 0;
-    // let countingData = true;
-    while (currentWindow <= totalWindows) {
-      // console.log("currentWindow", currentWindow);
-      const windowOffset = currentWindow * snapshotWindow;
-
-      // get this
-      const windowStart = currentTime - windowOffset;
-      const windowEnd = windowStart - snapshotWindow;
-
-      // filter data
-      const windowData = aggregateDataObject.filter((entry) => {
-        // console.log("entry.time", entry.time, windowStart, windowEnd);
-        return entry.time < windowStart;
-      });
-      console.log("currentWindow", currentWindow, windowStart, windowEnd, windowData.length);
-
-      // // stop if no data
-      // if (windowData.length === 0) {
-      //   countingData = false;
-      //   break;
-      // }
-
-      // console.log("windowData", windowData);
-
-      // count data
-      const countData = {};
-      windowData.forEach((entry) => {
-        if (!countData[entry.value]) {
-          countData[entry.value] = 1;
-        } else {
-          countData[entry.value]++;
-        }
-      });
-
-      // console.log("countData", countData);
-
-      // store data
-      buildWindowData[windowStart] = countData;
-
-      currentWindow++;
+      aggregateDataObject[time] = orderedTimeData;
     }
 
-    console.log("buildWindowData", buildWindowData);
+    // look for the version in aggregateDataObject[windowStart], increment this version if it exist5s
+
+    // console.log("windowData", aggregateDataObject);
+    // throw new Error("Not Implemented");
+
+    // map the time into each obecjt, and return as an array
+    const outputVersionsArray = Object.keys(aggregateDataObject).map((time) => {
+      return {
+        time: time,
+        ...aggregateDataObject[time],
+      };
+    });
+
+    console.log("outputVersionsArray", outputVersionsArray.length);
+
+    const acc: any = [];
+    Object.values(outputVersionsArray).forEach((key: any) => {
+      Object.keys(key).forEach((key) => {
+        if (key !== "time" && acc.indexOf(key) === -1) {
+          acc.push(key);
+        }
+      });
+    });
 
     await this.fileWriter.storeMetricsSeries({
-      versions: buildWindowData,
+      uniqueVersions: acc.length,
+      versionKeys: acc,
+      versions: outputVersionsArray,
     });
 
     // throw new Error("Not Implemented");
