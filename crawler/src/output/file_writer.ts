@@ -142,10 +142,10 @@ export default class OutputFileWriter {
     await this.writeJsonFile(`${this.publicDataFolder}/tags.meta.json`, JSON.stringify(fediTags));
   }
 
-  async storeMetricsSeries(data: { versions: any }) {
-    await this.writeJsonFile(`${this.publicDataFolder}/metrics.series.json`, JSON.stringify(data));
+  async storeMetricsSeries(data: { versions: any; versionKeys: any; uniqueVersions: any }) {
+    await this.writeJsonFile(`${this.publicDataFolder}/metrics.series.json`, JSON.stringify(data, null, 2));
   }
-  /**
+  /**v
    * this method is used to store the instance metrics data
    */
 

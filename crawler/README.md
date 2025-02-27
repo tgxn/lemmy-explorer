@@ -1,10 +1,13 @@
 # Crawler
 
-This is set of nodejs scripts that crawl the Lemmy API and store the data to Redis.
+This is set of nodejs scripts that crawl the Lemmy API and store the data to Redis.  
 They are also able to generate JSON output bundles for the frontend.
 
-A redis instance must be running on `localhost:6379` for the crawler to store data.
+A redis instance must be running on `localhost:6379` for the crawler to store data.  
 There is a `npx tsx index.js --out` script to output the instances and communities to json for the frontend.
+
+There is a data dump available to use with the Output script, containing All data from the crawler.  
+Download it from the [Data Dumps Site](https://data.lemmyverse.net/), and save it in `/crawler/.data/redis/dump.rdb`.
 
 ## Basic usage
 

@@ -16,9 +16,10 @@
     "declarationMap": false,
 
     "useUnknownInCatchVariables": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+
+    "skipLibCheck": true
   },
-  "exclude": ["node_modules/"],
   "allowJs": true,
   "checkJs": true
 }
