@@ -51,7 +51,8 @@ function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
           {chip && (
             <Chip
               size={"sm"}
-              color={chip === "Full" ? "info" : "warning"}
+              variant="solid"
+              color={chip === "Full" ? "primary" : "warning"}
               sx={{
                 borderRadius: 0,
                 marginRight: 1,
@@ -62,11 +63,7 @@ function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
           )}
           <Link href={`data/${file.path}`}>{file.name}</Link>
         </Box>
-        {file.desc && (
-          <Typography level="body2" noWrap>
-            {file.desc}
-          </Typography>
-        )}
+        {file.desc && <Typography noWrap>{file.desc}</Typography>}
       </ListItemContent>
       <Typography>
         <SimpleNumberFormat value={count} />
@@ -161,8 +158,8 @@ export default function App() {
     >
       <Box>
         <h1>
-          Lemmyverse Data{" "}
-          <Link href="https://lemmyverse.net" target="_blank">
+          Lemmy Explorer Data
+          <Link href="https://lemmyverse.net" target="_blank" sx={{ ml: 2 }}>
             https://lemmyverse.net
           </Link>
         </h1>
@@ -171,32 +168,30 @@ export default function App() {
       <Box
         sx={{
           p: 2,
-          textAlign: "center",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
         }}
       >
-        <Button
-          startDecorator={<GitHubIcon />}
-          href="https://github.com/tgxn/lemmy-explorer"
-          target="_lv_github"
-          component="a"
-        >
-          View Code on GitHub
-        </Button>
-      </Box>
-
-      <Box
-        sx={{
-          p: 2,
-        }}
-      >
+        <Box>
+          <Typography sx={{ color: "text.secondary", fontWeight: "bold" }}>Data Last Updated</Typography>
+          {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
+        </Box>
         <Box
           sx={{
-            fontWeight: "bold",
+            p: 2,
+            textAlign: "center",
           }}
         >
-          Data Last Updated
+          <Button
+            startDecorator={<GitHubIcon />}
+            href="https://github.com/tgxn/lemmy-explorer"
+            target="_lv_github"
+            component="a"
+          >
+            View Code on GitHub
+          </Button>
         </Box>
-        {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
       </Box>
 
       <h2>Main (Full) Files</h2>
