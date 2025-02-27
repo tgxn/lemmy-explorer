@@ -50,6 +50,7 @@ export default function InstanceUserGrowth({ metricsData }) {
         {
           yAxisName: "Users",
           yAxisKey: "users",
+          yAxisColor: "#8884d8",
 
           minValue: minUsers,
           maxValue: maxUsers,
@@ -57,6 +58,7 @@ export default function InstanceUserGrowth({ metricsData }) {
         {
           yAxisName: "Posts",
           yAxisKey: "posts",
+          yAxisColor: "#82ca9d",
 
           minValue: minPosts,
           maxValue: maxPosts,

@@ -29,7 +29,13 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 type IMultiDataLineGraphProps = {
   dataSeries: any[];
-  dataSeriesInfo: { yAxisName: string; yAxisKey: string; minValue?: number; maxValue?: number }[];
+  dataSeriesInfo: {
+    yAxisName: string;
+    yAxisKey: string;
+    yAxisColor: string;
+    minValue?: number;
+    maxValue?: number;
+  }[];
 };
 
 export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMultiDataLineGraphProps) {
@@ -64,7 +70,7 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
           tickFormatter={(unixTime) => unixTime.toLocaleString()}
         /> */}
 
-        {dataSeries.map((dataSeries, index) => (
+        {dataSeriesInfo.map((dataSeries, index) => (
           <YAxis
             key={index} //dataKey="value"
             dataKey={dataSeries.yAxisKey}
@@ -78,18 +84,19 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
             scale={scale}
             orientation={index % 2 === 0 ? "left" : "right"}
             tickFormatter={(value) => value.toLocaleString()}
-            yAxisId={index}
+            yAxisId={index + 1}
           />
         ))}
 
-        {dataSeries.map((dataSeries, index) => (
+        {dataSeriesInfo.map((dataSeries, index) => (
           <Line
             key={index}
             dataKey={dataSeries.yAxisKey}
             dot={false}
             stroke={mode === "dark" ? "#8884d8" : "#82ca9d"}
-            strokeDasharray="3 3"
+            // strokeDasharray="3 3"
             name={dataSeries.yAxisName}
+            yAxisId={index + 1}
           />
         ))}
       </LineChart>
