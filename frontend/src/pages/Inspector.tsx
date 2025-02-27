@@ -14,62 +14,60 @@ import Overview from "../components/Inspector/Overview";
 import Versions from "../components/Inspector/Versions";
 import VersionList from "../components/Inspector/VersionList";
 import Sus from "../components/Inspector/Sus";
+import VersionChart from "../components/Inspector/VersionChart";
 
 export default function Inspector() {
   const navigate = useNavigate();
 
   const [tabIndex, setTabIndex] = React.useState(0);
 
+  const tabDefs = [
+    {
+      label: "Overview",
+      nav: "/inspect",
+      component: <Overview />,
+    },
+    {
+      label: "Version Distribution",
+      nav: "/inspect/versions",
+      component: <Versions />,
+    },
+    {
+      label: "Suspicious Instances",
+      nav: "/inspect/sus",
+      component: <Sus />,
+    },
+    // {
+    //   label: "Instance Debugger",
+    //   nav: "/inspect/debug",
+    //   component: <Overview />,
+    // },
+    {
+      label: "Version List",
+      nav: "/inspect/version-list",
+      component: <VersionList />,
+    },
+    {
+      label: "Version Chart",
+      nav: "/inspect/version-chart",
+      component: <VersionChart />,
+    },
+  ];
+
   // restore tab
   React.useEffect(() => {
     const path = window.location.pathname;
 
-    switch (path) {
-      case "/inspect":
-        setTabIndex(0);
-        break;
-
-      case "/inspect/versions":
-        setTabIndex(1);
-        break;
-
-      case "/inspect/version_list":
-        setTabIndex(2);
-        break;
-
-      case "/inspect/sus":
-        setTabIndex(3);
-        break;
-
-      // case "/inspect/debug":
-      //   setTabIndex(4);
-      //   break;
-    }
+    tabDefs.forEach((tab, index) => {
+      if (path === tab.nav) {
+        setTabIndex(index);
+      }
+    });
   }, []);
 
   const changeView = (index) => {
     setTabIndex(index);
-    switch (index) {
-      case 0:
-        navigate("/inspect");
-        break;
-
-      case 1:
-        navigate("versions");
-        break;
-
-      case 2:
-        navigate("version_list");
-        break;
-
-      case 3:
-        navigate("sus");
-        break;
-
-      // case 4:
-      //   navigate("debug");
-      //   break;
-    }
+    navigate(tabDefs[index].nav);
   };
 
   return (
@@ -85,19 +83,11 @@ export default function Inspector() {
         }}
       >
         <TabList variant="outlined" color="neutral">
-          <Tab variant={"soft"} color={tabIndex === 0 ? "primary" : "neutral"}>
-            Overview
-          </Tab>
-          <Tab variant={"soft"} color={tabIndex === 1 ? "primary" : "neutral"}>
-            Version Distribution
-          </Tab>
-          <Tab variant={"soft"} color={tabIndex === 2 ? "primary" : "neutral"}>
-            Version List
-          </Tab>
-          <Tab variant={"soft"} color={tabIndex === 3 ? "primary" : "neutral"}>
-            Suspicious Instances
-          </Tab>
-          {/* <Tab>Instance Debugger</Tab> */}
+          {tabDefs.map((tab, index) => (
+            <Tab key={index} variant={"soft"} color={tabIndex === index ? "primary" : "neutral"}>
+              {tab.label}
+            </Tab>
+          ))}
         </TabList>
         <Box
           sx={(theme) => ({
@@ -107,39 +97,13 @@ export default function Inspector() {
           })}
         >
           <Routes>
-            <Route
-              path="/"
-              element={
-                <TabPanel value={0}>
-                  <Overview />
-                </TabPanel>
-              }
-            />
-            <Route
-              path="/versions"
-              element={
-                <TabPanel value={1}>
-                  <Versions />
-                </TabPanel>
-              }
-            />
-            <Route
-              path="/version_list"
-              element={
-                <TabPanel value={2}>
-                  <Versions />
-                </TabPanel>
-              }
-            />
-            <Route
-              path="/sus"
-              element={
-                <TabPanel value={3}>
-                  <Sus />
-                </TabPanel>
-              }
-            />
-            {/* <Route path="/debug" element={<Overview />} /> */}
+            {tabDefs.map((tab, index) => (
+              <Route
+                key={index}
+                path={tab.nav.replace("/inspect", "")}
+                element={<TabPanel value={index}>{tab.component}</TabPanel>}
+              />
+            ))}
           </Routes>
         </Box>
       </Tabs>

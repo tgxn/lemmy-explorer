@@ -72,7 +72,7 @@ export default function InspectorOverview() {
   return (
     <Box>
       <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ width: "100%" }}>
-        <Grid xs={12} md={6}>
+        <Grid xs={12} md={6} xl={4}>
           <NumberStat
             color="primary"
             title="Total Instances"
@@ -80,31 +80,7 @@ export default function InspectorOverview() {
             description="Total count of all instances scanned in the last 24 hours."
           />
         </Grid>
-        <Grid xs={12} md={6}>
-          <NumberStat
-            sx={{
-              backgroundColor: "#974904",
-            }}
-            title="Sus Instances"
-            value={dataSus.length}
-            description="Total count of all suspicious instances scanned in the last 24 hours."
-          />
-        </Grid>
-        <Grid xs={12} md={6}>
-          <Sheet
-            sx={{
-              display: "flex",
-            }}
-          >
-            <NumberStat
-              color="success"
-              title="Actual Users"
-              value={totalUsers - totalBadUsers}
-              description="A total count for all known instances, sus instance users removed."
-            />
-          </Sheet>
-        </Grid>
-        <Grid xs={12} md={6} xl={3}>
+        <Grid xs={12} md={6} xl={4}>
           <Sheet
             sx={{
               display: "flex",
@@ -115,20 +91,6 @@ export default function InspectorOverview() {
               title="Total Users"
               value={totalUsers}
               description="A total count from all known instances."
-            />
-          </Sheet>
-        </Grid>
-        <Grid xs={12} md={6} xl={3}>
-          <Sheet
-            sx={{
-              display: "flex",
-            }}
-          >
-            <NumberStat
-              color="danger"
-              title="Total Bad Users"
-              value={totalBadUsers}
-              description="A total count for all known instances."
             />
           </Sheet>
         </Grid>
