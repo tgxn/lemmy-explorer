@@ -1,6 +1,6 @@
 {
   "name": "lemmy-explorer-crawler",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "",
   "author": "tgxn",
   "license": "MIT",
@@ -22,23 +22,23 @@
     "check:ts": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.717.0",
-    "@types/node": "22.10.3",
+    "@aws-sdk/client-s3": "3.750.0",
+    "@types/node": "22.13.5",
     "@types/node-cron": "^3.0.11",
     "@types/validator": "^13.12.2",
-    "axios": "1.7.9",
+    "axios": "1.8.1",
     "bee-queue": "1.7.1",
     "divinator": "^1.0.1",
     "dotenv": "16.4.7",
     "node-cron": "^3.0.3",
     "pm2": "5.4.3",
-    "prettier": "^3.4.2",
+    "prettier": "3.5.2",
     "redis": "4.7.0",
     "remove-markdown": "0.6.0",
     "tsc": "^2.0.4",
     "tslib": "2.8.1",
-    "tsx": "^4.19.2",
-    "typescript": "5.7.2",
+    "tsx": "4.19.3",
+    "typescript": "5.7.3",
     "validator": "^13.12.0",
     "z-score": "^1.0.6"
   }
