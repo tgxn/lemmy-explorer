@@ -169,17 +169,12 @@ export default function App() {
         sx={{
           p: 2,
           display: "flex",
-
           flexDirection: "row",
           justifyContent: "space-between",
         }}
       >
-        <Box
-          sx={{
-            fontWeight: "bold",
-          }}
-        >
-          <Typography sx={{ color: "text.secondary" }}>Data Last Updated</Typography>
+        <Box>
+          <Typography sx={{ color: "text.secondary", fontWeight: "bold" }}>Data Last Updated</Typography>
           {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
         </Box>
         <Box
