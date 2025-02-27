@@ -30,10 +30,10 @@ jobs:
       - name: root suid tar
         run: sudo chown root:root /bin/tar && sudo chmod u+s /bin/tar
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js 22.12.0
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.12.0
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Cache Redis Dump
         id: cache-redis
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-redis
         with:
@@ -63,10 +63,6 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ap-southeast-2
 
-      # log the sha 256 hash of the redis dump
-      - name: Log Redis Dump Hash
-        run: sha256sum ./.redis/dump.rdb
-
       # start redis & check if it is running
       - name: Start Redis
         working-directory: ./crawler
@@ -78,16 +74,16 @@ jobs:
 
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
-        id: cache-crawler-npm
-        uses: actions/cache@v3
+        id: cache-crawler-yarn
+        uses: actions/cache@v4
         env:
-          cache-name: cache-crawler-npm
+          cache-name: cache-crawler-yarn
         with:
           path: ./crawler/node_modules/
           key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
 
       - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-npm.outputs.cache-hit != 'true'
+        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
         working-directory: ./crawler
 
@@ -102,26 +98,27 @@ jobs:
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
-        id: cache-frontend-npm
-        uses: actions/cache@v3
+        id: cache-frontend-yarn
+        uses: actions/cache@v4
         env:
-          cache-name: cache-frontend-npm
+          cache-name: cache-frontend-yarn
         with:
           path: ./frontend/node_modules/
-          key: cache-frontend-npm-${{ hashFiles('frontend/package-lock.json') }}
+          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
 
       - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-npm.outputs.cache-hit != 'true'
-        run: npm ci
+        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
         working-directory: ./frontend
 
+      # Build Frontend to ./frontend/dist
       - name: Build the Frontend
-        run: npm run build
+        run: yarn build
         working-directory: ./frontend
 
       - name: Create CDK Config JSON
         id: create-json
-        uses: jsdaniell/create-json@v1.2.2
+        uses: jsdaniell/create-json@v1.2.3
         with:
           dir: ./cdk
           name: "config.json"
@@ -129,42 +126,42 @@ jobs:
 
       # Install + Cache CDK Dependencies
       - name: Cache Node Modules | CDK
-        id: cache-cdk-npm
-        uses: actions/cache@v3
+        id: cache-cdk-yarn
+        uses: actions/cache@v4
         env:
-          cache-name: cache-cdk-npm
+          cache-name: cache-cdk-yarn
         with:
           path: ./cdk/node_modules/
-          key: cache-cdk-npm-${{ hashFiles('frontend/package-lock.json') }}
+          key: cache-cdk-yarn-${{ hashFiles('cdk/yarn.lock') }}
 
       - name: Install Node Modules | CDK
-        if: steps.cache-cdk-npm.outputs.cache-hit != 'true'
-        run: npm ci
+        if: steps.cache-cdk-yarn.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
         working-directory: ./cdk
 
       - name: CDK Bootstrap
-        run: ./node_modules/.bin/cdk bootstrap
+        run: yarn bootstrap
         working-directory: ./cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Synth
-        run: ./node_modules/.bin/cdk synthesize --all
+        run: yarn synth
         working-directory: ./cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Diff
-        run: ./node_modules/.bin/cdk diff --all
+        run: yarn diff
         working-directory: ./cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: CDK Deploy
-        run: ./node_modules/.bin/cdk deploy --all --require-approval never
+        run: yarn deploy:ci
         working-directory: ./cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

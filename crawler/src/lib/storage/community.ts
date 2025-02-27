@@ -1,34 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type ICommunityData = {
-  community: {
-    id: number;
-    name: string;
-    title: string;
-    description: string;
-    removed: boolean;
-    published: string;
-    updated: string | null;
-    deleted: boolean;
-    nsfw: boolean;
-    actor_id: string;
-    local: boolean;
-    icon: string | null;
-    banner: string | null;
-    hidden: boolean;
-    posting_restricted_to_mods: boolean;
-    instance_id: number;
-  };
-  subscribed: string;
-  blocked: boolean;
-  counts: Object;
-  banned_from_community?: boolean;
-  lastCrawled: number;
-};
-
-export type ICommunityDataKeyValue = {
-  [key: string]: ICommunityData;
-};
+import { ICommunityData, ICommunityDataKeyValue } from "../../../../types/storage";
 
 export default class Community {
   private storage: CrawlStorage;

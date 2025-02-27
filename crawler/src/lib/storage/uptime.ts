@@ -1,21 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type IUptimeNodeData = {
-  domain: string;
-  latency: number;
-  countryname: string;
-  uptime_alltime: string;
-  date_created: string;
-  date_updated: string;
-  date_laststats: string;
-  score: number;
-  status: number;
-};
-
-export type IFullUptimeData = {
-  timestamp: number;
-  nodes: IUptimeNodeData[];
-};
+import { IUptimeNodeData, IFullUptimeData } from "../../../../types/storage";
 
 export default class Uptime {
   private storage: CrawlStorage;

@@ -1,0 +1,74 @@
+name: pages-checks
+
+on:
+  # push:
+  #   paths:
+  #     - pages/**
+
+  pull_request:
+    paths:
+      - pages/**
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  pages-checks-style:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22.12.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+
+      # Install + Cache Frontend Dependencies
+      - name: Cache Node Modules | Frontend
+        id: cache-pages-yarn
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-pages-yarn
+        with:
+          path: ./pages/node_modules/
+          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
+
+      - name: Install Node Modules | Frontend
+        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ./pages
+
+      - name: Check Style | Frontend
+        run: yarn format:check
+        working-directory: ./pages
+
+  pages-checks-types:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22.12.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+
+      # Install + Cache Frontend Dependencies
+      - name: Cache Node Modules | Frontend
+        id: cache-pages-yarn
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-pages-yarn
+        with:
+          path: ./pages/node_modules/
+          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
+
+      - name: Install Node Modules | Frontend
+        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ./pages
+
+      - name: Check Types | Frontend
+        run: yarn check:ts
+        working-directory: ./pages

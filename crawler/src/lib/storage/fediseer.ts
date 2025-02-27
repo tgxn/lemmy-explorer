@@ -1,43 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type IFediseerInstanceFlags = {
-  flag: "RESTRICTED" | "MUTED";
-  comment: string;
-};
-
-export type IFediseerTag = {
-  tag: string;
-  count?: number;
-  rank?: number;
-};
-
-export type IFediseerInstanceData = {
-  id: number;
-  domain: string;
-  software: string;
-  version: string;
-  claimed: number;
-  open_registrations: boolean;
-  email_verify: boolean;
-  approval_required: boolean;
-  has_captcha: boolean;
-  approvals: number;
-  endorsements: number;
-  guarantor: string;
-  censure_reasons: string[] | null;
-  sysadmins: number;
-  moderators: number;
-
-  state: "UP" | "UNREACHABLE" | "OFFLINE" | "DECOMMISSIONED";
-
-  tags: IFediseerTag[] | string[];
-
-  visibility_endorsements: "OPEN" | "ENDORSED" | "PRIVATE";
-  visibility_censures: "OPEN" | "ENDORSED" | "PRIVATE";
-  visibility_hesitations: "OPEN" | "ENDORSED" | "PRIVATE";
-
-  flags: IFediseerInstanceFlags[];
-};
+import { IFediseerInstanceData } from "../../../../types/storage";
 
 export default class Fediseer {
   private storage: CrawlStorage;
