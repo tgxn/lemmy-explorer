@@ -10,17 +10,19 @@ import Chip from "@mui/joy/Chip";
 
 import Checkbox from "@mui/joy/Checkbox";
 
+type IRegModes = "all" | "open" | "registration" | "closed";
+
 type IRegistrationModeProps = {
-  regMode: any;
-  setRegMode: any;
+  regMode: IRegModes[];
+  setRegMode: (value: any) => void;
 };
 
-const RegistrationModeFilter = React.memo(() => {
+const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistrationModeProps) => {
   // string array of selected options
-  const [regMode, setRegMode] = useState<string[]>(["all"]);
+  // const [selRegMode, setSelRegMode] = useState<string[]>(regMode);
   // console.log("regMode", regMode);
 
-  const handleChange1 = (event: React.SyntheticEvent | null, newValue: string | null) => {
+  const handleChange = (event: React.SyntheticEvent | null, newValue: string | null) => {
     console.log(`regMode chose "${newValue}"`);
 
     // click all directly
@@ -159,15 +161,15 @@ const RegistrationModeFilter = React.memo(() => {
       // }}
 
       multiple={true}
-      onChange={handleChange1}
+      onChange={handleChange}
       // @ts-ignore
       value={regMode}
-      placeholder="Registration Modes"
+      // placeholder="Registration Modes"
       // defaultValue={regMode}
-      renderValue={(selected) => {
-        // console.log("regMode render selected", selected);
-        return selected.join(", ");
-      }}
+      // renderValue={(selected) => {
+      //   console.log("regMode render selected", selected);
+      //   return selected.join(", ");
+      // }}
       sx={{ minWidth: "15rem" }}
       slotProps={{
         listbox: {
@@ -179,13 +181,7 @@ const RegistrationModeFilter = React.memo(() => {
       MenuProps={MenuProps}
     >
       {menuOptions.map((option, index) => (
-        // <Option key={option.value} value={option.value}>
-        //   <Checkbox checked={regMode.findIndex((item) => item.value === option.value) >= 0} />
-        //   {/* <ListItemText primary={option.name} /> */}
-        //   {option.name}
-        // </Option>
-
-        <Option value={option.value} label={option.name}>
+        <Option value={option.value}>
           <ListItemDecorator>
             {/* <Avatar size="sm" src={option.src} /> */}
             <Checkbox
