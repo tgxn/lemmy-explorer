@@ -274,7 +274,7 @@ class OutputUtils {
     return true;
   }
 
-  static versionValid(version: string): string | false {
+  static validateVersion(version: string): string | false {
     // strip quotation marks that come either first or last
     if (version.startsWith('"')) {
       version = version.substring(1);
@@ -999,8 +999,8 @@ export default class CrawlOutput {
 
     // console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
 
-    const snapshotWindow = 12 * 60 * 60 * 1000; // 12 hours
-    const totalWindows = 600; // 60 snapshots
+    const snapshotWindow = 24 * 60 * 60 * 1000; // 24 hours
+    const totalWindows = 365 * 2; // 2 years
 
     const currentTime = Date.now();
 
@@ -1022,14 +1022,13 @@ export default class CrawlOutput {
         const windowData = attributeData.filter((entry) => {
           return entry.score < windowStart;
         });
-
         const newestEntries = windowData.sort((a, b) => {
-          return a.score - b.score;
+          return b.score - a.score;
         });
 
         let newestEntryValue: any = null;
         for (const thisEntry of newestEntries) {
-          const value = OutputUtils.versionValid(thisEntry.value);
+          const value = OutputUtils.validateVersion(thisEntry.value);
           if (value) {
             newestEntryValue = value;
             break;
@@ -1040,8 +1039,6 @@ export default class CrawlOutput {
           currentWindow++;
           continue;
         }
-
-        // look for the version in aggregateDataObject[windowStart], increment this version if it exist5s
 
         if (!aggregateDataObject[windowStart]) {
           aggregateDataObject[windowStart] = {};
@@ -1058,6 +1055,28 @@ export default class CrawlOutput {
       }
     }
 
+    // order each sub-array by count
+    for (const time in aggregateDataObject) {
+      const timeData = aggregateDataObject[time];
+
+      const orderedTimeData = Object.keys(timeData)
+        .filter((key) => timeData[key] > 1)
+        .sort((a, b) => {
+          return timeData[b] - timeData[a];
+        })
+        .reduce((obj, key) => {
+          obj[key] = timeData[key];
+          return obj;
+        }, {});
+
+      aggregateDataObject[time] = orderedTimeData;
+    }
+
+    // look for the version in aggregateDataObject[windowStart], increment this version if it exist5s
+
+    // console.log("windowData", aggregateDataObject);
+    // throw new Error("Not Implemented");
+
     // map the time into each obecjt, and return as an array
     const outputVersionsArray = Object.keys(aggregateDataObject).map((time) => {
       return {
@@ -1068,7 +1087,18 @@ export default class CrawlOutput {
 
     console.log("outputVersionsArray", outputVersionsArray.length);
 
+    const acc: any = [];
+    Object.values(outputVersionsArray).forEach((key: any) => {
+      Object.keys(key).forEach((key) => {
+        if (key !== "time" && acc.indexOf(key) === -1) {
+          acc.push(key);
+        }
+      });
+    });
+
     await this.fileWriter.storeMetricsSeries({
+      uniqueVersions: acc.length,
+      versionKeys: acc,
       versions: outputVersionsArray,
     });
 

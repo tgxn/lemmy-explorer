@@ -3,6 +3,7 @@ import React, { useMemo, PureComponent } from "react";
 // import useCachedMultipart from "../../hooks/useCachedMultipart";
 import useQueryCache from "../../hooks/useQueryCache";
 import moment from "moment";
+import { SimpleNumberFormat } from "../Shared/Display";
 
 import { useWindowSize } from "@react-hook/window-size";
 
@@ -12,6 +13,33 @@ import Box from "@mui/joy/Box";
 // import { ResponsiveStream } from "@nivo/stream";
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+const CustomTooltip = (props) => {
+  const { active, payload, label } = props;
+
+  console.info("SITEETEte", props, moment(Number(label)));
+  if (active && payload && payload.length) {
+    return (
+      <Box
+        style={{
+          backgroundColor: "background",
+          padding: "10px",
+          border: "1px solid #ccc",
+          borderRadius: "5px",
+        }}
+      >
+        <p>{moment(Number(label)).format("DD-MM-YYYY HH:mm")}</p>
+        {payload.map((i) => (
+          <p className="label">
+            {i.name}: {i.value}
+          </p>
+        ))}
+      </Box>
+    );
+  }
+
+  return null;
+};
 
 export default function VersionChart() {
   const {
@@ -32,57 +60,16 @@ export default function VersionChart() {
     return versionsAgg;
   }, [metricsData]);
 
-  console.log("dataset", dataset);
-
   const datasetSeries = useMemo(() => {
     if (!metricsData) return [];
 
-    // const uniqueVersions = Object.keys(metricsData.versions);
-    console.log("metricsData", metricsData);
+    const versionKeys = metricsData.versionKeys;
 
-    const acc = [];
-
-    // map each row and get the keys
-    Object.values(metricsData.versions).forEach((key: any) => {
-      // console.log("1234123412341234", key);
-
-      Object.keys(key).forEach((key) => {
-        if (key !== "time" && acc.indexOf(key) === -1) {
-          acc.push(key);
-        }
-      });
-
-      // if (key !== "time" && acc.indexOf(key) === -1) {
-      //   acc.push(key);
-      // }
-    });
-
-    //   console.log(acc);
-
-    //   // // map each row and get the keys
-    //   // const acc1 = Object.keys(row).forEach((key) => {
-    //   //   if (key !== "time") {
-    //   //     acc.push(key);
-    //   //   }
-    //   // });
-
-    return acc;
-
-    //   // return acc.map((version) => {
-    //   //   console.log("version", version);
-    //   //   return {
-    //   //     id: version,
-    //   //     label: version,
-    //   //     dataKey: version,
-    //   //     stack: "total",
-    //   //     area: true,
-    //   //     showMark: false,
-    //   //   };
-    //   // });
+    return versionKeys;
   }, [metricsData]);
 
   // console.log(dataset);
-  // console.log("datasetSeries", datasetSeries);
+  console.log("datasetSeries", datasetSeries, dataset);
 
   if (isLoading) return "Loading...";
   if (isError || !isSuccess) return "An error has occurred: " + error.message;
@@ -94,28 +81,30 @@ export default function VersionChart() {
           width={windowWidth - 100}
           height={400}
           data={dataset}
-          margin={{
-            top: 10,
-            right: 30,
-            left: 0,
-            bottom: 0,
-          }}
+          //  stackOffset="expand"
         >
           <CartesianGrid strokeDasharray="3 3" />
+
           <XAxis
             dataKey="time"
-            // reversed={true}
-            domain={["auto", "auto"]}
+            domain={["dataMax", "dataMax"]}
             name="Time"
-            tickFormatter={(unixTime) => moment(unixTime).format("HH:mm Do")}
+            tickFormatter={(unixTime) => moment(unixTime).format("DD-MM-YYYY")}
             type="number"
+            padding={{ left: 30, right: 30 }}
           />
+
           <YAxis />
-          <Tooltip />
-          {datasetSeries.map((version) => {
+
+          <Tooltip
+            cursor={{ stroke: "#999", strokeWidth: 2, strokeDasharray: "7,5" }}
+            content={CustomTooltip}
+          />
+
+          {datasetSeries.map((version, index) => {
             return (
               <Area
-                type="monotone"
+                // type="monotone"
                 dataKey={version}
                 stackId="1"
                 // stroke="#8884d8"
@@ -124,9 +113,6 @@ export default function VersionChart() {
               />
             );
           })}
-          {/* <Area type="monotone" dataKey="uv" stackId="1" stroke="#8884d8" fill="#8884d8" />
-          <Area type="monotone" dataKey="pv" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-          <Area type="monotone" dataKey="amt" stackId="1" stroke="#ffc658" fill="#ffc658" /> */}
         </AreaChart>
       </ResponsiveContainer>
     </Box>
