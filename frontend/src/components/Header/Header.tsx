@@ -75,7 +75,7 @@ export default function Header() {
       setIndex(0);
     } else if (location.pathname == "/communities") {
       setIndex(1);
-    } else if (location.pathname == "/kbin/magazines") {
+    } else if (location.pathname == "/mbin/magazines") {
       setIndex(2);
     } else {
       setIndex(null);
@@ -148,7 +148,7 @@ export default function Header() {
             navigate("/communities");
           }
           if (value === 2) {
-            navigate("/kbin/magazines");
+            navigate("/mbin/magazines");
           }
         }}
         sx={{ borderRadius: "lg" }}

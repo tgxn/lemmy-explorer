@@ -26,7 +26,7 @@ import Join from "./pages/Join";
 import Inspector from "./pages/Inspector";
 import InstanceView from "./pages/InstanceView";
 
-import KBinMagazines from "./pages/KBinMagazines";
+import MBinMagazines from "./pages/MBinMagazines";
 
 import AppStore from "./store";
 
@@ -76,7 +76,7 @@ export default function App() {
                 <Route path="/communities" element={<Communities />} />
                 <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
 
-                <Route path="/kbin/magazines" element={<KBinMagazines />} />
+                <Route path="/mbin/magazines" element={<MBinMagazines />} />
                 {/* <Route path="*" element={<NoMatch />} /> */}
               </Routes>
             </Box>

@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useColorScheme } from "@mui/joy/styles";
+
 import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
@@ -19,7 +21,11 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-function CommunityCard({ community }) {
+import CardStatBox from "../Shared/CardStatBox";
+
+export default function CommunityCard({ community }) {
+  const { mode } = useColorScheme();
+
   return (
     <Card
       variant="outlined"
@@ -28,10 +34,9 @@ function CommunityCard({ community }) {
         gap: 0,
       }}
     >
-      {/* Community Title */}
+      {/* Header */}
       <CardOverflow
         variant="outlined"
-        // orientation="horizontal"
         sx={{
           py: 1.75,
           px: 2,
@@ -92,7 +97,10 @@ function CommunityCard({ community }) {
       {/* Community Banner */}
       <CardOverflow
         sx={(theme) => ({
-          background: "linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 100%)",
+          background:
+            mode == "dark"
+              ? "linear-gradient(0deg, rgba(20,20,20,0.5) 0%, rgba(5,5,5,0.15) 100%)"
+              : "linear-gradient(0deg, rgba(179, 179, 179, 0.5) 0%, rgba(202, 202, 202, 0.15) 100%)",
           p: 0,
           height: "125px",
           overflow: "hidden",
@@ -103,6 +111,7 @@ function CommunityCard({ community }) {
         <Divider inset="context" />
       </CardOverflow>
 
+      {/* Description */}
       <CardContent
         orientation="horizontal"
         sx={{
@@ -113,16 +122,19 @@ function CommunityCard({ community }) {
           level="body3"
           sx={{
             display: "-webkit-box",
-            // "-webkit-box-orient": "vertical",
-            // "-webkit-line-clamp": "3",
             height: "54px",
             maxHeight: "90px",
             overflow: "hidden",
+            flexGrow: 1,
+            flexShrink: 1,
+            color: "text.primary",
           }}
         >
           {community.desc ? community.desc : ""}
         </Typography>
       </CardContent>
+
+      {/* Stats */}
       <CardOverflow
         variant="soft"
         sx={{
@@ -134,83 +146,33 @@ function CommunityCard({ community }) {
           orientation="horizontal"
           sx={{
             justifyContent: "space-around",
+            my: 0.75,
+            padding: 0,
           }}
         >
-          <Tooltip title="Subscribers" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 0.5,
-              }}
-            >
-              <RecordVoiceOverIcon />
-              <TinyNumber value={community.counts.subscribers} />
-            </Typography>
-          </Tooltip>
+          <CardStatBox
+            name="Subscribers"
+            icon={<RecordVoiceOverIcon />}
+            value={community.counts.subscribers}
+          />
+
           <Divider orientation="vertical" />
-          <Tooltip title="Posts" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 0.5,
-              }}
-            >
-              <MessageIcon />
-              <TinyNumber value={community.counts.posts} />
-            </Typography>
-          </Tooltip>
+
+          <CardStatBox name="Posts" icon={<MessageIcon />} value={community.counts.posts} />
+
           <Divider orientation="vertical" />
-          <Tooltip title="Comments" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 0.5,
-              }}
-            >
-              <ForumIcon />
-              <TinyNumber value={community.counts.comments} />
-            </Typography>
-          </Tooltip>
+
+          <CardStatBox name="Comments" icon={<ForumIcon />} value={community.counts.comments} />
+
           <Divider orientation="vertical" />
-          <Tooltip title="Active Users (Week)" variant="soft">
-            <Typography
-              level="body3"
-              fontWeight="md"
-              textColor="text.secondary"
-              sx={{
-                cursor: "default",
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 0.5,
-              }}
-            >
-              <TrendingUpIcon />
-              <TinyNumber value={community.counts.users_active_week} />
-            </Typography>
-          </Tooltip>
+
+          <CardStatBox
+            name="Active Users (Week)"
+            icon={<TrendingUpIcon />}
+            value={community.counts.users_active_week}
+          />
         </CardContent>
       </CardOverflow>
     </Card>
-    // </Grid>
   );
 }
-export default CommunityCard;

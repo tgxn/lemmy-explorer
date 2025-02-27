@@ -1,17 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-export type IFediverseData = {
-  time?: number;
-  baseurl?: string;
-  name?: string;
-  version?: string;
-  repository?: string;
-  homepage?: string;
-};
-
-export type IFediverseDataKeyValue = {
-  [key: string]: IFediverseData;
-};
+import { IFediverseData, IFediverseDataKeyValue } from "../../../../types/storage";
 
 export default class Fediverse {
   private storage: CrawlStorage;

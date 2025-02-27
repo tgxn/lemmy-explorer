@@ -21,7 +21,7 @@ export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || "lemmyexplorer
 export const CRAWL_TIMEOUT = {
   INSTANCE: 30 * 60 * 1000, // 30 mins
   COMMUNITY: 120 * 60 * 1000, // 2 hours
-  KBIN: 60 * 60 * 1000, // one hour
+  MBIN: 60 * 60 * 1000, // one hour
 };
 
 // max age to be included in output
@@ -38,6 +38,8 @@ export const CRAWL_AGED_TIME = {
 
   // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
   FEDIVERSE: hoursToMs(2 * 24), // 2 days
+
+  MAGAZINE: hoursToMs(8),
 };
 
 // consider for deletion after they haven't been seen for this long
@@ -56,7 +58,7 @@ export const CRON_SCHEDULES = {
   PUBLISH_S3: process.env.PUBLISH_S3_CRON || "0 */4 * * *", // every 4 hours
   AGED: "*/15 * * * *",
   UPTIME: "0 */12 * * *",
-  KBIN: "0 */6 * * *",
+  MBIN: "0 */6 * * *",
   FEDISEER: "0 */12 * * *",
 };
 

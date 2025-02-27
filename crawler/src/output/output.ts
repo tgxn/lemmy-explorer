@@ -8,100 +8,33 @@ import logging from "../lib/logging";
 import CrawlClient from "../lib/CrawlClient";
 
 import storage from "../lib/crawlStorage";
-import { IInstanceData, IInstanceDataKeyValue } from "../lib/storage/instance";
-import { ICommunityData, ICommunityDataKeyValue } from "../lib/storage/community";
-import { IMagazineData, IMagazineDataKeyValue } from "../lib/storage/kbin";
-import { IFediverseData, IFediverseDataKeyValue } from "../lib/storage/fediverse";
+import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
+import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
+import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
+import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
 // import { IFediseerInstanceData } from "../lib/storage/fediseer";
+
 import {
   IErrorData,
   IErrorDataKeyValue,
   ILastCrawlData,
   ILastCrawlDataKeyValue,
-} from "../lib/storage/tracking";
-import { IUptimeNodeData, IFullUptimeData } from "../lib/storage/uptime";
+} from "../../../types/storage";
+import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
 
 import OutputFileWriter from "./file_writer";
+
+import {
+  IMetaDataOutput,
+  IInstanceDataOutput,
+  ICommunityDataOutput,
+  IMBinInstanceOutput,
+  IMBinMagazineOutput,
+  IFediverseDataOutput,
+  IClassifiedErrorOutput,
+} from "../../../types/output";
+
 import OutputTrust from "./trust";
-
-export type IKBinMagazineOutput = {
-  actor_id: string;
-  title: string;
-  name: string;
-  preferred: string;
-  baseurl: string;
-  summary: string;
-  sensitive: boolean;
-  postingRestrictedToMods: boolean;
-  icon: string;
-  published: string;
-  updated: string;
-  followers: number;
-  time: number;
-};
-
-export type IFediverseDataOutput = {
-  url: string;
-  software: string;
-  version: string;
-};
-
-export type IClassifiedErrorOutput = {
-  baseurl: string;
-  time: number;
-  error: string;
-  type?: string;
-};
-
-export type ICommunityDataOutput = {
-  baseurl: string;
-  url: string;
-  name: string;
-  title: string;
-  desc: string;
-  icon: string | null;
-  banner: string | null;
-  nsfw: boolean;
-  counts: Object;
-  published: number;
-  time: number;
-  isSuspicious: boolean;
-  score: number;
-};
-
-export type IInstanceDataOutput = {
-  baseurl: string;
-  url: string;
-  name: string;
-  desc: string;
-  downvotes: boolean;
-  nsfw: boolean;
-  create_admin: boolean;
-  private: boolean;
-  fed: boolean;
-  version: string;
-  open: boolean;
-  usage: number;
-  counts: Object;
-  icon: string;
-  banner: string;
-  langs: string[];
-  date: string;
-  published: number;
-  time: number;
-  score: number;
-  uptime?: IUptimeNodeData;
-  isSuspicious: boolean;
-  metrics: Object | null;
-  tags: string[];
-  susReason: string[];
-  trust: [];
-  blocks: {
-    incoming: number;
-    outgoing: number;
-  };
-  blocked: string[];
-};
 
 class OutputUtils {
   // strip markdown, optionally substring
@@ -225,8 +158,8 @@ class OutputUtils {
     previousRun,
     returnInstanceArray: IInstanceDataOutput[],
     returnCommunityArray: ICommunityDataOutput[],
-    kbinInstanceArray: string[],
-    kbinMagazineArray: IKBinMagazineOutput[],
+    mbinInstanceArray: string[],
+    mbinMagazineArray: IMBinMagazineOutput[],
     returnStats: IFediverseDataOutput[],
   ) {
     const issues: string[] = [];
@@ -235,8 +168,8 @@ class OutputUtils {
     if (
       returnInstanceArray.length === 0 ||
       returnCommunityArray.length === 0 ||
-      kbinInstanceArray.length === 0 ||
-      kbinMagazineArray.length === 0 ||
+      mbinInstanceArray.length === 0 ||
+      mbinMagazineArray.length === 0 ||
       returnStats.length === 0
     ) {
       console.log("Empty Array");
@@ -305,16 +238,16 @@ class OutputUtils {
       old: previousRun.fediverse,
     });
 
-    // @TODO kbin checks are disabled till scanning is fixed
+    // @TODO mbin checks are disabled till scanning is fixed
     // data.push({
     //   type: "magazines",
-    //   new: kbinMagazineArray.length,
+    //   new: mbinMagazineArray.length,
     //   old: previousRun.magazines,
     // });
     // data.push({
-    //   type: "kbin_instances",
-    //   new: kbinInstanceArray.length,
-    //   old: previousRun.kbin_instances,
+    //   type: "mbin_instances",
+    //   new: mbinInstanceArray.length,
+    //   old: previousRun.mbin_instances,
     // });
 
     for (let i = 0; i < data.length; i++) {
@@ -354,7 +287,7 @@ export default class CrawlOutput {
   private instanceList: IInstanceData[] | null;
   private communityList: ICommunityData[] | null;
   private fediverseData: IFediverseDataKeyValue | null;
-  private kbinData: IMagazineData[] | null;
+  private mbinData: IMagazineData[] | null;
 
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
@@ -366,7 +299,7 @@ export default class CrawlOutput {
     this.instanceList = null;
     this.communityList = null;
     this.fediverseData = null;
-    this.kbinData = null;
+    this.mbinData = null;
 
     // this.utils = new OutputUtils();
 
@@ -382,7 +315,7 @@ export default class CrawlOutput {
     this.instanceList = await storage.instance.getAll();
     this.communityList = await storage.community.getAll();
     this.fediverseData = await storage.fediverse.getAll();
-    this.kbinData = await storage.kbin.getAll();
+    this.mbinData = await storage.mbin.getAll();
   }
 
   /**
@@ -403,8 +336,8 @@ export default class CrawlOutput {
       throw new Error("No fediverse Data");
     }
 
-    if (!this.kbinData) {
-      throw new Error("No kbin Data");
+    if (!this.mbinData) {
+      throw new Error("No mbin Data");
     }
 
     // setup trust data
@@ -422,7 +355,7 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - instance.lastCrawled;
       if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
-        console.log("Sus Site too old", instance.base);
+        console.log("Sus Site has expired, the age of the record is too old", instance.base);
         return false;
       }
 
@@ -433,6 +366,12 @@ export default class CrawlOutput {
 
     const returnInstanceArray = await this.getInstanceArray();
     await this.fileWriter.storeInstanceData(returnInstanceArray);
+
+    // VERSIONS DATA
+    await this.outputAttributeHistory(
+      returnInstanceArray.map((i) => i.baseurl),
+      "version",
+    );
 
     const returnCommunityArray = await this.getCommunityArray(returnInstanceArray);
     await this.fileWriter.storeCommunityData(returnCommunityArray);
@@ -447,9 +386,9 @@ export default class CrawlOutput {
     // fediverse data
     const returnStats = await this.outputFediverseData(returnInstanceArray);
 
-    // kbin data
-    const kbinInstanceArray = await this.outputKBinInstanceList(returnStats);
-    const kbinMagazineArray = await this.outputKBinMagazineList();
+    // mbin data
+    const mbinInstanceArray = await this.outputMBinInstanceList(returnStats);
+    const mbinMagazineArray = await this.outputMBinMagazineList();
 
     // error data
     const instanceErrors = await this.outputClassifiedErrors();
@@ -459,12 +398,11 @@ export default class CrawlOutput {
       (await readFile(new URL("../../package.json", import.meta.url))).toString(),
     );
 
-    const metaData = {
+    const metaData: IMetaDataOutput = {
       instances: returnInstanceArray.length,
       communities: returnCommunityArray.length,
-      kbin_instances: kbinInstanceArray.length,
-      magazines: kbinMagazineArray.length,
-      // kbin_instances: kbinInstanceArray.length,
+      mbin_instances: mbinInstanceArray.length,
+      magazines: mbinMagazineArray.length,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -508,20 +446,22 @@ export default class CrawlOutput {
           Previous: previousRun.communities,
           Change: calcChangeDisplay(returnCommunityArray.length, previousRun.communities),
         },
-        KBinInstances: {
-          ExportName: "KBin Instances",
+
+        MBinInstances: {
+          ExportName: "MBin Instances",
           Total: "N/A",
-          Output: kbinInstanceArray.length,
-          Previous: previousRun.kbin_instances,
-          Change: calcChangeDisplay(kbinInstanceArray.length, previousRun.kbin_instances),
+          Output: mbinInstanceArray.length,
+          Previous: previousRun.mbin_instances,
+          Change: calcChangeDisplay(mbinInstanceArray.length, previousRun.mbin_instances),
         },
         Magazines: {
           ExportName: "Magazines",
-          Total: this.kbinData.length,
-          Output: kbinMagazineArray.length,
+          Total: this.mbinData.length,
+          Output: mbinMagazineArray.length,
           Previous: previousRun.magazines,
-          Change: calcChangeDisplay(kbinMagazineArray.length, previousRun.magazines),
+          Change: calcChangeDisplay(mbinMagazineArray.length, previousRun.magazines),
         },
+
         Fediverse: {
           ExportName: "Fediverse Servers",
           Total: "N/A",
@@ -547,8 +487,8 @@ export default class CrawlOutput {
       previousRun,
       returnInstanceArray,
       returnCommunityArray,
-      kbinInstanceArray,
-      kbinMagazineArray,
+      mbinInstanceArray,
+      mbinMagazineArray,
       returnStats,
     );
 
@@ -584,8 +524,21 @@ export default class CrawlOutput {
   private async generateInstanceMetrics(instance, storeCommunityData) {
     // get timeseries
     const usersSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "users");
+    const usersActiveDaySeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users_active_day",
+    );
+    const usersActiveMonthSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users_active_month",
+    );
+    const usersActiveWeekSeries = await storage.instance.getAttributeWithScores(
+      instance.baseurl,
+      "users_active_week",
+    );
     const postsSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "posts");
     const commentsSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "comments");
+    const communitiesSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "communities");
     const versionSeries = await storage.instance.getAttributeWithScores(instance.baseurl, "version");
 
     // generate array with time -> value
@@ -595,6 +548,28 @@ export default class CrawlOutput {
         value: item.value,
       };
     });
+
+    const usersActiveDay = usersActiveDaySeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    const usersActiveMonth = usersActiveMonthSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
+    const usersActiveWeek = usersActiveWeekSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
     const posts = postsSeries.map((item) => {
       return {
         time: item.score,
@@ -607,6 +582,14 @@ export default class CrawlOutput {
         value: item.value,
       };
     });
+
+    const communities = communitiesSeries.map((item) => {
+      return {
+        time: item.score,
+        value: item.value,
+      };
+    });
+
     const versions = versionSeries.map((item) => {
       return {
         time: item.score,
@@ -621,6 +604,10 @@ export default class CrawlOutput {
       posts,
       comments,
       versions,
+      usersActiveDay,
+      usersActiveMonth,
+      usersActiveWeek,
+      communities,
     });
   }
 
@@ -961,6 +948,104 @@ export default class CrawlOutput {
     return instanceErrors;
   }
 
+  /// VERSION HISTORY
+
+  private async outputAttributeHistory(
+    countInstanceBaseURLs: string[],
+    metricToAggregate: string,
+  ): Promise<any> {
+    // this function needs to output and  aghgregated array of versions, and be able to show change over time
+    // this will be used to show version history on the website
+
+    // basically, it creates a snapshot each 12 hours, and calculates the total at that point in time
+    // maybe it shoudl use a floating window, so that it can show the change over time
+
+    // load all versions for all instances
+    let aggregateDataObject: {
+      time: number;
+      value: string;
+    }[] = [];
+
+    console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+
+    for (const baseURL of countInstanceBaseURLs) {
+      const attributeData = await storage.instance.getAttributeWithScores(baseURL, metricToAggregate);
+      // console.log("MM attributeData", attributeData);
+
+      if (attributeData) {
+        for (const merticEntry of attributeData) {
+          const time = merticEntry.score;
+          const value = merticEntry.value;
+
+          aggregateDataObject.push({ time, value });
+        }
+      }
+    }
+
+    console.log("aggregateDataObject", aggregateDataObject.length);
+
+    // console.log("aggregateDataObject", aggregateDataObject);
+
+    const snapshotWindow = 12 * 60 * 60 * 1000; // 12 hours
+    const totalWindows = 600; // 60 snapshots
+
+    // generate sliding window of x hours, look backwards
+    const currentTime = Date.now();
+
+    const buildWindowData = {};
+
+    let currentWindow = 0;
+    // let countingData = true;
+    while (currentWindow <= totalWindows) {
+      // console.log("currentWindow", currentWindow);
+      const windowOffset = currentWindow * snapshotWindow;
+
+      // get this
+      const windowStart = currentTime - windowOffset;
+      const windowEnd = windowStart - snapshotWindow;
+
+      // filter data
+      const windowData = aggregateDataObject.filter((entry) => {
+        // console.log("entry.time", entry.time, windowStart, windowEnd);
+        return entry.time < windowStart;
+      });
+      console.log("currentWindow", currentWindow, windowStart, windowEnd, windowData.length);
+
+      // // stop if no data
+      // if (windowData.length === 0) {
+      //   countingData = false;
+      //   break;
+      // }
+
+      // console.log("windowData", windowData);
+
+      // count data
+      const countData = {};
+      windowData.forEach((entry) => {
+        if (!countData[entry.value]) {
+          countData[entry.value] = 1;
+        } else {
+          countData[entry.value]++;
+        }
+      });
+
+      // console.log("countData", countData);
+
+      // store data
+      buildWindowData[windowStart] = countData;
+
+      currentWindow++;
+    }
+
+    console.log("buildWindowData", buildWindowData);
+
+    await this.fileWriter.storeMetricsSeries({
+      versions: buildWindowData,
+    });
+
+    // throw new Error("Not Implemented");
+  }
+
   // FEDIVERSE
 
   private async outputFediverseData(outputInstanceData): Promise<IFediverseDataOutput[]> {
@@ -1023,14 +1108,14 @@ export default class CrawlOutput {
     return returnStats;
   }
 
-  // KBIN
+  // mbin
 
-  private async outputKBinInstanceList(returnStats: IFediverseDataOutput[]): Promise<string[]> {
-    let kbinInstanceUrls: string[] = returnStats
+  private async outputMBinInstanceList(returnStats: IFediverseDataOutput[]): Promise<string[]> {
+    let mbinInstanceUrls: string[] = returnStats
       .map((fediverse) => {
         // const fediverse = this.fediverseData[fediKey];
 
-        if (fediverse.software && fediverse.software === "kbin") {
+        if (fediverse.software && fediverse.software === "mbin") {
           return fediverse.url;
         }
 
@@ -1038,50 +1123,50 @@ export default class CrawlOutput {
       })
       .filter((instance) => instance !== null);
 
-    await this.fileWriter.storeKbinInstanceList(kbinInstanceUrls);
+    await this.fileWriter.storeMBinInstanceData(mbinInstanceUrls);
 
-    return kbinInstanceUrls;
+    return mbinInstanceUrls;
   }
 
-  // generate a list of all the instances that are suspicious and the reasons
-  private async outputKBinMagazineList(): Promise<IKBinMagazineOutput[]> {
-    const output: IKBinMagazineOutput[] = [];
+  private async outputMBinMagazineList(): Promise<IMBinMagazineOutput[]> {
+    const output: IMBinMagazineOutput[] = [];
 
-    if (!this.kbinData) {
-      throw new Error("No KBin data");
+    if (!this.mbinData) {
+      throw new Error("No MBin data");
     }
 
     // filter old data
-    const filteredKBins = this.kbinData.filter((kbin) => {
-      return kbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE.MAGAZINE;
+    const filteredMBins = this.mbinData.filter((mbin) => {
+      if (!mbin.lastCrawled) return false; // record needs time
+      return mbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE.MAGAZINE;
     });
 
-    logging.info("KBin Magazines filteredKBins", this.kbinData.length, filteredKBins.length);
+    logging.info("MBin Magazines filteredMBins", this.mbinData.length, filteredMBins.length);
 
-    for (const kbin of filteredKBins) {
+    for (const mbin of filteredMBins) {
       output.push({
-        actor_id: kbin.id,
+        baseurl: mbin.baseurl,
+        magazineId: mbin.magazineId,
 
-        title: kbin.title, // display name
-        name: kbin.name, // key username
-        preferred: kbin.preferredUsername, // username ??
+        title: mbin.title, // display name
+        name: mbin.name, // key username
+        // preferred: mbin.preferredUsername, // username ??
 
-        baseurl: kbin.id.split("/")[2],
+        description: OutputUtils.stripMarkdownSubStr(mbin.description, 350),
+        isAdult: mbin.isAdult,
+        postingRestrictedToMods: mbin.isPostingRestrictedToMods,
 
-        summary: OutputUtils.stripMarkdownSubStr(kbin.summary, 350),
-        sensitive: kbin.sensitive,
-        postingRestrictedToMods: kbin.postingRestrictedToMods,
+        icon: mbin.icon?.storageUrl ? mbin.icon.storageUrl : null,
+        // published: mbin.published,
+        // updated: mbin.updated,
+        subscriptions: mbin.subscriptionsCount,
+        posts: mbin.postCount,
 
-        icon: kbin.icon ? kbin.icon.url : null,
-        published: kbin.published,
-        updated: kbin.updated,
-        followers: kbin.followerCount,
-
-        time: kbin.lastCrawled || 0,
+        time: mbin.lastCrawled || 0,
       });
     }
 
-    await this.fileWriter.storeKBinMagazineData(output);
+    await this.fileWriter.storeMBinMagazineData(output);
 
     return output;
   }
