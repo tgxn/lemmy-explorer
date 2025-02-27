@@ -12,7 +12,7 @@ import Box from "@mui/joy/Box";
 
 import Overview from "../components/Inspector/Overview";
 import Versions from "../components/Inspector/Versions";
-import VersionList from "../components/Inspector/VersionList";
+
 import Sus from "../components/Inspector/Sus";
 import VersionChart from "../components/Inspector/VersionChart";
 
@@ -33,6 +33,11 @@ export default function Inspector() {
       component: <Versions />,
     },
     {
+      label: "Version Chart",
+      nav: "/inspect/version-chart",
+      component: <VersionChart />,
+    },
+    {
       label: "Suspicious Instances",
       nav: "/inspect/sus",
       component: <Sus />,
@@ -42,16 +47,6 @@ export default function Inspector() {
     //   nav: "/inspect/debug",
     //   component: <Overview />,
     // },
-    {
-      label: "Version List",
-      nav: "/inspect/version-list",
-      component: <VersionList />,
-    },
-    {
-      label: "Version Chart",
-      nav: "/inspect/version-chart",
-      component: <VersionChart />,
-    },
   ];
 
   // restore tab
