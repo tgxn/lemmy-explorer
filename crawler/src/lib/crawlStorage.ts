@@ -131,12 +131,12 @@ export class CrawlStorage {
   }
 
   async getAttributesWithScores(baseUrl: string, attributeName: string): Promise<any> {
-    const start = Date.now() - this.attributeMaxAge;
+    // const start = Date.now() - this.attributeMaxAge;
     const end = Date.now();
 
     const keys = await this.client.zRangeByScoreWithScores(
       `attributes:instance:${baseUrl}:${attributeName}`,
-      start,
+      0, //start,
       end,
     );
     return keys;

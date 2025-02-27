@@ -114,6 +114,10 @@ jobs:
         working-directory: ./
         run: cp -r ./frontend/public/data/ ./pages/public/
 
+      - name: copy the raw db dump file to github pages
+        working-directory: ./
+        run: cp -r ./.redis/dump.rdb ./pages/public/data/lemmyverse.rdb
+
       # build pages frontend
       - name: Cache Node Modules | Pages
         id: cache-pages-yarn
@@ -122,7 +126,7 @@ jobs:
           cache-name: cache-pages-yarn
         with:
           path: ./pages/node_modules/
-          key: cache-pages-yarn-${{ hashFiles('pages/package-lock.json') }}
+          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
 
       - name: Install Dependencies
         if: steps.cache-pages-yarn.outputs.cache-hit != 'true'

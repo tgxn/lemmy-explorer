@@ -142,10 +142,28 @@ export default class OutputFileWriter {
     await this.writeJsonFile(`${this.publicDataFolder}/tags.meta.json`, JSON.stringify(fediTags));
   }
 
+  async storeMetricsSeries(data: { versions: any }) {
+    await this.writeJsonFile(`${this.publicDataFolder}/metrics.series.json`, JSON.stringify(data));
+  }
   /**
    * this method is used to store the instance metrics data
    */
-  public async storeInstanceMetricsData(instanceBaseUrl: String, data: any) {
+
+  public async storeInstanceMetricsData(
+    instanceBaseUrl: String,
+    data: {
+      instance: any[];
+      communityCount: number;
+      users: any[];
+      communities: any[];
+      posts: any[];
+      comments: any[];
+      versions: any[];
+      usersActiveDay: any[];
+      usersActiveMonth: any[];
+      usersActiveWeek: any[];
+    },
+  ) {
     await mkdir(this.metricsPath, {
       recursive: true,
     });
