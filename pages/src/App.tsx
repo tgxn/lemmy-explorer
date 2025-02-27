@@ -158,8 +158,8 @@ export default function App() {
     >
       <Box>
         <h1>
-          Lemmyverse Data{" "}
-          <Link href="https://lemmyverse.net" target="_blank">
+          Lemmy Explorer Data
+          <Link href="https://lemmyverse.net" target="_blank" sx={{ ml: 2 }}>
             https://lemmyverse.net
           </Link>
         </h1>
@@ -168,22 +168,10 @@ export default function App() {
       <Box
         sx={{
           p: 2,
-          textAlign: "center",
-        }}
-      >
-        <Button
-          startDecorator={<GitHubIcon />}
-          href="https://github.com/tgxn/lemmy-explorer"
-          target="_lv_github"
-          component="a"
-        >
-          View Code on GitHub
-        </Button>
-      </Box>
+          display: "flex",
 
-      <Box
-        sx={{
-          p: 2,
+          flexDirection: "row",
+          justifyContent: "space-between",
         }}
       >
         <Box
@@ -191,9 +179,24 @@ export default function App() {
             fontWeight: "bold",
           }}
         >
-          Data Last Updated
+          <Typography sx={{ color: "text.secondary" }}>Data Last Updated</Typography>
+          {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
         </Box>
-        {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
+        <Box
+          sx={{
+            p: 2,
+            textAlign: "center",
+          }}
+        >
+          <Button
+            startDecorator={<GitHubIcon />}
+            href="https://github.com/tgxn/lemmy-explorer"
+            target="_lv_github"
+            component="a"
+          >
+            View Code on GitHub
+          </Button>
+        </Box>
       </Box>
 
       <h2>Main (Full) Files</h2>
