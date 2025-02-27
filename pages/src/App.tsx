@@ -171,6 +171,22 @@ export default function App() {
       <Box
         sx={{
           p: 2,
+          textAlign: "center",
+        }}
+      >
+        <Button
+          startDecorator={<GitHubIcon />}
+          href="https://github.com/tgxn/lemmy-explorer"
+          target="_lv_github"
+          component="a"
+        >
+          View Code on GitHub
+        </Button>
+      </Box>
+
+      <Box
+        sx={{
+          p: 2,
         }}
       >
         <Box
@@ -206,20 +222,36 @@ export default function App() {
           return <LinkLine file={file} count={count} key={file.path} chip={file.chip} />;
         })}
       </List>
+
+      <h2>Raw Data File</h2>
       <Box
         sx={{
           p: 2,
-          textAlign: "center",
+          // textAlign: "center",
         }}
       >
-        <Button
-          startDecorator={<GitHubIcon />}
-          href="https://github.com/tgxn/lemmy-explorer"
-          target="_lv_github"
-          component="a"
+        <Typography sx={{ mb: 2 }} color="danger">
+          Here Be Dragons.
+        </Typography>
+        <Typography sx={{ mb: 2 }}>
+          This file is a raw dump of the Lemmyverse database. It's only really meant to use with a clone of
+          this project.
+        </Typography>
+        <ListItem
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
-          View Code on GitHub
-        </Button>
+          <Link href="data/lemmyverse.rdb" target="_lv_lemmyverse_rdb" download>
+            Download lemmyverse.rdb
+          </Link>
+          {/* Raw size would have to be calculated externally in the pipeline, so it's not available here. */}
+          {/* <Typography sx={{ fontWeight: "bold" }}>
+            <SimpleNumberFormat value={150} /> MB
+          </Typography> */}
+        </ListItem>
       </Box>
     </Container>
   );

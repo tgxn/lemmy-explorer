@@ -179,13 +179,10 @@ export const BannerImage = React.memo(({ imageSrc }: IBannerImageProps) => {
             loading="lazy"
             width={"100%"}
             height={"100%"}
-            alt={"Banner"}
-            //scaling
+            alt={"Banner Image"}
             style={{
-              // consdytr
               objectFit: "contain",
               objectPosition: "center center",
-              // aligh
             }}
           />
         </React.Fragment>

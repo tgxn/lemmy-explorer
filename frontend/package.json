@@ -32,6 +32,7 @@
     "@tanstack/react-query-devtools": "^4.29.23",
     "@uidotdev/usehooks": "^2.0.1",
     "axios": "^1.4.0",
+    "d3-scale": "^4.0.2",
     "masonic": "^3.7.0",
     "moment": "^2.29.4",
     "notistack": "^3.0.1",
