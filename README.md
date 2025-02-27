@@ -34,7 +34,7 @@ You can append `home_url` and (optionally) `home_type` to the URL to set the hom
 
 ### Q: **How does discovery work?**
 
-It uses a [seed list of communities](https://github.com/tgxn/lemmy-explorer/blob/main/crawler/src/lib/const.js#L47) and scans the equivalent of the `/instances` federation lists, and then creates jobs to scan each of those servers.
+It uses a [seed list of communities](https://github.com/tgxn/lemmy-explorer/blob/main/crawler/src/lib/const.ts#L68) and scans the equivalent of the `/instances` federation lists, and then creates jobs to scan each of those servers.
 
 Additionally, instance tags and trust data is fetched from [Fediseer](https://gui.fediseer.com/).
 
