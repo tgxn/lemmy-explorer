@@ -1,6 +1,6 @@
 {
   "name": "lemmy-explorer-cdk",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "MIT",
   "bin": {
     "explorer": "bin/explorer.js"
@@ -13,14 +13,14 @@
     "deploy:ci": "cdk deploy --all --require-approval never"
   },
   "dependencies": {
-    "aws-cdk": "2.174.0",
-    "aws-cdk-lib": "^2.174.0",
+    "aws-cdk": "2.1000.3",
+    "aws-cdk-lib": "^2.181.0",
     "constructs": "^10.2.35"
   },
   "devDependencies": {
-    "@types/node": "^22.10.5",
-    "aws-cdk": "2.174.0",
-    "aws-cdk-lib": "^2.174.0",
-    "typescript": "^5.7.2"
+    "@types/node": "^22.13.5",
+    "aws-cdk": "2.1000.3",
+    "aws-cdk-lib": "^2.181.0",
+    "typescript": "^5.7.3"
   }
 }
