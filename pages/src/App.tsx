@@ -51,7 +51,8 @@ function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
           {chip && (
             <Chip
               size={"sm"}
-              color={chip === "Full" ? "info" : "warning"}
+              variant="solid"
+              color={chip === "Full" ? "primary" : "warning"}
               sx={{
                 borderRadius: 0,
                 marginRight: 1,
@@ -62,11 +63,7 @@ function LinkLine({ file, count = null, chip = undefined }: ILinkLineProps) {
           )}
           <Link href={`data/${file.path}`}>{file.name}</Link>
         </Box>
-        {file.desc && (
-          <Typography level="body2" noWrap>
-            {file.desc}
-          </Typography>
-        )}
+        {file.desc && <Typography noWrap>{file.desc}</Typography>}
       </ListItemContent>
       <Typography>
         <SimpleNumberFormat value={count} />
@@ -161,8 +158,8 @@ export default function App() {
     >
       <Box>
         <h1>
-          Lemmyverse Data{" "}
-          <Link href="https://lemmyverse.net" target="_blank">
+          Lemmy Explorer Data
+          <Link href="https://lemmyverse.net" target="_blank" sx={{ ml: 2 }}>
             https://lemmyverse.net
           </Link>
         </h1>
@@ -171,16 +168,30 @@ export default function App() {
       <Box
         sx={{
           p: 2,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
         }}
       >
+        <Box>
+          <Typography sx={{ color: "text.secondary", fontWeight: "bold" }}>Data Last Updated</Typography>
+          {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
+        </Box>
         <Box
           sx={{
-            fontWeight: "bold",
+            p: 2,
+            textAlign: "center",
           }}
         >
-          Data Last Updated
+          <Button
+            startDecorator={<GitHubIcon />}
+            href="https://github.com/tgxn/lemmy-explorer"
+            target="_lv_github"
+            component="a"
+          >
+            View Code on GitHub
+          </Button>
         </Box>
-        {isSuccess && <Moment fromNow>{metaData.time}</Moment>}
       </Box>
 
       <h2>Main (Full) Files</h2>
@@ -206,20 +217,36 @@ export default function App() {
           return <LinkLine file={file} count={count} key={file.path} chip={file.chip} />;
         })}
       </List>
+
+      <h2>Raw Data File</h2>
       <Box
         sx={{
           p: 2,
-          textAlign: "center",
+          // textAlign: "center",
         }}
       >
-        <Button
-          startDecorator={<GitHubIcon />}
-          href="https://github.com/tgxn/lemmy-explorer"
-          target="_lv_github"
-          component="a"
+        <Typography sx={{ mb: 2 }} color="danger">
+          Here Be Dragons.
+        </Typography>
+        <Typography sx={{ mb: 2 }}>
+          This file is a raw dump of the Lemmyverse database. It's only really meant to use with a clone of
+          this project.
+        </Typography>
+        <ListItem
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
-          View Code on GitHub
-        </Button>
+          <Link href="data/lemmyverse.rdb" target="_lv_lemmyverse_rdb" download>
+            Download lemmyverse.rdb
+          </Link>
+          {/* Raw size would have to be calculated externally in the pipeline, so it's not available here. */}
+          {/* <Typography sx={{ fontWeight: "bold" }}>
+            <SimpleNumberFormat value={150} /> MB
+          </Typography> */}
+        </ListItem>
       </Box>
     </Container>
   );
