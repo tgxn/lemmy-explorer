@@ -13,6 +13,7 @@ import Divider from "@mui/joy/Divider";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import PaidIcon from "@mui/icons-material/Paid";
 import DataObjectIcon from "@mui/icons-material/DataObject";
+import { colors } from "@mui/joy";
 
 // this is a Button that links to a Lemmy instance
 // it should be outlined, green and have a Lemmy icon
@@ -37,7 +38,6 @@ function LemmyLink({ children }: { children: React.ReactNode }) {
 }
 
 export default function About() {
-  // get state.configReducer.homeBaseUrl
   const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
   const instanceType = useSelector((state: any) => state.configReducer.instanceType);
 
@@ -75,30 +75,6 @@ export default function About() {
           m: 3,
         }}
       >
-        <Button
-          startDecorator={
-            <Box
-              component="div"
-              sx={{
-                width: 30,
-                height: 30,
-                // dont change item size on flex
-                flexShrink: 0,
-                pr: 2,
-                ml: 2,
-                mr: 2,
-                background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-                backgroundSize: "contain",
-              }}
-            />
-          }
-          color="warning"
-          href={authorMessageLink}
-          target="_lv_message"
-          component="a"
-        >
-          Message me on Lemmy
-        </Button>
         <Button
           startDecorator={<GitHubIcon />}
           href="https://github.com/tgxn/lemmy-explorer"
@@ -171,6 +147,63 @@ export default function About() {
             </li>
           </ul>
         </Typography>
+      </Box>
+
+      <Divider />
+
+      {/* Contact section */}
+      <Box
+        sx={{
+          py: 2,
+          "& .MuiTypography-root": {
+            pb: 1,
+          },
+        }}
+      >
+        <Typography
+          level="h3"
+          gutterBottom
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          Author
+        </Typography>
+
+        <Typography>This project is created and maintained on GitHub, by @tgxn.</Typography>
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            startDecorator={
+              <Box
+                component="div"
+                sx={{
+                  width: 30,
+                  height: 30,
+                  // dont change item size on flex
+                  flexShrink: 0,
+                  // pr: 2,
+                  ml: 0,
+                  mr: 0,
+                  background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+                  backgroundSize: "contain",
+                }}
+              />
+            }
+            color="info"
+            href={authorMessageLink}
+            target="_lv_message"
+            component="a"
+          >
+            Message me on Lemmy
+          </Button>
+        </Box>
       </Box>
 
       <Divider />
