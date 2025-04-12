@@ -171,12 +171,19 @@ export default function About() {
           Author
         </Typography>
 
-        <Typography>This project is created and maintained on GitHub, by @tgxn.</Typography>
+        <Typography>
+          This project is created and maintained on GitHub, by{" "}
+          <Link href="https://github.com/tgxn" target="_lv_tgxn">
+            @tgxn
+          </Link>
+          .
+        </Typography>
 
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
+            p: 1,
           }}
         >
           <Button
@@ -190,6 +197,7 @@ export default function About() {
                   flexShrink: 0,
                   // pr: 2,
                   ml: 0,
+
                   mr: 0,
                   background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
                   backgroundSize: "contain",
