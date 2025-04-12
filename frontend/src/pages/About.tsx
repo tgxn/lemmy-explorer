@@ -37,22 +37,20 @@ function LemmyLink({ children }: { children: React.ReactNode }) {
 }
 
 export default function About() {
-
   // get state.configReducer.homeBaseUrl
-  const homeBaseUrl = useSelector((state:any) => state.configReducer.homeBaseUrl);
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
   const instanceType = useSelector((state: any) => state.configReducer.instanceType);
-  
+
   const authorMessageLink = React.useMemo(() => {
     let baseLink = "https://lemmy.tgxn.net/u/tgxn";
 
-      // user has a home instance
-      if (homeBaseUrl && instanceType != "mbin") {
-          baseLink = `https://${homeBaseUrl}/u/tgxn@lemmy.tgxn.net`;
-      
-      }
+    // user has a home instance
+    if (homeBaseUrl && instanceType != "mbin") {
+      baseLink = `https://${homeBaseUrl}/u/tgxn@lemmy.tgxn.net`;
+    }
 
     return baseLink;
-    }, [homeBaseUrl, instanceType]);
+  }, [homeBaseUrl, instanceType]);
 
   return (
     <Container maxWidth={"md"} sx={{}}>
@@ -78,20 +76,22 @@ export default function About() {
         }}
       >
         <Button
-          startDecorator={<Box
-            component="div"
-            sx={{
-              width: 30,
-              height: 30,
-              // dont change item size on flex
-              flexShrink: 0,
-              pr: 2,
-              ml: 2,
-              mr: 2,
-              background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-              backgroundSize: "contain",
-            }}
-          />}
+          startDecorator={
+            <Box
+              component="div"
+              sx={{
+                width: 30,
+                height: 30,
+                // dont change item size on flex
+                flexShrink: 0,
+                pr: 2,
+                ml: 2,
+                mr: 2,
+                background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+                backgroundSize: "contain",
+              }}
+            />
+          }
           color="warning"
           href={authorMessageLink}
           target="_lv_message"
