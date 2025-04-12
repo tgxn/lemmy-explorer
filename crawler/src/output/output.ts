@@ -238,17 +238,16 @@ class OutputUtils {
       old: previousRun.fediverse,
     });
 
-    // @TODO mbin checks are disabled till scanning is fixed
-    // data.push({
-    //   type: "magazines",
-    //   new: mbinMagazineArray.length,
-    //   old: previousRun.magazines,
-    // });
-    // data.push({
-    //   type: "mbin_instances",
-    //   new: mbinInstanceArray.length,
-    //   old: previousRun.mbin_instances,
-    // });
+    data.push({
+      type: "magazines",
+      new: mbinMagazineArray.length,
+      old: previousRun.magazines,
+    });
+    data.push({
+      type: "mbin_instances",
+      new: mbinInstanceArray.length,
+      old: previousRun.mbin_instances,
+    });
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
@@ -274,6 +273,28 @@ class OutputUtils {
 
     return true;
   }
+
+  static validateVersion(version: string): string | false {
+    // strip quotation marks that come either first or last
+    if (version.startsWith('"')) {
+      version = version.substring(1);
+    }
+    if (version.endsWith('"')) {
+      version = version.substring(0, version.length - 1);
+    }
+
+    // skip containing "unknown"
+    if (version.includes("unknown")) {
+      return false;
+    }
+
+    // skip if the value doesn't contain at least one `.` OR `-`
+    if (!version.includes(".") && !version.includes("-")) {
+      return false;
+    }
+
+    return version;
+  }
 }
 
 /**
@@ -286,8 +307,10 @@ export default class CrawlOutput {
 
   private instanceList: IInstanceData[] | null;
   private communityList: ICommunityData[] | null;
+
   private fediverseData: IFediverseDataKeyValue | null;
-  private mbinData: IMagazineData[] | null;
+
+  private mbinMagazines: IMagazineData[] | null;
 
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
@@ -296,12 +319,13 @@ export default class CrawlOutput {
     this.uptimeData = null;
     this.instanceErrors = null;
     // this.communityErrors = null;
+
     this.instanceList = null;
     this.communityList = null;
-    this.fediverseData = null;
-    this.mbinData = null;
 
-    // this.utils = new OutputUtils();
+    this.fediverseData = null;
+
+    this.mbinMagazines = null;
 
     this.fileWriter = new OutputFileWriter();
     this.trust = new OutputTrust();
@@ -312,10 +336,13 @@ export default class CrawlOutput {
     this.uptimeData = await storage.uptime.getLatest();
     this.instanceErrors = await storage.tracking.getAllErrors("instance");
     // this.communityErrors = await storage.tracking.getAllErrors("community");
+
     this.instanceList = await storage.instance.getAll();
     this.communityList = await storage.community.getAll();
+
     this.fediverseData = await storage.fediverse.getAll();
-    this.mbinData = await storage.mbin.getAll();
+
+    this.mbinMagazines = await storage.mbin.getAll();
   }
 
   /**
@@ -336,7 +363,7 @@ export default class CrawlOutput {
       throw new Error("No fediverse Data");
     }
 
-    if (!this.mbinData) {
+    if (!this.mbinMagazines) {
       throw new Error("No mbin Data");
     }
 
@@ -449,14 +476,14 @@ export default class CrawlOutput {
 
         MBinInstances: {
           ExportName: "MBin Instances",
-          Total: "N/A",
+          Total: mbinInstanceArray.length,
           Output: mbinInstanceArray.length,
           Previous: previousRun.mbin_instances,
           Change: calcChangeDisplay(mbinInstanceArray.length, previousRun.mbin_instances),
         },
         Magazines: {
           ExportName: "Magazines",
-          Total: this.mbinData.length,
+          Total: this.mbinMagazines.length,
           Output: mbinMagazineArray.length,
           Previous: previousRun.magazines,
           Change: calcChangeDisplay(mbinMagazineArray.length, previousRun.magazines),
@@ -911,20 +938,25 @@ export default class CrawlOutput {
     // key value in errors
     let errorTypes = {};
     for (const [key, value] of Object.entries(this.instanceErrors)) {
-      const instanceData: IClassifiedErrorOutput = {
-        baseurl: key.replace("error:instance:", ""),
-        error: value.error,
-        time: value.time,
-      };
-      instanceData.type = OutputUtils.findErrorType(value.error);
+      try {
+        const instanceData: IClassifiedErrorOutput = {
+          baseurl: key.replace("error:instance:", ""),
+          error: value.error,
+          time: value.time,
+        };
+        instanceData.type = OutputUtils.findErrorType(value.error);
 
-      if (errorTypes[instanceData.type] === undefined) {
-        errorTypes[instanceData.type] = 0;
-      } else {
-        errorTypes[instanceData.type]++;
+        if (errorTypes[instanceData.type] === undefined) {
+          errorTypes[instanceData.type] = 0;
+        } else {
+          errorTypes[instanceData.type]++;
+        }
+
+        instanceErrors.push(instanceData);
+      } catch (e) {
+        console.error("error parsing error", key, value);
+        throw e;
       }
-
-      instanceErrors.push(instanceData);
     }
 
     // count each type
@@ -960,87 +992,114 @@ export default class CrawlOutput {
     // basically, it creates a snapshot each 12 hours, and calculates the total at that point in time
     // maybe it shoudl use a floating window, so that it can show the change over time
 
-    // load all versions for all instances
-    let aggregateDataObject: {
-      time: number;
-      value: string;
-    }[] = [];
+    // anything earlier then take the latest
 
-    console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+    // load all versions for all instances
+    let aggregateDataObject: any = {};
+
+    // console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+
+    const snapshotWindow = 24 * 60 * 60 * 1000; // 24 hours
+    const totalWindows = 365 * 2; // 2 years
+
+    const currentTime = Date.now();
 
     for (const baseURL of countInstanceBaseURLs) {
       const attributeData = await storage.instance.getAttributeWithScores(baseURL, metricToAggregate);
-      // console.log("MM attributeData", attributeData);
 
-      if (attributeData) {
-        for (const merticEntry of attributeData) {
-          const time = merticEntry.score;
-          const value = merticEntry.value;
+      // generate sliding window of x hours, look backwards
 
-          aggregateDataObject.push({ time, value });
+      let currentWindow = 0;
+      while (currentWindow <= totalWindows) {
+        // console.log("currentWindow", currentWindow);
+        const windowOffset = currentWindow * snapshotWindow;
+
+        // get this
+        const windowStart = currentTime - windowOffset;
+        // const windowEnd = windowStart - snapshotWindow;
+
+        // filter data before this period
+        const windowData = attributeData.filter((entry) => {
+          return entry.score < windowStart;
+        });
+        const newestEntries = windowData.sort((a, b) => {
+          return b.score - a.score;
+        });
+
+        let newestEntryValue: any = null;
+        for (const thisEntry of newestEntries) {
+          const value = OutputUtils.validateVersion(thisEntry.value);
+          if (value) {
+            newestEntryValue = value;
+            break;
+          }
         }
+
+        if (!newestEntryValue) {
+          currentWindow++;
+          continue;
+        }
+
+        if (!aggregateDataObject[windowStart]) {
+          aggregateDataObject[windowStart] = {};
+        }
+
+        if (!aggregateDataObject[windowStart][newestEntryValue]) {
+          aggregateDataObject[windowStart][newestEntryValue] = 1;
+        } else {
+          aggregateDataObject[windowStart][newestEntryValue]++;
+        }
+        // console.log("newestEntryValue", newestEntryValue);
+
+        currentWindow++;
       }
     }
 
-    console.log("aggregateDataObject", aggregateDataObject.length);
+    // order each sub-array by count
+    for (const time in aggregateDataObject) {
+      const timeData = aggregateDataObject[time];
 
-    // console.log("aggregateDataObject", aggregateDataObject);
+      const orderedTimeData = Object.keys(timeData)
+        .filter((key) => timeData[key] > 1)
+        .sort((a, b) => {
+          return timeData[b] - timeData[a];
+        })
+        .reduce((obj, key) => {
+          obj[key] = timeData[key];
+          return obj;
+        }, {});
 
-    const snapshotWindow = 12 * 60 * 60 * 1000; // 12 hours
-    const totalWindows = 600; // 60 snapshots
-
-    // generate sliding window of x hours, look backwards
-    const currentTime = Date.now();
-
-    const buildWindowData = {};
-
-    let currentWindow = 0;
-    // let countingData = true;
-    while (currentWindow <= totalWindows) {
-      // console.log("currentWindow", currentWindow);
-      const windowOffset = currentWindow * snapshotWindow;
-
-      // get this
-      const windowStart = currentTime - windowOffset;
-      const windowEnd = windowStart - snapshotWindow;
-
-      // filter data
-      const windowData = aggregateDataObject.filter((entry) => {
-        // console.log("entry.time", entry.time, windowStart, windowEnd);
-        return entry.time < windowStart;
-      });
-      console.log("currentWindow", currentWindow, windowStart, windowEnd, windowData.length);
-
-      // // stop if no data
-      // if (windowData.length === 0) {
-      //   countingData = false;
-      //   break;
-      // }
-
-      // console.log("windowData", windowData);
-
-      // count data
-      const countData = {};
-      windowData.forEach((entry) => {
-        if (!countData[entry.value]) {
-          countData[entry.value] = 1;
-        } else {
-          countData[entry.value]++;
-        }
-      });
-
-      // console.log("countData", countData);
-
-      // store data
-      buildWindowData[windowStart] = countData;
-
-      currentWindow++;
+      aggregateDataObject[time] = orderedTimeData;
     }
 
-    console.log("buildWindowData", buildWindowData);
+    // look for the version in aggregateDataObject[windowStart], increment this version if it exist5s
+
+    // console.log("windowData", aggregateDataObject);
+    // throw new Error("Not Implemented");
+
+    // map the time into each obecjt, and return as an array
+    const outputVersionsArray = Object.keys(aggregateDataObject).map((time) => {
+      return {
+        time: time,
+        ...aggregateDataObject[time],
+      };
+    });
+
+    console.log("outputVersionsArray", outputVersionsArray.length);
+
+    const acc: any = [];
+    Object.values(outputVersionsArray).forEach((key: any) => {
+      Object.keys(key).forEach((key) => {
+        if (key !== "time" && acc.indexOf(key) === -1) {
+          acc.push(key);
+        }
+      });
+    });
 
     await this.fileWriter.storeMetricsSeries({
-      versions: buildWindowData,
+      uniqueVersions: acc.length,
+      versionKeys: acc,
+      versions: outputVersionsArray,
     });
 
     // throw new Error("Not Implemented");
@@ -1131,17 +1190,17 @@ export default class CrawlOutput {
   private async outputMBinMagazineList(): Promise<IMBinMagazineOutput[]> {
     const output: IMBinMagazineOutput[] = [];
 
-    if (!this.mbinData) {
+    if (!this.mbinMagazines) {
       throw new Error("No MBin data");
     }
 
     // filter old data
-    const filteredMBins = this.mbinData.filter((mbin) => {
+    const filteredMBins = this.mbinMagazines.filter((mbin) => {
       if (!mbin.lastCrawled) return false; // record needs time
       return mbin.lastCrawled > Date.now() - OUTPUT_MAX_AGE.MAGAZINE;
     });
 
-    logging.info("MBin Magazines filteredMBins", this.mbinData.length, filteredMBins.length);
+    logging.info("MBin Magazines filteredMBins", this.mbinMagazines.length, filteredMBins.length);
 
     for (const mbin of filteredMBins) {
       output.push({

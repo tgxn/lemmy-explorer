@@ -20,7 +20,10 @@ COPY src src/
 RUN yarn global add tsx
 
 RUN yarn global add pm2
-# RUN pm2 install typescript
+
+# logrotate
+RUN pm2 install pm2-logrotate
+RUN pm2 set pm2-logrotate:retain 7
 
 RUN yarn install
 
