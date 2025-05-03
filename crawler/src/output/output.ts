@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import removeMd from "remove-markdown";
 
-import { OUTPUT_MAX_AGE } from "../lib/const";
+import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS } from "../lib/const";
 import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
@@ -37,23 +37,45 @@ import {
 import OutputTrust from "./trust";
 
 class OutputUtils {
-  // strip markdown, optionally substring
-  static stripMarkdownSubStr(text: string, maxLength: number = -1) {
-    const stripped = removeMd(text);
+  static safeSplit(text: string, maxLength: number) {
+    // split byu space and rejoin till above the length
+    const words = text.split(" ");
+    let result = "";
 
-    // string everything but text
-    const regex = /[^\w\s]/g;
-    const strippedRegex = stripped.replace(regex, "");
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
 
-    // remove extra spaces
-    const strippedSpaces = strippedRegex.replace(/\s+/g, " ");
-    const strippedFinal = strippedSpaces.trim();
+      const newString = result + " " + word;
 
-    if (maxLength > 0) {
-      return strippedFinal.substring(0, maxLength);
+      // if the word is too long, split it
+      if (newString.length > maxLength) {
+        break;
+      }
+
+      result = newString;
     }
 
-    return strippedFinal;
+    return result.trim();
+  }
+
+  // strip markdown, optionally substring
+  static stripMarkdownSubStr(text: string, maxLength: number = -1) {
+    if (!text || text.length === 0) {
+      return "";
+    }
+
+    try {
+      const stripped = removeMd(text);
+
+      if (maxLength > 0) {
+        return OutputUtils.safeSplit(stripped, maxLength);
+      }
+
+      return stripped.trim();
+    } catch (e) {
+      console.error("error stripping markdown", text);
+      throw e;
+    }
   }
 
   // calculate community published time epoch
@@ -689,7 +711,10 @@ export default class CrawlOutput {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
-          desc: OutputUtils.stripMarkdownSubStr(instance.siteData.site.description, 350),
+          desc: OutputUtils.stripMarkdownSubStr(
+            instance.siteData.site.description,
+            EXPORT_MAX_LENGTHS.INSTANCE_DESC,
+          ),
 
           // config
           downvotes: instance.siteData.config?.enable_downvotes,
@@ -841,7 +866,10 @@ export default class CrawlOutput {
           url: community.community.actor_id,
           name: community.community.name,
           title: community.community.title,
-          desc: OutputUtils.stripMarkdownSubStr(community.community.description, 350),
+          desc: OutputUtils.stripMarkdownSubStr(
+            community.community.description,
+            EXPORT_MAX_LENGTHS.COMMUNITY_DESC,
+          ),
           icon: community.community.icon,
           banner: community.community.banner,
           nsfw: community.community.nsfw,
@@ -1219,7 +1247,7 @@ export default class CrawlOutput {
         name: mbin.name, // key username
         // preferred: mbin.preferredUsername, // username ??
 
-        description: OutputUtils.stripMarkdownSubStr(mbin.description, 350),
+        description: OutputUtils.stripMarkdownSubStr(mbin.description, EXPORT_MAX_LENGTHS.MAGAZINE_DESC),
         isAdult: mbin.isAdult,
         postingRestrictedToMods: mbin.isPostingRestrictedToMods,
 

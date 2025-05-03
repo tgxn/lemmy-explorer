@@ -26,26 +26,26 @@ export const CRAWL_TIMEOUT = {
 
 // max age to be included in output
 export const OUTPUT_MAX_AGE = {
-  INSTANCE: hoursToMs(18),
-  COMMUNITY: hoursToMs(18),
-  MAGAZINE: hoursToMs(18),
+  INSTANCE: hoursToMs(24),
+  COMMUNITY: hoursToMs(24),
+  MAGAZINE: hoursToMs(24),
 };
 
 // controls the time before manual re-scan of old objects
 export const CRAWL_AGED_TIME = {
-  INSTANCE: hoursToMs(8),
-  COMMUNITY: hoursToMs(8),
+  INSTANCE: hoursToMs(10),
+  COMMUNITY: hoursToMs(10),
 
   // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
   FEDIVERSE: hoursToMs(2 * 24), // 2 days
 
-  MAGAZINE: hoursToMs(8),
+  MAGAZINE: hoursToMs(10),
 };
 
 // consider for deletion after they haven't been seen for this long
 // they are added to manually scan one last time before finally beign deleted
 export const CRAWL_DELETE_TIME = {
-  COMMUNITY: hoursToMs(13),
+  COMMUNITY: hoursToMs(48),
 };
 
 // when should these records expire from redis - min time between scans
@@ -60,6 +60,12 @@ export const CRON_SCHEDULES = {
   UPTIME: "0 */12 * * *",
   MBIN: "0 */6 * * *",
   FEDISEER: "0 */12 * * *",
+};
+
+export const EXPORT_MAX_LENGTHS = {
+  INSTANCE_DESC: 400,
+  COMMUNITY_DESC: 400,
+  MAGAZINE_DESC: 400,
 };
 
 // for each request we make, after how much time should axios be configured to timeout
