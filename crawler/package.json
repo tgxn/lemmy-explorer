@@ -16,6 +16,7 @@
     "start:dev:instance": "tsx index.ts -q instance",
     "start:dev:community": "tsx index.ts -q community",
     "health": "tsx index.ts --health",
+    "out": "tsx index.ts --out",
     "output": "tsx index.ts --out",
     "format": "prettier --check .",
     "format:write": "prettier --write .",

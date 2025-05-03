@@ -41,11 +41,19 @@ class OutputUtils {
   static stripMarkdownSubStr(text: string, maxLength: number = -1) {
     const stripped = removeMd(text);
 
+    // string everything but text
+    const regex = /[^\w\s]/g;
+    const strippedRegex = stripped.replace(regex, "");
+
+    // remove extra spaces
+    const strippedSpaces = strippedRegex.replace(/\s+/g, " ");
+    const strippedFinal = strippedSpaces.trim();
+
     if (maxLength > 0) {
-      return stripped.substring(0, maxLength);
+      return strippedFinal.substring(0, maxLength);
     }
 
-    return stripped;
+    return strippedFinal;
   }
 
   // calculate community published time epoch
