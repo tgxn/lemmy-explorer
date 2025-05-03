@@ -122,8 +122,8 @@ export default function CommunityCard({ community }) {
           level="body3"
           sx={{
             display: "-webkit-box",
-            height: "54px",
-            maxHeight: "90px",
+            height: "90px",
+            maxHeight: "100px",
             overflow: "hidden",
             flexGrow: 1,
             flexShrink: 1,
