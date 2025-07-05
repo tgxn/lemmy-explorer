@@ -229,14 +229,14 @@ export type IPiefedCommunityData = {
     post_count: number;
     post_reply_count: number;
     subscriptions_count: number;
+    total_subscriptions_count: number;
     active_daily: number;
     active_weekly: number;
     active_monthly: number;
     active_6monthly: number;
+    published: string;
   };
   subscribed: string;
-  // counts: Object;
-  banned_from_community?: boolean;
   lastCrawled: number;
   baseurl: string;
 };
