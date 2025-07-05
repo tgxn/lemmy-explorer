@@ -100,6 +100,8 @@ These start a worker that will run a single job, then exit.
 | `-m [c\|community] <base_url>`               | Crawl a single instance's community list       |
 | `-m [s\|single] <base_url> <community_name>` | Crawl a single community, delete if not exists |
 | `-m [m\|mbin] <base_url>`                    | Crawl a single mbin instance                   |
+| `-m [p\|piefed] <base_url>`                  | Crawl a single piefed instance                 |
+
 
 #### **Examples**
 
@@ -132,6 +134,8 @@ Crawlers are tasks created to perform an action, which could be crawling an inst
 | `fediseer`  | Fediseer Crawling  |
 | `uptime`    | Uptime Crawling    |
 | `mbin`      | MBin Crawling      |
+| `piefed`    | Piefed Crawling    |
+
 
 ### Queues
 
@@ -143,6 +147,8 @@ Queues are where Tasks can be placed to be processed.
 | `community_list`   | Crawl a community        |
 | `community_single` | Crawl a single community |
 | `mbin`             | Crawl a mbin instance    |
+| `piefed`           | Crawl a piefed instance  |
+
 
 ## Storage
 
