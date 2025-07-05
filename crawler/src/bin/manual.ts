@@ -4,6 +4,7 @@ import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import MBinQueue from "../queue/mbin";
+import PiefedQueue from "../queue/piefed";
 
 export default async function runManualWorker(workerName: string, firstParam: string, secondParam: string) {
   // scan one instance
@@ -45,4 +46,14 @@ export default async function runManualWorker(workerName: string, firstParam: st
       process.exit(0);
     });
   }
+
+  // scan one piefed
+  else if (workerName == "p" || workerName == "piefed") {
+    logging.info(`Running Single Piefed Crawl for ${firstParam}`);
+    const crawlPiefedManual = new PiefedQueue(true, "piefed_manual");
+    await crawlPiefedManual.createJob(firstParam, (resultData) => {
+      logging.info("Piefed Crawl Complete");
+      process.exit(0);
+    });
+  }  
 }

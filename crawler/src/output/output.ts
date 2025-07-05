@@ -11,6 +11,7 @@ import storage from "../lib/crawlStorage";
 import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
 import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
 import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
+import { IPiefedCommunityData, IPiefedCommunityDataKeyValue } from "../../../types/storage";
 import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
 // import { IFediseerInstanceData } from "../lib/storage/fediseer";
 
@@ -30,6 +31,7 @@ import {
   ICommunityDataOutput,
   IMBinInstanceOutput,
   IMBinMagazineOutput,
+  IPiefedCommunityDataOutput,
   IFediverseDataOutput,
   IClassifiedErrorOutput,
 } from "../../../types/output";
@@ -190,6 +192,8 @@ class OutputUtils {
     returnCommunityArray: ICommunityDataOutput[],
     mbinInstanceArray: string[],
     mbinMagazineArray: IMBinMagazineOutput[],
+    piefedInstanceArray: string[],
+    piefedCommunitiesArray: IPiefedCommunityDataOutput[],
     returnStats: IFediverseDataOutput[],
   ) {
     const issues: string[] = [];
@@ -342,6 +346,8 @@ export default class CrawlOutput {
 
   private mbinMagazines: IMagazineData[] | null;
 
+  private piefedCommunities: IPiefedCommunityData[] | null;
+
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
 
@@ -356,6 +362,8 @@ export default class CrawlOutput {
     this.fediverseData = null;
 
     this.mbinMagazines = null;
+
+    this.piefedCommunities = null;
 
     this.fileWriter = new OutputFileWriter();
     this.trust = new OutputTrust();
@@ -373,6 +381,9 @@ export default class CrawlOutput {
     this.fediverseData = await storage.fediverse.getAll();
 
     this.mbinMagazines = await storage.mbin.getAll();
+
+    this.piefedCommunities = await storage.piefed.getAll();
+
   }
 
   /**
@@ -396,6 +407,10 @@ export default class CrawlOutput {
     if (!this.mbinMagazines) {
       throw new Error("No mbin Data");
     }
+
+    if (!this.piefedCommunities) {
+      throw new Error("No piefed Data");
+    }    
 
     // setup trust data
     await this.trust.setupSources(this.instanceList);
@@ -447,6 +462,10 @@ export default class CrawlOutput {
     const mbinInstanceArray = await this.outputMBinInstanceList(returnStats);
     const mbinMagazineArray = await this.outputMBinMagazineList();
 
+    // piefed data
+    const piefedInstanceArray = await this.outputPiefedInstanceList(returnStats);
+    const piefedCommunitiesArray = await this.outputPiefedCommunitiesList();
+
     // error data
     const instanceErrors = await this.outputClassifiedErrors();
 
@@ -460,6 +479,8 @@ export default class CrawlOutput {
       communities: returnCommunityArray.length,
       mbin_instances: mbinInstanceArray.length,
       magazines: mbinMagazineArray.length,
+      piefed_instances: piefedInstanceArray.length,
+      piefed_communities: piefedCommunitiesArray.length,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -519,6 +540,21 @@ export default class CrawlOutput {
           Change: calcChangeDisplay(mbinMagazineArray.length, previousRun.magazines),
         },
 
+        PiefedInstances: {
+          ExportName: "Piefed Instances",
+          Total: piefedInstanceArray.length,
+          Output: piefedInstanceArray.length,
+          Previous: previousRun.piefed_instances,
+          Change: calcChangeDisplay(piefedInstanceArray.length, previousRun.piefed_instances),
+        },
+        PiefedCommunities: {
+          ExportName: "Piefed Communities",
+          Total: this.mbinMagazines.length,
+          Output: piefedCommunitiesArray.length,
+          Previous: previousRun.piefed_communities,
+          Change: calcChangeDisplay(piefedCommunitiesArray.length, previousRun.piefed_communities),
+        },        
+
         Fediverse: {
           ExportName: "Fediverse Servers",
           Total: "N/A",
@@ -546,6 +582,8 @@ export default class CrawlOutput {
       returnCommunityArray,
       mbinInstanceArray,
       mbinMagazineArray,
+      piefedInstanceArray,
+      piefedCommunitiesArray,
       returnStats,
     );
 
@@ -1265,4 +1303,58 @@ export default class CrawlOutput {
 
     return output;
   }
+
+  // piefed
+
+  private async outputPiefedInstanceList(returnStats: IFediverseDataOutput[]): Promise<string[]> {
+    let piefedInstanceUrls: string[] = returnStats
+      .map((fediverse) => {
+        // const fediverse = this.fediverseData[fediKey];
+
+        if (fediverse.software && fediverse.software === "piefed") {
+          return fediverse.url;
+        }
+
+        return null;
+      })
+      .filter((instance) => instance !== null);
+
+    await this.fileWriter.storePiefedInstanceData(piefedInstanceUrls);
+
+    return piefedInstanceUrls;
+  }
+
+  private async outputPiefedCommunitiesList(): Promise<IPiefedCommunityDataOutput[]> {
+    const output: IPiefedCommunityDataOutput[] = [];
+
+    if (!this.piefedCommunities) {
+      throw new Error("No Piefed data");
+    }
+
+    // filter old data
+    const filteredPiefeds = this.piefedCommunities.filter((piefedComm) => {
+      if (!piefedComm.lastCrawled) return false; // record needs time
+      return piefedComm.lastCrawled > Date.now() - OUTPUT_MAX_AGE.COMMUNITY;
+    });
+
+    logging.info("Piefed Communities filteredPiefeds", this.piefedCommunities.length, filteredPiefeds.length);
+
+    for (const piefed of filteredPiefeds) {
+      output.push({
+        baseurl: piefed.baseurl,
+        name: piefed.community.name, // key username
+        title: piefed.community.title, // display name
+        icon: piefed.community?.icon ? piefed.community.icon : null,
+        nsfw: piefed.community.nsfw,
+        counts: piefed.counts,
+        published: piefed.community.published,
+        time: piefed.lastCrawled || 0,
+        restricted_to_mods: piefed.community.restricted_to_mods,
+      });
+    }
+
+    await this.fileWriter.storePiefedCommunityData(output);
+
+    return output;
+  }  
 }

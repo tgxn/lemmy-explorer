@@ -4,6 +4,7 @@ import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import MBinQueue from "../queue/mbin";
+import PiefedQueue from "../queue/piefed";
 
 import storage from "../lib/crawlStorage";
 
@@ -16,6 +17,7 @@ export default class CrawlAged {
   private communityCrawler: CommunityQueue;
   private singleCommunityCrawler: SingleCommunityQueue;
   private mbinCrawler: MBinQueue;
+  private piefedCrawler: PiefedQueue;
 
   constructor() {
     this.agedInstanceBaseUrls = [];
@@ -26,6 +28,8 @@ export default class CrawlAged {
 
     // scan for aged magazines
     this.mbinCrawler = new MBinQueue(false);
+    // piefed communities
+    this.piefedCrawler = new PiefedQueue(false);
   }
 
   async recordAges() {
@@ -34,6 +38,7 @@ export default class CrawlAged {
     const instances = await storage.instance.getAll();
     const communities = await storage.community.getAll();
     const magazines = await storage.mbin.getAll();
+    const piefed_communities = await storage.piefed.getAll();
     const fediverse = await storage.fediverse.getAll();
     const errors = await storage.tracking.getAllErrors("*");
     const lastCrawls = await storage.tracking.listAllLastCrawl();
@@ -110,6 +115,12 @@ export default class CrawlAged {
     healthData.push({
       table: "Magazines",
       ...magazineAgeDistribution.buckets,
+    });
+
+    const piefedCommunitiesAgeDistribution = getAgeDistribution(piefed_communities, "lastCrawled");
+    healthData.push({
+      table: "PiefedCommunities",
+      ...piefedCommunitiesAgeDistribution.buckets,
     });
 
     const fediverseAgeDistribution = getAgeDistribution(Object.values(fediverse), "time");
@@ -279,6 +290,33 @@ export default class CrawlAged {
     );
     for (const baseUrl of uniqueAgedMagazineBaseUrls) {
       this.mbinCrawler.createJob(baseUrl);
+    }
+
+    // get aged piefed communities
+    const piefedCommunities = await storage.piefed.getAll();
+
+    const agedPiefedCommunities = Object.values(piefedCommunities).filter((piefed_community) => {
+      if (!piefed_community.lastCrawled) return true; // not set
+
+      if (Date.now() - piefed_community.lastCrawled > CRAWL_AGED_TIME.COMMUNITY) {
+        return true;
+      }
+
+      return false;
+    });
+
+    // get base url for each magazine
+    const agedPiefedCommunityBaseUrls = agedPiefedCommunities.map((piefed_community) => piefed_community.baseurl);
+
+    // filter those dupes
+    const uniqueAgedPiefedCommunityBaseUrls = [...new Set(agedPiefedCommunityBaseUrls)];
+
+    logging.info(
+      `Piefed Communities Total: ${piefedCommunities.length} Aged ${agedPiefedCommunityBaseUrls.length}, Total Instances: ${uniqueAgedPiefedCommunityBaseUrls.length}`,
+    );
+
+    for (const baseUrl of uniqueAgedPiefedCommunityBaseUrls) {
+      this.piefedCrawler.createJob(baseUrl);
     }
 
     logging.info("Done Creating Aged Jobs");

@@ -200,3 +200,47 @@ export type IFullUptimeData = {
   timestamp: number;
   nodes: IUptimeNodeData[];
 };
+
+/// PIEFED
+
+export type IPiefedCommunityData = {
+  activity_alert: boolean;
+  blocked: boolean;
+  community: {
+    actor_id: string;
+    ap_domain: string;
+    banned: boolean;
+    deleted: boolean;
+    hidden: boolean;
+    icon: string | null;
+    id: number;
+    instance_id: number;
+    local: boolean;
+    name: string;
+    nsfw: boolean;
+    published: string;
+    removed: boolean;
+    restricted_to_mods: boolean;
+    title: string;
+    updated: string | null;
+  };
+  counts: {
+    id: number;
+    post_count: number;
+    post_reply_count: number;
+    subscriptions_count: number;
+    active_daily: number;
+    active_weekly: number;
+    active_monthly: number;
+    active_6monthly: number;
+  };
+  subscribed: string;
+  // counts: Object;
+  banned_from_community?: boolean;
+  lastCrawled: number;
+  baseurl: string;
+};
+
+export type IPiefedCommunityDataKeyValue = {
+  [key: string]: IPiefedCommunityData;
+};
