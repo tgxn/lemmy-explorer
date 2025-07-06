@@ -167,26 +167,26 @@ function PiefedCommunities() {
 
     // sorting
     if (orderBy === "subscriptions") {
-      communties = communties.sort((a, b) => b.subscriptions - a.subscriptions);
+      communties = communties.sort((a, b) => b.subscriptions_count - a.subscriptions_count);
     } else if (orderBy === "posts") {
-      communties = communties.sort((a, b) => b.posts - a.posts);
+      communties = communties.sort((a, b) => b.post_count - a.post_count);
     } else if (orderBy === "name") {
       communties = communties.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    console.log(`Sorted ${communties.length} magazines`);
+    console.log(`Sorted ${communties.length} piefed communities`);
 
     console.log(
-      `updating magazines data with ${communties.length} magazines, removed: ${
-        magData.length - communties.length
+      `updating piefed communities data with ${communties.length} communities, removed: ${
+        piefedCommunityData.length - communties.length
       }`,
     );
 
-    console.timeEnd("sort+filter magazines");
+    console.timeEnd("sort+filter piefed communities");
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [magData]);
+  }, [piefedCommunityData]);
 
   return (
     <Container
@@ -209,7 +209,7 @@ function PiefedCommunities() {
       >
         <Input
           startDecorator={<SearchIcon />}
-          placeholder="Filter Magazines"
+          placeholder="Filter Communities"
           value={filterText}
           sx={{
             width: { xs: "100%", sm: 285 },
@@ -267,7 +267,7 @@ function PiefedCommunities() {
             >
               showing{" "}
               <SimpleNumberFormat
-                value={magazinesData.length}
+                value={piefedCommunitiesData.length}
                 // displayType={"text"}
                 // decimalScale={2}
                 // thousandSeparator={","}
@@ -319,10 +319,10 @@ function PiefedCommunities() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <MBinGrid items={magazinesData} />}
-        {isSuccess && viewType == "list" && <MBinList items={magazinesData} />}
+        {isSuccess && viewType == "grid" && <PiefedGrid items={piefedCommunitiesData} />}
+        {isSuccess && viewType == "list" && <PiefedList items={piefedCommunitiesData} />}
       </Box>
     </Container>
   );
 }
-export default React.memo(MBinMagazines);
+export default React.memo(PiefedCommunities);

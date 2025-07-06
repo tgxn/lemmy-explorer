@@ -73,6 +73,7 @@ const CommunityLink = React.memo(
       }
 
       // user has a home instance
+      // note - piefed uses /c/ so does not need it's own selector here
       if (homeBaseUrl) {
         // if the user is
         if (instanceType == "mbin") {

@@ -15,13 +15,13 @@ import VirtualTable from "./VirtualTable";
 import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
-import { IMBinMagazineOutput } from "../../../../types/output";
+import { IPiefedCommunityDataOutput } from "../../../../types/output";
 
-type IMBinListProps = {
-  items: IMBinMagazineOutput[];
+type IPiefedListProps = {
+  items: IPiefedCommunityDataOutput[];
 };
 
-const MBinList = React.memo(function ({ items }: IMBinListProps) {
+const PiefedList = React.memo(function ({ items }: IPiefedListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -35,7 +35,7 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
           headerStyle={{
             justifyContent: "left",
           }}
-          cellRenderer={({ rowData }: { rowData: IMBinMagazineOutput }) => {
+          cellRenderer={({ rowData }: { rowData: IPiefedCommunityDataOutput }) => {
             // console.log(rowData);
             return (
               <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -75,7 +75,7 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
                     }}
                   >
                     <ExtCommunityLink
-                      baseType="mbin"
+                      baseType="piefed"
                       community={{
                         baseurl: rowData.baseurl, // for link
                         name: rowData.name, // for link
@@ -104,7 +104,7 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
 
         <Column
           label="Subscriptions"
-          dataKey="subscriptions"
+          dataKey="subscriptions_count"
           width={width}
           style={{
             display: "flex",
@@ -114,7 +114,7 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
         />,
         <Column
           label="Posts"
-          dataKey="posts"
+          dataKey="post_count"
           width={width}
           style={{
             display: "flex",
@@ -126,4 +126,4 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
     </VirtualTable>
   );
 });
-export default MBinList;
+export default PiefedList;

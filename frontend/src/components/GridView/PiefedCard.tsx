@@ -20,13 +20,13 @@ import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
 import { IconAvatar } from "../Shared/Avatar";
 
-import { IMBinMagazineOutput } from "../../../../types/output";
+import { IPiefedCommunityDataOutput } from "../../../../types/output";
 
-type MBinCardProps = {
-  magazine: IMBinMagazineOutput;
+type PiefedCardProps = {
+  community: IPiefedCommunityDataOutput;
 };
 
-const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
+const PiefedCard = React.memo(function ({ community }: PiefedCardProps) {
   return (
     <Card
       variant="outlined"
@@ -35,7 +35,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
         gap: 0,
       }}
     >
-      {/* Magazine Title */}
+      {/* Community Title */}
       <CardOverflow
         variant="outlined"
         // orientation="horizontal"
@@ -57,7 +57,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
             mr: 0.5,
           }}
         >
-          <IconAvatar alt={magazine.title} src={magazine.icon} />
+          <IconAvatar alt={community.title} src={community.icon} />
         </Box>
 
         <Box
@@ -81,18 +81,18 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
             }}
           >
             <ExtCommunityLink
-              baseType="mbin"
+              baseType="piefed"
               community={{
-                baseurl: magazine.baseurl, // for link
-                name: magazine.name, // for link
-                title: magazine.title, // for display
+                baseurl: community.baseurl, // for link
+                name: community.name, // for link
+                title: community.title, // for display
               }}
             />
           </Typography>
 
           <Typography level="body3">
             <CopyLink
-              copyText={`!${magazine.name}@${magazine.baseurl}`}
+              copyText={`!${community.name}@${community.baseurl}`}
               linkProps={{
                 variant: "plain",
                 color: "neutral",
@@ -123,7 +123,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
             overflow: "hidden",
           }}
         >
-          {magazine.description ? magazine.description : ""}
+          {community.description ? community.description : ""}
         </Typography>
       </CardContent>
       <CardOverflow
@@ -153,7 +153,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
               }}
             >
               <RecordVoiceOverIcon />
-              <TinyNumber value={magazine.subscriptions} />
+              <TinyNumber value={community.subscriptions_count} />
             </Typography>
           </Tooltip>
           <Divider orientation="vertical" />
@@ -171,7 +171,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
               }}
             >
               <MessageIcon />
-              <TinyNumber value={magazine.posts} />
+              <TinyNumber value={community.post_count} />
             </Typography>
           </Tooltip>
           {/* 
@@ -214,8 +214,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
         </CardContent>
       </CardOverflow>
     </Card>
-    // </Grid>
   );
 });
 
-export default MBinCard;
+export default PiefedCard;

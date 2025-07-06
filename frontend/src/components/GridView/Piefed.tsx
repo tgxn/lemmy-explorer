@@ -4,13 +4,13 @@ import { useMasonry, usePositioner, useContainerPosition, useScroller } from "ma
 
 import { useWindowSize } from "@react-hook/window-size";
 
-import NMBinCard from "./MBinCard";
+import PiefedCard from "./PiefedCard";
 
-type MBinGridProps = {
+type PiefedGridProps = {
   items: any[];
 };
 
-const MBinGrid = React.memo(function ({ items }: MBinGridProps) {
+const PiefedGrid = React.memo(function ({ items }: PiefedGridProps) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -20,7 +20,7 @@ const MBinGrid = React.memo(function ({ items }: MBinGridProps) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardAsCallback = React.useCallback((props) => <NMBinCard magazine={props.data} />, [isScrolling]);
+  const CardAsCallback = React.useCallback((props) => <PiefedCard community={props.data} />, [isScrolling]);
 
   return useMasonry({
     containerRef,
@@ -33,4 +33,4 @@ const MBinGrid = React.memo(function ({ items }: MBinGridProps) {
     render: CardAsCallback,
   });
 });
-export default MBinGrid;
+export default PiefedGrid;

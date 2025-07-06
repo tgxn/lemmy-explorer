@@ -128,7 +128,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   );
 });
 
-function SelectHomeInstance({ onSetMBin, homeBaseUrl, dispatch }) {
+function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
   const {
     isLoading: loadingIns,
     error: errorIns,
@@ -141,12 +141,19 @@ function SelectHomeInstance({ onSetMBin, homeBaseUrl, dispatch }) {
     data: dataMBin,
   } = useQueryCache("mbinMinData", "mbin.min");
 
+
+  const {
+    isLoading: loadingPiefed,
+    error: errorPiefed,
+    data: dataPiefed,
+  } = useQueryCache("piefedMinData", "piefed.min");
+
   const data = React.useMemo(() => {
-    if (loadingIns || loadingMBin) {
+    if (loadingIns || loadingMBin || loadingPiefed) {
       return null;
     }
 
-    if (errorIns || errorMBin) {
+    if (errorIns || errorMBin || errorPiefed) {
       return null;
     }
 
@@ -162,17 +169,30 @@ function SelectHomeInstance({ onSetMBin, homeBaseUrl, dispatch }) {
       });
     }
 
+    for (const item of dataPiefed) {
+      data.push({
+        base: item,
+        name: item,
+        type: "piefed",
+      });
+    }
+
     return data;
-  }, [dataIns, dataMBin]);
+  }, [dataIns, dataMBin, dataPiefed]);
 
   const onChange = (newValue) => {
     console.log("onChange", newValue);
 
     if (newValue?.type === "mbin") {
       onSetMBin(true);
+      onSetPiefed(false)
       // return;
+    } else if (newValue?.type === "piefed") {
+      onSetMBin(false);
+      onSetPiefed(true)
     } else if (newValue?.type === "lemmy") {
       onSetMBin(false);
+      onSetPiefed(false)
     }
 
     if (newValue == null) {

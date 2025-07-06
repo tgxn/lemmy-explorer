@@ -24,10 +24,16 @@ import SelectHomeInstance from "./SelectHomeInstance";
 
 function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
   const [isMBinInstance, _setIsMBinInstance] = React.useState<boolean>(instanceType === "mbin");
+  const [isPiefedInstance, _setIsPiefedInstance] = React.useState<boolean>(instanceType === "piefed");
 
   const setIsMBinInstance = (isMBin: boolean) => {
     _setIsMBinInstance(isMBin);
     dispatch(changeInstanceType(isMBin ? "mbin" : "lemmy"));
+  };
+
+  const setIsPiefedInstance = (isPiefed: boolean) => {
+    _setIsPiefedInstance(isPiefed);
+    dispatch(changeInstanceType(isPiefed ? "piefed" : "lemmy"));
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -35,6 +41,10 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
 
   useEffect(() => {
     setIsMBinInstance(instanceType === "mbin");
+  }, [instanceType]);
+
+  useEffect(() => {
+    setIsPiefedInstance(instanceType === "piefed");
   }, [instanceType]);
 
   const handleClick = (event) => {
@@ -97,7 +107,9 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
             color: "text.secondary",
           }}
         >
-          <SelectHomeInstance onSetMBin={(isMBin: boolean) => setIsMBinInstance(isMBin)} />
+          <SelectHomeInstance 
+            onSetMBin={(isMBin: boolean) => setIsMBinInstance(isMBin)} 
+            onSetPiefed={(isPiefed: boolean) => setIsPiefedInstance(isPiefed)} />
         </Box>
 
         {homeBaseUrl && (
