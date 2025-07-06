@@ -223,6 +223,7 @@ export type IPiefedCommunityData = {
     restricted_to_mods: boolean;
     title: string;
     updated: string | null;
+    description: string | null;
   };
   counts: {
     id: number;

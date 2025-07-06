@@ -107,6 +107,7 @@ export type IPiefedCommunityDataOutput = {
   title: string;
   // desc: string;
   icon: string | null;
+  description: string | null;
   // banner: string | null;
   nsfw: boolean;
   counts: Object;
