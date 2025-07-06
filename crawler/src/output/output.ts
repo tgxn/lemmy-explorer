@@ -204,6 +204,8 @@ class OutputUtils {
       returnCommunityArray.length === 0 ||
       mbinInstanceArray.length === 0 ||
       mbinMagazineArray.length === 0 ||
+      piefedInstanceArray.length === 0 ||
+      piefedCommunitiesArray.length === 0 ||
       returnStats.length === 0
     ) {
       console.log("Empty Array");
@@ -277,6 +279,7 @@ class OutputUtils {
       new: mbinMagazineArray.length,
       old: previousRun.magazines,
     });
+
     data.push({
       type: "mbin_instances",
       new: mbinInstanceArray.length,
