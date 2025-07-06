@@ -110,7 +110,9 @@ export type IPiefedCommunityDataOutput = {
   description: string | null;
   // banner: string | null;
   nsfw: boolean;
-  counts: Object;
+  // counts: Object;
+  subscriptions_count: number;
+  post_count: number;
   published: string;
   time: number;
   // isSuspicious: boolean;

@@ -1346,10 +1346,13 @@ export default class CrawlOutput {
         title: piefed.community.title, // display name
         icon: piefed.community?.icon ? piefed.community.icon : null,
         nsfw: piefed.community.nsfw,
-        counts: piefed.counts,
+        // counts: piefed.counts,
+        subscriptions_count: piefed.counts.subscriptions_count,
+        post_count: piefed.counts.post_count,
         published: piefed.community.published,
         time: piefed.lastCrawled || 0,
         restricted_to_mods: piefed.community.restricted_to_mods,
+        description: piefed.community.description
       });
     }
 
