@@ -552,7 +552,7 @@ export default class CrawlOutput {
         },
         PiefedCommunities: {
           ExportName: "Piefed Communities",
-          Total: this.mbinMagazines.length,
+          Total: this.piefedCommunities.length,
           Output: piefedCommunitiesArray.length,
           Previous: previousRun.piefed_communities,
           Change: calcChangeDisplay(piefedCommunitiesArray.length, previousRun.piefed_communities),
@@ -1339,17 +1339,25 @@ export default class CrawlOutput {
       if (!piefedComm.lastCrawled) return false; // record needs time
       return piefedComm.lastCrawled > Date.now() - OUTPUT_MAX_AGE.COMMUNITY;
     });
-
+    
     logging.info("Piefed Communities filteredPiefeds", this.piefedCommunities.length, filteredPiefeds.length);
 
-    for (const piefed of filteredPiefeds) {
+    const knownDevInstances = ['jolly-piefed-dev.jomandoa.net', 'pythag.net']
+
+    // filter out known dev instances
+    const devInstacesRemovedPiefeds = filteredPiefeds.filter((piefedComm) => {
+      return !knownDevInstances.includes(piefedComm.community.ap_domain)
+    });
+
+    logging.info("Piefed Communities devInstacesRemovedPiefeds", filteredPiefeds.length, devInstacesRemovedPiefeds.length);
+
+    for (const piefed of devInstacesRemovedPiefeds) {
       output.push({
         baseurl: piefed.baseurl,
         name: piefed.community.name, // key username
         title: piefed.community.title, // display name
         icon: piefed.community?.icon ? piefed.community.icon : null,
         nsfw: piefed.community.nsfw,
-        // counts: piefed.counts,
         subscriptions_count: piefed.counts.subscriptions_count,
         post_count: piefed.counts.post_count,
         published: piefed.community.published,
