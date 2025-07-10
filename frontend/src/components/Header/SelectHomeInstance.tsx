@@ -141,7 +141,6 @@ function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
     data: dataMBin,
   } = useQueryCache("mbinMinData", "mbin.min");
 
-
   const {
     isLoading: loadingPiefed,
     error: errorPiefed,
@@ -185,14 +184,14 @@ function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
 
     if (newValue?.type === "mbin") {
       onSetMBin(true);
-      onSetPiefed(false)
+      onSetPiefed(false);
       // return;
     } else if (newValue?.type === "piefed") {
       onSetMBin(false);
-      onSetPiefed(true)
+      onSetPiefed(true);
     } else if (newValue?.type === "lemmy") {
       onSetMBin(false);
-      onSetPiefed(false)
+      onSetPiefed(false);
     }
 
     if (newValue == null) {

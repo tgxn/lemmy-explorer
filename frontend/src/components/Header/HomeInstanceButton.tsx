@@ -107,9 +107,10 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
             color: "text.secondary",
           }}
         >
-          <SelectHomeInstance 
-            onSetMBin={(isMBin: boolean) => setIsMBinInstance(isMBin)} 
-            onSetPiefed={(isPiefed: boolean) => setIsPiefedInstance(isPiefed)} />
+          <SelectHomeInstance
+            onSetMBin={(isMBin: boolean) => setIsMBinInstance(isMBin)}
+            onSetPiefed={(isPiefed: boolean) => setIsPiefedInstance(isPiefed)}
+          />
         </Box>
 
         {homeBaseUrl && (
