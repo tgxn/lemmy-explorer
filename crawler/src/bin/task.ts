@@ -107,7 +107,7 @@ export default async function runTask(taskName: string) {
         queue: "MBinQueue",
         ...mbinQHeCounts,
       });
-      
+
       const piefedQHealthCrawl = new PiefedQueue(false);
       const piefedQHeCounts = await piefedQHealthCrawl.queue.checkHealth();
       healthData.push({

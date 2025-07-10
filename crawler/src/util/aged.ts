@@ -306,7 +306,9 @@ export default class CrawlAged {
     });
 
     // get base url for each magazine
-    const agedPiefedCommunityBaseUrls = agedPiefedCommunities.map((piefed_community) => piefed_community.baseurl);
+    const agedPiefedCommunityBaseUrls = agedPiefedCommunities.map(
+      (piefed_community) => piefed_community.baseurl,
+    );
 
     // filter those dupes
     const uniqueAgedPiefedCommunityBaseUrls = [...new Set(agedPiefedCommunityBaseUrls)];

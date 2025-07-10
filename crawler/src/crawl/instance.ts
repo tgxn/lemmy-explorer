@@ -122,7 +122,7 @@ export default class InstanceCrawler {
     if (nodeInfo.software.name == "piefed") {
       console.log(`${this.crawlDomain}: found piefed instance  - creating job`);
       await this.piefedQueue.createJob(this.crawlDomain);
-    }    
+    }
 
     // only allow lemmy instances
     if (nodeInfo.software.name != "lemmy" && nodeInfo.software.name != "lemmybb") {

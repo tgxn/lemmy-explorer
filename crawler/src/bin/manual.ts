@@ -55,5 +55,5 @@ export default async function runManualWorker(workerName: string, firstParam: st
       logging.info("Piefed Crawl Complete");
       process.exit(0);
     });
-  }  
+  }
 }

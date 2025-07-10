@@ -216,7 +216,7 @@ export default class OutputFileWriter {
 
   public async storePiefedCommunityData(data: any) {
     await this.storeChunkedData("piefed_communities", this.piefedCommunitiesPerFile, data);
-  }  
+  }
 
   /**
    * this method is used to clean (delete all files) the data folder

@@ -98,7 +98,7 @@ export default async function startWorker(startWorkerName: string) {
       await piefedScan.createJobsAllPiefed();
 
       await storage.close();
-    });    
+    });
 
     logging.info("Creating Uptime Cron Task", CRON_SCHEDULES.UPTIME);
     cron.schedule(CRON_SCHEDULES.UPTIME, async (time) => {

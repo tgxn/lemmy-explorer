@@ -386,7 +386,6 @@ export default class CrawlOutput {
     this.mbinMagazines = await storage.mbin.getAll();
 
     this.piefedCommunities = await storage.piefed.getAll();
-
   }
 
   /**
@@ -413,7 +412,7 @@ export default class CrawlOutput {
 
     if (!this.piefedCommunities) {
       throw new Error("No piefed Data");
-    }    
+    }
 
     // setup trust data
     await this.trust.setupSources(this.instanceList);
@@ -556,7 +555,7 @@ export default class CrawlOutput {
           Output: piefedCommunitiesArray.length,
           Previous: previousRun.piefed_communities,
           Change: calcChangeDisplay(piefedCommunitiesArray.length, previousRun.piefed_communities),
-        },        
+        },
 
         Fediverse: {
           ExportName: "Fediverse Servers",
@@ -1339,17 +1338,21 @@ export default class CrawlOutput {
       if (!piefedComm.lastCrawled) return false; // record needs time
       return piefedComm.lastCrawled > Date.now() - OUTPUT_MAX_AGE.COMMUNITY;
     });
-    
+
     logging.info("Piefed Communities filteredPiefeds", this.piefedCommunities.length, filteredPiefeds.length);
 
-    const knownDevInstances = ['jolly-piefed-dev.jomandoa.net', 'pythag.net']
+    const knownDevInstances = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
 
     // filter out known dev instances
     const devInstacesRemovedPiefeds = filteredPiefeds.filter((piefedComm) => {
-      return !knownDevInstances.includes(piefedComm.community.ap_domain)
+      return !knownDevInstances.includes(piefedComm.community.ap_domain);
     });
 
-    logging.info("Piefed Communities devInstacesRemovedPiefeds", filteredPiefeds.length, devInstacesRemovedPiefeds.length);
+    logging.info(
+      "Piefed Communities devInstacesRemovedPiefeds",
+      filteredPiefeds.length,
+      devInstacesRemovedPiefeds.length,
+    );
 
     for (const piefed of devInstacesRemovedPiefeds) {
       output.push({
@@ -1363,12 +1366,12 @@ export default class CrawlOutput {
         published: piefed.community.published,
         time: piefed.lastCrawled || 0,
         restricted_to_mods: piefed.community.restricted_to_mods,
-        description: piefed.community.description
+        description: piefed.community.description,
       });
     }
 
     await this.fileWriter.storePiefedCommunityData(output);
 
     return output;
-  }  
+  }
 }

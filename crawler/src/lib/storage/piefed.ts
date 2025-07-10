@@ -33,7 +33,10 @@ export default class PiefedStore {
       ...community,
       lastCrawled: Date.now(),
     };
-    return this.storage.putRedis(`piefed_community:${baseUrl}:${community.community.name.toLowerCase()}`, storeData);
+    return this.storage.putRedis(
+      `piefed_community:${baseUrl}:${community.community.name.toLowerCase()}`,
+      storeData,
+    );
   }
 
   async delete(baseUrl: string, communityName: string, reason = "unknown") {

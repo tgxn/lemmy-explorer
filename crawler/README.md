@@ -102,7 +102,6 @@ These start a worker that will run a single job, then exit.
 | `-m [m\|mbin] <base_url>`                    | Crawl a single mbin instance                   |
 | `-m [p\|piefed] <base_url>`                  | Crawl a single piefed instance                 |
 
-
 #### **Examples**
 
 | Action                                   | Command                                |
@@ -136,7 +135,6 @@ Crawlers are tasks created to perform an action, which could be crawling an inst
 | `mbin`      | MBin Crawling      |
 | `piefed`    | Piefed Crawling    |
 
-
 ### Queues
 
 Queues are where Tasks can be placed to be processed.
@@ -149,7 +147,6 @@ Queues are where Tasks can be placed to be processed.
 | `mbin`             | Crawl a mbin instance    |
 | `piefed`           | Crawl a piefed instance  |
 
-
 ## Storage
 
 Redis is used to store crawled data.
@@ -158,7 +155,7 @@ You can use `docker compose up -d` to start a local redis server.
 Data is persisted to a `.data/redis` directory.
 
 | Redis Key            | Description                                           |
-| -----------------    | ----------------------------------------------------- |
+| -------------------- | ----------------------------------------------------- |
 | `attributes:*`       | Tracked attribute sets _(change over time)_           |
 | `community:*`        | Community details                                     |
 | `deleted:*`          | Deleted data _(recycle bin if something broken)_      |

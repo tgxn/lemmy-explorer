@@ -169,8 +169,7 @@ export default class CrawlPiefed {
       throw new CrawlError(
         `${crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`,
       );
-    }  
-    
+    }
 
     return siteInfo;
   }
@@ -216,7 +215,9 @@ export default class CrawlPiefed {
   }
 
   async crawlFederatedInstances(crawlDomain: string) {
-    const fedReq = await this.client.getUrlWithRetry("https://" + crawlDomain + "/api/alpha/federated_instances");
+    const fedReq = await this.client.getUrlWithRetry(
+      "https://" + crawlDomain + "/api/alpha/federated_instances",
+    );
 
     const federatedInstances = fedReq.data.federated_instances.linked;
 
@@ -242,7 +243,10 @@ export default class CrawlPiefed {
     return federatedInstances;
   }
 
-  async crawlCommunitiesData(crawlDomain: string, pageNumber: number = 1): Promise<IIncomingPiefedCommunityData[]> {
+  async crawlCommunitiesData(
+    crawlDomain: string,
+    pageNumber: number = 1,
+  ): Promise<IIncomingPiefedCommunityData[]> {
     const communities = await this.getPageData(crawlDomain, pageNumber);
 
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Results: ${communities.length}`);
@@ -320,7 +324,7 @@ export default class CrawlPiefed {
     };
 
     // logging.debug(`${this.logPrefix} cralDomain ${crawlDomain}, outCommunityData: ${outCommunityData.community.actor_id}`);
-    
+
     await storage.piefed.upsert(crawlDomain, outCommunityData);
 
     await storage.piefed.setTrackedAttribute(
