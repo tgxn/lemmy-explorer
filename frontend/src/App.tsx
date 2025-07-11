@@ -28,6 +28,8 @@ import InstanceView from "./pages/InstanceView";
 
 import MBinMagazines from "./pages/MBinMagazines";
 
+import PiefedCommunities from "./pages/PiefedCommunities";
+
 import AppStore from "./store";
 
 const queryClient = new QueryClient();
@@ -77,6 +79,7 @@ export default function App() {
                 <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
 
                 <Route path="/mbin/magazines" element={<MBinMagazines />} />
+                <Route path="/piefed/communities" element={<PiefedCommunities />} />
                 {/* <Route path="*" element={<NoMatch />} /> */}
               </Routes>
             </Box>

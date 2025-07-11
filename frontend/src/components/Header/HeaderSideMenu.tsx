@@ -17,6 +17,7 @@ import ListDivider from "@mui/joy/ListDivider";
 
 import SvgIcon from "@mui/material/SvgIcon";
 import MBinIcon from "./MBinIcon";
+import PiefedIcon from "./PiefedIcon";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
@@ -198,6 +199,22 @@ function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
             <SvgIcon inheritViewBox={true} viewBox="0 0 8.467 8.467" component={MBinIcon} />
           </ListItemDecorator>
           MBin Magazines
+        </MenuItem>
+
+        <ListDivider />
+
+        <MenuItem
+          // color={"info"}
+          onClick={() => {
+            handleClose();
+            navigate("/piefed/communities");
+          }}
+          {...(location.pathname === "/piefed/communities" && { selected: true, variant: "soft" })}
+        >
+          <ListItemDecorator>
+            <SvgIcon inheritViewBox={true} viewBox="0 0 8.467 8.467" component={PiefedIcon} />
+          </ListItemDecorator>
+          Piefed Communities
         </MenuItem>
 
         <ListDivider />
