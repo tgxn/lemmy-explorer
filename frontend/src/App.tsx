@@ -1,18 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { Provider } from "react-redux";
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import { BrowserRouter } from "react-router-dom";
-
-import { CssVarsProvider } from "@mui/joy/styles";
-
-import GlobalStyles from "@mui/joy/GlobalStyles";
-import CssBaseline from "@mui/joy/CssBaseline";
 
 import Box from "@mui/joy/Box";
 import Container from "@mui/joy/Container";
