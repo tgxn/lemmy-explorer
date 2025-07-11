@@ -42,5 +42,12 @@ module.exports = {
       args: ["-w", "mbin"],
       instances: 2,
     },
+    {
+      ...defaultOptions,
+      output: "./.data/logs/piefed.log",
+      name: "crawl-piefed",
+      args: ["-w", "piefed"],
+      instances: 2,
+    },
   ],
 };

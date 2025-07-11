@@ -77,6 +77,8 @@ export default function Header() {
       setIndex(1);
     } else if (location.pathname == "/mbin/magazines") {
       setIndex(2);
+    } else if (location.pathname == "/piefed/communities") {
+      setIndex(3);
     } else {
       setIndex(null);
     }
@@ -149,6 +151,9 @@ export default function Header() {
           }
           if (value === 2) {
             navigate("/mbin/magazines");
+          }
+          if (value === 3) {
+            navigate("/piefed/communities");
           }
         }}
         sx={{ borderRadius: "lg" }}
