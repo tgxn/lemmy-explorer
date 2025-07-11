@@ -35,8 +35,13 @@ module.exports = merge(common, {
           ecma: 6,
           compress: {
             drop_console: true,
+            drop_debugger: true,
+          },
+          format: {
+            comments: false,
           },
         },
+        extractComments: false,
       }),
     ],
     splitChunks: {
