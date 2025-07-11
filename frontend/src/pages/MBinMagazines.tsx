@@ -182,7 +182,7 @@ function MBinMagazines() {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [magData]);
+  }, [magData, orderBy, showNSFW, debounceFilterText]);
 
   return (
     <Container
