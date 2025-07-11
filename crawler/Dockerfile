@@ -3,7 +3,7 @@ FROM node:22
 RUN apt-get update
 RUN apt-get install bash
 
-ENV NPM_CONFIG_LOGLEVEL trace
+# ENV NPM_CONFIG_LOGLEVEL=trace
 
 # Create app directory
 RUN mkdir -p /usr/src/app

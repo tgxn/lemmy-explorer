@@ -52,6 +52,7 @@ These immediately run a specific task.
 | `--health` | Check worker health                            |
 | `--aged`   | Create jobs for aged instances and communities |
 | `--mbin`   | Create jobs for mbin communities               |
+| `--piefed` | Create jobs for piefed communities             |
 | `--uptime` | Immediately crawl uptime data                  |
 | `--fedi`   | Immediately crawl Fediseer data                |
 
@@ -77,6 +78,7 @@ These start a worker that will run continuously, processing jobs from the releva
 | `-w community` | Crawl communities from the queue                               |
 | `-w single`    | Crawl single communities from the queue                        |
 | `-w mbin`      | Crawl mbin communities from the queue                          |
+| `-w piefed`    | Crawl piefed communities from the queue                        |
 | `-w cron`      | Schedule all CRON jobs for aged instances and communities, etc |
 
 #### **Examples**
@@ -98,6 +100,7 @@ These start a worker that will run a single job, then exit.
 | `-m [c\|community] <base_url>`               | Crawl a single instance's community list       |
 | `-m [s\|single] <base_url> <community_name>` | Crawl a single community, delete if not exists |
 | `-m [m\|mbin] <base_url>`                    | Crawl a single mbin instance                   |
+| `-m [p\|piefed] <base_url>`                  | Crawl a single piefed instance                 |
 
 #### **Examples**
 
@@ -130,6 +133,7 @@ Crawlers are tasks created to perform an action, which could be crawling an inst
 | `fediseer`  | Fediseer Crawling  |
 | `uptime`    | Uptime Crawling    |
 | `mbin`      | MBin Crawling      |
+| `piefed`    | Piefed Crawling    |
 
 ### Queues
 
@@ -141,6 +145,7 @@ Queues are where Tasks can be placed to be processed.
 | `community_list`   | Crawl a community        |
 | `community_single` | Crawl a single community |
 | `mbin`             | Crawl a mbin instance    |
+| `piefed`           | Crawl a piefed instance  |
 
 ## Storage
 
@@ -149,17 +154,19 @@ Redis is used to store crawled data.
 You can use `docker compose up -d` to start a local redis server.
 Data is persisted to a `.data/redis` directory.
 
-| Redis Key         | Description                                           |
-| ----------------- | ----------------------------------------------------- |
-| `attributes:*`    | Tracked attribute sets _(change over time)_           |
-| `community:*`     | Community details                                     |
-| `deleted:*`       | Deleted data _(recycle bin if something broken)_      |
-| `error:*`         | Exception details                                     |
-| `fediverse:*`     | Fediverse data                                        |
-| `instance:*`      | Instance details                                      |
-| `last_crawl:*`    | Last crawl time for instances and communities         |
-| `mbin_instance:*` | MBin Instances                                        |
-| `magazine:*`      | Magazine data _(mbin magazines)_                      |
-| `uptime:*`        | Uptime data _(fetched from `api.fediverse.observer`)_ |
+| Redis Key            | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `attributes:*`       | Tracked attribute sets _(change over time)_           |
+| `community:*`        | Community details                                     |
+| `deleted:*`          | Deleted data _(recycle bin if something broken)_      |
+| `error:*`            | Exception details                                     |
+| `fediverse:*`        | Fediverse data                                        |
+| `instance:*`         | Instance details                                      |
+| `last_crawl:*`       | Last crawl time for instances and communities         |
+| `mbin_instance:*`    | MBin Instances                                        |
+| `magazine:*`         | Magazine data _(mbin magazines)_                      |
+| `piefed_instance:*`  | Piefed Instances                                      |
+| `piefed_community:*` | Piefed Community data                                 |
+| `uptime:*`           | Uptime data _(fetched from `api.fediverse.observer`)_ |
 
 Most of the keys have sub keys for the instance `base_url` or community `base_url:community_name`.

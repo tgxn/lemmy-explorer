@@ -8,12 +8,14 @@ import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import MBinQueue from "../queue/mbin";
+import PiefedQueue from "../queue/piefed";
 
 // used to create scheduled instance checks
 import CrawlAged from "../util/aged";
 import CrawlFediseer from "../crawl/fediseer";
 import CrawlUptime from "../crawl/uptime";
 import CrawlMBin from "../crawl/mbin";
+import CrawlPiefed from "../crawl/piefed";
 
 import { syncCheckpoint } from "../output/sync_s3";
 
@@ -39,6 +41,9 @@ export default async function startWorker(startWorkerName: string) {
   } else if (startWorkerName == "mbin") {
     logging.info("Starting MBinQueue Processor");
     new MBinQueue(true);
+  } else if (startWorkerName == "piefed") {
+    logging.info("Starting PiefedQueue Processor");
+    new PiefedQueue(true);
   }
 
   // cron worker
@@ -79,6 +84,18 @@ export default async function startWorker(startWorkerName: string) {
 
       const mbinScan = new CrawlMBin();
       await mbinScan.createJobsAllMBin();
+
+      await storage.close();
+    });
+
+    // shares CRON_SCHEDULES.PIEFED
+    logging.info("Creating Piefed Cron Task", CRON_SCHEDULES.PIEFED);
+    cron.schedule(CRON_SCHEDULES.PIEFED, async (time) => {
+      console.log("Running Piefed Cron Task", time);
+      await storage.connect();
+
+      const piefedScan = new CrawlPiefed();
+      await piefedScan.createJobsAllPiefed();
 
       await storage.close();
     });
