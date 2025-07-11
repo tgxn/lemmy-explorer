@@ -34,6 +34,9 @@ module.exports = merge(common, {
         parallel: true,
         terserOptions: {
           ecma: 6,
+          compress: {
+            drop_console: true,
+          },
         },
       }),
     ],
