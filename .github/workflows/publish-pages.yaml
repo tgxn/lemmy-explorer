@@ -25,6 +25,9 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: 22.17.0
+
 jobs:
   # download the redis dump from s3
   # create the json files for the redis data
@@ -47,10 +50,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Use Node.js 22.17.0
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22.17.0
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: get current hour for cache busting
         id: cache-hour
