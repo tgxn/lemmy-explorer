@@ -22,7 +22,10 @@ module.exports = merge(common, {
   optimization: {
     // Instruct webpack not to obfuscate the resulting code
     minimize: false,
-    splitChunks: false,
+    // Enable chunk splitting in development so lazily loaded routes are fetched on demand.
+    splitChunks: {
+      chunks: "all",
+    },
   },
   plugins: [
     new webpack.EnvironmentPlugin({
