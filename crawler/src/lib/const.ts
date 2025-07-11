@@ -6,7 +6,7 @@ function hoursToMs(hours: number) {
 
 export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
-export const LOG_LEVEL = process.env.LOG_LEVEL || "debug";
+export const LOG_LEVEL = process.env.LOG_LEVEL || "warn";
 
 // should there be a cron job to upload the exported data to s3 automatically?
 export const AUTO_UPLOAD_S3 = process.env.AUTO_UPLOAD_S3 || false;
@@ -15,7 +15,7 @@ export const REDIS_DUMP_FILE = process.env.REDIS_DUMP_FILE || ".data/redis/dump.
 export const CHECKPOINT_DIR = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
 
 export const AWS_REGION = process.env.AWS_REGION || "ap-southeast-2";
-export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || "lemmyexplorer-build-prod-buildbucket";
+export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || null;
 
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
