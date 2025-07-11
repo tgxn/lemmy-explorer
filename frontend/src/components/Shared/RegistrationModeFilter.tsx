@@ -41,12 +41,11 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
 
     let newArray = [...regMode];
 
-    // if the array already contains the option, remove or add it
-    const index = newArray.indexOf(newValue);
-    if (index === -1) {
-      newArray = [...newArray, newValue];
-    } else {
+    // Toggle the selected option in the array
+    if (newValue && regMode.includes(newValue as IRegModes)) {
       newArray = newArray.filter((item) => item !== newValue);
+    } else if (newValue) {
+      newArray = [...newArray, newValue as IRegModes];
     }
 
     // if the new array is empty, set it to all
