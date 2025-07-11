@@ -8,24 +8,24 @@ import { SimpleNumberFormat } from "./Display";
 
 import { ResponsiveContainer, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
-import { scaleLog } from "d3-scale";
+// import { scaleLog } from "d3-scale";
 
-const CustomTooltip = ({ active, payload, label }) => {
-  console.info(payload);
-  if (active && payload && payload.length) {
-    return (
-      <Box>
-        {payload.map((i) => (
-          <p className="label">
-            {i.name}: <SimpleNumberFormat value={i.value} />{" "}
-          </p>
-        ))}
-      </Box>
-    );
-  }
+// const CustomTooltip = ({ active, payload, label }) => {
+//   console.info(payload);
+//   if (active && payload && payload.length) {
+//     return (
+//       <Box>
+//         {payload.map((i) => (
+//           <p className="label">
+//             {i.name}: <SimpleNumberFormat value={i.value} />{" "}
+//           </p>
+//         ))}
+//       </Box>
+//     );
+//   }
 
-  return null;
-};
+//   return null;
+// };
 
 type IMultiDataLineGraphProps = {
   dataSeries: any[];
@@ -49,7 +49,7 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
         {/* Time Axis */}
         <XAxis
           dataKey="time"
-          domain={["dataMax", "dataMax"]}
+          domain={["dataMin", "dataMax"]}
           name="Time"
           tickFormatter={(unixTime) => moment(unixTime).format("DD-MM-YYYY")}
           type="number"
@@ -58,21 +58,27 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
 
         <Tooltip
           cursor={{ stroke: "#999", strokeWidth: 2, strokeDasharray: "7,5" }}
-          content={CustomTooltip}
+          content={({ active, payload, label }) => {
+            if (active && payload && payload.length) {
+              return (
+                <Box>
+                  <p>{moment(label).format("DD-MM-YYYY")}</p>
+                  {payload.map((i) => (
+                    <p key={i.name} style={{ color: i.stroke }}>
+                      {i.name}: <SimpleNumberFormat value={Number(i.value)} />
+                    </p>
+                  ))}
+                </Box>
+              );
+            }
+            return null;
+          }}
         />
 
         {/* Count Axis */}
-        {/* <YAxis
-          dataKey="value"
-          type="number"
-          
-          scale={scale}
-          tickFormatter={(unixTime) => unixTime.toLocaleString()}
-        /> */}
-
         {dataSeriesInfo.map((dataSeries, index) => (
           <YAxis
-            key={index} //dataKey="value"
+            key={index}
             dataKey={dataSeries.yAxisKey}
             type="number"
             label={{
@@ -93,8 +99,8 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
             key={index}
             dataKey={dataSeries.yAxisKey}
             dot={false}
-            stroke={mode === "dark" ? "#8884d8" : "#82ca9d"}
-            // strokeDasharray="3 3"
+            connectNulls={true}
+            stroke={dataSeries.yAxisColor} // Use the color defined in dataSeriesInfo
             name={dataSeries.yAxisName}
             yAxisId={index + 1}
           />

@@ -49,7 +49,7 @@ export default function LineGraph({ dataSeries }) {
         {/* Time Axis */}
         <XAxis
           dataKey="time"
-          domain={["dataMax", "dataMax"]}
+          domain={["dataMin", "dataMax"]}
           name="Time"
           tickFormatter={(unixTime) => moment(unixTime).format("DD-MM-YYYY")}
           type="number"
