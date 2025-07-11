@@ -5,6 +5,9 @@
   "author": "tgxn",
   "license": "MIT",
   "main": "./src/index.tsx",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "webpack serve --config webpack.dev.config.js",
     "build:dev": "webpack --config webpack.dev.config.js",

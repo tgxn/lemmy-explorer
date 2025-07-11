@@ -6,6 +6,9 @@
   "license": "MIT",
   "main": "./index.js",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "pm2 start ecosystem.config.cjs",
     "logs": "pm2 logs",
