@@ -20,12 +20,14 @@ import InstanceQueue from "../queue/instance";
 import CrawlClient from "../lib/CrawlClient";
 
 import MBinQueue from "../queue/mbin";
+import PiefedQueue from "../queue/piefed";
 
 export default class InstanceCrawler {
   private crawlDomain: string;
   private logPrefix: string;
 
   private mbinQueue: MBinQueue;
+  private piefedQueue: PiefedQueue;
 
   private client: CrawlClient;
 
@@ -34,6 +36,7 @@ export default class InstanceCrawler {
     this.logPrefix = `[Instance] [${this.crawlDomain}]`;
 
     this.mbinQueue = new MBinQueue(false);
+    this.piefedQueue = new PiefedQueue(false);
 
     this.client = new CrawlClient();
   }
@@ -113,6 +116,12 @@ export default class InstanceCrawler {
     if (nodeInfo.software.name == "mbin") {
       console.log(`${this.crawlDomain}: found mbin instance  - creating job`);
       await this.mbinQueue.createJob(this.crawlDomain);
+    }
+
+    // scan piefed instances that are found
+    if (nodeInfo.software.name == "piefed") {
+      console.log(`${this.crawlDomain}: found piefed instance  - creating job`);
+      await this.piefedQueue.createJob(this.crawlDomain);
     }
 
     // only allow lemmy instances
