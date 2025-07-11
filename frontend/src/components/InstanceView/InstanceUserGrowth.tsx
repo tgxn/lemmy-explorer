@@ -3,7 +3,7 @@ import React from "react";
 import MultiDataLineGraph from "../Shared/MultiDataLineGraph";
 
 export default function InstanceUserGrowth({ metricsData }) {
-  console.log("userSeries", metricsData);
+  // console.log("userSeries", metricsData);
 
   // round to closest 1000
   const minUsers = Math.floor(Number(metricsData.users[0].value) / 1000) * 1000;
@@ -16,16 +16,15 @@ export default function InstanceUserGrowth({ metricsData }) {
 
   const singleStatsArray = [];
 
-  for (const seriesIndex in metricsData.users) {
+  for (const userData of metricsData.users) {
     singleStatsArray.push({
-      time: metricsData.users[seriesIndex].time,
-      users: metricsData.users[seriesIndex].value,
+      time: userData.time,
+      users: userData.value,
     });
   }
-
-  for (const seriesIndex in metricsData.posts) {
-    const time = metricsData.posts[seriesIndex].time;
-    const posts = metricsData.posts[seriesIndex].value;
+  for (const postData of metricsData.posts) {
+    const time = postData.time;
+    const posts = postData.value;
 
     const existing = singleStatsArray.find((i) => i.time === time);
     if (existing) {
@@ -41,7 +40,7 @@ export default function InstanceUserGrowth({ metricsData }) {
   // order by time
   singleStatsArray.sort((a, b) => a.time - b.time);
 
-  console.log("singleStatsArray", singleStatsArray);
+  // console.log("singleStatsArray", singleStatsArray);
 
   return (
     <MultiDataLineGraph

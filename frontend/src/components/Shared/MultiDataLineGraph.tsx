@@ -78,7 +78,7 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
         {/* Count Axis */}
         {dataSeriesInfo.map((dataSeries, index) => (
           <YAxis
-            key={index}
+            key={dataSeries.yAxisKey}
             dataKey={dataSeries.yAxisKey}
             type="number"
             label={{
@@ -96,7 +96,7 @@ export default function MultiDataLineGraph({ dataSeries, dataSeriesInfo }: IMult
 
         {dataSeriesInfo.map((dataSeries, index) => (
           <Line
-            key={index}
+            key={dataSeries.yAxisKey}
             dataKey={dataSeries.yAxisKey}
             dot={false}
             connectNulls={true}
