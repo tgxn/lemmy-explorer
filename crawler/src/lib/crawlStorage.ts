@@ -7,6 +7,7 @@ import logging from "./logging";
 import InstanceStore from "./storage/instance";
 import CommunityStore from "./storage/community";
 import MBinStore from "./storage/mbin";
+import PiefedStore from "./storage/piefed";
 
 // supporting
 import FediverseStore from "./storage/fediverse";
@@ -29,6 +30,7 @@ export class CrawlStorage {
   public fediseer: FediseerStore;
   public tracking: TrackingStore;
   public mbin: MBinStore;
+  public piefed: PiefedStore;
 
   constructor() {
     logging.debug("CrawlStorage Constructed", REDIS_URL);
@@ -45,6 +47,7 @@ export class CrawlStorage {
     this.fediseer = new FediseerStore(this);
     this.tracking = new TrackingStore(this);
     this.mbin = new MBinStore(this);
+    this.piefed = new PiefedStore(this);
   }
 
   async connect() {
