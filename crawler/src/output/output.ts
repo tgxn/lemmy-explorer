@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import removeMd from "remove-markdown";
 
-import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS } from "../lib/const";
+import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS, PIEFED_DEV_URLS } from "../lib/const";
 import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
@@ -1341,11 +1341,9 @@ export default class CrawlOutput {
 
     logging.info("Piefed Communities filteredPiefeds", this.piefedCommunities.length, filteredPiefeds.length);
 
-    const knownDevInstances = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
-
     // filter out known dev instances
     const devInstacesRemovedPiefeds = filteredPiefeds.filter((piefedComm) => {
-      return !knownDevInstances.includes(piefedComm.community.ap_domain);
+      return !PIEFED_DEV_URLS.includes(piefedComm.community.ap_domain);
     });
 
     logging.info(

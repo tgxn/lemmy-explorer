@@ -6,7 +6,7 @@ function hoursToMs(hours: number) {
 
 export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
-export const LOG_LEVEL = process.env.LOG_PATH || "debug";
+export const LOG_LEVEL = process.env.LOG_LEVEL || "debug";
 
 // should there be a cron job to upload the exported data to s3 automatically?
 export const AUTO_UPLOAD_S3 = process.env.AUTO_UPLOAD_S3 || false;
@@ -72,6 +72,9 @@ export const EXPORT_MAX_LENGTHS = {
 
 // for each request we make, after how much time should axios be configured to timeout
 export const AXIOS_REQUEST_TIMEOUT = 30 * 1000; // 30 seconds in ms
+
+// (piefed) these are removed from output
+export const PIEFED_DEV_URLS = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
 
 export const FEDDIT_URLS = [
   "0xdd.org.ru",
