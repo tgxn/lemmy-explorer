@@ -5,6 +5,10 @@ export type IMetaDataOutput = {
   communities: number;
   mbin_instances: number; // @ NEW
   magazines: number;
+
+  piefed_instances: number;
+  piefed_communities: number;
+
   fediverse: number;
 
   time: number;
@@ -94,6 +98,26 @@ export type IMBinMagazineOutput = {
   subscriptions: number;
   posts: number;
   time: number;
+};
+
+export type IPiefedCommunityDataOutput = {
+  baseurl: string;
+  // url: string;
+  name: string;
+  title: string;
+  // desc: string;
+  icon: string | null;
+  description: string | null;
+  // banner: string | null;
+  nsfw: boolean;
+  // counts: Object;
+  subscriptions_count: number;
+  post_count: number;
+  published: string;
+  time: number;
+  // isSuspicious: boolean;
+  // score: number;
+  restricted_to_mods: boolean;
 };
 
 export type IFediverseDataOutput = {

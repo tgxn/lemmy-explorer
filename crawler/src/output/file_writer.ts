@@ -85,6 +85,7 @@ export default class OutputFileWriter {
   private communitiesPerFile: number;
   private instancesPerFile: number;
   private magazinesPerFile: number;
+  private piefedCommunitiesPerFile: number;
 
   constructor() {
     this.publicDataFolder = `../frontend/public/data`;
@@ -99,6 +100,7 @@ export default class OutputFileWriter {
     this.communitiesPerFile = 500;
     this.instancesPerFile = 100;
     this.magazinesPerFile = 500;
+    this.piefedCommunitiesPerFile = 500;
   }
 
   async storeInstanceData(instanceArray) {
@@ -142,10 +144,10 @@ export default class OutputFileWriter {
     await this.writeJsonFile(`${this.publicDataFolder}/tags.meta.json`, JSON.stringify(fediTags));
   }
 
-  async storeMetricsSeries(data: { versions: any }) {
-    await this.writeJsonFile(`${this.publicDataFolder}/metrics.series.json`, JSON.stringify(data));
+  async storeMetricsSeries(data: { versions: any; versionKeys: any; uniqueVersions: any }) {
+    await this.writeJsonFile(`${this.publicDataFolder}/metrics.series.json`, JSON.stringify(data, null, 2));
   }
-  /**
+  /**v
    * this method is used to store the instance metrics data
    */
 
@@ -205,6 +207,15 @@ export default class OutputFileWriter {
 
   public async storeMBinMagazineData(data: any) {
     await this.storeChunkedData("magazines", this.magazinesPerFile, data);
+  }
+
+  // stores an array of the string baseUrl
+  public async storePiefedInstanceData(data: string[]) {
+    await this.writeJsonFile(`${this.publicDataFolder}/piefed.min.json`, JSON.stringify(data));
+  }
+
+  public async storePiefedCommunityData(data: any) {
+    await this.storeChunkedData("piefed_communities", this.piefedCommunitiesPerFile, data);
   }
 
   /**

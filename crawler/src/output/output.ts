@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import removeMd from "remove-markdown";
 
-import { OUTPUT_MAX_AGE } from "../lib/const";
+import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS } from "../lib/const";
 import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
@@ -11,6 +11,7 @@ import storage from "../lib/crawlStorage";
 import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
 import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
 import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
+import { IPiefedCommunityData, IPiefedCommunityDataKeyValue } from "../../../types/storage";
 import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
 // import { IFediseerInstanceData } from "../lib/storage/fediseer";
 
@@ -30,6 +31,7 @@ import {
   ICommunityDataOutput,
   IMBinInstanceOutput,
   IMBinMagazineOutput,
+  IPiefedCommunityDataOutput,
   IFediverseDataOutput,
   IClassifiedErrorOutput,
 } from "../../../types/output";
@@ -37,15 +39,45 @@ import {
 import OutputTrust from "./trust";
 
 class OutputUtils {
-  // strip markdown, optionally substring
-  static stripMarkdownSubStr(text: string, maxLength: number = -1) {
-    const stripped = removeMd(text);
+  static safeSplit(text: string, maxLength: number) {
+    // split byu space and rejoin till above the length
+    const words = text.split(" ");
+    let result = "";
 
-    if (maxLength > 0) {
-      return stripped.substring(0, maxLength);
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+
+      const newString = result + " " + word;
+
+      // if the word is too long, split it
+      if (newString.length > maxLength) {
+        break;
+      }
+
+      result = newString;
     }
 
-    return stripped;
+    return result.trim();
+  }
+
+  // strip markdown, optionally substring
+  static stripMarkdownSubStr(text: string, maxLength: number = -1) {
+    if (!text || text.length === 0) {
+      return "";
+    }
+
+    try {
+      const stripped = removeMd(text);
+
+      if (maxLength > 0) {
+        return OutputUtils.safeSplit(stripped, maxLength);
+      }
+
+      return stripped.trim();
+    } catch (e) {
+      console.error("error stripping markdown", text);
+      throw e;
+    }
   }
 
   // calculate community published time epoch
@@ -160,6 +192,8 @@ class OutputUtils {
     returnCommunityArray: ICommunityDataOutput[],
     mbinInstanceArray: string[],
     mbinMagazineArray: IMBinMagazineOutput[],
+    piefedInstanceArray: string[],
+    piefedCommunitiesArray: IPiefedCommunityDataOutput[],
     returnStats: IFediverseDataOutput[],
   ) {
     const issues: string[] = [];
@@ -170,6 +204,8 @@ class OutputUtils {
       returnCommunityArray.length === 0 ||
       mbinInstanceArray.length === 0 ||
       mbinMagazineArray.length === 0 ||
+      piefedInstanceArray.length === 0 ||
+      piefedCommunitiesArray.length === 0 ||
       returnStats.length === 0
     ) {
       console.log("Empty Array");
@@ -243,6 +279,7 @@ class OutputUtils {
       new: mbinMagazineArray.length,
       old: previousRun.magazines,
     });
+
     data.push({
       type: "mbin_instances",
       new: mbinInstanceArray.length,
@@ -273,6 +310,28 @@ class OutputUtils {
 
     return true;
   }
+
+  static validateVersion(version: string): string | false {
+    // strip quotation marks that come either first or last
+    if (version.startsWith('"')) {
+      version = version.substring(1);
+    }
+    if (version.endsWith('"')) {
+      version = version.substring(0, version.length - 1);
+    }
+
+    // skip containing "unknown"
+    if (version.includes("unknown")) {
+      return false;
+    }
+
+    // skip if the value doesn't contain at least one `.` OR `-`
+    if (!version.includes(".") && !version.includes("-")) {
+      return false;
+    }
+
+    return version;
+  }
 }
 
 /**
@@ -290,6 +349,8 @@ export default class CrawlOutput {
 
   private mbinMagazines: IMagazineData[] | null;
 
+  private piefedCommunities: IPiefedCommunityData[] | null;
+
   private fileWriter: OutputFileWriter;
   private trust: OutputTrust;
 
@@ -304,6 +365,8 @@ export default class CrawlOutput {
     this.fediverseData = null;
 
     this.mbinMagazines = null;
+
+    this.piefedCommunities = null;
 
     this.fileWriter = new OutputFileWriter();
     this.trust = new OutputTrust();
@@ -321,6 +384,8 @@ export default class CrawlOutput {
     this.fediverseData = await storage.fediverse.getAll();
 
     this.mbinMagazines = await storage.mbin.getAll();
+
+    this.piefedCommunities = await storage.piefed.getAll();
   }
 
   /**
@@ -343,6 +408,10 @@ export default class CrawlOutput {
 
     if (!this.mbinMagazines) {
       throw new Error("No mbin Data");
+    }
+
+    if (!this.piefedCommunities) {
+      throw new Error("No piefed Data");
     }
 
     // setup trust data
@@ -395,6 +464,10 @@ export default class CrawlOutput {
     const mbinInstanceArray = await this.outputMBinInstanceList(returnStats);
     const mbinMagazineArray = await this.outputMBinMagazineList();
 
+    // piefed data
+    const piefedInstanceArray = await this.outputPiefedInstanceList(returnStats);
+    const piefedCommunitiesArray = await this.outputPiefedCommunitiesList();
+
     // error data
     const instanceErrors = await this.outputClassifiedErrors();
 
@@ -408,6 +481,8 @@ export default class CrawlOutput {
       communities: returnCommunityArray.length,
       mbin_instances: mbinInstanceArray.length,
       magazines: mbinMagazineArray.length,
+      piefed_instances: piefedInstanceArray.length,
+      piefed_communities: piefedCommunitiesArray.length,
       fediverse: returnStats.length,
       time: Date.now(),
       package: packageJson.name,
@@ -467,6 +542,21 @@ export default class CrawlOutput {
           Change: calcChangeDisplay(mbinMagazineArray.length, previousRun.magazines),
         },
 
+        PiefedInstances: {
+          ExportName: "Piefed Instances",
+          Total: piefedInstanceArray.length,
+          Output: piefedInstanceArray.length,
+          Previous: previousRun.piefed_instances,
+          Change: calcChangeDisplay(piefedInstanceArray.length, previousRun.piefed_instances),
+        },
+        PiefedCommunities: {
+          ExportName: "Piefed Communities",
+          Total: this.piefedCommunities.length,
+          Output: piefedCommunitiesArray.length,
+          Previous: previousRun.piefed_communities,
+          Change: calcChangeDisplay(piefedCommunitiesArray.length, previousRun.piefed_communities),
+        },
+
         Fediverse: {
           ExportName: "Fediverse Servers",
           Total: "N/A",
@@ -494,6 +584,8 @@ export default class CrawlOutput {
       returnCommunityArray,
       mbinInstanceArray,
       mbinMagazineArray,
+      piefedInstanceArray,
+      piefedCommunitiesArray,
       returnStats,
     );
 
@@ -659,7 +751,10 @@ export default class CrawlOutput {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
           name: instance.siteData.site.name,
-          desc: OutputUtils.stripMarkdownSubStr(instance.siteData.site.description, 350),
+          desc: OutputUtils.stripMarkdownSubStr(
+            instance.siteData.site.description,
+            EXPORT_MAX_LENGTHS.INSTANCE_DESC,
+          ),
 
           // config
           downvotes: instance.siteData.config?.enable_downvotes,
@@ -811,7 +906,10 @@ export default class CrawlOutput {
           url: community.community.actor_id,
           name: community.community.name,
           title: community.community.title,
-          desc: OutputUtils.stripMarkdownSubStr(community.community.description, 350),
+          desc: OutputUtils.stripMarkdownSubStr(
+            community.community.description,
+            EXPORT_MAX_LENGTHS.COMMUNITY_DESC,
+          ),
           icon: community.community.icon,
           banner: community.community.banner,
           nsfw: community.community.nsfw,
@@ -970,87 +1068,114 @@ export default class CrawlOutput {
     // basically, it creates a snapshot each 12 hours, and calculates the total at that point in time
     // maybe it shoudl use a floating window, so that it can show the change over time
 
-    // load all versions for all instances
-    let aggregateDataObject: {
-      time: number;
-      value: string;
-    }[] = [];
+    // anything earlier then take the latest
 
-    console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+    // load all versions for all instances
+    let aggregateDataObject: any = {};
+
+    // console.log("countInstanceBaseURLs", countInstanceBaseURLs.length);
+
+    const snapshotWindow = 24 * 60 * 60 * 1000; // 24 hours
+    const totalWindows = 365 * 2; // 2 years
+
+    const currentTime = Date.now();
 
     for (const baseURL of countInstanceBaseURLs) {
       const attributeData = await storage.instance.getAttributeWithScores(baseURL, metricToAggregate);
-      // console.log("MM attributeData", attributeData);
 
-      if (attributeData) {
-        for (const merticEntry of attributeData) {
-          const time = merticEntry.score;
-          const value = merticEntry.value;
+      // generate sliding window of x hours, look backwards
 
-          aggregateDataObject.push({ time, value });
+      let currentWindow = 0;
+      while (currentWindow <= totalWindows) {
+        // console.log("currentWindow", currentWindow);
+        const windowOffset = currentWindow * snapshotWindow;
+
+        // get this
+        const windowStart = currentTime - windowOffset;
+        // const windowEnd = windowStart - snapshotWindow;
+
+        // filter data before this period
+        const windowData = attributeData.filter((entry) => {
+          return entry.score < windowStart;
+        });
+        const newestEntries = windowData.sort((a, b) => {
+          return b.score - a.score;
+        });
+
+        let newestEntryValue: any = null;
+        for (const thisEntry of newestEntries) {
+          const value = OutputUtils.validateVersion(thisEntry.value);
+          if (value) {
+            newestEntryValue = value;
+            break;
+          }
         }
+
+        if (!newestEntryValue) {
+          currentWindow++;
+          continue;
+        }
+
+        if (!aggregateDataObject[windowStart]) {
+          aggregateDataObject[windowStart] = {};
+        }
+
+        if (!aggregateDataObject[windowStart][newestEntryValue]) {
+          aggregateDataObject[windowStart][newestEntryValue] = 1;
+        } else {
+          aggregateDataObject[windowStart][newestEntryValue]++;
+        }
+        // console.log("newestEntryValue", newestEntryValue);
+
+        currentWindow++;
       }
     }
 
-    console.log("aggregateDataObject", aggregateDataObject.length);
+    // order each sub-array by count
+    for (const time in aggregateDataObject) {
+      const timeData = aggregateDataObject[time];
 
-    // console.log("aggregateDataObject", aggregateDataObject);
+      const orderedTimeData = Object.keys(timeData)
+        .filter((key) => timeData[key] > 1)
+        .sort((a, b) => {
+          return timeData[b] - timeData[a];
+        })
+        .reduce((obj, key) => {
+          obj[key] = timeData[key];
+          return obj;
+        }, {});
 
-    const snapshotWindow = 12 * 60 * 60 * 1000; // 12 hours
-    const totalWindows = 600; // 60 snapshots
-
-    // generate sliding window of x hours, look backwards
-    const currentTime = Date.now();
-
-    const buildWindowData = {};
-
-    let currentWindow = 0;
-    // let countingData = true;
-    while (currentWindow <= totalWindows) {
-      // console.log("currentWindow", currentWindow);
-      const windowOffset = currentWindow * snapshotWindow;
-
-      // get this
-      const windowStart = currentTime - windowOffset;
-      const windowEnd = windowStart - snapshotWindow;
-
-      // filter data
-      const windowData = aggregateDataObject.filter((entry) => {
-        // console.log("entry.time", entry.time, windowStart, windowEnd);
-        return entry.time < windowStart;
-      });
-      console.log("currentWindow", currentWindow, windowStart, windowEnd, windowData.length);
-
-      // // stop if no data
-      // if (windowData.length === 0) {
-      //   countingData = false;
-      //   break;
-      // }
-
-      // console.log("windowData", windowData);
-
-      // count data
-      const countData = {};
-      windowData.forEach((entry) => {
-        if (!countData[entry.value]) {
-          countData[entry.value] = 1;
-        } else {
-          countData[entry.value]++;
-        }
-      });
-
-      // console.log("countData", countData);
-
-      // store data
-      buildWindowData[windowStart] = countData;
-
-      currentWindow++;
+      aggregateDataObject[time] = orderedTimeData;
     }
 
-    console.log("buildWindowData", buildWindowData);
+    // look for the version in aggregateDataObject[windowStart], increment this version if it exist5s
+
+    // console.log("windowData", aggregateDataObject);
+    // throw new Error("Not Implemented");
+
+    // map the time into each obecjt, and return as an array
+    const outputVersionsArray = Object.keys(aggregateDataObject).map((time) => {
+      return {
+        time: time,
+        ...aggregateDataObject[time],
+      };
+    });
+
+    console.log("outputVersionsArray", outputVersionsArray.length);
+
+    const acc: any = [];
+    Object.values(outputVersionsArray).forEach((key: any) => {
+      Object.keys(key).forEach((key) => {
+        if (key !== "time" && acc.indexOf(key) === -1) {
+          acc.push(key);
+        }
+      });
+    });
 
     await this.fileWriter.storeMetricsSeries({
-      versions: buildWindowData,
+      uniqueVersions: acc.length,
+      versionKeys: acc,
+      versions: outputVersionsArray,
     });
 
     // throw new Error("Not Implemented");
@@ -1162,7 +1287,7 @@ export default class CrawlOutput {
         name: mbin.name, // key username
         // preferred: mbin.preferredUsername, // username ??
 
-        description: OutputUtils.stripMarkdownSubStr(mbin.description, 350),
+        description: OutputUtils.stripMarkdownSubStr(mbin.description, EXPORT_MAX_LENGTHS.MAGAZINE_DESC),
         isAdult: mbin.isAdult,
         postingRestrictedToMods: mbin.isPostingRestrictedToMods,
 
@@ -1177,6 +1302,75 @@ export default class CrawlOutput {
     }
 
     await this.fileWriter.storeMBinMagazineData(output);
+
+    return output;
+  }
+
+  // piefed
+
+  private async outputPiefedInstanceList(returnStats: IFediverseDataOutput[]): Promise<string[]> {
+    let piefedInstanceUrls: string[] = returnStats
+      .map((fediverse) => {
+        // const fediverse = this.fediverseData[fediKey];
+
+        if (fediverse.software && fediverse.software === "piefed") {
+          return fediverse.url;
+        }
+
+        return null;
+      })
+      .filter((instance) => instance !== null);
+
+    await this.fileWriter.storePiefedInstanceData(piefedInstanceUrls);
+
+    return piefedInstanceUrls;
+  }
+
+  private async outputPiefedCommunitiesList(): Promise<IPiefedCommunityDataOutput[]> {
+    const output: IPiefedCommunityDataOutput[] = [];
+
+    if (!this.piefedCommunities) {
+      throw new Error("No Piefed data");
+    }
+
+    // filter old data
+    const filteredPiefeds = this.piefedCommunities.filter((piefedComm) => {
+      if (!piefedComm.lastCrawled) return false; // record needs time
+      return piefedComm.lastCrawled > Date.now() - OUTPUT_MAX_AGE.COMMUNITY;
+    });
+
+    logging.info("Piefed Communities filteredPiefeds", this.piefedCommunities.length, filteredPiefeds.length);
+
+    const knownDevInstances = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
+
+    // filter out known dev instances
+    const devInstacesRemovedPiefeds = filteredPiefeds.filter((piefedComm) => {
+      return !knownDevInstances.includes(piefedComm.community.ap_domain);
+    });
+
+    logging.info(
+      "Piefed Communities devInstacesRemovedPiefeds",
+      filteredPiefeds.length,
+      devInstacesRemovedPiefeds.length,
+    );
+
+    for (const piefed of devInstacesRemovedPiefeds) {
+      output.push({
+        baseurl: piefed.baseurl,
+        name: piefed.community.name, // key username
+        title: piefed.community.title, // display name
+        icon: piefed.community?.icon ? piefed.community.icon : null,
+        nsfw: piefed.community.nsfw,
+        subscriptions_count: piefed.counts.subscriptions_count,
+        post_count: piefed.counts.post_count,
+        published: piefed.community.published,
+        time: piefed.lastCrawled || 0,
+        restricted_to_mods: piefed.community.restricted_to_mods,
+        description: piefed.community.description,
+      });
+    }
+
+    await this.fileWriter.storePiefedCommunityData(output);
 
     return output;
   }

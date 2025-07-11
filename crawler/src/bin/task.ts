@@ -6,6 +6,7 @@ import InstanceQueue from "../queue/instance";
 import CommunityQueue from "../queue/community_list";
 import SingleCommunityQueue from "../queue/community_single";
 import MBinQueue from "../queue/mbin";
+import PiefedQueue from "../queue/piefed";
 
 import CrawlOutput from "../output/output";
 import { syncCheckpoint } from "../output/sync_s3";
@@ -13,6 +14,7 @@ import { syncCheckpoint } from "../output/sync_s3";
 import CrawlUptime from "../crawl/uptime";
 import CrawlFediseer from "../crawl/fediseer";
 import CrawlMBin from "../crawl/mbin";
+import CrawlPiefed from "../crawl/piefed";
 
 import CrawlAged from "../util/aged";
 import Failures from "../util/failures";
@@ -106,6 +108,13 @@ export default async function runTask(taskName: string) {
         ...mbinQHeCounts,
       });
 
+      const piefedQHealthCrawl = new PiefedQueue(false);
+      const piefedQHeCounts = await piefedQHealthCrawl.queue.checkHealth();
+      healthData.push({
+        queue: "PiefedQueue",
+        ...piefedQHeCounts,
+      });
+
       console.info("Queue Health Metrics");
       console.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
 
@@ -126,6 +135,13 @@ export default async function runTask(taskName: string) {
     case "mbin":
       const mbinScan = new CrawlMBin();
       await mbinScan.createJobsAllMBin();
+
+      break;
+
+    // create jobs for all known piefed instances
+    case "piefed":
+      const piefedScan = new CrawlPiefed();
+      await piefedScan.createJobsAllPiefed();
 
       break;
 

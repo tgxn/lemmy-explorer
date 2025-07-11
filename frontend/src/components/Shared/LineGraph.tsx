@@ -6,7 +6,7 @@ import Box from "@mui/joy/Box";
 import moment from "moment";
 import { SimpleNumberFormat } from "../Shared/Display";
 
-import { ResponsiveContainer, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, ResponsiveContainer, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 import { scaleLog } from "d3-scale";
 
@@ -44,10 +44,12 @@ export default function LineGraph({ dataSeries }) {
   return (
     <ResponsiveContainer width="100%" height={500}>
       <LineChart data={dataSeries}>
+        <CartesianGrid strokeDasharray="3 3" />
+
         {/* Time Axis */}
         <XAxis
           dataKey="time"
-          domain={["dataMax", "dataMax"]}
+          domain={["dataMin", "dataMax"]}
           name="Time"
           tickFormatter={(unixTime) => moment(unixTime).format("DD-MM-YYYY")}
           type="number"
