@@ -22,16 +22,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 
-// import MBinGrid from "../components/GridView/MBin";
-// import MBinList from "../components/ListView/MBin";
+const PiefedGrid = React.lazy(() => import("../components/GridView/Piefed"));
+const PiefedList = React.lazy(() => import("../components/ListView/Piefed"));
 
-import PiefedGrid from "../components/GridView/Piefed";
-import PiefedList from "../components/ListView/Piefed";
-
-// import { IMBinMagazineOutput } from "../../../types/output";
 import { IPiefedCommunityDataOutput } from "../../../types/output";
 
 function PiefedCommunities() {
@@ -319,8 +315,16 @@ function PiefedCommunities() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <PiefedGrid items={piefedCommunitiesData} />}
-        {isSuccess && viewType == "list" && <PiefedList items={piefedCommunitiesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <PiefedGrid items={piefedCommunitiesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <PiefedList items={piefedCommunitiesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Container>
   );
