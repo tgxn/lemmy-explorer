@@ -20,6 +20,10 @@ export async function syncCheckpoint() {
 
     // upload to s3
     const client = new S3Client({ region: AWS_REGION });
+    if (!PUBLISH_S3_BUCKET) {
+      throw new Error("PUBLISH_S3_BUCKET is not defined");
+    }
+
     const input = {
       Body: fileData,
       Bucket: PUBLISH_S3_BUCKET,
