@@ -268,7 +268,7 @@ function PiefedCommunities() {
                 // decimalScale={2}
                 // thousandSeparator={","}
               />{" "}
-              magazines
+              communities
             </Typography>
           )}
 
