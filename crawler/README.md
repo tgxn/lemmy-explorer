@@ -34,8 +34,6 @@ The crawler can be run in docker-compose with the following commands.
 2. Start crawler in foreground (`docker compose up crawler --build`)
    > You can also use `docker compose up -d crawler --build` and then use `docker-compose logs --tail 400 -f crawler` to monitor it.
 
-If you want to configure auto-upload to s3 or anything, you need to copy the `.env.example` to `.env` and edit it.
-
 ### Environment Variables
 
 The crawler reads configuration from the following environment variables (see
@@ -51,6 +49,9 @@ The crawler reads configuration from the following environment variables (see
 | `AWS_REGION`        | `ap-southeast-2`         | AWS region used for S3 uploads          |
 | `PUBLISH_S3_BUCKET` | `null`                   | S3 bucket for publishing data           |
 | `PUBLISH_S3_CRON`   | `0 */4 * * *`            | Cron schedule for S3 publishing         |
+
+If you want to configure auto-upload to s3 or anything, copy the `.env.example` file to `.env` and edit it.
+The example file documents the same variables as above.
 
 ## CLI Commands
 
