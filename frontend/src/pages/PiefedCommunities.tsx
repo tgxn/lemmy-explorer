@@ -39,10 +39,10 @@ function PiefedCommunities() {
     isSuccess,
     isError,
     error,
-    data: tyhisDatya,
+    data: multiPartData,
   } = useCachedMultipart("piefedCommunitiesData", "piefed_communities");
 
-  const piefedCommunityData: IPiefedCommunityDataOutput[] = tyhisDatya;
+  const piefedCommunityData: IPiefedCommunityDataOutput[] = multiPartData;
 
   const [viewType, setViewType] = useStorage("piefed.viewType", "grid");
 

@@ -39,10 +39,10 @@ function MBinMagazines() {
     isSuccess,
     isError,
     error,
-    data: tyhisDatya,
+    data: multiPartData,
   } = useCachedMultipart("magazinesData", "magazines");
 
-  const magData: IMBinMagazineOutput[] = tyhisDatya;
+  const magData: IMBinMagazineOutput[] = multiPartData;
 
   const [viewType, setViewType] = useStorage("mbin.viewType", "grid");
 
