@@ -32,7 +32,7 @@ export type IInstanceDataOutput = {
   fed: boolean;
   version: string;
   open: boolean;
-  usage: number;
+  usage: Object;
   counts: Object;
   icon: string;
   banner: string;
