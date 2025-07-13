@@ -8,6 +8,44 @@ import Typography from "@mui/joy/Typography";
 import LinearProgress from "@mui/joy/LinearProgress";
 import CircularProgress from "@mui/joy/CircularProgress";
 
+export const PageLoading = React.memo(function () {
+  return (
+    <Box
+      sx={{
+        p: 0,
+        mt: 5,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <LinearProgress
+        determinate
+        variant="outlined"
+        color="neutral"
+        thickness={32}
+        value={100}
+        sx={{
+          maxWidth: "80%",
+          "--LinearProgress-radius": "8px",
+          "--LinearProgress-progressThickness": "24px",
+          boxShadow: "sm",
+          borderColor: "grey.500",
+        }}
+      >
+        <Typography
+          level="body3"
+          fontWeight="xl"
+          textColor="common.white"
+          sx={{ mixBlendMode: "difference" }}
+        >
+          Rendering Page...
+        </Typography>
+      </LinearProgress>
+    </Box>
+  );
+});
+
 type IContentSkeletonProps = {
   radius?: string;
 };
@@ -69,31 +107,6 @@ export const ContentError = React.memo(function ({ message, bgcolor = "#ff55551c
         😭
         <br /> {message ? message : "Content Error"}
       </>
-    </Box>
-  );
-});
-
-export const PageLoading = React.memo(function () {
-  return (
-    <Box
-      sx={(theme) => ({
-        ...theme.typography.body2,
-
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 2,
-      })}
-    >
-      <CircularProgress
-        variant={"soft"}
-        color="neutral"
-        size="lg"
-        sx={{
-          marginBottom: "5px",
-        }}
-      />
     </Box>
   );
 });
