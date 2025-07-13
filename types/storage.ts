@@ -19,10 +19,25 @@ export type ICommunityData = {
     posting_restricted_to_mods: boolean;
     instance_id: number;
   };
+
   subscribed: string;
   blocked: boolean;
-  counts: Object;
+
+  counts: {
+    community_id: number;
+    subscribers: number;
+    posts: number;
+    comments: number;
+    published: string;
+    users_active_day: number;
+    users_active_week: number;
+    users_active_month: number;
+    users_active_half_year: number;
+    subscribers_local: number;
+  };
+
   banned_from_community?: boolean;
+
   lastCrawled: number;
 };
 
@@ -89,9 +104,125 @@ export type IFediverseDataKeyValue = {
 /// INSTANCEC
 
 export type IInstanceData = {
-  nodeData: any;
-  siteData: any;
-  headers: any;
+  nodeData: {
+    software: {
+      name: string;
+      version: string;
+    };
+    usage: {
+      users: {
+        total: number;
+        activeHalfyear: number;
+        activeMonth: number;
+      };
+      localPosts: number;
+      localComments: number;
+    };
+    openRegistrations: boolean;
+  };
+
+  siteData: {
+    site: {
+      id: number;
+      name: string;
+      sidebar: any;
+      published: string;
+      updated: string;
+      icon: any;
+      banner: any;
+      description: any;
+      actor_id: string;
+      last_refreshed_at: string;
+      inbox_url: string;
+      private_key: any;
+      public_key: string;
+      instance_id: number;
+    };
+
+    config: {
+      id: number;
+      site_id: number;
+      site_setup: boolean;
+      enable_downvotes: boolean;
+      enable_nsfw: boolean;
+      community_creation_admin_only: boolean;
+      require_email_verification: boolean;
+      application_question?: string;
+      private_instance: boolean;
+      default_theme: string;
+      default_post_listing_type: string;
+      legal_information?: string;
+      hide_modlog_mod_names: boolean;
+      application_email_admins: boolean;
+      slur_filter_regex?: string | null;
+      actor_name_max_length: number;
+      federation_enabled: boolean;
+      federation_debug: boolean;
+      federation_worker_count: number;
+      captcha_enabled: boolean;
+      captcha_difficulty: string;
+      registration_mode: string;
+      reports_email_admins: boolean;
+      published: string;
+      updated: string;
+    };
+
+    counts: {
+      id: number;
+      site_id: number;
+      users: number;
+      posts: number;
+      comments: number;
+      communities: number;
+      users_active_day: number;
+      users_active_week: number;
+      users_active_month: number;
+      users_active_half_year: number;
+    };
+
+    admins: {
+      person: {
+        id: number;
+        name: string;
+        display_name: string | null;
+        avatar: any;
+        banned: boolean;
+        published: string;
+        updated: string | null;
+        actor_id: string;
+        bio: string | null;
+        local: boolean;
+        banner: any;
+        deleted: boolean;
+        inbox_url: string;
+        shared_inbox_url: string;
+        matrix_user_id: any;
+        admin: boolean;
+        bot_account: boolean;
+        ban_expires: any;
+        instance_id: number;
+      };
+
+      counts: {
+        id: number;
+        person_id: number;
+        post_count: number;
+        post_score: number;
+        comment_count: number;
+        comment_score: number;
+      };
+    }[];
+
+    version: string;
+    taglines: string[] | null;
+    federated: {
+      linked?: string[];
+      allowed?: string[] | null;
+      blocked?: string[];
+    };
+  };
+
+  headers?: any;
   langs: Array<string>;
   lastCrawled: number;
 };
