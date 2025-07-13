@@ -1,3 +1,5 @@
+import type { BaseURL, ActorID } from "./basic";
+
 /// COMMUNITY
 
 export type ICommunityData = {
@@ -11,7 +13,7 @@ export type ICommunityData = {
     updated: string | null;
     deleted: boolean;
     nsfw: boolean;
-    actor_id: string;
+    actor_id: ActorID;
     local: boolean;
     icon: string | null;
     banner: string | null;
@@ -90,7 +92,7 @@ export type IFediseerInstanceData = {
 
 export type IFediverseData = {
   time?: number;
-  baseurl?: string;
+  baseurl?: BaseURL;
   name?: string;
   version?: string;
   repository?: string;
@@ -131,7 +133,7 @@ export type IInstanceData = {
       icon: any;
       banner: any;
       description: any;
-      actor_id: string;
+      actor_id: ActorID;
       last_refreshed_at: string;
       inbox_url: string;
       private_key: any;
@@ -189,7 +191,7 @@ export type IInstanceData = {
         banned: boolean;
         published: string;
         updated: string | null;
-        actor_id: string;
+        actor_id: ActorID;
         bio: string | null;
         local: boolean;
         banner: any;
@@ -216,9 +218,9 @@ export type IInstanceData = {
     version: string;
     taglines: string[] | null;
     federated: {
-      linked?: string[];
-      allowed?: string[] | null;
-      blocked?: string[];
+      linked?: BaseURL[];
+      allowed?: BaseURL[] | null;
+      blocked?: BaseURL[];
     };
   };
 
