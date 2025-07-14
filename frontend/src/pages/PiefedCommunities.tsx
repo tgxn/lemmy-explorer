@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
-import useStorage from "../hooks/useStorage";
-
-import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
+
+import useStorage from "../hooks/useStorage";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 
 import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
@@ -12,7 +12,6 @@ import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
 
@@ -22,13 +21,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import type { IPiefedCommunityDataOutput } from "../../../types/output";
+
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 
 const PiefedGrid = React.lazy(() => import("../components/GridView/Piefed"));
 const PiefedList = React.lazy(() => import("../components/ListView/Piefed"));
-
-import { IPiefedCommunityDataOutput } from "../../../types/output";
 
 function PiefedCommunities() {
   const [searchParams, setSearchParams] = useSearchParams();
