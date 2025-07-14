@@ -6,21 +6,23 @@ import storage from "../lib/crawlStorage";
 import { CrawlTooRecentError } from "../lib/error";
 import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";
 
-export type IJobProcessor = (processorConfig: { baseUrl: string; community?: string }) => Promise<any>;
+// export type IJobProcessor = (processorConfig: { baseUrl: string; community?: string }) => Promise<any>;
+export type IJobProcessor<T> = (processorConfig: { baseUrl: string; community?: string }) => Promise<T>;
 
-export type ISuccessCallback = ((resultData: any) => void) | null;
+// export type ISuccessCallback = ((resultData: any) => void) | null;
+export type ISuccessCallback<T> = ((resultData: T) => void) | null;
 // export type ISuccessCallback1 = ISuccessCallback | null;
 
-export default class BaseQueue {
+export default class BaseQueue<T> {
   protected queueName: string;
   protected logPrefix: string;
 
   // public to be accessed to get health etc
   public queue: BeeQueue;
 
-  protected jobProcessor: IJobProcessor;
+  protected jobProcessor: IJobProcessor<T>;
 
-  constructor(isWorker: boolean, queueName: string, jobProcessor: IJobProcessor) {
+  constructor(isWorker: boolean, queueName: string, jobProcessor: IJobProcessor<T>) {
     this.queueName = queueName;
 
     this.queue = new BeeQueue(queueName, {
@@ -43,7 +45,7 @@ export default class BaseQueue {
     if (isWorker) this.process();
   }
 
-  async createJob(jobId, jobData, onSuccess: ISuccessCallback = null) {
+  async createJob(jobId, jobData, onSuccess: ISuccessCallback<T> = null) {
     const job = this.queue.createJob(jobData);
     logging.silly(`${this.logPrefix} createJob`, jobData);
 
@@ -59,7 +61,7 @@ export default class BaseQueue {
     this.queue.process(async (job) => {
       await storage.connect();
 
-      let resultData = null;
+      let resultData: T | null = null;
       try {
         logging.info(`${this.logPrefix} [${job.data.baseUrl}] Running Processor`);
 

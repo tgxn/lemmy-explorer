@@ -14,6 +14,8 @@ import { isValidLemmyDomain } from "../lib/validator";
 import { getActorBaseUrl } from "../lib/validator";
 
 import { IJobProcessor } from "../queue/BaseQueue";
+import type { IInstanceData } from "../../../types/storage";
+
 import CommunityListQueue from "../queue/community_list";
 import InstanceQueue from "../queue/instance";
 
@@ -42,19 +44,21 @@ export default class InstanceCrawler {
   }
 
   // fully process the instance crawl, called from bequeue and errors are handled above this
-  async crawl() {
+  async crawl(): Promise<IInstanceData> {
     const instanceData = await this.crawlInstance();
 
     if (instanceData) {
-      // store/update the instance
-      await storage.instance.upsert(this.crawlDomain, {
+      const storedData: IInstanceData = {
         ...instanceData,
         lastCrawled: Date.now(),
-      });
+      };
+
+      // store/update the instance
+      await storage.instance.upsert(this.crawlDomain, storedData);
 
       logging.info(`${this.logPrefix} Completed OK (Found "${instanceData?.siteData?.site?.name}")`);
 
-      return instanceData;
+      return storedData;
     }
 
     throw new CrawlError("No instance data returned");
@@ -304,7 +308,7 @@ const crawlFederatedInstanceJobs = async (federatedData) => {
       - added to the successes table
       - re-tried every 6 hours
     */
-export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
 
   try {
@@ -362,7 +366,7 @@ export const instanceProcessor: IJobProcessor = async ({ baseUrl }) => {
     const instanceData = await crawler.crawl();
 
     // start crawl jobs for federated instances
-    if (instanceData.siteData?.federated?.linked.length > 0) {
+    if (instanceData.siteData.federated.linked && instanceData.siteData.federated.linked.length > 0) {
       const countFederated = await crawlFederatedInstanceJobs(instanceData.siteData.federated);
 
       logging.info(`[Instance] [${baseUrl}] Created ${countFederated.length} federated instance jobs`);

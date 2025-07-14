@@ -6,6 +6,8 @@ import { CrawlTooRecentError } from "../lib/error";
 
 import { IJobProcessor } from "../queue/BaseQueue";
 
+import type { ICommunityData } from "../../../types/storage";
+
 import storage from "../lib/crawlStorage";
 
 import CrawlClient from "../lib/CrawlClient";
@@ -293,7 +295,7 @@ export default class CommunityCrawler {
   }
 }
 
-export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const communityListProcessor: IJobProcessor<ICommunityData[] | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
 
   try {
@@ -348,7 +350,10 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
   return null;
 };
 
-export const singleCommunityProcessor: IJobProcessor = async ({ baseUrl, community }) => {
+export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = async ({
+  baseUrl,
+  community,
+}) => {
   let communityData: any = null;
 
   if (!baseUrl || !community) {
