@@ -2,19 +2,19 @@ import divinator from "divinator";
 
 import storage from "../lib/crawlStorage";
 import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
-import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
-import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
-import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
+// import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
+// import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
+// import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
 import { IFediseerInstanceData } from "../../../types/storage";
-import {
-  IErrorData,
-  IErrorDataKeyValue,
-  ILastCrawlData,
-  ILastCrawlDataKeyValue,
-} from "../../../types/storage";
-import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
+// import {
+//   IErrorData,
+//   IErrorDataKeyValue,
+//   ILastCrawlData,
+//   ILastCrawlDataKeyValue,
+// } from "../../../types/storage";
+// import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
 
-import { OUTPUT_MAX_AGE } from "../lib/const";
+// import { OUTPUT_MAX_AGE } from "../lib/const";
 
 // used to calculate instance overall rating, as well as several instance and community metrics
 // it is meant to take some of the trust assertion logic out of the main output script

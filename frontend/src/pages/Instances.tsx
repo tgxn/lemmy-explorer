@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -373,6 +373,7 @@ function Instances({ filterSuspicious, filteredTags }) {
       <Box sx={{ mt: 2 }}>
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
+
         {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
         {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}
       </Box>
