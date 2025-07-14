@@ -15,16 +15,16 @@ import Container from "@mui/joy/Container";
 import Header from "./components/Header/Header";
 import { PageLoading } from "./components/Shared/Display";
 
-const Instances = lazy(() => import("./pages/Instances"));
-const Communities = lazy(() => import("./pages/Communities"));
-const About = lazy(() => import("./pages/About"));
-const Join = lazy(() => import("./pages/Join"));
-const Inspector = lazy(() => import("./pages/Inspector"));
-const InstanceView = lazy(() => import("./pages/InstanceView"));
-const MBinMagazines = lazy(() => import("./pages/MBinMagazines"));
-const PiefedCommunities = lazy(() => import("./pages/PiefedCommunities"));
-
 import AppStore from "./store";
+
+import Instances from "./pages/Instances";
+import Communities from "./pages/Communities";
+import About from "./pages/About";
+import Join from "./pages/Join";
+import Inspector from "./pages/Inspector";
+import InstanceView from "./pages/InstanceView";
+import MBinMagazines from "./pages/MBinMagazines";
+import PiefedCommunities from "./pages/PiefedCommunities";
 
 const queryClient = new QueryClient();
 export default function App() {
@@ -54,30 +54,28 @@ export default function App() {
                 height: "calc(100% - 80px)",
               }}
             >
-              <Suspense fallback={<PageLoading />}>
-                <Routes>
-                  {/* <Route
+              <Routes>
+                {/* <Route
                   index
                   //   path="/instances"
                   element={<Overview />}
                 /> */}
-                  <Route
-                    index
-                    // path="/instances"
-                    element={<Instances />}
-                  />
-                  <Route path="/join" element={<Join />} />
-                  <Route path="/inspect/*" element={<Inspector />} />
-                  <Route path="/instance/:baseUrl/*" element={<InstanceView />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/communities" element={<Communities />} />
-                  <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
+                <Route
+                  index
+                  // path="/instances"
+                  element={<Instances />}
+                />
+                <Route path="/join" element={<Join />} />
+                <Route path="/inspect/*" element={<Inspector />} />
+                <Route path="/instance/:baseUrl/*" element={<InstanceView />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/communities" element={<Communities />} />
+                <Route path="/communities/:instanceBaseUrl" element={<Communities />} />
 
-                  <Route path="/mbin/magazines" element={<MBinMagazines />} />
-                  <Route path="/piefed/communities" element={<PiefedCommunities />} />
-                  {/* <Route path="*" element={<NoMatch />} /> */}
-                </Routes>
-              </Suspense>
+                <Route path="/mbin/magazines" element={<MBinMagazines />} />
+                <Route path="/piefed/communities" element={<PiefedCommunities />} />
+                {/* <Route path="*" element={<NoMatch />} /> */}
+              </Routes>
             </Box>
           </BrowserRouter>
         </Container>
