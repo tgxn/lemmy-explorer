@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -26,7 +26,7 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
-import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
