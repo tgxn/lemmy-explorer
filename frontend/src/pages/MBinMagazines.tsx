@@ -25,8 +25,8 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 
-const MBinGrid = React.lazy(() => import("../components/GridView/MBin"));
-const MBinList = React.lazy(() => import("../components/ListView/MBin"));
+import MBinGrid from "../components/GridView/MBin";
+import MBinList from "../components/ListView/MBin";
 
 import { IMBinMagazineOutput } from "../../../types/output";
 
@@ -315,16 +315,8 @@ function MBinMagazines() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && (
-          <React.Suspense fallback={<PageLoading />}>
-            <MBinGrid items={magazinesData} />
-          </React.Suspense>
-        )}
-        {isSuccess && viewType == "list" && (
-          <React.Suspense fallback={<PageLoading />}>
-            <MBinList items={magazinesData} />
-          </React.Suspense>
-        )}
+        {isSuccess && viewType == "grid" && <MBinGrid items={magazinesData} />}
+        {isSuccess && viewType == "list" && <MBinList items={magazinesData} />}
       </Box>
     </Container>
   );

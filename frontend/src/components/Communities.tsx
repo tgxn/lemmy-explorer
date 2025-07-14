@@ -29,8 +29,8 @@ import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from ".
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 import InstanceFilter from "../components/Shared/InstanceFilter";
 
-const CommunityGrid = React.lazy(() => import("./GridView/Community"));
-const CommunityList = React.lazy(() => import("./ListView/Community"));
+import CommunityGrid from "./GridView/Community";
+import CommunityList from "./ListView/Community";
 
 function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = false }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -336,16 +336,8 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && (
-          <React.Suspense fallback={<PageLoading />}>
-            <CommunityGrid items={communitiesData} />
-          </React.Suspense>
-        )}
-        {isSuccess && viewType == "list" && (
-          <React.Suspense fallback={<PageLoading />}>
-            <CommunityList items={communitiesData} />
-          </React.Suspense>
-        )}
+        {isSuccess && viewType == "grid" && <CommunityGrid items={communitiesData} />}
+        {isSuccess && viewType == "list" && <CommunityList items={communitiesData} />}
       </Box>
     </Box>
   );
