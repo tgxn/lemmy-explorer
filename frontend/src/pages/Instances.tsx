@@ -26,10 +26,10 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 
-import InstanceGrid from "../components/GridView/Instance";
-import InstanceList from "../components/ListView/Instance";
+const InstanceGrid = React.lazy(() => import("../components/GridView/Instance"));
+const InstanceList = React.lazy(() => import("../components/ListView/Instance"));
 
 import TagFilter from "../components/Shared/TagFilter";
 
@@ -374,8 +374,16 @@ function Instances({ filterSuspicious, filteredTags }) {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
-        {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <InstanceGrid items={instancesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <InstanceList items={instancesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Container>
   );

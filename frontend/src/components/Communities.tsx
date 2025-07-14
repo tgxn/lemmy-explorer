@@ -22,12 +22,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 import InstanceFilter from "../components/Shared/InstanceFilter";
 
-import CommunityGrid from "./GridView/Community";
-import CommunityList from "./ListView/Community";
+const CommunityGrid = React.lazy(() => import("./GridView/Community"));
+const CommunityList = React.lazy(() => import("./ListView/Community"));
 
 function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = false }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -333,8 +333,16 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <CommunityGrid items={communitiesData} />}
-        {isSuccess && viewType == "list" && <CommunityList items={communitiesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <CommunityGrid items={communitiesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <CommunityList items={communitiesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Box>
   );
