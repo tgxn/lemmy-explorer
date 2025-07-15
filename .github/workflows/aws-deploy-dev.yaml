@@ -99,6 +99,14 @@ jobs:
         run: yarn output
         working-directory: ./crawler
 
+      # store the json files as artifacts
+      - name: archive json artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-json-bundle
+          path: |
+            ./frontend/public/data/
+
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
         id: cache-frontend-yarn
