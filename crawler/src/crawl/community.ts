@@ -222,14 +222,14 @@ export default class CommunityCrawler {
       const promisesArray = await this.crawlCommunityPaginatedList();
       const resultPromises = await Promise.all(promisesArray);
 
-      // // get a deduped count of total communitied by name
-      // const communityNames = new Set<string>();
-      // for (const promise of resultPromises) {
-      //   if (promise && promise.community && promise.community.name) {
-      //     communityNames.add(promise.community.name);
-      //   }
-      // }
-      // logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
+      // get a deduped count of total communitied by name
+      const communityNames = new Set<string>();
+      for (const promise of resultPromises) {
+        if (promise && promise.community && promise.community.name) {
+          communityNames.add(promise.community.name);
+        }
+      }
+      logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
 
       logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results)`);
 
