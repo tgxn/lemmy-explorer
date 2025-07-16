@@ -1,13 +1,10 @@
 name: frontend-checks
 
 on:
-  # push:
-  #   paths:
-  #     - frontend/**
-
   pull_request:
     paths:
       - frontend/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
