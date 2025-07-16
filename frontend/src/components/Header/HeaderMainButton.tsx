@@ -1,18 +1,148 @@
-import React from "react";
-import { useDispatch } from "react-redux";
+import React, { useState } from "react";
 
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-
-import useQueryCache from "../../hooks/useQueryCache";
-
-import Badge from "@mui/joy/Badge";
 import Box from "@mui/joy/Box";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab from "@mui/joy/Tab";
+import Sheet from "@mui/joy/Sheet";
+import Button from "@mui/joy/Button";
+import Menu from "@mui/joy/Menu";
+import MenuItem from "@mui/joy/MenuItem";
 import Typography from "@mui/joy/Typography";
 
+import SvgIcon from "@mui/material/SvgIcon";
+import MBinIcon from "./MBinIcon";
+import PiefedIcon from "./PiefedIcon";
+
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+
+function LemmyEntry() {
+  return (
+    <>
+      <Box
+        component="div"
+        sx={{
+          width: 30,
+          height: 30,
+          flexShrink: 0,
+          pr: 2,
+          ml: 2,
+          mr: 2,
+          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          backgroundSize: "contain",
+        }}
+      />
+      <Typography
+        sx={{
+          fontSize: "19px",
+          display: { xs: "none", sm: "block" },
+        }}
+      >
+        Lemmy Explorer
+      </Typography>
+    </>
+  );
+}
+
+function MBinEntry() {
+  return (
+    <>
+      {/* <Box
+        component="div"
+        sx={{
+          width: 30,
+          height: 30,
+          flexShrink: 0,
+          pr: 2,
+          ml: 2,
+          mr: 2,
+          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          backgroundSize: "contain",
+        }}
+      /> */}
+      <SvgIcon
+        sx={{
+          width: 30,
+          height: 30,
+          flexShrink: 0,
+          pr: 2,
+          ml: 2,
+          mr: 2,
+          //   background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          //   backgroundSize: "contain",
+        }}
+        inheritViewBox={true}
+        viewBox="0 0 8.467 8.467"
+        component={MBinIcon}
+      />
+      <Typography
+        sx={{
+          fontSize: "19px",
+          display: { xs: "none", sm: "block" },
+        }}
+      >
+        MBin Explorer
+      </Typography>
+    </>
+  );
+}
+
+function PiefedEntry() {
+  return (
+    <>
+      {/* <Box
+        component="div"
+        sx={{
+          width: 30,
+          height: 30,
+          flexShrink: 0,
+          pr: 2,
+          ml: 2,
+          mr: 2,
+          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          backgroundSize: "contain",
+        }}
+      /> */}
+      <SvgIcon
+        sx={{
+          width: 30,
+          height: 30,
+          flexShrink: 0,
+          pr: 2,
+          ml: 2,
+          mr: 2,
+          //   background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
+          //   backgroundSize: "contain",
+        }}
+        inheritViewBox={true}
+        viewBox="0 0 8.467 8.467"
+        component={PiefedIcon}
+      />
+      <Typography
+        sx={{
+          fontSize: "19px",
+          display: { xs: "none", sm: "block" },
+        }}
+      >
+        Piefed Explorer
+      </Typography>
+    </>
+  );
+}
+
 export default function HeaderMainButton() {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
+
+  const handleOpenMenu = (event) => {
+    if (menuOpen) return handleCloseMenu();
+
+    setAnchorEl(event.currentTarget);
+    setMenuOpen(true);
+  };
+
+  const handleCloseMenu = () => {
+    setMenuOpen(false);
+    setAnchorEl(null);
+  };
+
   return (
     <Box
       component="header"
@@ -24,29 +154,52 @@ export default function HeaderMainButton() {
         justifyContent: "space-between",
       }}
     >
-      <Box
-        component="div"
+      <Sheet
+        aria-controls={menuOpen ? "left-side-menu" : undefined}
+        aria-haspopup="true"
+        aria-expanded={menuOpen ? "true" : undefined}
         sx={{
-          width: 30,
-          height: 30,
-          // dont change item size on flex
-          flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
-          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          backgroundSize: "contain",
+          display: "flex",
+          alignItems: "center",
+          borderRadius: "8px",
+          p: 1,
+          backgroundColor: anchorEl ? "background.level2" : "background.level1",
+          cursor: "pointer",
+          //   ":hover"
+          "&:hover": {
+            backgroundColor: "background.level2",
+          },
         }}
-      />
-      <Typography
-        sx={{
-          // ml: 1,
-          fontSize: "19px",
-          display: { xs: "none", sm: "block" },
-        }}
+        onClick={handleOpenMenu}
       >
-        Lemmy Explorer
-      </Typography>
+        <LemmyEntry />
+        <ArrowDropDownIcon
+          sx={{
+            color: "text.secondary",
+            fontSize: "1.5rem",
+            ml: 1,
+            mr: 1,
+          }}
+        />
+      </Sheet>
+      {/* <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu} sx={{ mt: 1 }}> */}
+      <Menu
+        id="left-side-menu"
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleCloseMenu}
+        placement="bottom-end"
+      >
+        <MenuItem onClick={handleCloseMenu}>
+          <LemmyEntry />
+        </MenuItem>
+        <MenuItem onClick={handleCloseMenu}>
+          <MBinEntry />
+        </MenuItem>
+        <MenuItem onClick={handleCloseMenu}>
+          <PiefedEntry />
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }
