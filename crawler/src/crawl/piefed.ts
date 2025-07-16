@@ -28,7 +28,7 @@ const TIME_BETWEEN_RETRIES = 1000;
 
 const PAGE_TIMEOUT = 5000;
 
-type IIncomingPiefedCommunityData = {
+export type IIncomingPiefedCommunityData = {
   activity_alert: boolean;
   blocked: boolean;
   community: {
@@ -352,7 +352,9 @@ export default class CrawlPiefed {
   }
 }
 
-export const piefedInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const piefedInstanceProcessor: IJobProcessor<IIncomingPiefedCommunityData[] | boolean> = async ({
+  baseUrl,
+}) => {
   const startTime = Date.now();
 
   try {
