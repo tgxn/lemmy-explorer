@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -8,12 +8,10 @@ import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
 
 import Typography from "@mui/joy/Typography";
-import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-import Checkbox from "@mui/joy/Checkbox";
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
@@ -23,13 +21,12 @@ import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 import InstanceFilter from "../components/Shared/InstanceFilter";
 
-import CommunityGrid from "../components/GridView/Community";
+import CommunityGrid from "./GridView/Community";
 import CommunityList from "./ListView/Community";
 
 function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = false }) {

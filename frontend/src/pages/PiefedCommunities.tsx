@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
@@ -25,13 +25,9 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 
-// import MBinGrid from "../components/GridView/MBin";
-// import MBinList from "../components/ListView/MBin";
-
 import PiefedGrid from "../components/GridView/Piefed";
 import PiefedList from "../components/ListView/Piefed";
 
-// import { IMBinMagazineOutput } from "../../../types/output";
 import { IPiefedCommunityDataOutput } from "../../../types/output";
 
 function PiefedCommunities() {
@@ -43,10 +39,10 @@ function PiefedCommunities() {
     isSuccess,
     isError,
     error,
-    data: tyhisDatya,
+    data: multiPartData,
   } = useCachedMultipart("piefedCommunitiesData", "piefed_communities");
 
-  const piefedCommunityData: IPiefedCommunityDataOutput[] = tyhisDatya;
+  const piefedCommunityData: IPiefedCommunityDataOutput[] = multiPartData;
 
   const [viewType, setViewType] = useStorage("piefed.viewType", "grid");
 

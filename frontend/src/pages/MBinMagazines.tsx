@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
@@ -39,10 +39,10 @@ function MBinMagazines() {
     isSuccess,
     isError,
     error,
-    data: tyhisDatya,
+    data: multiPartData,
   } = useCachedMultipart("magazinesData", "magazines");
 
-  const magData: IMBinMagazineOutput[] = tyhisDatya;
+  const magData: IMBinMagazineOutput[] = multiPartData;
 
   const [viewType, setViewType] = useStorage("mbin.viewType", "grid");
 
@@ -182,7 +182,7 @@ function MBinMagazines() {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [magData]);
+  }, [magData, orderBy, showNSFW, debounceFilterText]);
 
   return (
     <Container
