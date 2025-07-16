@@ -1,13 +1,11 @@
 name: frontend-checks
 
 on:
-  # push:
-  #   paths:
-  #     - frontend/**
-
   pull_request:
     paths:
+      - .github/workflows/frontend-checks.yaml
       - frontend/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

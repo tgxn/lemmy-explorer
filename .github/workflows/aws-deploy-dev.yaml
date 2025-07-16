@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - develop
+    paths:
+      - .github/workflows/aws-deploy-dev.yaml
+      - crawler/**
+      - frontend/**
+      - cdk/**
+      - types/**
 
   # # run every 6 hours
   # only runs on the base branch, weird, github????
@@ -98,6 +104,14 @@ jobs:
       - name: Run Output Script
         run: yarn output
         working-directory: ./crawler
+
+      # store the json files as artifacts
+      - name: archive json artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-json-bundle
+          path: |
+            ./frontend/public/data/
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
