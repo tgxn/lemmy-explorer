@@ -1,7 +1,7 @@
 import path from "node:path";
 import { open, rm, mkdir, FileHandle } from "node:fs/promises";
 
-import {
+import type {
   IMetaDataOutput,
   IInstanceDataOutput,
   ICommunityDataOutput,

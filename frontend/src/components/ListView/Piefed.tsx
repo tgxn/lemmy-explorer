@@ -5,17 +5,13 @@ import { Column } from "react-virtualized";
 import Avatar from "@mui/joy/Avatar";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
-import Link from "@mui/joy/Link";
-import Tooltip from "@mui/joy/Tooltip";
-
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import VirtualTable from "./VirtualTable";
 
+import type { IPiefedCommunityDataOutput } from "../../../../types/output";
+
 import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
-
-import { IPiefedCommunityDataOutput } from "../../../../types/output";
 
 type IPiefedListProps = {
   items: IPiefedCommunityDataOutput[];
