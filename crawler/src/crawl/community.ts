@@ -222,14 +222,14 @@ export default class CommunityCrawler {
       const promisesArray = await this.crawlCommunityPaginatedList();
       const resultPromises = await Promise.all(promisesArray);
 
-      // get a deduped count of total communitied by name
-      const communityNames = new Set<string>();
-      for (const promise of resultPromises) {
-        if (promise && promise.community && promise.community.name) {
-          communityNames.add(promise.community.name);
-        }
-      }
-      logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
+      // // get a deduped count of total communitied by name
+      // const communityNames = new Set<string>();
+      // for (const promise of resultPromises) {
+      //   if (promise && promise.community && promise.community.name) {
+      //     communityNames.add(promise.community.name);
+      //   }
+      // }
+      // logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
 
       logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results)`);
 
@@ -246,22 +246,22 @@ export default class CommunityCrawler {
 
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Results: ${communities.length}`);
 
-    console.log(
-      `${this.logPrefix} Communities:`,
-      communities.map((c) => c.community.name),
-    );
+    // console.log(
+    //   `${this.logPrefix} Communities:`,
+    //   communities.map((c) => c.community.name),
+    // );
 
-    // search for any results with "nolawns"
-    const filteredResults = communities.filter((result) => {
-      if (result && result.community && result.community.name) {
-        return result.community.actor_id.toLowerCase().includes("nolawns");
-      }
-      return false;
-    });
-    console.log(
-      `${this.logPrefix} Filtered Results with "nolawns": ${filteredResults.length}`,
-      filteredResults,
-    );
+    // // search for any results with "nolawns"
+    // const filteredResults = communities.filter((result) => {
+    //   if (result && result.community && result.community.name) {
+    //     return result.community.actor_id.toLowerCase().includes("nolawns");
+    //   }
+    //   return false;
+    // });
+    // console.log(
+    //   `${this.logPrefix} Filtered Results with "nolawns": ${filteredResults.length}`,
+    //   filteredResults,
+    // );
 
     //  promises track the upsert of community data
     let promises: Promise<any>[] = [];
