@@ -115,11 +115,11 @@ jobs:
 
       # Create ZIP Archive of JSON Files in ./frontend/public/data/
       - name: Create ZIP Archive of JSON Files
-        run: |
-          cd ./frontend/public/
-          zip -r json-bundle.zip ./frontend/public/data/
-          mv json-bundle.zip ./pages/public/
         working-directory: ./
+        run: |
+          cd ./frontend/public/data/
+          zip -r -9 -q ../json-bundle.zip ./*
+          mv json-bundle.zip ./pages/public/
 
       - name: copy the json files to github pages
         working-directory: ./
