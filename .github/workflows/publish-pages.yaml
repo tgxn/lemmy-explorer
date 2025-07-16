@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/publish-pages.yaml
+      - pages/**
+      - frontend/**
+      - crawler/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,6 +30,9 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.17.0
 
 jobs:
   # download the redis dump from s3
@@ -47,10 +56,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Use Node.js 22.12.0
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22.12.0
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: get current hour for cache busting
         id: cache-hour
@@ -109,6 +118,13 @@ jobs:
       - name: Run Output Script
         run: yarn output
         working-directory: ./crawler
+
+      # Create ZIP Archive of JSON Files in ./frontend/public/data/
+      - name: Create ZIP Archive of JSON Files
+        working-directory: ./frontend/public/data
+        run: |
+          zip -r -9 -q json-bundle.zip ./*
+          du -sh json-bundle.zip
 
       - name: copy the json files to github pages
         working-directory: ./

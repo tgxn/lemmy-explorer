@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - develop
+    paths:
+      - .github/workflows/aws-deploy-dev.yaml
+      - crawler/**
+      - frontend/**
+      - cdk/**
+      - types/**
 
   # # run every 6 hours
   # only runs on the base branch, weird, github????
@@ -16,6 +22,9 @@ on:
 concurrency:
   group: develop
   cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.17.0
 
 jobs:
   aws_deploy_dev:
@@ -32,10 +41,10 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 22.12.0
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22.12.0
+          node-version: ${{ env.NODE_VERSION }}
 
       # download latest redis database
       - name: get current hour for cache busting
@@ -95,6 +104,14 @@ jobs:
       - name: Run Output Script
         run: yarn output
         working-directory: ./crawler
+
+      # store the json files as artifacts
+      - name: archive json artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-json-bundle
+          path: |
+            ./frontend/public/data/
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend

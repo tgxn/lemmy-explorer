@@ -120,7 +120,7 @@ export default class CommunityCrawler {
 
     await storage.community.upsert(this.crawlDomain, community);
 
-    return true;
+    return community;
   }
 
   async crawlSingle(communityName: string) {
@@ -222,6 +222,15 @@ export default class CommunityCrawler {
       const promisesArray = await this.crawlCommunityPaginatedList();
       const resultPromises = await Promise.all(promisesArray);
 
+      // get a deduped count of total communitied by name
+      const communityNames = new Set<string>();
+      for (const promise of resultPromises) {
+        if (promise && promise.community && promise.community.name) {
+          communityNames.add(promise.community.name);
+        }
+      }
+      logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
+
       logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results)`);
 
       return resultPromises;
@@ -268,6 +277,7 @@ export default class CommunityCrawler {
         {
           params: {
             type_: "Local",
+            sort: "Old",
             limit: 50,
             page: pageNumber,
             show_nsfw: true, // Added in 0.18.x? ish...
