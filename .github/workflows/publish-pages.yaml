@@ -113,13 +113,13 @@ jobs:
         run: yarn output
         working-directory: ./crawler
 
-      # store the json files as artifacts
-      - name: archive json artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-json-bundle.zip
-          path: |
-            ./frontend/public/data/
+      # Create ZIP Archive of JSON Files in ./frontend/public/data/
+      - name: Create ZIP Archive of JSON Files
+        run: |
+          cd ./frontend/public/
+          zip -r json-bundle.zip ./frontend/public/data/
+          mv json-bundle.zip ./pages/public/
+        working-directory: ./
 
       - name: copy the json files to github pages
         working-directory: ./
