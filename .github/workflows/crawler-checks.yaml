@@ -1,13 +1,11 @@
 name: crawler-checks
 
 on:
-  # push:
-  #   paths:
-  #     - crawler/**
-
   pull_request:
     paths:
+      - .github/workflows/crawler-checks.yaml
       - crawler/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

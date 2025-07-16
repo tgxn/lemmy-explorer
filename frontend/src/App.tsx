@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -13,7 +13,6 @@ import Box from "@mui/joy/Box";
 import Container from "@mui/joy/Container";
 
 import Header from "./components/Header/Header";
-import { PageLoading } from "./components/Shared/Display";
 
 import AppStore from "./store";
 

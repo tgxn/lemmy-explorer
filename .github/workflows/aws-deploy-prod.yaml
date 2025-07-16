@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/aws-deploy-prod.yaml
+      - crawler/**
+      - frontend/**
+      - cdk/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
