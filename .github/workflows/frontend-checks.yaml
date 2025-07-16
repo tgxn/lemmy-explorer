@@ -3,6 +3,7 @@ name: frontend-checks
 on:
   pull_request:
     paths:
+      - .github/workflows/frontend-checks.yaml
       - frontend/**
       - types/**
 

@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - .github/workflows/aws-deploy-prod.yaml
       - crawler/**
       - frontend/**
       - cdk/**

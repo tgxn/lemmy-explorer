@@ -5,6 +5,7 @@ on:
     branches:
       - develop
     paths:
+      - .github/workflows/aws-deploy-dev.yaml
       - crawler/**
       - frontend/**
       - cdk/**

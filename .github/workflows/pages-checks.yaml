@@ -3,6 +3,7 @@ name: pages-checks
 on:
   pull_request:
     paths:
+      - .github/workflows/pages-checks.yaml
       - pages/**
 
   # Allows you to run this workflow manually from the Actions tab

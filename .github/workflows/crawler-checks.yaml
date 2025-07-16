@@ -3,6 +3,7 @@ name: crawler-checks
 on:
   pull_request:
     paths:
+      - .github/workflows/crawler-checks.yaml
       - crawler/**
       - types/**
 
