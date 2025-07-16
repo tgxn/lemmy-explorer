@@ -117,7 +117,7 @@ jobs:
       - name: archive json artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-json-bundle
+          name: dist-json-bundle.zip
           path: |
             ./frontend/public/data/
 
