@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - develop
+    paths:
+      - .github/workflows/aws-deploy-dev.yaml
+      - crawler/**
+      - frontend/**
+      - cdk/**
+      - types/**
 
   # # run every 6 hours
   # only runs on the base branch, weird, github????

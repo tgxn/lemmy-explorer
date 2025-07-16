@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/publish-pages.yaml
+      - pages/**
+      - frontend/**
+      - crawler/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -118,8 +124,8 @@ jobs:
         working-directory: ./
         run: |
           cd ./frontend/public/data/
-          zip -r -9 -q ../json-bundle.zip ./*
-          mv json-bundle.zip ./pages/public/
+          zip -r -9 ../json-bundle.zip ./*
+          mv ../json-bundle.zip ./pages/public/data/
 
       - name: copy the json files to github pages
         working-directory: ./
