@@ -473,7 +473,7 @@ export default class CrawlOutput {
     const instanceErrors = await this.outputClassifiedErrors();
 
     // STORE RUN METADATA
-    const packageJsonPath = path.join(__dirname, "../../package.json");
+    const packageJsonPath = path.resolve(process.cwd(), "package.json");
     const packageJson = JSON.parse((await readFile(packageJsonPath)).toString());
 
     const metaData: IMetaDataOutput = {
