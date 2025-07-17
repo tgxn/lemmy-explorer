@@ -5,6 +5,7 @@ module.exports = {
   globals: {
     "ts-jest": {
       useESM: true,
+      tsconfig: "tsconfig.jest.json",
     },
   },
   testMatch: ["**/test/**/*.test.ts"],
