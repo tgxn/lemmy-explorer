@@ -49,7 +49,7 @@ export default async function runTask(taskName: string) {
       break;
 
     case "clean":
-      console.log("Cleaning data");
+      logging.info("Cleaning data");
 
       const failures = new Failures();
       await failures.clean();
@@ -57,7 +57,7 @@ export default async function runTask(taskName: string) {
       break;
 
     case "fedi":
-      console.log("Running Fediseer Crawl");
+      logging.info("Running Fediseer Crawl");
 
       const fediseerCrawl = new CrawlFediseer();
       await fediseerCrawl.crawl();
@@ -115,7 +115,7 @@ export default async function runTask(taskName: string) {
         ...piefedQHeCounts,
       });
 
-      console.info("Queue Health Metrics");
+      logging.info("Queue Health Metrics");
       console.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
 
       // record health

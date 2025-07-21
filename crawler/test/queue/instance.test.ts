@@ -1,5 +1,6 @@
-import InstanceQueue from "../src/queue/instance";
 import { jest } from "@jest/globals";
+
+import InstanceQueue from "../../src/queue/instance";
 
 // Mock bee-queue to avoid redis dependency
 const saveMock = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
