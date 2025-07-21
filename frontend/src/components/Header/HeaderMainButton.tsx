@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
 import Menu from "@mui/joy/Menu";
+import Button from "@mui/joy/Button";
 import MenuItem from "@mui/joy/MenuItem";
 import Typography from "@mui/joy/Typography";
 
@@ -108,7 +109,7 @@ export default function HeaderMainButton() {
     }
   }, [location.pathname]);
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (menuOpen) return handleCloseMenu();
 
     setAnchorEl(event.currentTarget);
@@ -126,7 +127,7 @@ export default function HeaderMainButton() {
         userSelect: "none",
       }}
     >
-      <Sheet
+      <Button
         aria-controls={menuOpen ? "left-side-menu" : undefined}
         aria-haspopup="true"
         aria-expanded={menuOpen ? "true" : undefined}
@@ -155,14 +156,14 @@ export default function HeaderMainButton() {
             mr: 1,
           }}
         />
-      </Sheet>
+      </Button>
 
       <Menu
         id="left-side-menu"
         anchorEl={anchorEl}
         open={menuOpen}
         onClose={handleCloseMenu}
-        placement="bottom-end"
+        placement="auto"
         sx={{
           zIndex: 1000,
           gap: 0.5,
