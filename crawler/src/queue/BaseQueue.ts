@@ -6,21 +6,24 @@ import storage from "../lib/crawlStorage";
 import { CrawlTooRecentError } from "../lib/error";
 import { REDIS_URL, CRAWL_TIMEOUT } from "../lib/const";
 
-export type IJobProcessor = (processorConfig: { baseUrl: string; community?: string }) => Promise<any>;
+export type IJobData = { baseUrl?: string; community?: string };
 
-export type ISuccessCallback = ((resultData: any) => void) | null;
+export type IJobProcessor<T> = (processorConfig: IJobData) => Promise<T | null>;
+
+// export type ISuccessCallback = ((resultData: any) => void) | null;
+export type ISuccessCallback<T> = ((resultData: T) => void) | null;
 // export type ISuccessCallback1 = ISuccessCallback | null;
 
-export default class BaseQueue {
+export default class BaseQueue<T> {
   protected queueName: string;
   protected logPrefix: string;
 
   // public to be accessed to get health etc
   public queue: BeeQueue;
 
-  protected jobProcessor: IJobProcessor;
+  protected jobProcessor: IJobProcessor<T | null>;
 
-  constructor(isWorker: boolean, queueName: string, jobProcessor: IJobProcessor) {
+  constructor(isWorker: boolean, queueName: string, jobProcessor: IJobProcessor<T>) {
     this.queueName = queueName;
 
     this.queue = new BeeQueue(queueName, {
@@ -43,7 +46,7 @@ export default class BaseQueue {
     if (isWorker) this.process();
   }
 
-  async createJob(jobId, jobData, onSuccess: ISuccessCallback = null) {
+  async createJob(jobId: string, jobData: any, onSuccess: ISuccessCallback<T> = null) {
     const job = this.queue.createJob(jobData);
     logging.silly(`${this.logPrefix} createJob`, jobData);
 
@@ -52,18 +55,27 @@ export default class BaseQueue {
       onSuccess && onSuccess(result);
     });
 
-    await job.timeout(CRAWL_TIMEOUT.MBIN).setId(jobId).save();
+    await job.timeout(CRAWL_TIMEOUT.DEFAULT).setId(jobId).save();
   }
 
-  process() {
+  process(): void {
     this.queue.process(async (job) => {
       await storage.connect();
 
-      let resultData = null;
       try {
         logging.info(`${this.logPrefix} [${job.data.baseUrl}] Running Processor`);
 
-        resultData = await this.jobProcessor(job.data);
+        const resultData = await this.jobProcessor(job.data);
+
+        if (!resultData) {
+          logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
+          throw new Error("Processor returned null or undefined");
+        }
+
+        // close redis connection on end of job
+        await storage.close();
+
+        return resultData;
       } catch (error) {
         if (error instanceof CrawlTooRecentError) {
           logging.warn(`${this.logPrefix} [${job.data.baseUrl}] CrawlTooRecentError: ${error.message}`);
@@ -82,11 +94,12 @@ export default class BaseQueue {
 
           logging.error(`${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`, error);
         }
-      }
 
-      // close redis connection on end of job
-      await storage.close();
-      return resultData;
+        // close redis connection on end of job
+        await storage.close();
+
+        return null;
+      }
     });
   }
 }

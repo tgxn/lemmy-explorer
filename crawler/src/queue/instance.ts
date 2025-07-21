@@ -1,13 +1,15 @@
 import BaseQueue, { ISuccessCallback } from "./BaseQueue";
 
+import type { IInstanceData } from "../../../types/storage";
+
 import { instanceProcessor } from "../crawl/instance";
 
-export default class InstanceQueue extends BaseQueue {
+export default class InstanceQueue extends BaseQueue<IInstanceData | null> {
   constructor(isWorker = false, queueName = "instance") {
     super(isWorker, queueName, instanceProcessor);
   }
 
-  async createJob(instanceBaseUrl: string, onSuccess: ISuccessCallback | null = null) {
+  async createJob(instanceBaseUrl: string, onSuccess: ISuccessCallback<IInstanceData | null> | null = null) {
     // replace http/s with nothing
     let trimmedUrl = instanceBaseUrl.replace(/^https?:\/\//, "").trim();
 
