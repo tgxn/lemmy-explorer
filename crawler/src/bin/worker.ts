@@ -53,7 +53,7 @@ export default async function startWorker(startWorkerName: string) {
     logging.info("Creating Aged Cron Task", CRON_SCHEDULES.AGED);
     cron.schedule(CRON_SCHEDULES.AGED, async (time) => {
       try {
-        console.log("Running Aged Cron Task", time);
+        logging.info("Running Aged Cron Task", time);
         await storage.connect();
 
         const aged = new CrawlAged();
@@ -61,7 +61,7 @@ export default async function startWorker(startWorkerName: string) {
 
         await storage.close();
       } catch (e) {
-        console.log("Error in Aged Cron Task", e);
+        logging.error("Error in Aged Cron Task", e);
       }
     });
 
@@ -71,7 +71,7 @@ export default async function startWorker(startWorkerName: string) {
         try {
           await syncCheckpoint();
         } catch (e) {
-          console.log("Error in DUMP Task", e);
+          logging.error("Error in DUMP Task", e);
         }
       });
     }
@@ -79,7 +79,7 @@ export default async function startWorker(startWorkerName: string) {
     // shares CRON_SCHEDULES.MBIN
     logging.info("Creating MBin Cron Task", CRON_SCHEDULES.MBIN);
     cron.schedule(CRON_SCHEDULES.MBIN, async (time) => {
-      console.log("Running MBin Cron Task", time);
+      logging.info("Running MBin Cron Task", time);
       await storage.connect();
 
       const mbinScan = new CrawlMBin();
@@ -91,7 +91,7 @@ export default async function startWorker(startWorkerName: string) {
     // shares CRON_SCHEDULES.PIEFED
     logging.info("Creating Piefed Cron Task", CRON_SCHEDULES.PIEFED);
     cron.schedule(CRON_SCHEDULES.PIEFED, async (time) => {
-      console.log("Running Piefed Cron Task", time);
+      logging.info("Running Piefed Cron Task", time);
       await storage.connect();
 
       const piefedScan = new CrawlPiefed();
@@ -102,7 +102,7 @@ export default async function startWorker(startWorkerName: string) {
 
     logging.info("Creating Uptime Cron Task", CRON_SCHEDULES.UPTIME);
     cron.schedule(CRON_SCHEDULES.UPTIME, async (time) => {
-      console.log("Running Uptime Cron Task", time);
+      logging.info("Running Uptime Cron Task", time);
       await storage.connect();
 
       const uptime = new CrawlUptime();
@@ -114,7 +114,7 @@ export default async function startWorker(startWorkerName: string) {
     // Crawl Fediseer
     logging.info("Creating CrawlFediseer Cron Task", CRON_SCHEDULES.FEDISEER);
     cron.schedule(CRON_SCHEDULES.FEDISEER, async (time) => {
-      console.log("Running CrawlFediseer Cron Task", time);
+      logging.info("Running CrawlFediseer Cron Task", time);
       await storage.connect();
 
       const fediseerCrawl = new CrawlFediseer();
