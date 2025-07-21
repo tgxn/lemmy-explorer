@@ -81,6 +81,9 @@ jobs:
         working-directory: ./crawler
         run: |
           until docker compose exec redis redis-cli ping | grep PONG; do
+
+            docker compose -f "docker-compose.github.yaml" logs -n 100 redis
+
             echo "Waiting for Redis..."
             sleep 1
           done
