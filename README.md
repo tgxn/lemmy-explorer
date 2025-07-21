@@ -6,6 +6,8 @@ Data Dumps: https://data.lemmyverse.net/
 
 This project provides a simple way to explore Lemmy Instances and Communities.
 
+This project now supports multiple fediverse projects. Use the branding drop-down in the left header to switch between them.
+
 ![List of Communities](./docs/images/0.10.0-communities.png)
 
 ## Supported Platforms
