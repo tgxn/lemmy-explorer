@@ -94,7 +94,7 @@ jobs:
       - name: Wait for Redis to be ready
         working-directory: ./crawler
         run: |
-          until redis-cli -h 127.0.0.1 -p 6379 ping | grep PONG; do
+          until docker compose exec redis redis-cli ping | grep PONG; do
             echo "Waiting for Redis..."
             sleep 1
           done
