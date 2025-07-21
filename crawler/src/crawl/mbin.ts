@@ -26,7 +26,7 @@ const TIME_BETWEEN_RETRIES = 1000;
 
 const PAGE_TIMEOUT = 5000;
 
-type IIncomingMagazineData = {
+export type IIncomingMagazineData = {
   magazineId: number;
   owner: {
     magazineId: number;
@@ -343,8 +343,15 @@ export default class CrawlMBin {
   }
 }
 
-export const mbinInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | boolean> = async ({
+  baseUrl,
+}) => {
   const startTime = Date.now();
+
+  if (!baseUrl) {
+    logging.error(`[MBinQueue] No baseUrl provided for mbin instance`);
+    throw new CrawlError("No baseUrl provided for mbin instance");
+  }
 
   try {
     // check for recent scan of this mbin instance

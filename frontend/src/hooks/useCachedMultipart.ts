@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useQuery, useQueries } from "@tanstack/react-query";
 
-export default function useCachedMultipart(queryKey, metadataPath) {
+export default function useCachedMultipart(queryKey: string, metadataPath: string) {
   // load metadata
   const {
     isSuccess: isMetaSuccess,
@@ -13,16 +13,13 @@ export default function useCachedMultipart(queryKey, metadataPath) {
     data: meta,
     isFetching: isMetaFetching,
   } = useQuery({
-    queryKey: [queryKey], // single string key
+    queryKey: [queryKey, metadataPath],
     queryFn: () =>
       axios
         .get(`/data/${metadataPath}.json`, {
           timeout: 15000,
         })
-        .then((res) => {
-          // console.log(res.data);
-          return res.data;
-        }),
+        .then((res) => res.data),
     retry: 2,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -44,16 +41,13 @@ export default function useCachedMultipart(queryKey, metadataPath) {
 
       for (let i = 0; i < dataFileCount; i++) {
         queries.push({
-          queryKey: [queryKey, i],
+          queryKey: [queryKey, metadataPath, i],
           queryFn: () =>
             axios
               .get(`/data/${metadataPath}/${i}.json`, {
                 timeout: 15000,
               })
-              .then((res) => {
-                // console.log(res.data);
-                return res.data;
-              }),
+              .then((res) => res.data),
           retry: 2,
           refetchOnWindowFocus: false,
           refetchOnMount: false,

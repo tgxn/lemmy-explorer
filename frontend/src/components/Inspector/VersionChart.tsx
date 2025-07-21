@@ -1,16 +1,11 @@
 import React, { useMemo, PureComponent } from "react";
 
-// import useCachedMultipart from "../../hooks/useCachedMultipart";
 import useQueryCache from "../../hooks/useQueryCache";
 import moment from "moment";
-import { SimpleNumberFormat } from "../Shared/Display";
 
 import { useWindowSize } from "@react-hook/window-size";
 
 import Box from "@mui/joy/Box";
-
-// import { LineChart } from "@mui/x-charts/LineChart";
-// import { ResponsiveStream } from "@nivo/stream";
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 

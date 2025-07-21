@@ -1,16 +1,17 @@
 name: frontend-checks
 
 on:
-  # push:
-  #   paths:
-  #     - frontend/**
-
   pull_request:
     paths:
+      - .github/workflows/frontend-checks.yaml
       - frontend/**
+      - types/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+env:
+  NODE_VERSION: 22.17.0
 
 jobs:
   frontend-checks-style:
@@ -19,10 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 22.12.0
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22.12.0
+          node-version: ${{ env.NODE_VERSION }}
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
@@ -49,10 +50,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 22.12.0
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22.12.0
+          node-version: ${{ env.NODE_VERSION }}
 
       # Install + Cache Frontend Dependencies
       - name: Cache Node Modules | Frontend
@@ -71,4 +72,35 @@ jobs:
 
       - name: Check Types | Frontend
         run: yarn check:ts
+        working-directory: ./frontend
+
+  frontend-checks-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Install + Cache Frontend Dependencies
+      - name: Cache Node Modules | Frontend
+        id: cache-frontend-yarn
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-frontend-yarn
+        with:
+          path: ./frontend/node_modules/
+          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
+
+      - name: Install Node Modules | Frontend
+        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+        working-directory: ./frontend
+
+      # Build Frontend
+      - name: Build the Frontend
+        run: yarn build
         working-directory: ./frontend

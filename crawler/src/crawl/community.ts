@@ -1,26 +1,18 @@
 import logging from "../lib/logging";
 
-import { CrawlError } from "../lib/error";
+import type { ICommunityData } from "../../../types/storage";
+import type { IJobProcessor } from "../queue/BaseQueue";
 
-import { CrawlTooRecentError } from "../lib/error";
-
-import { IJobProcessor } from "../queue/BaseQueue";
+import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
 import storage from "../lib/crawlStorage";
-
 import CrawlClient from "../lib/CrawlClient";
 
 const TIME_BETWEEN_PAGES = 2000;
-
-const RETRY_COUNT = 2;
 const RETRY_PAGE_COUNT = 2;
-const TIME_BETWEEN_RETRIES = 1000;
-
 const PAGE_TIMEOUT = 5000;
 
 /**
- * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
- * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
  * Each instance is a unique baseURL
  */
 export default class CommunityCrawler {
@@ -120,9 +112,10 @@ export default class CommunityCrawler {
 
     await storage.community.upsert(this.crawlDomain, community);
 
-    return true;
+    return community;
   }
 
+  // * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
   async crawlSingle(communityName: string) {
     try {
       logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
@@ -215,12 +208,22 @@ export default class CommunityCrawler {
     }
   }
 
+  // * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
   async crawlList() {
     try {
       logging.info(`${this.logPrefix} Starting Crawl List`);
 
       const promisesArray = await this.crawlCommunityPaginatedList();
       const resultPromises = await Promise.all(promisesArray);
+
+      // get a deduped count of total communitied by name
+      const communityNames = new Set<string>();
+      for (const promise of resultPromises) {
+        if (promise && promise.community && promise.community.name) {
+          communityNames.add(promise.community.name);
+        }
+      }
+      logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
 
       logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results)`);
 
@@ -268,6 +271,7 @@ export default class CommunityCrawler {
         {
           params: {
             type_: "Local",
+            sort: "Old",
             limit: 50,
             page: pageNumber,
             show_nsfw: true, // Added in 0.18.x? ish...
@@ -293,8 +297,13 @@ export default class CommunityCrawler {
   }
 }
 
-export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ baseUrl }) => {
   const startTime = Date.now();
+
+  if (!baseUrl) {
+    logging.error(`[Community] [${baseUrl}] Missing baseUrl`);
+    throw new CrawlError("Missing baseUrl");
+  }
 
   try {
     // check if community's instance has already been crawled revcently (these expire from redis)
@@ -348,12 +357,12 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
   return null;
 };
 
-export const singleCommunityProcessor: IJobProcessor = async ({ baseUrl, community }) => {
+export const singleCommunityProcessor: IJobProcessor<ICommunityData> = async ({ baseUrl, community }) => {
   let communityData: any = null;
 
   if (!baseUrl || !community) {
     logging.error(`[OneCommunity] [${baseUrl}] Missing baseUrl or community`);
-    return null;
+    throw new CrawlError("Missing baseUrl or community");
   }
 
   try {

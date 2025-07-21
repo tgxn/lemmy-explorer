@@ -218,7 +218,34 @@ export default function App() {
         })}
       </List>
 
-      <h2>Raw Data File</h2>
+      <h3>JSON ZIP File</h3>
+      <Box
+        sx={{
+          p: 2,
+        }}
+      >
+        <Typography sx={{ mb: 2 }}>
+          This is a zip file containing all the JSON files listed above, as well as some additional files that
+          might be useful.
+        </Typography>
+        <ListItem
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Link href="data/json-bundle.zip" target="_lv_lemmyverse_zip" download>
+            Download json-bundle.zip
+          </Link>
+          {/* Raw size would have to be calculated externally in the pipeline, so it's not available here. */}
+          {/* <Typography sx={{ fontWeight: "bold" }}>
+            <SimpleNumberFormat value={150} /> MB
+          </Typography> */}
+        </ListItem>
+      </Box>
+
+      <h3>Raw Data File</h3>
       <Box
         sx={{
           p: 2,

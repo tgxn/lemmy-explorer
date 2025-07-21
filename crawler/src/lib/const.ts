@@ -1,24 +1,26 @@
 import "dotenv/config";
 
-function hoursToMs(hours: number) {
+function hoursToMs(hours: number): number {
   return hours * 60 * 60 * 1000;
 }
 
-export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+export const REDIS_URL: string = process.env.REDIS_URL || "redis://localhost:6379";
 
-export const LOG_LEVEL = process.env.LOG_PATH || "debug";
+export const LOG_LEVEL: string = process.env.LOG_LEVEL || "warn";
 
 // should there be a cron job to upload the exported data to s3 automatically?
-export const AUTO_UPLOAD_S3 = process.env.AUTO_UPLOAD_S3 || false;
+export const AUTO_UPLOAD_S3: boolean = Boolean(process.env.AUTO_UPLOAD_S3) || false;
 
-export const REDIS_DUMP_FILE = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
-export const CHECKPOINT_DIR = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
+export const REDIS_DUMP_FILE: string = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
+export const CHECKPOINT_DIR: string = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
 
-export const AWS_REGION = process.env.AWS_REGION || "ap-southeast-2";
-export const PUBLISH_S3_BUCKET = process.env.PUBLISH_S3_BUCKET || "lemmyexplorer-build-prod-buildbucket";
+export const AWS_REGION: string = process.env.AWS_REGION || "ap-southeast-2";
+export const PUBLISH_S3_BUCKET: string | null = process.env.PUBLISH_S3_BUCKET || null;
 
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
+  DEFAULT: 30 * 60 * 1000, // 30 mins
+
   INSTANCE: 30 * 60 * 1000, // 30 mins
   COMMUNITY: 120 * 60 * 1000, // 2 hours
   MBIN: 60 * 60 * 1000, // one hour
@@ -71,9 +73,12 @@ export const EXPORT_MAX_LENGTHS = {
 };
 
 // for each request we make, after how much time should axios be configured to timeout
-export const AXIOS_REQUEST_TIMEOUT = 30 * 1000; // 30 seconds in ms
+export const AXIOS_REQUEST_TIMEOUT: number = 30 * 1000; // 30 seconds in ms
 
-export const FEDDIT_URLS = [
+// (piefed) these are removed from output
+export const PIEFED_DEV_URLS: string[] = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
+
+export const START_URLS: string[] = [
   "0xdd.org.ru",
   "1337lemmy.com",
   "aiparadise.moe",
@@ -287,10 +292,8 @@ export const FEDDIT_URLS = [
   "lemmybedan.com",
   "lemmydeals.com",
   "lemmyfly.org",
-  "lemmygrad.ml",
   "lemmyland.com",
   "lemmyngs.social",
-  "lemmynsfw.com",
   "lemmypets.xyz",
   "lemmyrs.org",
   "lib.lgbt",
@@ -370,16 +373,12 @@ export const FEDDIT_URLS = [
   "yiffit.net",
   "zemmy.cc",
   "zoo.splitlinux.org",
-];
-
-export const START_URLS = [
   "lemmy.tgxn.net",
   "lemmygrad.ml",
   "lemmynsfw.com",
   "lemmy.mods4ever.com",
-  ...FEDDIT_URLS,
 ];
 
 // used for the crawler headers when making requests
-export const CRAWLER_USER_AGENT = "lemmy-explorer-crawler/1.0.0";
-export const CRAWLER_ATTRIB_URL = "https://lemmyverse.net";
+export const CRAWLER_USER_AGENT: string = "lemmy-explorer-crawler/1.0.0";
+export const CRAWLER_ATTRIB_URL: string = "https://lemmyverse.net";

@@ -1,8 +1,9 @@
+import path from "node:path";
 import { readFile } from "node:fs/promises";
 
 import removeMd from "remove-markdown";
 
-import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS } from "../lib/const";
+import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS, PIEFED_DEV_URLS } from "../lib/const";
 import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
@@ -38,7 +39,7 @@ import {
 
 import OutputTrust from "./trust";
 
-class OutputUtils {
+export class OutputUtils {
   static safeSplit(text: string, maxLength: number) {
     // split byu space and rejoin till above the length
     const words = text.split(" ");
@@ -472,9 +473,8 @@ export default class CrawlOutput {
     const instanceErrors = await this.outputClassifiedErrors();
 
     // STORE RUN METADATA
-    const packageJson = JSON.parse(
-      (await readFile(new URL("../../package.json", import.meta.url))).toString(),
-    );
+    const packageJsonPath = path.resolve(process.cwd(), "package.json");
+    const packageJson = JSON.parse((await readFile(packageJsonPath)).toString());
 
     const metaData: IMetaDataOutput = {
       instances: returnInstanceArray.length,
@@ -1341,11 +1341,9 @@ export default class CrawlOutput {
 
     logging.info("Piefed Communities filteredPiefeds", this.piefedCommunities.length, filteredPiefeds.length);
 
-    const knownDevInstances = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
-
     // filter out known dev instances
     const devInstacesRemovedPiefeds = filteredPiefeds.filter((piefedComm) => {
-      return !knownDevInstances.includes(piefedComm.community.ap_domain);
+      return !PIEFED_DEV_URLS.includes(piefedComm.community.ap_domain);
     });
 
     logging.info(
