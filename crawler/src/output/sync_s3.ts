@@ -35,8 +35,8 @@ export async function syncCheckpoint() {
     const command = new PutObjectCommand(input);
     const response = await client.send(command);
 
-    // delete CHECKPOINT_DIR
-    await rm(CHECKPOINT_DIR, { recursive: true, force: true });
+    // delete checkpointPath
+    await rm(checkpointPath, { force: true });
 
     console.log("Success", response);
   } catch (error) {
