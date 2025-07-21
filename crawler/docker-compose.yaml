@@ -4,7 +4,8 @@ networks:
 
 services:
   redis:
-    image: redis:6.2-alpine
+    user: 1000:1000
+    image: redis:7.4.5-alpine
     restart: always
     networks:
       - crawler
@@ -30,6 +31,7 @@ services:
       # s3 upload
       AUTO_UPLOAD_S3: true
       REDIS_DUMP_FILE: /redis/dump.rdb
+      CHECKPOINT_DIR: /data/checkpoint
 
       AWS_REGION: ${AWS_REGION}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
