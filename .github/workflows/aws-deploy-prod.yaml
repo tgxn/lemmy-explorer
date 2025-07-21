@@ -75,6 +75,15 @@ jobs:
       - name: Start Redis
         working-directory: ./crawler
         run: docker compose -f "docker-compose.github.yaml" up -d redis
+
+      - name: Wait for Redis to be ready
+        working-directory: ./crawler
+        run: |
+          until redis-cli -h 127.0.0.1 -p 6379 ping | grep PONG; do
+            echo "Waiting for Redis..."
+            sleep 1
+          done
+
       - working-directory: ./crawler
         run: docker ps -a
       - working-directory: ./crawler
@@ -173,3 +182,9 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # stop redis
+      - name: Stop Redis
+        working-directory: ./crawler
+        if: always()
+        run: docker compose -f "docker-compose.github.yaml" down

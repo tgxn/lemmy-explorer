@@ -90,6 +90,15 @@ jobs:
       - name: Start Redis
         working-directory: ./crawler
         run: docker compose -f "docker-compose.github.yaml" up -d redis
+
+      - name: Wait for Redis to be ready
+        working-directory: ./crawler
+        run: |
+          until redis-cli -h 127.0.0.1 -p 6379 ping | grep PONG; do
+            echo "Waiting for Redis..."
+            sleep 1
+          done
+
       - working-directory: ./crawler
         run: docker ps -a
       - working-directory: ./crawler
