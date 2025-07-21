@@ -79,7 +79,7 @@ jobs:
       # start redis & check if it is running
       - name: Start Redis
         working-directory: ./crawler
-        run: ${{ env.COMPOSE_COMMAND }}  up -d redis
+        run: ${{ env.COMPOSE_COMMAND }} up -d redis
 
       - name: Wait for Redis to be ready
         working-directory: ./crawler
