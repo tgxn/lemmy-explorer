@@ -1,5 +1,6 @@
-import InstanceQueue from "../src/queue/instance";
 import { jest } from "@jest/globals";
+
+import InstanceQueue from "../../src/queue/instance";
 
 // Mock bee-queue to avoid redis dependency
 const saveMock = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
@@ -26,6 +27,9 @@ class FakeBeeQueue {
 jest.mock("bee-queue", () => {
   return jest.fn().mockImplementation(() => new FakeBeeQueue());
 });
+
+// Use the reusable logger mock from __mocks__
+jest.mock("../src/lib/logging");
 
 describe("InstanceQueue", () => {
   beforeEach(() => {

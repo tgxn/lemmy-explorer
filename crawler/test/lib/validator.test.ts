@@ -1,4 +1,6 @@
-import { isValidLemmyDomain, getActorBaseUrl, getActorCommunity } from "../src/lib/validator";
+import { jest } from "@jest/globals";
+
+import { isValidLemmyDomain, getActorBaseUrl, getActorCommunity } from "../../src/lib/validator";
 
 describe("isValidLemmyDomain", () => {
   test("valid domain", () => {

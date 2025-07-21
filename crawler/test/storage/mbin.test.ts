@@ -1,6 +1,12 @@
-import MBinStore from "../src/lib/storage/mbin";
+import { jest } from "@jest/globals";
 
-const listRedisWithKeysMock = jest.fn();
+import MBinStore from "../../src/lib/storage/mbin";
+
+const listRedisWithKeysMock = jest.fn(() =>
+  Promise.resolve({
+    "mbin_magazine:example.com:foo": { name: "foo" },
+  }),
+);
 
 const storageMock = {
   listRedisWithKeys: listRedisWithKeysMock,

@@ -24,7 +24,8 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "check:ts": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest --silent --coverage --coverageReporters text",
+    "test:loud": "jest --coverage --coverageReporters text"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.844.0",

@@ -1,4 +1,6 @@
-import { OutputUtils } from "../src/output/output";
+import { jest } from "@jest/globals";
+
+import { OutputUtils } from "../../src/output/output";
 
 describe("OutputUtils.safeSplit", () => {
   test("splits without breaking words", () => {
