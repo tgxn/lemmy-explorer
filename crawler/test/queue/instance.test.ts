@@ -28,9 +28,6 @@ jest.mock("bee-queue", () => {
   return jest.fn().mockImplementation(() => new FakeBeeQueue());
 });
 
-// Use the reusable logger mock from __mocks__
-jest.mock("../src/lib/logging");
-
 describe("InstanceQueue", () => {
   beforeEach(() => {
     jest.clearAllMocks();
