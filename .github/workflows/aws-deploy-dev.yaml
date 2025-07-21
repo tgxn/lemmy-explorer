@@ -72,17 +72,21 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ap-southeast-2
 
+      # set compose_command envvar
+      - name: set global workflow ennvvar
+        run: echo "COMPOSE_COMMAND=docker compose -f docker-compose.github.yaml" >> $GITHUB_ENV
+
       # start redis & check if it is running
       - name: Start Redis
         working-directory: ./crawler
-        run: docker compose -f "docker-compose.github.yaml" up -d redis
+        run: ${{ env.COMPOSE_COMMAND }}  up -d redis
 
       - name: Wait for Redis to be ready
         working-directory: ./crawler
         run: |
-          until docker compose exec redis redis-cli ping | grep PONG; do
+          until ${{ env.COMPOSE_COMMAND }} exec redis redis-cli ping | grep PONG; do
 
-            docker compose -f "docker-compose.github.yaml" logs -n 100 redis
+            ${{ env.COMPOSE_COMMAND }} logs -n 100 redis
 
             echo "Waiting for Redis..."
             sleep 1
@@ -91,7 +95,7 @@ jobs:
       - working-directory: ./crawler
         run: docker ps -a
       - working-directory: ./crawler
-        run: docker compose -f "docker-compose.github.yaml" logs redis
+        run: ${{ env.COMPOSE_COMMAND }} logs redis
 
       # Install + Cache Crawler Dependencies
       - name: Cache Node Modules | Crawler
@@ -200,4 +204,4 @@ jobs:
       - name: Stop Redis
         working-directory: ./crawler
         if: always()
-        run: docker compose -f "docker-compose.github.yaml" down
+        run: ${{ env.COMPOSE_COMMAND }} down
