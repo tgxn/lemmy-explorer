@@ -8,6 +8,16 @@ This project provides a simple way to explore Lemmy Instances and Communities.
 
 ![List of Communities](./docs/images/0.10.0-communities.png)
 
+## Supported Platforms
+
+These are the platforms that are currently supported by this project:
+
+| Software | URL Path              |
+| -------- | --------------------- |
+| Lemmy    | `/`                   |
+| MBin     | `/mbin/magazines`     |
+| Piefed   | `/piefed/communities` |
+
 ## Project Structure
 
 The project consists of the following modules:

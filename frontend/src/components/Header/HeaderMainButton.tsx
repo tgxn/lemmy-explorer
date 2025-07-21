@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
@@ -12,6 +13,12 @@ import MBinIcon from "./MBinIcon";
 import PiefedIcon from "./PiefedIcon";
 
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+
+const brandRoutes = {
+  lemmy: "/",
+  mbin: "/mbin/magazines",
+  piefed: "/piefed/communities",
+};
 
 function LemmyEntry() {
   return (
@@ -128,8 +135,21 @@ function PiefedEntry() {
 }
 
 export default function HeaderMainButton() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
+
+  const selectedSoftware = React.useMemo(() => {
+    if (location.pathname.startsWith("/mbin")) {
+      return "mbin";
+    } else if (location.pathname.startsWith("/piefed")) {
+      return "piefed";
+    } else {
+      return "lemmy";
+    }
+  }, [location.pathname]);
 
   const handleOpenMenu = (event) => {
     if (menuOpen) return handleCloseMenu();
@@ -172,7 +192,10 @@ export default function HeaderMainButton() {
         }}
         onClick={handleOpenMenu}
       >
-        <LemmyEntry />
+        {/* <LemmyEntry /> */}
+        {selectedSoftware === "lemmy" && <LemmyEntry />}
+        {selectedSoftware === "mbin" && <MBinEntry />}
+        {selectedSoftware === "piefed" && <PiefedEntry />}
         <ArrowDropDownIcon
           sx={{
             color: "text.secondary",
@@ -190,13 +213,28 @@ export default function HeaderMainButton() {
         onClose={handleCloseMenu}
         placement="bottom-end"
       >
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem
+          onClick={() => {
+            navigate(brandRoutes.lemmy);
+            handleCloseMenu();
+          }}
+        >
           <LemmyEntry />
         </MenuItem>
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem
+          onClick={() => {
+            navigate(brandRoutes.mbin);
+            handleCloseMenu();
+          }}
+        >
           <MBinEntry />
         </MenuItem>
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem
+          onClick={() => {
+            navigate(brandRoutes.piefed);
+            handleCloseMenu();
+          }}
+        >
           <PiefedEntry />
         </MenuItem>
       </Menu>
