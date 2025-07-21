@@ -51,7 +51,7 @@ function LemmyEntry() {
 function MBinEntry() {
   return (
     <>
-      {/* <Box
+      <Box
         component="div"
         sx={{
           width: 30,
@@ -60,25 +60,22 @@ function MBinEntry() {
           pr: 2,
           ml: 2,
           mr: 2,
-          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          backgroundSize: "contain",
         }}
-      /> */}
-      <SvgIcon
-        sx={{
-          width: 30,
-          height: 30,
-          flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
-          //   background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          //   backgroundSize: "contain",
-        }}
-        inheritViewBox={true}
-        viewBox="0 0 8.467 8.467"
-        component={MBinIcon}
-      />
+      >
+        <SvgIcon
+          sx={{
+            width: 30,
+            height: 30,
+            flexShrink: 0,
+            pr: 2,
+            ml: 2,
+            mr: 2,
+          }}
+          inheritViewBox={true}
+          viewBox="0 0 8.467 8.467"
+          component={MBinIcon}
+        />
+      </Box>
       <Typography
         sx={{
           fontSize: "19px",
@@ -94,7 +91,7 @@ function MBinEntry() {
 function PiefedEntry() {
   return (
     <>
-      {/* <Box
+      <Box
         component="div"
         sx={{
           width: 30,
@@ -103,25 +100,22 @@ function PiefedEntry() {
           pr: 2,
           ml: 2,
           mr: 2,
-          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          backgroundSize: "contain",
         }}
-      /> */}
-      <SvgIcon
-        sx={{
-          width: 30,
-          height: 30,
-          flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
-          //   background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          //   backgroundSize: "contain",
-        }}
-        inheritViewBox={true}
-        viewBox="0 0 8.467 8.467"
-        component={PiefedIcon}
-      />
+      >
+        <SvgIcon
+          sx={{
+            width: 30,
+            height: 30,
+            flexShrink: 0,
+            pr: 2,
+            ml: 2,
+            mr: 2,
+          }}
+          inheritViewBox={true}
+          // viewBox="0 0 0 0"
+          component={PiefedIcon}
+        />
+      </Box>
       <Typography
         sx={{
           fontSize: "19px",
@@ -151,7 +145,7 @@ export default function HeaderMainButton() {
     }
   }, [location.pathname]);
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     if (menuOpen) return handleCloseMenu();
 
     setAnchorEl(event.currentTarget);
