@@ -76,7 +76,7 @@ export const AXIOS_REQUEST_TIMEOUT: number = 30 * 1000; // 30 seconds in ms
 // (piefed) these are removed from output
 export const PIEFED_DEV_URLS: string[] = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
 
-export const FEDDIT_URLS: string[] = [
+export const START_URLS: string[] = [
   "0xdd.org.ru",
   "1337lemmy.com",
   "aiparadise.moe",
@@ -290,10 +290,8 @@ export const FEDDIT_URLS: string[] = [
   "lemmybedan.com",
   "lemmydeals.com",
   "lemmyfly.org",
-  "lemmygrad.ml",
   "lemmyland.com",
   "lemmyngs.social",
-  "lemmynsfw.com",
   "lemmypets.xyz",
   "lemmyrs.org",
   "lib.lgbt",
@@ -373,14 +371,10 @@ export const FEDDIT_URLS: string[] = [
   "yiffit.net",
   "zemmy.cc",
   "zoo.splitlinux.org",
-];
-
-export const START_URLS: string[] = [
   "lemmy.tgxn.net",
   "lemmygrad.ml",
   "lemmynsfw.com",
   "lemmy.mods4ever.com",
-  ...FEDDIT_URLS,
 ];
 
 // used for the crawler headers when making requests
