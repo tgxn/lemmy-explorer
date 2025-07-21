@@ -83,7 +83,7 @@ function BrandMenuItem({
         display: "flex",
         alignItems: "center",
 
-        py: 1,
+        py: 2,
       }}
     >
       <BrandEntry icon={icon} name={name} />
