@@ -1,8 +1,13 @@
 services:
   redis:
-    image: redis:6.2-alpine
+    image: redis:7.4.5-alpine
     restart: always
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - ../.redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
