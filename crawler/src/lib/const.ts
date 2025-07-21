@@ -19,7 +19,7 @@ export const PUBLISH_S3_BUCKET: string | null = process.env.PUBLISH_S3_BUCKET ||
 
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
-  DEFAULT: 60 * 1000, // 2 minutes
+  DEFAULT: 30 * 60 * 1000, // 30 mins
 
   INSTANCE: 30 * 60 * 1000, // 30 mins
   COMMUNITY: 120 * 60 * 1000, // 2 hours

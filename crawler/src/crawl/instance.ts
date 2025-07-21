@@ -1,26 +1,24 @@
+import type {
+  IErrorData,
+  // IErrorDataKeyValue,
+  // ILastCrawlData,
+  // ILastCrawlDataKeyValue,
+} from "../../../types/storage";
+
+import type { IJobProcessor } from "../queue/BaseQueue";
+import type { IInstanceData, IFederatedInstanceData } from "../../../types/storage";
+
 import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
-import {
-  IErrorData,
-  IErrorDataKeyValue,
-  ILastCrawlData,
-  ILastCrawlDataKeyValue,
-} from "../../../types/storage";
 
 import { CRAWL_AGED_TIME } from "../lib/const";
 import { HTTPError, CrawlError, CrawlTooRecentError } from "../lib/error";
-import { isValidLemmyDomain } from "../lib/validator";
-
-import { getActorBaseUrl } from "../lib/validator";
-
-import { IJobProcessor } from "../queue/BaseQueue";
-import type { IInstanceData } from "../../../types/storage";
-
-import CommunityListQueue from "../queue/community_list";
-import InstanceQueue from "../queue/instance";
+import { isValidLemmyDomain, getActorBaseUrl } from "../lib/validator";
 
 import CrawlClient from "../lib/CrawlClient";
 
+import InstanceQueue from "../queue/instance";
+import CommunityListQueue from "../queue/community_list";
 import MBinQueue from "../queue/mbin";
 import PiefedQueue from "../queue/piefed";
 
@@ -238,14 +236,14 @@ export default class InstanceCrawler {
   }
 }
 
-// start a job for each instances in the federation lists
-const crawlFederatedInstanceJobs = async (federatedData) => {
+// start an instance scan job for each instances in the federation lists
+const crawlFederatedInstanceJobs = async (federatedData: IFederatedInstanceData): Promise<string[]> => {
   const linked = federatedData.linked || [];
   const allowed = federatedData.allowed || [];
   const blocked = federatedData.blocked || [];
 
   // pull data from all federated instances
-  let instancesDeDup = [...new Set([...linked, ...allowed, ...blocked])];
+  let instancesDeDup: string[] = [...new Set([...linked, ...allowed, ...blocked])];
 
   const instanceQueue = new InstanceQueue();
 
@@ -310,14 +308,13 @@ const crawlFederatedInstanceJobs = async (federatedData) => {
     */
 export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
+  // if it's not a string
+  if (typeof baseUrl !== "string") {
+    logging.error("baseUrl is not a string", baseUrl);
+    throw new CrawlError("baseUrl is not a string");
+  }
 
   try {
-    // if it's not a string
-    if (typeof baseUrl !== "string") {
-      logging.error("baseUrl is not a string", baseUrl);
-      throw new CrawlError("baseUrl is not a string");
-    }
-
     // try to clean up the url
     let instanceBaseUrl = baseUrl.toLowerCase();
     instanceBaseUrl = instanceBaseUrl.replace(/\s/g, ""); // remove spaces

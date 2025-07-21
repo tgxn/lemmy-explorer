@@ -1,28 +1,18 @@
 import logging from "../lib/logging";
 
-import { CrawlError } from "../lib/error";
-
-import { CrawlTooRecentError } from "../lib/error";
-
-import { IJobProcessor } from "../queue/BaseQueue";
-
 import type { ICommunityData } from "../../../types/storage";
+import type { IJobProcessor } from "../queue/BaseQueue";
+
+import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
 import storage from "../lib/crawlStorage";
-
 import CrawlClient from "../lib/CrawlClient";
 
 const TIME_BETWEEN_PAGES = 2000;
-
-const RETRY_COUNT = 2;
 const RETRY_PAGE_COUNT = 2;
-const TIME_BETWEEN_RETRIES = 1000;
-
 const PAGE_TIMEOUT = 5000;
 
 /**
- * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
- * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
  * Each instance is a unique baseURL
  */
 export default class CommunityCrawler {
@@ -125,6 +115,7 @@ export default class CommunityCrawler {
     return community;
   }
 
+  // * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
   async crawlSingle(communityName: string) {
     try {
       logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
@@ -217,6 +208,7 @@ export default class CommunityCrawler {
     }
   }
 
+  // * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
   async crawlList() {
     try {
       logging.info(`${this.logPrefix} Starting Crawl List`);
@@ -305,8 +297,13 @@ export default class CommunityCrawler {
   }
 }
 
-export const communityListProcessor: IJobProcessor<ICommunityData[] | null> = async ({ baseUrl }) => {
+export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ baseUrl }) => {
   const startTime = Date.now();
+
+  if (!baseUrl) {
+    logging.error(`[Community] [${baseUrl}] Missing baseUrl`);
+    return null;
+  }
 
   try {
     // check if community's instance has already been crawled revcently (these expire from redis)
@@ -360,10 +357,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[] | null> = as
   return null;
 };
 
-export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = async ({
-  baseUrl,
-  community,
-}) => {
+export const singleCommunityProcessor: IJobProcessor<ICommunityData> = async ({ baseUrl, community }) => {
   let communityData: any = null;
 
   if (!baseUrl || !community) {
