@@ -1,3 +1,4 @@
+import path from "node:path";
 import { readFile } from "node:fs/promises";
 
 import removeMd from "remove-markdown";
@@ -38,7 +39,7 @@ import type {
 
 import OutputTrust from "./trust";
 
-class OutputUtils {
+export class OutputUtils {
   static safeSplit(text: string, maxLength: number) {
     // split byu space and rejoin till above the length
     const words = text.split(" ");
@@ -472,9 +473,8 @@ export default class CrawlOutput {
     const instanceErrors = await this.outputClassifiedErrors();
 
     // STORE RUN METADATA
-    const packageJson = JSON.parse(
-      (await readFile(new URL("../../package.json", import.meta.url))).toString(),
-    );
+    const packageJsonPath = path.resolve(process.cwd(), "package.json");
+    const packageJson = JSON.parse((await readFile(packageJsonPath)).toString());
 
     const metaData: IMetaDataOutput = {
       instances: returnInstanceArray.length,
