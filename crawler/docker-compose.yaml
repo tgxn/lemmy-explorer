@@ -16,6 +16,7 @@ services:
 
   crawler:
     user: 1000:1000
+    hostname: crawler
     build: .
     restart: always
     depends_on:
