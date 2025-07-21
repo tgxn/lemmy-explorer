@@ -1,16 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
-import Button from "@mui/joy/Button";
 import Menu from "@mui/joy/Menu";
 import MenuItem from "@mui/joy/MenuItem";
 import Typography from "@mui/joy/Typography";
-
-import SvgIcon from "@mui/material/SvgIcon";
-import MBinIcon from "./MBinIcon";
-import PiefedIcon from "./PiefedIcon";
 
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
@@ -20,114 +15,82 @@ const brandRoutes = {
   piefed: "/piefed/communities",
 };
 
-function LemmyEntry() {
-  return (
-    <>
-      <Box
-        component="div"
-        sx={{
-          width: 30,
-          height: 30,
-          flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
-          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          backgroundSize: "contain",
-        }}
-      />
-      <Typography
-        sx={{
-          fontSize: "19px",
-          display: { xs: "none", sm: "block" },
-        }}
-      >
-        Lemmy Explorer
-      </Typography>
-    </>
-  );
-}
+type IBrandEntryProps = {
+  icon: string;
+  name: string;
+};
 
-function MBinEntry() {
+function BrandEntry({ icon, name }: IBrandEntryProps) {
   return (
-    <>
+    <Box
+      component="div"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        px: 1,
+      }}
+    >
       <Box
         component="div"
         sx={{
-          width: 30,
-          height: 30,
+          height: 28,
+          width: "60px",
           flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <SvgIcon
-          sx={{
-            width: 30,
-            height: 30,
-            flexShrink: 0,
-            pr: 2,
-            ml: 2,
-            mr: 2,
+        <img
+          alt={name}
+          src={`/icons/${icon}`}
+          style={{
+            maxHeight: 28,
+            display: "flex",
+            borderRadius: 0,
           }}
-          inheritViewBox={true}
-          viewBox="0 0 8.467 8.467"
-          component={MBinIcon}
         />
       </Box>
+
       <Typography
         sx={{
-          fontSize: "19px",
+          fontSize: "20px",
           display: { xs: "none", sm: "block" },
         }}
       >
-        MBin Explorer
+        {name}
       </Typography>
-    </>
+    </Box>
   );
 }
 
-function PiefedEntry() {
+function BrandMenuItem({
+  icon,
+  name,
+  selected,
+  onClick,
+}: IBrandEntryProps & {
+  selected: boolean;
+  onClick: () => void;
+}) {
   return (
-    <>
-      <Box
-        component="div"
-        sx={{
-          width: 30,
-          height: 30,
-          flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
-        }}
-      >
-        <SvgIcon
-          sx={{
-            width: 30,
-            height: 30,
-            flexShrink: 0,
-            pr: 2,
-            ml: 2,
-            mr: 2,
-          }}
-          inheritViewBox={true}
-          // viewBox="0 0 0 0"
-          component={PiefedIcon}
-        />
-      </Box>
-      <Typography
-        sx={{
-          fontSize: "19px",
-          display: { xs: "none", sm: "block" },
-        }}
-      >
-        Piefed Explorer
-      </Typography>
-    </>
+    <MenuItem
+      {...(selected && { variant: "solid" })}
+      onClick={onClick}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+
+        py: 1,
+      }}
+    >
+      <BrandEntry icon={icon} name={name} />
+    </MenuItem>
   );
 }
 
+// TODO need to make the button shring down to a small dropdown on small screens
 export default function HeaderMainButton() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -159,13 +122,8 @@ export default function HeaderMainButton() {
 
   return (
     <Box
-      component="header"
       sx={{
-        p: 0,
-        display: "flex",
-        height: "80px",
-        alignItems: "center",
-        justifyContent: "space-between",
+        userSelect: "none",
       }}
     >
       <Sheet
@@ -179,17 +137,16 @@ export default function HeaderMainButton() {
           p: 1,
           backgroundColor: anchorEl ? "background.level2" : "background.level1",
           cursor: "pointer",
-          //   ":hover"
           "&:hover": {
             backgroundColor: "background.level2",
           },
         }}
         onClick={handleOpenMenu}
       >
-        {/* <LemmyEntry /> */}
-        {selectedSoftware === "lemmy" && <LemmyEntry />}
-        {selectedSoftware === "mbin" && <MBinEntry />}
-        {selectedSoftware === "piefed" && <PiefedEntry />}
+        {selectedSoftware === "lemmy" && <BrandEntry icon="lemmy_64px.png" name="Lemmy Explorer" />}
+        {selectedSoftware === "mbin" && <BrandEntry icon="mbin_64px.png" name="MBin Explorer" />}
+        {selectedSoftware === "piefed" && <BrandEntry icon="piefed_64px.png" name="Piefed Explorer" />}
+
         <ArrowDropDownIcon
           sx={{
             color: "text.secondary",
@@ -199,38 +156,47 @@ export default function HeaderMainButton() {
           }}
         />
       </Sheet>
-      {/* <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu} sx={{ mt: 1 }}> */}
+
       <Menu
         id="left-side-menu"
         anchorEl={anchorEl}
         open={menuOpen}
         onClose={handleCloseMenu}
         placement="bottom-end"
+        sx={{
+          zIndex: 1000,
+          gap: 0.5,
+        }}
       >
-        <MenuItem
+        <BrandMenuItem
+          icon="lemmy_64px.png"
+          name="Lemmy Explorer"
+          selected={selectedSoftware === "lemmy"}
           onClick={() => {
             navigate(brandRoutes.lemmy);
             handleCloseMenu();
           }}
-        >
-          <LemmyEntry />
-        </MenuItem>
-        <MenuItem
+        />
+
+        <BrandMenuItem
+          icon="mbin_64px.png"
+          name="MBin Explorer"
+          selected={selectedSoftware === "mbin"}
           onClick={() => {
             navigate(brandRoutes.mbin);
             handleCloseMenu();
           }}
-        >
-          <MBinEntry />
-        </MenuItem>
-        <MenuItem
+        />
+
+        <BrandMenuItem
+          icon="piefed_64px.png"
+          name="Piefed Explorer"
+          selected={selectedSoftware === "piefed"}
           onClick={() => {
             navigate(brandRoutes.piefed);
             handleCloseMenu();
           }}
-        >
-          <PiefedEntry />
-        </MenuItem>
+        />
       </Menu>
     </Box>
   );
