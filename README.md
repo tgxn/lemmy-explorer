@@ -1,4 +1,4 @@
-[![publish-pages](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml)
+[![aws-deploy-prod](https://github.com/tgxn/lemmy-explorer/actions/workflows/aws-deploy-prod.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/aws-deploy-prod.yaml) [![publish-pages](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml)
 
 # Lemmy Explorer https://lemmyverse.net/
 
