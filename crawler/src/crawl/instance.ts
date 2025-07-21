@@ -308,6 +308,13 @@ const crawlFederatedInstanceJobs = async (federatedData: IFederatedInstanceData)
     */
 export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
+
+  // if no baseUrl is provided, log and return null
+  if (!baseUrl) {
+    logging.error("[Instance] No baseUrl provided for instance crawl");
+    throw new CrawlError("No baseUrl provided for instance crawl");
+  }
+
   // if it's not a string
   if (typeof baseUrl !== "string") {
     logging.error("baseUrl is not a string", baseUrl);

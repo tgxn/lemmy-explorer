@@ -357,6 +357,11 @@ export const piefedInstanceProcessor: IJobProcessor<IIncomingPiefedCommunityData
 }) => {
   const startTime = Date.now();
 
+  if (!baseUrl) {
+    logging.error(`[PiefedQueue] No baseUrl provided for piefed instance`);
+    throw new CrawlError("No baseUrl provided for piefed instance");
+  }
+
   try {
     // check for recent scan of this piefed instance
     const lastCrawl = await storage.tracking.getLastCrawl("piefed", baseUrl);

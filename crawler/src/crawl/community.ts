@@ -302,7 +302,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
 
   if (!baseUrl) {
     logging.error(`[Community] [${baseUrl}] Missing baseUrl`);
-    return null;
+    throw new CrawlError("Missing baseUrl");
   }
 
   try {
@@ -362,7 +362,7 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData> = async ({ 
 
   if (!baseUrl || !community) {
     logging.error(`[OneCommunity] [${baseUrl}] Missing baseUrl or community`);
-    return null;
+    throw new CrawlError("Missing baseUrl or community");
   }
 
   try {

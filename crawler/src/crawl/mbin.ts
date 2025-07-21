@@ -348,6 +348,11 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
 }) => {
   const startTime = Date.now();
 
+  if (!baseUrl) {
+    logging.error(`[MBinQueue] No baseUrl provided for mbin instance`);
+    throw new CrawlError("No baseUrl provided for mbin instance");
+  }
+
   try {
     // check for recent scan of this mbin instance
     const lastCrawl = await storage.tracking.getLastCrawl("mbin", baseUrl);
