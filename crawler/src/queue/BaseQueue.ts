@@ -59,7 +59,7 @@ export default class BaseQueue<T> {
   }
 
   process(): void {
-    this.queue.process(async (job) => {
+    this.queue.process(async (job): Promise<any> => {
       await storage.connect();
 
       try {
@@ -67,10 +67,10 @@ export default class BaseQueue<T> {
 
         const resultData = await this.jobProcessor(job.data);
 
-        if (!resultData) {
-          logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
-          throw new Error("Processor returned null or undefined");
-        }
+        // if (!resultData) {
+        //   logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
+        //   throw new Error("Processor returned null or undefined");
+        // }
 
         // close redis connection on end of job
         await storage.close();
