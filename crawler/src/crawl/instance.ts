@@ -379,7 +379,7 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
     if (knownFediverseServer && knownFediverseServer.time) {
       const fediCutOffMsEpoch = Date.now() - CRAWL_AGED_TIME.FEDIVERSE;
-      
+
       const lastCrawledFediMsAgo = Date.now() - knownFediverseServer.time;
 
       if (
@@ -460,7 +460,6 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
       await storage.tracking.upsertError("instance", baseUrl, errorDetail);
     } else {
-
       const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,

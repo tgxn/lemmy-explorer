@@ -1,6 +1,4 @@
-import type {
-  IErrorData,
-} from "../../../types/storage";
+import type { IErrorData } from "../../../types/storage";
 
 import logging from "../lib/logging";
 
@@ -343,9 +341,7 @@ export default class CrawlMBin {
   }
 }
 
-export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null> = async ({
-  baseUrl,
-}) => {
+export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
 
   if (!baseUrl) {
@@ -395,18 +391,17 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null
     }
 
     const errorDetail: IErrorData = {
-        error: error.message,
-        stack: error.stack,
-        isAxiosError: error.isAxiosError,
-        code: error.code,
-        url: error.url,
-        time: new Date().getTime(),
-        duration: Date.now() - startTime,
-      };
-
+      error: error.message,
+      stack: error.stack,
+      isAxiosError: error.isAxiosError,
+      code: error.code,
+      url: error.url,
+      time: new Date().getTime(),
+      duration: Date.now() - startTime,
+    };
 
     await storage.tracking.upsertError("mbin", baseUrl, errorDetail);
-    
+
     logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`);
   }
 

@@ -41,7 +41,9 @@ export default class CommunityCrawler {
   async storeCommunityData(community) {
     // check make sure it's a string or throw an error
     if (!community.community.actor_id || typeof community.community.actor_id !== "string") {
-      throw new Error(`${this.logPrefix} splitCommunityActorParts: actorId is not a string: ${community.community.actor_id}`);
+      throw new Error(
+        `${this.logPrefix} splitCommunityActorParts: actorId is not a string: ${community.community.actor_id}`,
+      );
     }
 
     const { basePart, communityPart } = this.splitCommunityActorParts(community.community.actor_id);
