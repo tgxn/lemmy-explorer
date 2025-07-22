@@ -42,7 +42,7 @@ export default class CommunityCrawler {
     // check make sure it's a string or throw an error
     if (!community.community.actor_id || typeof community.community.actor_id !== "string") {
       throw new Error(
-        `${this.logPrefix} splitCommunityActorParts: actorId is not a string: ${community.community.actor_id}`,
+        `${this.logPrefix} storeCommunityData: actorId is not a string: ${community.community.actor_id}`,
       );
     }
 
@@ -242,30 +242,32 @@ export default class CommunityCrawler {
     }
   }
 
-  async crawlCommunityPaginatedList(pageNumber: number = 1) {
+  async crawlCommunityPaginatedList(pageNumber: number = 1): Promise<any> {
     const communities = await this.getPageData(pageNumber);
 
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Results: ${communities.length}`);
 
+    let results = communities;
+
     //  promises track the upsert of community data
     let promises: Promise<any>[] = [];
-
     for (var community of communities) {
       promises.push(this.storeCommunityData(community));
     }
+    await Promise.all(promises);
 
     // if this page had non-zero results
     if (communities.length > 0) {
       // sleep between pages
       await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
 
-      const subPromises = await this.crawlCommunityPaginatedList(pageNumber + 1);
-      if (subPromises.length > 0) {
-        promises.push(...subPromises);
+      const subResults = await this.crawlCommunityPaginatedList(pageNumber + 1);
+      if (subResults.length > 0) {
+        results.push(...subResults);
       }
     }
 
-    return promises;
+    return results;
   }
 
   async getPageData(pageNumber: number = 1) {
