@@ -1,8 +1,6 @@
 import path from "node:path";
 import { open, rm, mkdir, FileHandle } from "node:fs/promises";
 
-
-
 import { OUTPUT_DIR } from "../lib/const";
 
 import {
@@ -92,7 +90,6 @@ export default class OutputFileWriter {
   private piefedCommunitiesPerFile: number;
 
   constructor() {
-
     // throw if the output directory is not set
     if (!OUTPUT_DIR || OUTPUT_DIR === "") {
       throw new Error("OUTPUT_DIR is not set. Please set it in the environment variables.");

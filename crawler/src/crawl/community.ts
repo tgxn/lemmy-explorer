@@ -224,7 +224,9 @@ export default class CommunityCrawler {
         }
       }
 
-      logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results) unique: ${communityNames.size}`);
+      logging.info(
+        `${this.logPrefix} Ended Success (${resultPromises.length} results) unique: ${communityNames.size}`,
+      );
 
       return resultPromises;
     } catch (e) {
