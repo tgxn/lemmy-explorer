@@ -46,6 +46,7 @@ The crawler reads configuration from the following environment variables (see
 | `AUTO_UPLOAD_S3`    | `false`                  | Automatically upload crawl output to S3 |
 | `REDIS_DUMP_FILE`   | `.data/redis/dump.rdb`   | Location of the Redis dump file         |
 | `CHECKPOINT_DIR`    | `.data/checkpoint/`      | Directory for crawler checkpoints       |
+| `OUTPUT_DIR`        | `../frontend/public/data` | Directory for output files       |
 | `AWS_REGION`        | `ap-southeast-2`         | AWS region used for S3 uploads          |
 | `PUBLISH_S3_BUCKET` | `null`                   | S3 bucket for publishing data           |
 | `PUBLISH_S3_CRON`   | `0 */4 * * *`            | Cron schedule for S3 publishing         |

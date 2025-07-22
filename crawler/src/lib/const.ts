@@ -14,6 +14,8 @@ export const AUTO_UPLOAD_S3: boolean = Boolean(process.env.AUTO_UPLOAD_S3) || fa
 export const REDIS_DUMP_FILE: string = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
 export const CHECKPOINT_DIR: string = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
 
+export const OUTPUT_DIR: string = process.env.OUTPUT_DIR || "../frontend/public/data";
+
 export const AWS_REGION: string = process.env.AWS_REGION || "ap-southeast-2";
 export const PUBLISH_S3_BUCKET: string | null = process.env.PUBLISH_S3_BUCKET || null;
 
