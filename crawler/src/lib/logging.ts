@@ -4,8 +4,8 @@
 
 const logging = {
   silly: (...args: any) => {},
-  trace: console.trace,
-  verbose: console.trace,
+  // trace: console.trace,
+  // verbose: console.trace,
   debug: console.debug,
   info: console.info,
   warn: console.warn,
