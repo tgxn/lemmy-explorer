@@ -31,7 +31,7 @@ const logging = {
     } else {
       return `${seconds}.${milliseconds}s`;
     }
-  }
+  },
 };
 
 export default logging;

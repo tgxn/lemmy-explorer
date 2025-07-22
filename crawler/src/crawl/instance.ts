@@ -95,12 +95,13 @@ export default class InstanceCrawler {
 
   async getSiteInfo() {
     const siteInfo = await this.client.getUrlWithRetry("https://" + this.crawlDomain + "/api/v3/site");
-    
-    if (!siteInfo.data.federated_instances) {
 
+    if (!siteInfo.data.federated_instances) {
       // console.warn(`${this.crawlDomain}: no federated_instances in site data, fetching separately`);
 
-      const fedInstances = await this.client.getUrlWithRetry("https://" + this.crawlDomain + "/api/v3/federated_instances");
+      const fedInstances = await this.client.getUrlWithRetry(
+        "https://" + this.crawlDomain + "/api/v3/federated_instances",
+      );
 
       // siteInfo.data.federated_instances = fedInstances.data.federated_instances;
 
@@ -110,26 +111,24 @@ export default class InstanceCrawler {
 
       // do this for all items in all arrays
       const federationData: IFederatedInstanceData = {
-        linked: fedInstances.data.federated_instances.linked.map((instance) => instance.domain        ),
+        linked: fedInstances.data.federated_instances.linked.map((instance) => instance.domain),
         allowed: fedInstances.data.federated_instances.allowed.map((instance) => instance.domain),
-        blocked: fedInstances.data.federated_instances.blocked.map((instance) => instance.domain
-        ),
+        blocked: fedInstances.data.federated_instances.blocked.map((instance) => instance.domain),
       };
 
-      console.log(`${this.crawlDomain}: fetched federated instances separately`,{
+      console.log(`${this.crawlDomain}: fetched federated instances separately`, {
         linked: federationData.linked.length,
         allowed: federationData.allowed.length,
         blocked: federationData.blocked.length,
-      })
+      });
 
-      siteInfo.data.federated_instances= federationData;
-
-    } else {  
+      siteInfo.data.federated_instances = federationData;
+    } else {
       console.log(`${this.crawlDomain}: fetched federated instances separately`, {
         linked: siteInfo.data.federated_instances.linked.length,
         allowed: siteInfo.data.federated_instances.allowed.length,
         blocked: siteInfo.data.federated_instances.blocked.length,
-      })
+      });
     }
 
     return [siteInfo.data, siteInfo.headers];
@@ -168,8 +167,6 @@ export default class InstanceCrawler {
     }
 
     const [siteInfo, siteHeaders] = await this.getSiteInfo();
-
-
 
     // console.log(`${this.crawlDomain}: found lemmy instance`, siteInfo);
 
@@ -380,7 +377,6 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
     // check if it's known to not be running lemmy (recan it if it's been a while)
     const knownFediverseServer = await storage.fediverse.getOne(instanceBaseUrl);
 
-    
     if (knownFediverseServer && knownFediverseServer.time) {
       const fediCutOffMsEpoch = Date.now() - CRAWL_AGED_TIME.FEDIVERSE;
       
@@ -396,7 +392,9 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
         );
       }
 
-      console.log(`[Instance] [${baseUrl}] Found known fediverse server ${knownFediverseServer.name} ${knownFediverseServer.version} [${logging.nicetime(lastCrawledFediMsAgo)} ago]`);
+      console.log(
+        `[Instance] [${baseUrl}] Found known fediverse server ${knownFediverseServer.name} ${knownFediverseServer.version} [${logging.nicetime(lastCrawledFediMsAgo)} ago]`,
+      );
     } else {
       console.log(`[Instance] [${baseUrl}] Not a known fediverse server, continuing crawl...`);
     }
@@ -417,11 +415,14 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
     const crawler = new InstanceCrawler(instanceBaseUrl);
     const instanceData = await crawler.crawl();
-    
+
     // console.log(`[Instance] [${baseUrl}] Instance data crawled`, instanceData.siteData?.federated);
 
     // start crawl jobs for federated instances
-    if (instanceData.siteData?.federated?.linked?.length > 0 && instanceData.siteData.federated.linked.length > 0) {
+    if (
+      instanceData.siteData?.federated?.linked?.length > 0 &&
+      instanceData.siteData.federated.linked.length > 0
+    ) {
       const countFederated = await crawlFederatedInstanceJobs(instanceData.siteData.federated);
 
       logging.info(`[Instance] [${baseUrl}] Created ${countFederated.length} federated instance jobs`);

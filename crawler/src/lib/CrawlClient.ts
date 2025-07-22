@@ -87,6 +87,5 @@ export default class CrawlClient {
       options,
       maxRetries,
     });
- 
   }
 }
