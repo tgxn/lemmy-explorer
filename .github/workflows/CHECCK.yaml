@@ -4,32 +4,7 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches:
-      - main
-    paths:
-      - .github/workflows/publish-pages.yaml
-      - pages/**
-      - frontend/**
-      - crawler/**
-      - types/**
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-  # run every 6 hours
-  schedule:
-    - cron: "0 */6 * * *"
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: pages
-  cancel-in-progress: false
+      - backport_rdb
 
 env:
   NODE_VERSION: 22.17.0
@@ -41,10 +16,6 @@ jobs:
   publish_pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       # https://github.com/actions/toolkit/issues/946#issuecomment-1590016041
@@ -148,38 +119,3 @@ jobs:
       - name: copy the raw db dump file to github pages
         working-directory: ./
         run: cp -r ./.redis/dump.rdb ./pages/public/data/lemmyverse.rdb
-
-      # build pages frontend
-      - name: Cache Node Modules | Pages
-        id: cache-pages-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-pages-yarn
-        with:
-          path: ./pages/node_modules/
-          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
-
-      - name: Install Dependencies
-        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./pages
-
-      - name: Build the Frontend for Pages
-        run: yarn build
-        working-directory: ./pages
-
-      # upload pages
-      - name: upload github pages artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./pages/dist/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      # stop redis
-      - name: Stop Redis
-        working-directory: ./crawler
-        if: always()
-        run: ${{ env.COMPOSE_COMMAND }} down
