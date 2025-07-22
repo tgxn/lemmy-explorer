@@ -223,9 +223,8 @@ export default class CommunityCrawler {
           communityNames.add(promise.community.name);
         }
       }
-      logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
 
-      logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results)`);
+      logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results) unique: ${communityNames.size}`);
 
       return resultPromises;
     } catch (e) {

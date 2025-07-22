@@ -34,7 +34,7 @@ export default class BaseQueue<T> {
       getEvents: isWorker,
     });
 
-    this.logPrefix = `[Queue] [${this.queueName}]`;
+    this.logPrefix = `[BaseQueue] [${this.queueName}]`;
 
     this.jobProcessor = jobProcessor;
 
@@ -63,9 +63,16 @@ export default class BaseQueue<T> {
       await storage.connect();
 
       try {
-        logging.info(`${this.logPrefix} [${job.data.baseUrl}] Running Processor`);
+        logging.info(``);
+        logging.info(`# ${this.logPrefix} [${job.data.baseUrl}] Starting Job Processor`);
+
+        const timeStart = Date.now();
 
         const resultData = await this.jobProcessor(job.data);
+
+        const timeEnd = Date.now();
+        const duration = timeEnd - timeStart;
+        logging.info(`# ${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${duration/1000}s`);
 
         // if (!resultData) {
         //   logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);

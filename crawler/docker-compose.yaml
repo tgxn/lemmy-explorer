@@ -5,7 +5,7 @@ networks:
 services:
   redis:
     user: 1000:1000
-    image: redis:7.4.5-alpine
+    image: redis:6.2-alpine
     restart: always
     networks:
       - crawler
