@@ -366,7 +366,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
   return null;
 };
 
-export const singleCommunityProcessor: IJobProcessor<ICommunityData> = async ({ baseUrl, community }) => {
+export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = async ({ baseUrl, community }) => {
   let communityData: any = null;
 
   if (!baseUrl || !community) {
