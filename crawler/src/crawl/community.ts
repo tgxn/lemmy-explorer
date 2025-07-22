@@ -39,6 +39,11 @@ export default class CommunityCrawler {
 
   // validate the community is for the domain being scanned, and save it
   async storeCommunityData(community) {
+    // check make sure it's a string or throw an error
+    if (!community.community.actor_id || typeof community.community.actor_id !== "string") {
+      throw new Error(`${this.logPrefix} splitCommunityActorParts: actorId is not a string: ${community.community.actor_id}`);
+    }
+
     const { basePart, communityPart } = this.splitCommunityActorParts(community.community.actor_id);
 
     // validate the community actor_id matches the domain
@@ -230,7 +235,6 @@ export default class CommunityCrawler {
     } catch (e) {
       logging.error(`${this.logPrefix} Crawl List Failed: `, e.message);
       throw new CrawlError(e.message, e);
-      // throw e;
     }
   }
 

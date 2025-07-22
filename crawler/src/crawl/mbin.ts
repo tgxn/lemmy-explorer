@@ -1,6 +1,6 @@
-import path from "node:path";
-import util from "node:util";
-import { exec } from "node:child_process";
+import type {
+  IErrorData,
+} from "../../../types/storage";
 
 import logging from "../lib/logging";
 
@@ -343,7 +343,7 @@ export default class CrawlMBin {
   }
 }
 
-export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | boolean> = async ({
+export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null> = async ({
   baseUrl,
 }) => {
   const startTime = Date.now();
@@ -376,7 +376,7 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
 
     await crawler.crawlFederatedInstances(baseUrl);
 
-    const magazinesData = await crawler.crawlMagazinesData(baseUrl);
+    const magazinesData: IIncomingMagazineData[] = await crawler.crawlMagazinesData(baseUrl);
 
     console.log("magazinesData", magazinesData.length);
     // console.log("magazinesData", magazinesData[0]);
@@ -391,21 +391,24 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
   } catch (error) {
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[MBinQueue] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
-      return true;
+      return null;
     }
 
-    const errorDetail = {
-      error: error.message,
-      // stack: error.stack,
-      isAxiosError: error.isAxiosError,
-      requestUrl: error.isAxiosError ? error.request.url : null,
-      time: Date.now(),
-    };
+    const errorDetail: IErrorData = {
+        error: error.message,
+        stack: error.stack,
+        isAxiosError: error.isAxiosError,
+        code: error.code,
+        url: error.url,
+        time: new Date().getTime(),
+        duration: Date.now() - startTime,
+      };
+
 
     await storage.tracking.upsertError("mbin", baseUrl, errorDetail);
-
-    logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`, error);
+    
+    logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`);
   }
 
-  return false;
+  return null;
 };

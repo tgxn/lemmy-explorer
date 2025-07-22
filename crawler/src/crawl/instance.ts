@@ -382,14 +382,14 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
     
     if (knownFediverseServer && knownFediverseServer.time) {
-      const fediCutOff = Date.now() - CRAWL_AGED_TIME.FEDIVERSE;
+      const fediCutOffMsEpoch = Date.now() - CRAWL_AGED_TIME.FEDIVERSE;
       
       const lastCrawledFediMsAgo = Date.now() - knownFediverseServer.time;
 
       if (
         knownFediverseServer.name !== "lemmy" &&
         knownFediverseServer.name !== "lemmybb" &&
-        knownFediverseServer.time < fediCutOff
+        knownFediverseServer.time >= fediCutOffMsEpoch
       ) {
         throw new CrawlTooRecentError(
           `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}" [${logging.nicetime(lastCrawledFediMsAgo)} ago]`,
@@ -459,9 +459,8 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
       await storage.tracking.upsertError("instance", baseUrl, errorDetail);
     } else {
-      // console.log("error", error);
 
-      const errorDetail = {
+      const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,
         isAxiosError: error.isAxiosError,
@@ -471,11 +470,9 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
         duration: Date.now() - startTime,
       };
 
-      // console.log("errorDetail", errorDetail);
-
-      logging.error(`[Instance] [${baseUrl}] Error: ${error.message}`);
-
       await storage.tracking.upsertError("instance", baseUrl, errorDetail);
+
+      logging.error(`[Instance] [${baseUrl}] Other Error: ${error.message}`);
     }
   }
 
