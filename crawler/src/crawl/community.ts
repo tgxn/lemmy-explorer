@@ -157,7 +157,7 @@ export default class CommunityCrawler {
 
       logging.error(
         `${this.logPrefix} getSingleCommunityData no community_view, deleting!`,
-        communityData.data,
+        communityData.data.substr(0, 100),
       );
       await storage.community.delete(this.crawlDomain, communityName, "no community_view");
 
@@ -231,8 +231,23 @@ export default class CommunityCrawler {
         }
       }
 
+      // get the expected count from the siteData
+      const instanceRecord = await storage.instance.getOne(this.crawlDomain);
+      let  expectedCount: number | undefined = undefined;
+
+      if (instanceRecord && instanceRecord.siteData && instanceRecord.siteData.counts.communities) {
+        expectedCount = instanceRecord.siteData.counts.communities;
+      }
+
+      // log error on mismatch
+      if (expectedCount && expectedCount !== communityNames.size) {
+        logging.error(
+          `!!!! ${this.logPrefix} Expected community count (${expectedCount}) does not match actual (${communityNames.size})`,
+        );
+      }
+
       logging.info(
-        `${this.logPrefix} Ended Success (${resultPromises.length} results) unique: ${communityNames.size}`,
+        `${this.logPrefix} Ended Success (${resultPromises.length} results) unique: ${communityNames.size} expected: ${expectedCount}`,
       );
 
       return resultPromises;
