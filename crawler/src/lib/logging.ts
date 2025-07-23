@@ -13,7 +13,7 @@ const logging = {
   fatal: console.error,
 
   formatDuration: (ms: number) => {
-    const milliseconds = (ms % 1000).toString().padStart(3, '0');
+    const milliseconds = (ms % 1000).toString().padStart(3, "0");
 
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
