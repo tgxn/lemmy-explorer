@@ -354,7 +354,7 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null
     const lastCrawl = await storage.tracking.getLastCrawl("mbin", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(`Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`);
     }
 
     // check for recent error
@@ -363,7 +363,7 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null
       const lastErrorTime = lastError.time;
       const now = Date.now();
 
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${(now - lastErrorTime) / 1000}s ago)`);
+      throw new CrawlTooRecentError(`Skipping - Error too recently [${logging.formatDuration(now - lastErrorTime)} ago]`);
     }
 
     const crawler = new CrawlMBin();

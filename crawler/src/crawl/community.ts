@@ -177,7 +177,7 @@ export default class CommunityCrawler {
       }
 
       // data contains `Argo Tunnel error`
-      if (e.response?.data && e.response.data.includes("Argo Tunnel error")) {
+      if (e.response?.data && typeof e.response.data === "string" && e.response.data.includes("Argo Tunnel error")) {
         logging.error(
           `${this.logPrefix} Argo Tunnel error, deleting community community:${this.crawlDomain}:${communityName}`,
         );
@@ -334,14 +334,14 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
     const lastCrawl = await storage.tracking.getLastCrawl("community", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(`Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)}]`);
     }
 
     // check when the latest entry to errors was too recent
     const lastErrorTs = await storage.tracking.getOneError("community", baseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(`Skipping - Error too recently [${logging.formatDuration(lastErrorMsAgo)}]`);
     }
 
     // perform the crawl
@@ -355,7 +355,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
     });
 
     const endTime = Date.now();
-    logging.info(`[Community] [${baseUrl}] Finished in ${(endTime - startTime) / 1000}s`);
+    logging.info(`[Community] [${baseUrl}] Finished in [${logging.formatDuration((endTime - startTime) / 1000)}], ${communityData.length} communities found`);
 
     return communityData;
   } catch (error) {

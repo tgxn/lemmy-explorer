@@ -12,7 +12,7 @@ const logging = {
   error: console.error,
   fatal: console.error,
 
-  nicetime: (ms: number) => {
+  formatDuration: (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const milliseconds = ms % 1000;
     const minutes = Math.floor(seconds / 60);

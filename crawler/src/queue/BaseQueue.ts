@@ -73,7 +73,7 @@ export default class BaseQueue<T> {
         const timeEnd = Date.now();
         const duration = timeEnd - timeStart;
         logging.info(
-          `# ${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${duration / 1000}s`,
+          `# ${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${logging.formatDuration(duration)}`,
         );
 
         // if (!resultData) {
