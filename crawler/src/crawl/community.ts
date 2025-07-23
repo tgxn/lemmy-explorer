@@ -364,7 +364,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
 
     const endTime = Date.now();
     logging.info(
-      `[Community] [${baseUrl}] Finished in [${logging.formatDuration((endTime - startTime) / 1000)}], ${communityData.length} communities found`,
+      `[Community] [${baseUrl}] Finished in [${logging.formatDuration(endTime - startTime)}], ${communityData.length} communities found`,
     );
 
     return communityData;
