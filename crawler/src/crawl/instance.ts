@@ -133,9 +133,11 @@ export default class InstanceCrawler {
 
       // do this for all items in all arrays
       const federationData: IFederatedInstanceData = {
+
         linked: fedInstances.data.federated_instances.linked.filter(filterNonLemmyInstances).map((instance: ILemmyFederatedInstanceData) => instance.domain),
         allowed: fedInstances.data.federated_instances.allowed.filter(filterNonLemmyInstances).map((instance: ILemmyFederatedInstanceData) => instance.domain),
         blocked: fedInstances.data.federated_instances.blocked.filter(filterNonLemmyInstances).map((instance: ILemmyFederatedInstanceData) => instance.domain),
+
       };
 
       console.log(`${this.crawlDomain}: fetched federated instances separately`, {
