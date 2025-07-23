@@ -111,16 +111,31 @@ export default class InstanceCrawler {
 
       // filter out anythign thwere software is not software lemmy
 
-      function filterNonLemmyInstances(instance) {
+      type ILemmyFederatedInstanceData = {
+        id: number;
+        domain: string;
+        published?: string;
+        updated?: string;
+        software?: string;
+        version?: string;
+        federation_state?: any;
+      }
+
+      function filterNonLemmyInstances(instance: ILemmyFederatedInstanceData) {
+        // ignore if no software or domain key
+        if (!instance.software || !instance.domain) {
+          return false;
+        }
+
         // only include instances that are lemmy or lemmybb
-        return instance.software.name === "lemmy" || instance.software.name === "lemmybb";
+        return instance.software === "lemmy" || instance.software === "lemmybb";
       }
 
       // do this for all items in all arrays
       const federationData: IFederatedInstanceData = {
-        linked: fedInstances.data.federated_instances.linked.filter(filterNonLemmyInstances).map((instance) => instance.domain),
-        allowed: fedInstances.data.federated_instances.allowed.filter(filterNonLemmyInstances).map((instance) => instance.domain),
-        blocked: fedInstances.data.federated_instances.blocked.filter(filterNonLemmyInstances).map((instance) => instance.domain),
+        linked: fedInstances.data.federated_instances.linked.filter(filterNonLemmyInstances).map((instance: ILemmyFederatedInstanceData) => instance.domain),
+        allowed: fedInstances.data.federated_instances.allowed.filter(filterNonLemmyInstances).map((instance: ILemmyFederatedInstanceData) => instance.domain),
+        blocked: fedInstances.data.federated_instances.blocked.filter(filterNonLemmyInstances).map((instance: ILemmyFederatedInstanceData) => instance.domain),
       };
 
       console.log(`${this.crawlDomain}: fetched federated instances separately`, {
@@ -388,7 +403,9 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
       const fediCutOffMsEpoch = Date.now() - CRAWL_AGED_TIME.FEDIVERSE;
 
       const lastCrawledFediMsAgo = Date.now() - knownFediverseServer.time;
-
+      
+      // dont continue scan on known non-lemmy instances
+      // this is because they might eventually change to be lemmy, but we don't want to crawl them often (CRAWL_AGED_TIME.FEDIVERSE)
       if (
         knownFediverseServer.name !== "lemmy" &&
         knownFediverseServer.name !== "lemmybb" &&
