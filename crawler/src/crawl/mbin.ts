@@ -1,6 +1,4 @@
-import path from "node:path";
-import util from "node:util";
-import { exec } from "node:child_process";
+import type { IErrorData } from "../../../types/storage";
 
 import logging from "../lib/logging";
 
@@ -26,7 +24,7 @@ const TIME_BETWEEN_RETRIES = 1000;
 
 const PAGE_TIMEOUT = 5000;
 
-type IIncomingMagazineData = {
+export type IIncomingMagazineData = {
   magazineId: number;
   owner: {
     magazineId: number;
@@ -343,8 +341,13 @@ export default class CrawlMBin {
   }
 }
 
-export const mbinInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
+
+  if (!baseUrl) {
+    logging.error(`[MBinQueue] No baseUrl provided for mbin instance`);
+    throw new CrawlError("No baseUrl provided for mbin instance");
+  }
 
   try {
     // check for recent scan of this mbin instance
@@ -369,7 +372,7 @@ export const mbinInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
 
     await crawler.crawlFederatedInstances(baseUrl);
 
-    const magazinesData = await crawler.crawlMagazinesData(baseUrl);
+    const magazinesData: IIncomingMagazineData[] = await crawler.crawlMagazinesData(baseUrl);
 
     console.log("magazinesData", magazinesData.length);
     // console.log("magazinesData", magazinesData[0]);
@@ -384,21 +387,23 @@ export const mbinInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
   } catch (error) {
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[MBinQueue] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
-      return true;
+      return null;
     }
 
-    const errorDetail = {
+    const errorDetail: IErrorData = {
       error: error.message,
-      // stack: error.stack,
+      stack: error.stack,
       isAxiosError: error.isAxiosError,
-      requestUrl: error.isAxiosError ? error.request.url : null,
-      time: Date.now(),
+      code: error.code,
+      url: error.url,
+      time: new Date().getTime(),
+      duration: Date.now() - startTime,
     };
 
     await storage.tracking.upsertError("mbin", baseUrl, errorDetail);
 
-    logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`, error);
+    logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`);
   }
 
-  return false;
+  return null;
 };
