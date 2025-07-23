@@ -233,7 +233,7 @@ export default class CommunityCrawler {
 
       // get the expected count from the siteData
       const instanceRecord = await storage.instance.getOne(this.crawlDomain);
-      let  expectedCount: number | undefined = undefined;
+      let expectedCount: number | undefined = undefined;
 
       if (instanceRecord && instanceRecord.siteData && instanceRecord.siteData.counts.communities) {
         expectedCount = instanceRecord.siteData.counts.communities;
