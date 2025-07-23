@@ -38,7 +38,9 @@ export default class Community {
       deleteReason: reason,
     });
 
-    const deletedCommunity = await this.storage.deleteRedis(`community:${baseUrl}:${communityName.toLowerCase()}`);
+    const deletedCommunity = await this.storage.deleteRedis(
+      `community:${baseUrl}:${communityName.toLowerCase()}`,
+    );
 
     return deletedCommunity;
   }

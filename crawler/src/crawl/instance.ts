@@ -433,14 +433,18 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
     const lastCrawl = await storage.tracking.getLastCrawl("instance", instanceBaseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`);
+      throw new CrawlTooRecentError(
+        `Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`,
+      );
     }
 
     // check when the latest entry to errors was too recent
     const lastErrorTs = await storage.tracking.getOneError("instance", instanceBaseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
-      throw new CrawlTooRecentError(`Skipping - Error too recently [${logging.formatDuration(lastErrorMsAgo)} ago]`);
+      throw new CrawlTooRecentError(
+        `Skipping - Error too recently [${logging.formatDuration(lastErrorMsAgo)} ago]`,
+      );
     }
 
     const crawler = new InstanceCrawler(instanceBaseUrl);
