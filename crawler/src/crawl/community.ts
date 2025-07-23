@@ -157,7 +157,7 @@ export default class CommunityCrawler {
 
       logging.error(
         `${this.logPrefix} getSingleCommunityData no community_view, deleting!`,
-        communityData.data.substr(0, 100),
+        communityData.data.slice(0, 100),
       );
       await storage.community.delete(this.crawlDomain, communityName, "no community_view");
 
