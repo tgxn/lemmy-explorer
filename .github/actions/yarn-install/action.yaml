@@ -17,7 +17,7 @@ runs:
         cache-name: cache-crawler-yarn
       with:
         path: ${{ inputs.working-directory }}/node_modules/
-        key: yarn-cache-${{ hashFiles('${{ inputs.working-directory }}/yarn.lock') }}
+        key: yarn-cache-${{ hashFiles(format('{0}/yarn.lock', inputs.working-directory)) }}
 
     # Install Dependencies
     - name: Install Node Modules (${{ inputs.working-directory }})
