@@ -7,9 +7,10 @@
   "main": "./src/index.tsx",
   "scripts": {
     "start": "webpack serve --config webpack.dev.config.js",
+    "start:test": "webpack serve --config webpack.dev.config.js",
     "build:dev": "webpack --config webpack.dev.config.js",
     "build": "webpack --config webpack.prod.config.js",
-    "test": "mocha --require @babel/register --require @babel/polyfill ./tests/api.mjs",
+    "test": "playwright test",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
     "check:ts": "tsc --noEmit"

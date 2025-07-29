@@ -1,6 +1,4 @@
-import path from "node:path";
-import util from "node:util";
-import { exec } from "node:child_process";
+import type { IErrorData } from "../../../types/storage";
 
 import logging from "../lib/logging";
 
@@ -343,9 +341,7 @@ export default class CrawlMBin {
   }
 }
 
-export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | boolean> = async ({
-  baseUrl,
-}) => {
+export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null> = async ({ baseUrl }) => {
   const startTime = Date.now();
 
   if (!baseUrl) {
@@ -358,7 +354,9 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
     const lastCrawl = await storage.tracking.getLastCrawl("mbin", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`,
+      );
     }
 
     // check for recent error
@@ -367,7 +365,9 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
       const lastErrorTime = lastError.time;
       const now = Date.now();
 
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${(now - lastErrorTime) / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Error too recently [${logging.formatDuration(now - lastErrorTime)} ago]`,
+      );
     }
 
     const crawler = new CrawlMBin();
@@ -376,7 +376,7 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
 
     await crawler.crawlFederatedInstances(baseUrl);
 
-    const magazinesData = await crawler.crawlMagazinesData(baseUrl);
+    const magazinesData: IIncomingMagazineData[] = await crawler.crawlMagazinesData(baseUrl);
 
     console.log("magazinesData", magazinesData.length);
     // console.log("magazinesData", magazinesData[0]);
@@ -391,21 +391,23 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | bool
   } catch (error) {
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[MBinQueue] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
-      return true;
+      return null;
     }
 
-    const errorDetail = {
+    const errorDetail: IErrorData = {
       error: error.message,
-      // stack: error.stack,
+      stack: error.stack,
       isAxiosError: error.isAxiosError,
-      requestUrl: error.isAxiosError ? error.request.url : null,
-      time: Date.now(),
+      code: error.code,
+      url: error.url,
+      time: new Date().getTime(),
+      duration: Date.now() - startTime,
     };
 
     await storage.tracking.upsertError("mbin", baseUrl, errorDetail);
 
-    logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`, error);
+    logging.error(`[MBinQueue] [${baseUrl}] Error: ${error.message}`);
   }
 
-  return false;
+  return null;
 };

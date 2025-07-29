@@ -17,7 +17,7 @@ export default function useQueryCache(queryKey, dataFile) {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     staleTime: Infinity,
-    cacheTime: Infinity,
+    // cacheTime: Infinity,
   });
 
   return {

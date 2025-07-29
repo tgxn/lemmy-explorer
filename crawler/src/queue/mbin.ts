@@ -7,7 +7,7 @@ import BaseQueue, { ISuccessCallback } from "./BaseQueue";
 
 import { mbinInstanceProcessor } from "../crawl/mbin";
 
-export default class MBinQueue extends BaseQueue<IIncomingMagazineData[] | boolean> {
+export default class MBinQueue extends BaseQueue<IIncomingMagazineData[] | null> {
   constructor(isWorker = false, queueName = "mbin") {
     super(isWorker, queueName, mbinInstanceProcessor);
   }
@@ -15,7 +15,7 @@ export default class MBinQueue extends BaseQueue<IIncomingMagazineData[] | boole
   // use as MBinQueue.createJob({ baseUrl: "https://fedia.io" });
   async createJob(
     baseUrl: string,
-    onSuccess: ISuccessCallback<IIncomingMagazineData[] | boolean> | null = null,
+    onSuccess: ISuccessCallback<IIncomingMagazineData[] | null> | null = null,
   ) {
     await super.createJob(baseUrl, { baseUrl }, onSuccess);
   }

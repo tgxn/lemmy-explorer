@@ -76,6 +76,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
 
     let communties = [...data];
 
+    // this component can be used to list only communities from a specific baseurl
     if (filterBaseUrl) {
       communties = communties.filter((community) => community.baseurl === filterBaseUrl);
     }
@@ -86,8 +87,8 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
     }
 
     console.log(`Sorting communities by ${orderBy}`, filteredInstances);
-    if (filteredInstances.length > 0) {
-      console.log(`Filtering oucommunities`, filteredInstances);
+    if (!filterBaseUrl && filteredInstances.length > 0) {
+      console.log(`Filtering communities`, filteredInstances);
 
       communties = communties.filter((community) => !filteredInstances.includes(community.baseurl));
     }
