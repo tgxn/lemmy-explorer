@@ -28,7 +28,7 @@ const TIME_BETWEEN_RETRIES = 1000;
 
 const PAGE_TIMEOUT = 5000;
 
-type IIncomingPiefedCommunityData = {
+export type IIncomingPiefedCommunityData = {
   activity_alert: boolean;
   blocked: boolean;
   community: {
@@ -352,15 +352,24 @@ export default class CrawlPiefed {
   }
 }
 
-export const piefedInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const piefedInstanceProcessor: IJobProcessor<IIncomingPiefedCommunityData[] | boolean> = async ({
+  baseUrl,
+}) => {
   const startTime = Date.now();
+
+  if (!baseUrl) {
+    logging.error(`[PiefedQueue] No baseUrl provided for piefed instance`);
+    throw new CrawlError("No baseUrl provided for piefed instance");
+  }
 
   try {
     // check for recent scan of this piefed instance
     const lastCrawl = await storage.tracking.getLastCrawl("piefed", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`,
+      );
     }
 
     // check for recent error
@@ -369,7 +378,9 @@ export const piefedInstanceProcessor: IJobProcessor = async ({ baseUrl }) => {
       const lastErrorTime = lastError.time;
       const now = Date.now();
 
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${(now - lastErrorTime) / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Error too recently [${logging.formatDuration(now - lastErrorTime)} ago]`,
+      );
     }
 
     const crawler = new CrawlPiefed();

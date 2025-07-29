@@ -1,26 +1,18 @@
 import logging from "../lib/logging";
 
-import { CrawlError } from "../lib/error";
+import type { ICommunityData } from "../../../types/storage";
+import type { IJobProcessor } from "../queue/BaseQueue";
 
-import { CrawlTooRecentError } from "../lib/error";
-
-import { IJobProcessor } from "../queue/BaseQueue";
+import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
 import storage from "../lib/crawlStorage";
-
 import CrawlClient from "../lib/CrawlClient";
 
-const TIME_BETWEEN_PAGES = 2000;
-
-const RETRY_COUNT = 2;
-const RETRY_PAGE_COUNT = 2;
-const TIME_BETWEEN_RETRIES = 1000;
-
-const PAGE_TIMEOUT = 5000;
+const TIME_BETWEEN_PAGES = 2500;
+const RETRY_PAGE_COUNT = 3;
+const PAGE_TIMEOUT = 10000;
 
 /**
- * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
- * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
  * Each instance is a unique baseURL
  */
 export default class CommunityCrawler {
@@ -46,7 +38,14 @@ export default class CommunityCrawler {
   }
 
   // validate the community is for the domain being scanned, and save it
-  async storeCommunityData(community) {
+  async storeCommunityData(community: ICommunityData): Promise<ICommunityData | false> {
+    // check make sure it's a string or throw an error
+    if (!community.community.actor_id || typeof community.community.actor_id !== "string") {
+      throw new Error(
+        `${this.logPrefix} storeCommunityData: actorId is not a string: ${community.community.actor_id}`,
+      );
+    }
+
     const { basePart, communityPart } = this.splitCommunityActorParts(community.community.actor_id);
 
     // validate the community actor_id matches the domain
@@ -61,24 +60,15 @@ export default class CommunityCrawler {
       this.crawlDomain,
       communityPart,
       "subscribers",
-      community.counts.subscribers,
+      community.counts.subscribers.toString(),
     );
-
-    if (community.counts.hot_rank) {
-      await storage.community.setTrackedAttribute(
-        this.crawlDomain,
-        communityPart,
-        "hot_rank",
-        community.counts.hot_rank,
-      );
-    }
 
     if (community.counts.posts) {
       await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "posts",
-        community.counts.posts,
+        community.counts.posts.toString(),
       );
     }
 
@@ -87,7 +77,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "comments",
-        community.counts.comments,
+        community.counts.comments.toString(),
       );
     }
 
@@ -96,7 +86,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "users_active_day",
-        community.counts.users_active_day,
+        community.counts.users_active_day.toString(),
       );
     }
 
@@ -105,7 +95,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "users_active_week",
-        community.counts.users_active_week,
+        community.counts.users_active_week.toString(),
       );
     }
 
@@ -114,7 +104,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "users_active_month",
-        community.counts.users_active_month,
+        community.counts.users_active_month.toString(),
       );
     }
 
@@ -123,6 +113,7 @@ export default class CommunityCrawler {
     return community;
   }
 
+  // * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
   async crawlSingle(communityName: string) {
     try {
       logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
@@ -157,7 +148,7 @@ export default class CommunityCrawler {
 
       logging.error(
         `${this.logPrefix} getSingleCommunityData no community_view, deleting!`,
-        communityData.data,
+        communityData.data.slice(0, 100),
       );
       await storage.community.delete(this.crawlDomain, communityName, "no community_view");
 
@@ -177,7 +168,11 @@ export default class CommunityCrawler {
       }
 
       // data contains `Argo Tunnel error`
-      if (e.response?.data && e.response.data.includes("Argo Tunnel error")) {
+      if (
+        e.response?.data &&
+        typeof e.response.data === "string" &&
+        e.response.data.includes("Argo Tunnel error")
+      ) {
         logging.error(
           `${this.logPrefix} Argo Tunnel error, deleting community community:${this.crawlDomain}:${communityName}`,
         );
@@ -215,6 +210,7 @@ export default class CommunityCrawler {
     }
   }
 
+  // * crawlList() - Crawls over `/api/v3/communities` and stores the results in redis.
   async crawlList() {
     try {
       logging.info(`${this.logPrefix} Starting Crawl List`);
@@ -229,96 +225,123 @@ export default class CommunityCrawler {
           communityNames.add(promise.community.name);
         }
       }
-      logging.info(`${this.logPrefix} Total Communities Found: ${communityNames.size}`);
 
-      logging.info(`${this.logPrefix} Ended Success (${resultPromises.length} results)`);
+      // get the expected count from the siteData
+      const instanceRecord = await storage.instance.getOne(this.crawlDomain);
+      let expectedCount: number | undefined = undefined;
+
+      if (instanceRecord && instanceRecord.siteData && instanceRecord.siteData.counts.communities) {
+        expectedCount = instanceRecord.siteData.counts.communities;
+      }
+
+      // log error on mismatch
+      if (expectedCount && expectedCount !== communityNames.size) {
+        logging.error(
+          `!!!! ${this.logPrefix} Expected community count (${expectedCount}) does not match actual (${communityNames.size})`,
+        );
+      }
+
+      logging.info(
+        `${this.logPrefix} Ended Success (${resultPromises.length} results) unique: ${communityNames.size} expected: ${expectedCount}`,
+      );
 
       return resultPromises;
     } catch (e) {
       logging.error(`${this.logPrefix} Crawl List Failed: `, e.message);
       throw new CrawlError(e.message, e);
-      // throw e;
     }
   }
 
-  async crawlCommunityPaginatedList(pageNumber: number = 1) {
-    const communities = await this.getPageData(pageNumber);
+  async crawlCommunityPaginatedList(pageNumber: number = 1): Promise<ICommunityData[]> {
+    const communities: ICommunityData[] = await this.getPageData(pageNumber);
 
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Results: ${communities.length}`);
 
+    let results = communities;
+
     //  promises track the upsert of community data
     let promises: Promise<any>[] = [];
-
     for (var community of communities) {
       promises.push(this.storeCommunityData(community));
     }
+    await Promise.all(promises);
 
     // if this page had non-zero results
     if (communities.length > 0) {
       // sleep between pages
+      console.log(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
       await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      logging.debug(`${this.logPrefix} Page ${pageNumber}, Crawling next page...`);
 
-      const subPromises = await this.crawlCommunityPaginatedList(pageNumber + 1);
-      if (subPromises.length > 0) {
-        promises.push(...subPromises);
+      const subResults = await this.crawlCommunityPaginatedList(pageNumber + 1);
+      if (subResults.length > 0) {
+        results.push(...subResults);
       }
     }
 
-    return promises;
+    return results;
   }
 
-  async getPageData(pageNumber: number = 1) {
+  async getPageData(pageNumber: number = 1): Promise<ICommunityData[]> {
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
 
-    let communityList;
     try {
-      communityList = await this.client.getUrlWithRetry(
+      const communityList = await this.client.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community/list",
         {
           params: {
-            type_: "Local",
-            sort: "Old",
-            limit: 50,
-            page: pageNumber,
-            show_nsfw: true, // Added in 0.18.x? ish...
+            type_: "Local", // Local communities only
+            sort: "Old", // Oldest communities first to maintain ordering
+            limit: 50, // Limit to 50 communities per page - Lemmy's maximum
+            show_nsfw: true, // Show NSFW communities
+            page: pageNumber, // Page number to fetch
           },
           timeout: PAGE_TIMEOUT,
         },
-        RETRY_PAGE_COUNT, // retry count per-page
+        RETRY_PAGE_COUNT,
       );
+
+      const communities = communityList.data.communities;
+
+      // must be an array
+      if (!Array.isArray(communities)) {
+        logging.error(`${this.logPrefix} Community list not an array:`, communityList.data.substr(0, 15));
+        throw new CrawlError(`Community list not an array: ${communities}`);
+      }
+
+      return communities;
     } catch (e) {
       // throw new CrawlError("Failed to get community page");
       throw new CrawlError(e.message, e);
     }
-
-    const communities = communityList.data.communities;
-
-    // must be an array
-    if (!Array.isArray(communities)) {
-      logging.error(`${this.logPrefix} Community list not an array:`, communityList.data.substr(0, 15));
-      throw new CrawlError(`Community list not an array: ${communities}`);
-    }
-
-    return communities;
   }
 }
 
-export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
+export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ baseUrl }) => {
   const startTime = Date.now();
+
+  if (!baseUrl) {
+    logging.error(`[Community] [${baseUrl}] Missing baseUrl`);
+    throw new CrawlError("Missing baseUrl");
+  }
 
   try {
     // check if community's instance has already been crawled revcently (these expire from redis)
     const lastCrawl = await storage.tracking.getLastCrawl("community", baseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)}]`,
+      );
     }
 
     // check when the latest entry to errors was too recent
     const lastErrorTs = await storage.tracking.getOneError("community", baseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Error too recently [${logging.formatDuration(lastErrorMsAgo)}]`,
+      );
     }
 
     // perform the crawl
@@ -332,7 +355,9 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
     });
 
     const endTime = Date.now();
-    logging.info(`[Community] [${baseUrl}] Finished in ${(endTime - startTime) / 1000}s`);
+    logging.info(
+      `[Community] [${baseUrl}] Finished in [${logging.formatDuration(endTime - startTime)}], ${communityData.length} communities found`,
+    );
 
     return communityData;
   } catch (error) {
@@ -358,12 +383,15 @@ export const communityListProcessor: IJobProcessor = async ({ baseUrl }) => {
   return null;
 };
 
-export const singleCommunityProcessor: IJobProcessor = async ({ baseUrl, community }) => {
+export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = async ({
+  baseUrl,
+  community,
+}) => {
   let communityData: any = null;
 
   if (!baseUrl || !community) {
     logging.error(`[OneCommunity] [${baseUrl}] Missing baseUrl or community`);
-    return null;
+    throw new CrawlError("Missing baseUrl or community");
   }
 
   try {

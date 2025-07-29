@@ -14,11 +14,15 @@ export const AUTO_UPLOAD_S3: boolean = Boolean(process.env.AUTO_UPLOAD_S3) || fa
 export const REDIS_DUMP_FILE: string = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
 export const CHECKPOINT_DIR: string = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
 
+export const OUTPUT_DIR: string = process.env.OUTPUT_DIR || "../frontend/public/data";
+
 export const AWS_REGION: string = process.env.AWS_REGION || "ap-southeast-2";
 export const PUBLISH_S3_BUCKET: string | null = process.env.PUBLISH_S3_BUCKET || null;
 
 // these control the timeouts for the worker task length
 export const CRAWL_TIMEOUT = {
+  DEFAULT: 30 * 60 * 1000, // 30 mins
+
   INSTANCE: 30 * 60 * 1000, // 30 mins
   COMMUNITY: 120 * 60 * 1000, // 2 hours
   MBIN: 60 * 60 * 1000, // one hour
@@ -27,20 +31,20 @@ export const CRAWL_TIMEOUT = {
 
 // max age to be included in output
 export const OUTPUT_MAX_AGE = {
-  INSTANCE: hoursToMs(24),
-  COMMUNITY: hoursToMs(24),
-  MAGAZINE: hoursToMs(24),
+  INSTANCE: hoursToMs(48),
+  COMMUNITY: hoursToMs(48),
+  MAGAZINE: hoursToMs(48),
 };
 
 // controls the time before manual re-scan of old objects
 export const CRAWL_AGED_TIME = {
-  INSTANCE: hoursToMs(10),
-  COMMUNITY: hoursToMs(10),
+  INSTANCE: hoursToMs(8),
+  COMMUNITY: hoursToMs(8),
 
   // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
   FEDIVERSE: hoursToMs(2 * 24), // 2 days
 
-  MAGAZINE: hoursToMs(10),
+  MAGAZINE: hoursToMs(8),
 };
 
 // consider for deletion after they haven't been seen for this long
@@ -76,7 +80,7 @@ export const AXIOS_REQUEST_TIMEOUT: number = 30 * 1000; // 30 seconds in ms
 // (piefed) these are removed from output
 export const PIEFED_DEV_URLS: string[] = ["jolly-piefed-dev.jomandoa.net", "pythag.net"];
 
-export const FEDDIT_URLS: string[] = [
+export const START_URLS: string[] = [
   "0xdd.org.ru",
   "1337lemmy.com",
   "aiparadise.moe",
@@ -290,10 +294,8 @@ export const FEDDIT_URLS: string[] = [
   "lemmybedan.com",
   "lemmydeals.com",
   "lemmyfly.org",
-  "lemmygrad.ml",
   "lemmyland.com",
   "lemmyngs.social",
-  "lemmynsfw.com",
   "lemmypets.xyz",
   "lemmyrs.org",
   "lib.lgbt",
@@ -373,14 +375,10 @@ export const FEDDIT_URLS: string[] = [
   "yiffit.net",
   "zemmy.cc",
   "zoo.splitlinux.org",
-];
-
-export const START_URLS: string[] = [
   "lemmy.tgxn.net",
   "lemmygrad.ml",
   "lemmynsfw.com",
   "lemmy.mods4ever.com",
-  ...FEDDIT_URLS,
 ];
 
 // used for the crawler headers when making requests

@@ -1,3 +1,4 @@
+import path from "node:path";
 import { readFile } from "node:fs/promises";
 
 import removeMd from "remove-markdown";
@@ -28,6 +29,7 @@ import OutputFileWriter from "./file_writer";
 import {
   IMetaDataOutput,
   IInstanceDataOutput,
+  IRegistrationMode,
   ICommunityDataOutput,
   IMBinInstanceOutput,
   IMBinMagazineOutput,
@@ -38,7 +40,7 @@ import {
 
 import OutputTrust from "./trust";
 
-class OutputUtils {
+export class OutputUtils {
   static safeSplit(text: string, maxLength: number) {
     // split byu space and rejoin till above the length
     const words = text.split(" ");
@@ -472,9 +474,8 @@ export default class CrawlOutput {
     const instanceErrors = await this.outputClassifiedErrors();
 
     // STORE RUN METADATA
-    const packageJson = JSON.parse(
-      (await readFile(new URL("../../package.json", import.meta.url))).toString(),
-    );
+    const packageJsonPath = path.resolve(process.cwd(), "package.json");
+    const packageJson = JSON.parse((await readFile(packageJsonPath)).toString());
 
     const metaData: IMetaDataOutput = {
       instances: returnInstanceArray.length,
@@ -495,6 +496,8 @@ export default class CrawlOutput {
       blocked: this.trust.blockedFederation,
     };
     await this.fileWriter.storeMetaData(metaData);
+
+    await this.fileWriter.calculateFilesizeMetrics();
 
     // get previous run  from current production data
     const client = new CrawlClient();
@@ -746,6 +749,27 @@ export default class CrawlOutput {
         // ignore instances that have no data
         const susReason = instanceTrustData.reasons;
 
+        const admins: string[] = instance.siteData.admins.map((admin) => admin.person.actor_id);
+
+        const regModeInt: IRegistrationMode = (() => {
+          try {
+            const regMode = instance.siteData.config?.registration_mode.toLowerCase();
+
+            if (regMode === "closed") {
+              return 0;
+            } else if (regMode === "requireapplication") {
+              return 1;
+            } else if (regMode === "open") {
+              return 2;
+            }
+
+            return -1;
+          } catch (e) {
+            console.error("error parsing registration mode", instance.siteData.config?.registration_mode);
+            return -1;
+          }
+        })();
+
         // console.log("instanceTrustData.tags", instanceTrustData.tags);
         const instanceDataOut: IInstanceDataOutput = {
           baseurl: siteBaseUrl,
@@ -761,6 +785,9 @@ export default class CrawlOutput {
           nsfw: instance.siteData.config?.enable_nsfw,
           create_admin: instance.siteData.config?.community_creation_admin_only,
           private: instance.siteData.config?.private_instance,
+
+          reg_mode: regModeInt,
+
           fed: instance.siteData.config?.federation_enabled,
 
           version: instance.nodeData.software.version,
@@ -792,6 +819,8 @@ export default class CrawlOutput {
             outgoing: outgoingBlocks,
           },
           blocked: instance.siteData.federated?.blocked || [],
+
+          admins: admins || [],
         };
 
         return instanceDataOut;

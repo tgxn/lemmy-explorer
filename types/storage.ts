@@ -105,6 +105,12 @@ export type IFediverseDataKeyValue = {
 
 /// INSTANCEC
 
+export type IFederatedInstanceData = {
+  linked: BaseURL[];
+  allowed: BaseURL[];
+  blocked: BaseURL[];
+};
+
 export type IInstanceData = {
   nodeData: {
     software: {
@@ -217,11 +223,7 @@ export type IInstanceData = {
 
     version: string;
     taglines: string[] | null;
-    federated: {
-      linked?: BaseURL[];
-      allowed?: BaseURL[] | null;
-      blocked?: BaseURL[];
-    };
+    federated: IFederatedInstanceData;
   };
 
   headers?: any;

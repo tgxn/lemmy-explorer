@@ -1,12 +1,15 @@
-FROM node:22
+FROM node:22.17-alpine
 
-RUN apt-get update
-RUN apt-get install bash
+RUN apk add --no-cache bash
 
-# ENV NPM_CONFIG_LOGLEVEL=trace
+# Install Dependencies
+RUN yarn global add tsx pm2
 
 # Create app directory
 RUN mkdir -p /usr/src/app
+RUN mkdir -p /data/output
+RUN mkdir -p /data/checkpoint
+
 WORKDIR /usr/src/app
 
 # Install App
@@ -16,16 +19,19 @@ COPY yarn.lock .
 COPY ecosystem.config.cjs .
 COPY src src/
 
-# Install Dependencies
-RUN yarn global add tsx
+# Own the app directory and switch to the crawl user
+RUN chown -R 1000:1000 /usr/src/app
+RUN chown -R 1000:1000 /data/output
+RUN chown -R 1000:1000 /data/checkpoint
 
-RUN yarn global add pm2
+# Switch to a non-root user
+USER 1000:1000
+
+RUN yarn install
 
 # logrotate
 RUN pm2 install pm2-logrotate
 RUN pm2 set pm2-logrotate:retain 7
-
-RUN yarn install
 
 # Run App
 CMD [ "pm2-runtime", "--raw", "start", "ecosystem.config.cjs" ]

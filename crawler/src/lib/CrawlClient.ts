@@ -1,7 +1,7 @@
 import logging from "./logging";
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
-import { HTTPError } from "./error";
+import { HTTPError, CrawlError } from "./error";
 
 import { AXIOS_REQUEST_TIMEOUT, CRAWLER_USER_AGENT, CRAWLER_ATTRIB_URL } from "./const";
 
@@ -54,28 +54,38 @@ export default class CrawlClient {
     url: string,
     options: AxiosRequestConfig = {},
     maxRetries: number = 4,
-    current: number = 0,
-  ) {
-    try {
-      return await this.axios.get(url, options);
-    } catch (e) {
-      if (current < maxRetries) {
-        const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
+  ): Promise<AxiosResponse> {
+    for (let current = 0; current <= maxRetries; current++) {
+      try {
+        const axiosResponse: AxiosResponse = await this.axios.get(url, options);
 
-        logging.debug(`retrying url ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`);
+        return axiosResponse;
+      } catch (e) {
+        if (current < maxRetries) {
+          const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
 
-        await new Promise((resolve) => setTimeout(resolve, delaySeconds));
+          // logging.debug(
+          //   `getUrlWithRetry: retrying GET ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`,
+          // );
 
-        return await this.getUrlWithRetry(url, options, maxRetries, current + 1);
+          await new Promise((resolve) => setTimeout(resolve, delaySeconds));
+          continue;
+        }
+
+        throw new HTTPError(`${e.message} (attempts: ${maxRetries})`, {
+          isAxiosError: true,
+          code: e.code,
+          url: e.config.url,
+          request: e.request || null,
+          response: e.response || null,
+        });
       }
-
-      throw new HTTPError(`${e.message} (attempts: ${maxRetries})`, {
-        isAxiosError: true,
-        code: e.code,
-        url: e.config.url,
-        request: e.request || null,
-        response: e.response || null,
-      });
     }
+
+    throw new CrawlError(`getUrlWithRetry: failed to GET ${url} after ${maxRetries} attempts`, {
+      url,
+      options,
+      maxRetries,
+    });
   }
 }
