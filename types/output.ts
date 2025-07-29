@@ -20,6 +20,9 @@ export type IMetaDataOutput = {
   blocked?: any;
 };
 
+// -1: Unknown, 0: Closed, 1: RequireApplication, 2: Open
+export type IRegistrationMode = -1 | 0 | 1 | 2;
+
 export type IInstanceDataOutput = {
   baseurl: string;
   url: string;
@@ -27,8 +30,9 @@ export type IInstanceDataOutput = {
   desc: string;
   downvotes: boolean;
   nsfw: boolean;
-  create_admin: boolean;
+  create_admin: boolean; // community creation restricted to admins
   private: boolean;
+  reg_mode: IRegistrationMode;
   fed: boolean;
   version: string;
   open: boolean;
@@ -52,6 +56,7 @@ export type IInstanceDataOutput = {
     outgoing: number;
   };
   blocked: string[];
+
   admins: string[];
 };
 
@@ -69,7 +74,6 @@ export type ICommunityDataOutput = {
   time: number;
   isSuspicious: boolean;
   score: number;
-  mods: string[];
 };
 
 export type IMBinInstanceOutput = {
