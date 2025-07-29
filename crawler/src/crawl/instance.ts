@@ -418,12 +418,12 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
         knownFediverseServer.time >= fediCutOffMsEpoch
       ) {
         throw new CrawlTooRecentError(
-          `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}" [${logging.nicetime(lastCrawledFediMsAgo)} ago]`,
+          `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}" [${logging.formatDuration(lastCrawledFediMsAgo)} ago]`,
         );
       }
 
       console.log(
-        `[Instance] [${baseUrl}] Found known fediverse server ${knownFediverseServer.name} ${knownFediverseServer.version} [${logging.nicetime(lastCrawledFediMsAgo)} ago]`,
+        `[Instance] [${baseUrl}] Found known fediverse server ${knownFediverseServer.name} ${knownFediverseServer.version} [${logging.formatDuration(lastCrawledFediMsAgo)} ago]`,
       );
     } else {
       console.log(`[Instance] [${baseUrl}] Not a known fediverse server, continuing crawl...`);
@@ -433,14 +433,18 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
     const lastCrawl = await storage.tracking.getLastCrawl("instance", instanceBaseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`,
+      );
     }
 
     // check when the latest entry to errors was too recent
     const lastErrorTs = await storage.tracking.getOneError("instance", instanceBaseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Error too recently [${logging.formatDuration(lastErrorMsAgo)} ago]`,
+      );
     }
 
     const crawler = new InstanceCrawler(instanceBaseUrl);

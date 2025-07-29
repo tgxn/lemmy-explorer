@@ -89,7 +89,7 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
 
     console.log(`Sorting communities by ${orderBy}`, filteredInstances);
     if (!filterBaseUrl && filteredInstances.length > 0) {
-      console.log(`Filtering oucommunities`, filteredInstances);
+      console.log(`Filtering communities`, filteredInstances);
 
       communties = communties.filter((community) => !filteredInstances.includes(community.baseurl));
     }
