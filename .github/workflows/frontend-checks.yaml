@@ -138,6 +138,11 @@ jobs:
         run: yarn --frozen-lockfile
         working-directory: ./frontend
 
+      # install playwrite npx playwright install chromium --with-deps
+      - name: Install Playwright Dependencies
+        run: npx playwright install chromium firefox --with-deps
+        working-directory: ./frontend
+
       - name: Run Tests | Frontend
         run: yarn test
         working-directory: ./frontend
