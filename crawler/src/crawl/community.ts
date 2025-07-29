@@ -63,15 +63,6 @@ export default class CommunityCrawler {
       community.counts.subscribers.toString(),
     );
 
-    // if (community.counts.hot_rank) {
-    //   await storage.community.setTrackedAttribute(
-    //     this.crawlDomain,
-    //     communityPart,
-    //     "hot_rank",
-    //     community.counts.hot_rank,
-    //   );
-    // }
-
     if (community.counts.posts) {
       await storage.community.setTrackedAttribute(
         this.crawlDomain,
