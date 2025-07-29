@@ -261,8 +261,8 @@ export default class CommunityCrawler {
     }
   }
 
-  async crawlCommunityPaginatedList(pageNumber: number = 1): Promise<any> {
-    const communities = await this.getPageData(pageNumber);
+  async crawlCommunityPaginatedList(pageNumber: number = 1): Promise<ICommunityData[]> {
+    const communities: ICommunityData[] = await this.getPageData(pageNumber);
 
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Results: ${communities.length}`);
 
@@ -291,7 +291,7 @@ export default class CommunityCrawler {
     return results;
   }
 
-  async getPageData(pageNumber: number = 1) {
+  async getPageData(pageNumber: number = 1): Promise<ICommunityData[]> {
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
 
     try {
