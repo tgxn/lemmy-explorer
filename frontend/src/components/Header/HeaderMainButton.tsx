@@ -98,6 +98,7 @@ export default function HeaderMainButton() {
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
+  const [menuWidth, setMenuWidth] = React.useState<number>();
 
   const selectedSoftware = React.useMemo(() => {
     if (location.pathname.startsWith("/mbin")) {
@@ -112,6 +113,7 @@ export default function HeaderMainButton() {
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (menuOpen) return handleCloseMenu();
 
+    setMenuWidth(event.currentTarget.clientWidth);
     setAnchorEl(event.currentTarget);
     setMenuOpen(true);
   };
@@ -119,6 +121,7 @@ export default function HeaderMainButton() {
   const handleCloseMenu = () => {
     setMenuOpen(false);
     setAnchorEl(null);
+    setMenuWidth(undefined);
   };
 
   return (
@@ -163,10 +166,12 @@ export default function HeaderMainButton() {
         anchorEl={anchorEl}
         open={menuOpen}
         onClose={handleCloseMenu}
-        placement="auto"
+        placement="bottom-start"
         sx={{
           zIndex: 1000,
           gap: 0.5,
+          borderRadius: "8px",
+          ...(menuWidth && { width: menuWidth }),
         }}
       >
         <BrandMenuItem
