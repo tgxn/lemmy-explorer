@@ -10,10 +10,11 @@ import Box from "@mui/joy/Box";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
 import Tab from "@mui/joy/Tab";
-import Typography from "@mui/joy/Typography";
+// import Typography from "@mui/joy/Typography";
 
 import { SimpleNumberFormat } from "../Shared/Display";
 import HeaderSideMenu from "./HeaderSideMenu";
+import HeaderMainButton from "./HeaderMainButton";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
@@ -113,29 +114,7 @@ export default function Header() {
         justifyContent: "space-between",
       }}
     >
-      <Box
-        component="div"
-        sx={{
-          width: 30,
-          height: 30,
-          // dont change item size on flex
-          flexShrink: 0,
-          pr: 2,
-          ml: 2,
-          mr: 2,
-          background: `url(/icons/Lemmy_Logo.svg) no-repeat center center`,
-          backgroundSize: "contain",
-        }}
-      />
-      <Typography
-        sx={{
-          // ml: 1,
-          fontSize: "19px",
-          display: { xs: "none", sm: "block" },
-        }}
-      >
-        Lemmy Explorer
-      </Typography>
+      <HeaderMainButton />
       <Box sx={{ flexGrow: 1 }} />
       <Tabs
         value={index}
