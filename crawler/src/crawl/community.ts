@@ -38,7 +38,7 @@ export default class CommunityCrawler {
   }
 
   // validate the community is for the domain being scanned, and save it
-  async storeCommunityData(community) {
+  async storeCommunityData(community: ICommunityData): Promise<ICommunityData | false> {
     // check make sure it's a string or throw an error
     if (!community.community.actor_id || typeof community.community.actor_id !== "string") {
       throw new Error(
@@ -60,24 +60,24 @@ export default class CommunityCrawler {
       this.crawlDomain,
       communityPart,
       "subscribers",
-      community.counts.subscribers,
+      community.counts.subscribers.toString(),
     );
 
-    if (community.counts.hot_rank) {
-      await storage.community.setTrackedAttribute(
-        this.crawlDomain,
-        communityPart,
-        "hot_rank",
-        community.counts.hot_rank,
-      );
-    }
+    // if (community.counts.hot_rank) {
+    //   await storage.community.setTrackedAttribute(
+    //     this.crawlDomain,
+    //     communityPart,
+    //     "hot_rank",
+    //     community.counts.hot_rank,
+    //   );
+    // }
 
     if (community.counts.posts) {
       await storage.community.setTrackedAttribute(
         this.crawlDomain,
         communityPart,
         "posts",
-        community.counts.posts,
+        community.counts.posts.toString(),
       );
     }
 
@@ -86,7 +86,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "comments",
-        community.counts.comments,
+        community.counts.comments.toString(),
       );
     }
 
@@ -95,7 +95,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "users_active_day",
-        community.counts.users_active_day,
+        community.counts.users_active_day.toString(),
       );
     }
 
@@ -104,7 +104,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "users_active_week",
-        community.counts.users_active_week,
+        community.counts.users_active_week.toString(),
       );
     }
 
@@ -113,7 +113,7 @@ export default class CommunityCrawler {
         this.crawlDomain,
         communityPart,
         "users_active_month",
-        community.counts.users_active_month,
+        community.counts.users_active_month.toString(),
       );
     }
 
@@ -150,9 +150,9 @@ export default class CommunityCrawler {
       if (communityData.data.community_view) {
         console.log(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
 
-        await this.storeCommunityData(communityData.data);
+        await this.storeCommunityData(communityData.data.community_view);
 
-        return communityData.data;
+        return communityData.data.community_view;
       }
 
       logging.error(
