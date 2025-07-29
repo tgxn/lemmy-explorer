@@ -1,0 +1,76 @@
+name: start-redis
+description: Fetches Redis dump from S3, caches it, and starts Redis via Docker Compose.
+
+inputs:
+  aws-access-key-id:
+    description: AWS access key
+    required: true
+  aws-secret-access-key:
+    description: AWS secret
+    required: true
+  aws-region:
+    description: AWS region
+    required: false
+    default: ap-southeast-2
+
+  s3-bucket:
+    description: S3 bucket to fetch Redis dump from
+    required: true
+  checkpoint-s3-path:
+    description: Path to the Redis dump in S3
+    required: false
+    default: "checkpoint/dump.rdb"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get current hour for cache busting
+      id: cache-hour
+      shell: bash
+      run: echo "hour=$(date +'%Y-%m-%d-%H')" >>$GITHUB_OUTPUT
+
+    - name: Cache Redis Dump
+      id: cache-redis
+      uses: actions/cache@v4
+      env:
+        cache-name: cache-redis
+      with:
+        path: ./.redis/dump.rdb
+        key: cache-redis-${{ steps.cache-hour.outputs.hour }}
+
+    - name: Download Redis Dump
+      if: steps.cache-redis.outputs.cache-hit != 'true'
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        source: s3://${{ inputs.s3-bucket }}/${{ inputs.checkpoint-s3-path }}
+        destination: ./.redis/dump.rdb
+        aws_access_key_id: ${{ inputs.aws-access-key-id }}
+        aws_secret_access_key: ${{ inputs.aws-secret-access-key }}
+        aws_region: ${{ inputs.aws-region }}
+
+    - name: Set COMPOSE_COMMAND
+      shell: bash
+      run: echo "COMPOSE_COMMAND=docker compose -f docker-compose.github.yaml" >> $GITHUB_ENV
+
+    - name: Start Redis
+      working-directory: ./crawler
+      shell: bash
+      run: ${{ env.COMPOSE_COMMAND }} up -d redis
+
+    - name: Wait for Redis
+      working-directory: ./crawler
+      shell: bash
+      run: |
+        until ${{ env.COMPOSE_COMMAND }} exec redis redis-cli ping | grep PONG; do
+          echo "Waiting for Redis..."
+          sleep 1
+        done
+
+    - working-directory: ./crawler
+      shell: bash
+      run: docker ps -a
+
+    - working-directory: ./crawler
+      shell: bash
+      run: ${{ env.COMPOSE_COMMAND }} logs redis

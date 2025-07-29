@@ -34,7 +34,7 @@ export default class BaseQueue<T> {
       getEvents: isWorker,
     });
 
-    this.logPrefix = `[Queue] [${this.queueName}]`;
+    this.logPrefix = `[BaseQueue] [${this.queueName}]`;
 
     this.jobProcessor = jobProcessor;
 
@@ -59,18 +59,27 @@ export default class BaseQueue<T> {
   }
 
   process(): void {
-    this.queue.process(async (job) => {
+    this.queue.process(async (job): Promise<any> => {
       await storage.connect();
 
       try {
-        logging.info(`${this.logPrefix} [${job.data.baseUrl}] Running Processor`);
+        logging.info(``);
+        logging.info(`# ${this.logPrefix} [${job.data.baseUrl}] Starting Job Processor`);
+
+        const timeStart = Date.now();
 
         const resultData = await this.jobProcessor(job.data);
 
-        if (!resultData) {
-          logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
-          throw new Error("Processor returned null or undefined");
-        }
+        const timeEnd = Date.now();
+        const duration = timeEnd - timeStart;
+        logging.info(
+          `# ${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${logging.formatDuration(duration)}`,
+        );
+
+        // if (!resultData) {
+        //   logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
+        //   throw new Error("Processor returned null or undefined");
+        // }
 
         // close redis connection on end of job
         await storage.close();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
 
 import Moment from "react-moment";
@@ -15,9 +15,9 @@ import MenuItem from "@mui/joy/MenuItem";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListDivider from "@mui/joy/ListDivider";
 
-import SvgIcon from "@mui/material/SvgIcon";
-import MBinIcon from "./MBinIcon";
-import PiefedIcon from "./PiefedIcon";
+// import SvgIcon from "@mui/material/SvgIcon";
+// import MBinIcon from "./MBinIcon";
+// import PiefedIcon from "./PiefedIcon";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
@@ -187,7 +187,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
           )}
         </MenuItem>
 
-        <MenuItem
+        {/* <MenuItem
           // color={"info"}
           onClick={() => {
             handleClose();
@@ -215,7 +215,7 @@ function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
             <SvgIcon inheritViewBox={true} viewBox="0 0 8.467 8.467" component={PiefedIcon} />
           </ListItemDecorator>
           Piefed Communities
-        </MenuItem>
+        </MenuItem> */}
 
         <ListDivider />
 
