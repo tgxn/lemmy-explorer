@@ -96,36 +96,9 @@ jobs:
           name: "config.json"
           json: ${{ vars.CONFIG_JSON }}
 
-      # Yarn Install ./cdk
-      - name: Yarn Install ./cdk
-        uses: ./.github/actions/yarn-install
+      # CDK Deployment
+      - name: CDK Deployment
+        uses: ./.github/actions/cdk-deploy
         with:
-          working-directory: ./cdk
-
-      - name: CDK Bootstrap
-        run: yarn bootstrap
-        working-directory: ./cdk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: CDK Synth
-        run: yarn synth
-        working-directory: ./cdk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: CDK Diff
-        run: yarn diff
-        working-directory: ./cdk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: CDK Deploy
-        run: yarn deploy:ci
-        working-directory: ./cdk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

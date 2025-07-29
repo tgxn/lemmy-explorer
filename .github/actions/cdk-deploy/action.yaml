@@ -1,0 +1,51 @@
+name: cdk-deploy
+description: Deploys the AWS CDK stack for the Lemmy Explorer project.
+
+inputs:
+  aws-access-key-id:
+    description: AWS access key
+    required: true
+  aws-secret-access-key:
+    description: AWS secret
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # Yarn Install ./cdk
+    - name: Yarn Install ./cdk
+      uses: ./.github/actions/yarn-install
+      with:
+        working-directory: ./cdk
+
+    - name: CDK Bootstrap
+      shell: bash
+      run: yarn bootstrap
+      working-directory: ./cdk
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+
+    - name: CDK Synth
+      shell: bash
+      run: yarn synth
+      working-directory: ./cdk
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+
+    - name: CDK Diff
+      shell: bash
+      run: yarn diff
+      working-directory: ./cdk
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+
+    - name: CDK Deploy
+      shell: bash
+      run: yarn deploy:ci
+      working-directory: ./cdk
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
