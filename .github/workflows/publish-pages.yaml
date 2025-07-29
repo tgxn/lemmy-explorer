@@ -61,67 +61,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: get current hour for cache busting
-        id: cache-hour
-        run: echo "hour=$(date +'%Y-%m-%d-%H')" >>$GITHUB_OUTPUT
-
-      - name: Cache Redis Dump
-        id: cache-redis
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-redis
+      # Download + Start Redis Docker
+      - name: Get Dump + Start Redis
+        uses: ./.github/actions/start-redis
         with:
-          path: ./.redis/dump.rdb
-          key: cache-redis-${{ steps.cache-hour.outputs.hour }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
 
-      # download redis db dump from s3
-      - name: Download the Redis Dump
-        if: steps.cache-redis.outputs.cache-hit != 'true'
-        uses: keithweaver/aws-s3-github-action@v1.0.0
+      # Yarn Install ./crawler
+      - name: Yarn Install ./crawler
+        uses: ./.github/actions/yarn-install
         with:
-          command: cp
-          source: s3://${{ vars.BUILD_S3_BUCKET }}/checkpoint/dump.rdb
-          destination: ./.redis/dump.rdb
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: ap-southeast-2
-
-      # set compose_command envvar
-      - name: set global workflow ennvvar
-        run: echo "COMPOSE_COMMAND=docker compose -f docker-compose.github.yaml" >> $GITHUB_ENV
-
-      # start redis & check if it is running
-      - name: Start Redis
-        working-directory: ./crawler
-        run: ${{ env.COMPOSE_COMMAND }} up -d redis
-
-      - name: Wait for Redis to be ready
-        working-directory: ./crawler
-        run: |
-          until ${{ env.COMPOSE_COMMAND }} exec redis redis-cli ping | grep PONG; do
-            echo "Waiting for Redis..."
-            sleep 1
-          done
-
-      - working-directory: ./crawler
-        run: docker ps -a
-      - working-directory: ./crawler
-        run: ${{ env.COMPOSE_COMMAND }} logs redis
-
-      # Install + Cache Crawler Dependencies
-      - name: Cache Node Modules | Crawler
-        id: cache-crawler-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-crawler-yarn
-        with:
-          path: ./crawler/node_modules/
-          key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
-
-      - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./crawler
+          working-directory: ./crawler
 
       # Run Crawler Output Script
       - name: Run Health Script
@@ -147,20 +99,11 @@ jobs:
         working-directory: ./
         run: cp -r ./.redis/dump.rdb ./pages/public/data/lemmyverse.rdb
 
-      # build pages frontend
-      - name: Cache Node Modules | Pages
-        id: cache-pages-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-pages-yarn
+      # Yarn Install ./pages
+      - name: Yarn Install ./pages
+        uses: ./.github/actions/yarn-install
         with:
-          path: ./pages/node_modules/
-          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
-
-      - name: Install Dependencies
-        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./pages
+          working-directory: ./pages
 
       - name: Build the Frontend for Pages
         run: yarn build
@@ -175,9 +118,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      # stop redis
-      - name: Stop Redis
-        working-directory: ./crawler
-        if: always()
-        run: ${{ env.COMPOSE_COMMAND }} down
