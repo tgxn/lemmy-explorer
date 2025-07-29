@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   // Look for test files in the "tests" directory, relative to this configuration file.
-  testDir: "./tests",
+  testDir: "./test",
   outputDir: "./output/results",
 
   // Run all tests in parallel.
@@ -45,16 +45,8 @@ export default defineConfig({
   // Run your local dev server before starting the tests
   webServer: [
     {
-      command: "cd ../server && yarn run start:test",
-      url: "http://127.0.0.1:3010/health",
-      timeout: 120 * 1000,
-      reuseExistingServer: true,
-      stdout: "ignore",
-      stderr: "pipe",
-    },
-    {
       command: "yarn run start:test",
-      url: "http://127.0.0.1:3011",
+      url: "http://127.0.0.1:9191",
       timeout: 120 * 1000,
       reuseExistingServer: true,
       stdout: "ignore",
@@ -64,7 +56,7 @@ export default defineConfig({
 
   use: {
     // Base URL to use in actions like `await page.goto('/')`.
-    baseURL: "http://127.0.0.1:3011",
+    baseURL: "http://127.0.0.1:9191",
 
     // Collect trace when retrying the failed test.
     // trace: "on-first-retry",
