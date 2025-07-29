@@ -23,3 +23,17 @@ test("switch instance view type", async ({ page }) => {
   await page.getByRole("button", { name: "List View" }).click();
   await expect.poll(async () => (await getStorage(page))["instance.viewType"]).toBe("list");
 });
+
+test("navigate between main pages", async ({ page }) => {
+  await page.goto("/");
+  // Instances tab is default
+  await expect(page).toHaveURL(/\/$/);
+
+  // Click Communities tab
+  await page.getByRole("tab", { name: /Communities/i }).click();
+  await expect(page).toHaveURL(/\/communities$/);
+
+  // Navigate back to instances
+  await page.getByRole("tab", { name: /Instances/i }).click();
+  await expect(page).toHaveURL(/\/$/);
+});
