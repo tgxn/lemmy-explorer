@@ -52,6 +52,7 @@ export type IInstanceDataOutput = {
     outgoing: number;
   };
   blocked: string[];
+  admins: string[];
 };
 
 export type ICommunityDataOutput = {
@@ -68,6 +69,7 @@ export type ICommunityDataOutput = {
   time: number;
   isSuspicious: boolean;
   score: number;
+  mods: string[];
 };
 
 export type IMBinInstanceOutput = {

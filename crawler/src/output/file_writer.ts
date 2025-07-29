@@ -1,5 +1,5 @@
 import path from "node:path";
-import { open, rm, mkdir, FileHandle } from "node:fs/promises";
+import { open, rm, mkdir, FileHandle, readdir, stat } from "node:fs/promises";
 
 import { OUTPUT_DIR } from "../lib/const";
 
@@ -275,5 +275,67 @@ export default class OutputFileWriter {
     } finally {
       await filehandle?.close();
     }
+  }
+
+  // this function will do a recurive file size on the output directory, and calculate the total size for each folder and file, (sub-files should be hidden in the total for the folder itself.)
+  // then it should show the top-5 files and directories by size in a nice table format.
+  // it must not rely on any other classes
+  public async calculateFilesizeMetrics() {
+    // scan the directory
+    const outputDir = this.publicDataFolder;
+
+    const outputFiles = await readdir(outputDir, { withFileTypes: true });
+
+    const fileSizes: { [key: string]: number } = {};
+
+    for (const file of outputFiles) {
+      const filePath = path.join(outputDir, file.name);
+
+      // if it is a directory, get the size of the directory
+      if (file.isDirectory()) {
+        const dirSize = await this.getDirectorySize(filePath);
+        fileSizes[file.name] = dirSize;
+      } else {
+        // if it is a file, get the size of the file
+        const stats = await stat(filePath);
+        fileSizes[file.name] = stats.size;
+      }
+    }
+
+    // sort the files by size
+
+    const sortedFiles = Object.entries(fileSizes).sort((a, b) => b[1] - a[1]);
+
+    // get the top 10 files and directories
+
+    const topFiles = sortedFiles.slice(0, 10).map(([name, size]) => ({
+      name,
+      size: (size / (1024 * 1024)).toFixed(2) + " MB", // convert to MB
+    }));
+
+    //  output to a table
+    console.table(topFiles, ["name", "size"]);
+  }
+
+  // get the size of a directory recursively
+  private async getDirectorySize(dirPath: string): Promise<number> {
+    let totalSize = 0;
+
+    const files = await readdir(dirPath, { withFileTypes: true });
+
+    for (const file of files) {
+      const filePath = path.join(dirPath, file.name);
+
+      if (file.isDirectory()) {
+        // if it is a directory, get the size of the directory recursively
+        totalSize += await this.getDirectorySize(filePath);
+      } else {
+        // if it is a file, get the size of the file
+        const stats = await stat(filePath);
+        totalSize += stats.size;
+      }
+    }
+
+    return totalSize;
   }
 }

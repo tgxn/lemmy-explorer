@@ -150,9 +150,9 @@ export default class CommunityCrawler {
       if (communityData.data.community_view) {
         console.log(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
 
-        await this.storeCommunityData(communityData.data.community_view);
+        await this.storeCommunityData(communityData.data);
 
-        return communityData.data.community_view;
+        return communityData.data;
       }
 
       logging.error(
@@ -319,12 +319,10 @@ export default class CommunityCrawler {
       }
 
       return communities;
-
     } catch (e) {
       // throw new CrawlError("Failed to get community page");
       throw new CrawlError(e.message, e);
     }
-
   }
 }
 

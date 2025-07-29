@@ -496,6 +496,8 @@ export default class CrawlOutput {
     };
     await this.fileWriter.storeMetaData(metaData);
 
+    await this.fileWriter.calculateFilesizeMetrics();
+
     // get previous run  from current production data
     const client = new CrawlClient();
     let previousRun: any = await client.getUrl("https://lemmyverse.net/data/meta.json");
@@ -746,6 +748,8 @@ export default class CrawlOutput {
         // ignore instances that have no data
         const susReason = instanceTrustData.reasons;
 
+        const admins: string[] = instance.siteData.admins.map((admin) => admin.person.actor_id);
+
         // console.log("instanceTrustData.tags", instanceTrustData.tags);
         const instanceDataOut: IInstanceDataOutput = {
           baseurl: siteBaseUrl,
@@ -792,6 +796,8 @@ export default class CrawlOutput {
             outgoing: outgoingBlocks,
           },
           blocked: instance.siteData.federated?.blocked || [],
+
+          admins: admins || [],
         };
 
         return instanceDataOut;
@@ -901,6 +907,8 @@ export default class CrawlOutput {
         //   console.error("no publish time", community.community);
         // }
 
+        community
+
         const communityDataOutput: ICommunityDataOutput = {
           baseurl: siteBaseUrl,
           url: community.community.actor_id,
@@ -919,6 +927,8 @@ export default class CrawlOutput {
 
           isSuspicious: isInstanceSus,
           score: score,
+
+          mods: 
         };
 
         return communityDataOutput;
