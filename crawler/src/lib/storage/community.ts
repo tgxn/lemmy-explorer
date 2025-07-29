@@ -18,7 +18,7 @@ export default class Community {
   }
 
   async getOne(baseUrl: string, communityName: string): Promise<ICommunityData> {
-    return this.storage.getRedis(`community:${baseUrl}:${communityName}`);
+    return this.storage.getRedis(`community:${baseUrl}:${communityName.toLowerCase()}`);
   }
 
   async upsert(baseUrl: string, community: ICommunityData) {
@@ -32,13 +32,17 @@ export default class Community {
   async delete(baseUrl: string, communityName: string, reason: string = "unknown") {
     const oldRecord = await this.getOne(baseUrl, communityName);
 
-    await this.storage.putRedis(`deleted:community:${baseUrl}:${communityName}`, {
+    await this.storage.putRedis(`deleted:community:${baseUrl}:${communityName.toLowerCase()}`, {
       ...oldRecord,
       deletedAt: Date.now(),
       deleteReason: reason,
     });
 
-    return this.storage.deleteRedis(`community:${baseUrl}:${communityName}`);
+    const deletedCommunity = await this.storage.deleteRedis(
+      `community:${baseUrl}:${communityName.toLowerCase()}`,
+    );
+
+    return deletedCommunity;
   }
 
   // use these to track community attributes over time

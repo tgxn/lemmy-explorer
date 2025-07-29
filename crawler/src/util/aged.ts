@@ -211,7 +211,7 @@ export default class CrawlAged {
       // if (!community) return true;
 
       if (!community.lastCrawled) {
-        // console.log("no lastCrawled", community.community.actor_id);
+        console.log("no lastCrawled", community.community.actor_id);
         setByBase(community);
         return true;
       }

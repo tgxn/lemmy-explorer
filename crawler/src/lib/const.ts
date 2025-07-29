@@ -14,6 +14,8 @@ export const AUTO_UPLOAD_S3: boolean = Boolean(process.env.AUTO_UPLOAD_S3) || fa
 export const REDIS_DUMP_FILE: string = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
 export const CHECKPOINT_DIR: string = process.env.CHECKPOINT_DIR || ".data/checkpoint/";
 
+export const OUTPUT_DIR: string = process.env.OUTPUT_DIR || "../frontend/public/data";
+
 export const AWS_REGION: string = process.env.AWS_REGION || "ap-southeast-2";
 export const PUBLISH_S3_BUCKET: string | null = process.env.PUBLISH_S3_BUCKET || null;
 
@@ -29,20 +31,20 @@ export const CRAWL_TIMEOUT = {
 
 // max age to be included in output
 export const OUTPUT_MAX_AGE = {
-  INSTANCE: hoursToMs(24),
-  COMMUNITY: hoursToMs(24),
-  MAGAZINE: hoursToMs(24),
+  INSTANCE: hoursToMs(48),
+  COMMUNITY: hoursToMs(48),
+  MAGAZINE: hoursToMs(48),
 };
 
 // controls the time before manual re-scan of old objects
 export const CRAWL_AGED_TIME = {
-  INSTANCE: hoursToMs(10),
-  COMMUNITY: hoursToMs(10),
+  INSTANCE: hoursToMs(8),
+  COMMUNITY: hoursToMs(8),
 
   // if a server is identified as a non-lemmy server, ho often should we wait before checking again?
   FEDIVERSE: hoursToMs(2 * 24), // 2 days
 
-  MAGAZINE: hoursToMs(10),
+  MAGAZINE: hoursToMs(8),
 };
 
 // consider for deletion after they haven't been seen for this long

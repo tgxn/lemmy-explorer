@@ -2,3 +2,4 @@ node_modules/
 dist/
 public/*.zip
 .env
+output/

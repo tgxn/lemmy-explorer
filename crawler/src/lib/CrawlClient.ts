@@ -1,7 +1,7 @@
 import logging from "./logging";
 import axios, { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
-import { HTTPError } from "./error";
+import { HTTPError, CrawlError } from "./error";
 
 import { AXIOS_REQUEST_TIMEOUT, CRAWLER_USER_AGENT, CRAWLER_ATTRIB_URL } from "./const";
 
@@ -64,20 +64,28 @@ export default class CrawlClient {
         if (current < maxRetries) {
           const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
 
-          logging.debug(`retrying url ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`);
+          // logging.debug(
+          //   `getUrlWithRetry: retrying GET ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`,
+          // );
 
           await new Promise((resolve) => setTimeout(resolve, delaySeconds));
           continue;
         }
+
+        throw new HTTPError(`${e.message} (attempts: ${maxRetries})`, {
+          isAxiosError: true,
+          code: e.code,
+          url: e.config.url,
+          request: e.request || null,
+          response: e.response || null,
+        });
       }
     }
 
-    throw new HTTPError(`Failed to fetch URL ${url} after ${maxRetries} attempts`, {
-      isAxiosError: false,
-      code: "MAX_RETRIES_EXCEEDED",
+    throw new CrawlError(`getUrlWithRetry: failed to GET ${url} after ${maxRetries} attempts`, {
       url,
-      request: null,
-      response: null,
+      options,
+      maxRetries,
     });
   }
 }

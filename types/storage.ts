@@ -106,9 +106,9 @@ export type IFediverseDataKeyValue = {
 /// INSTANCEC
 
 export type IFederatedInstanceData = {
-  linked?: BaseURL[];
-  allowed?: BaseURL[] | null;
-  blocked?: BaseURL[];
+  linked: BaseURL[];
+  allowed: BaseURL[];
+  blocked: BaseURL[];
 };
 
 export type IInstanceData = {

@@ -7,6 +7,7 @@ RUN yarn global add tsx pm2
 
 # Create app directory
 RUN mkdir -p /usr/src/app
+RUN mkdir -p /data/output
 RUN mkdir -p /data/checkpoint
 
 WORKDIR /usr/src/app
@@ -20,6 +21,7 @@ COPY src src/
 
 # Own the app directory and switch to the crawl user
 RUN chown -R 1000:1000 /usr/src/app
+RUN chown -R 1000:1000 /data/output
 RUN chown -R 1000:1000 /data/checkpoint
 
 # Switch to a non-root user

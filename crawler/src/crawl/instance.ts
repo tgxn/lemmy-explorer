@@ -46,17 +46,17 @@ export default class InstanceCrawler {
     const instanceData = await this.crawlInstance();
 
     if (instanceData) {
-      const storedData: IInstanceData = {
-        ...instanceData,
-        lastCrawled: Date.now(),
-      };
+      // const storedData: IInstanceData = {
+      //   ...instanceData,
+      //   lastCrawled: Date.now(),
+      // };
 
       // store/update the instance
-      await storage.instance.upsert(this.crawlDomain, storedData);
+      await storage.instance.upsert(this.crawlDomain, instanceData);
 
       logging.info(`${this.logPrefix} Completed OK (Found "${instanceData?.siteData?.site?.name}")`);
 
-      return storedData;
+      return instanceData;
     }
 
     throw new CrawlError("No instance data returned");
@@ -96,6 +96,69 @@ export default class InstanceCrawler {
   async getSiteInfo() {
     const siteInfo = await this.client.getUrlWithRetry("https://" + this.crawlDomain + "/api/v3/site");
 
+    if (!siteInfo.data.federated_instances) {
+      // console.warn(`${this.crawlDomain}: no federated_instances in site data, fetching separately`);
+
+      const fedInstances = await this.client.getUrlWithRetry(
+        "https://" + this.crawlDomain + "/api/v3/federated_instances",
+      );
+
+      // siteInfo.data.federated_instances = fedInstances.data.federated_instances;
+
+      // console.log(`${this.crawlDomain}: fetched federated instances separately`, fedInstances.data.federated_instances.linked[0]);
+
+      // siteInfo.data.federated_instances = fedInstances.data.federated_instances.map((instance) => instance.domain);
+
+      // filter out anythign thwere software is not software lemmy
+
+      type ILemmyFederatedInstanceData = {
+        id: number;
+        domain: string;
+        published?: string;
+        updated?: string;
+        software?: string;
+        version?: string;
+        federation_state?: any;
+      };
+
+      function filterNonLemmyInstances(instance: ILemmyFederatedInstanceData) {
+        // ignore if no software or domain key
+        if (!instance.software || !instance.domain) {
+          return false;
+        }
+
+        // only include instances that are lemmy or lemmybb
+        return instance.software === "lemmy" || instance.software === "lemmybb";
+      }
+
+      // do this for all items in all arrays
+      const federationData: IFederatedInstanceData = {
+        linked: fedInstances.data.federated_instances.linked
+          .filter(filterNonLemmyInstances)
+          .map((instance: ILemmyFederatedInstanceData) => instance.domain),
+        allowed: fedInstances.data.federated_instances.allowed
+          .filter(filterNonLemmyInstances)
+          .map((instance: ILemmyFederatedInstanceData) => instance.domain),
+        blocked: fedInstances.data.federated_instances.blocked
+          .filter(filterNonLemmyInstances)
+          .map((instance: ILemmyFederatedInstanceData) => instance.domain),
+      };
+
+      console.log(`${this.crawlDomain}: fetched federated instances separately`, {
+        linked: federationData.linked.length,
+        allowed: federationData.allowed.length,
+        blocked: federationData.blocked.length,
+      });
+
+      siteInfo.data.federated_instances = federationData;
+    } else {
+      console.log(`${this.crawlDomain}: fetched federated instances separately`, {
+        linked: siteInfo.data.federated_instances.linked.length,
+        allowed: siteInfo.data.federated_instances.allowed.length,
+        blocked: siteInfo.data.federated_instances.blocked.length,
+      });
+    }
+
     return [siteInfo.data, siteInfo.headers];
   }
 
@@ -132,7 +195,8 @@ export default class InstanceCrawler {
     }
 
     const [siteInfo, siteHeaders] = await this.getSiteInfo();
-    console.log(`${this.crawlDomain}: found lemmy instance`, siteHeaders);
+
+    // console.log(`${this.crawlDomain}: found lemmy instance`, siteInfo);
 
     const actorBaseUrl = getActorBaseUrl(siteInfo.site_view.site.actor_id);
     if (!actorBaseUrl) {
@@ -179,7 +243,7 @@ export default class InstanceCrawler {
     const discussionLangs = mapLangsToCodes(siteInfo.all_languages, siteInfo.discussion_languages);
 
     //   logging.info(siteInfo);
-    const instanceData = {
+    const instanceData: IInstanceData = {
       nodeData: {
         software: nodeInfo.software,
         usage: nodeInfo.usage,
@@ -196,6 +260,8 @@ export default class InstanceCrawler {
       },
       headers: siteHeaders,
       langs: discussionLangs,
+
+      lastCrawled: Date.now(),
     };
 
     try {
@@ -338,39 +404,59 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
     // check if it's known to not be running lemmy (recan it if it's been a while)
     const knownFediverseServer = await storage.fediverse.getOne(instanceBaseUrl);
-    if (knownFediverseServer) {
+
+    if (knownFediverseServer && knownFediverseServer.time) {
+      const fediCutOffMsEpoch = Date.now() - CRAWL_AGED_TIME.FEDIVERSE;
+
+      const lastCrawledFediMsAgo = Date.now() - knownFediverseServer.time;
+
+      // dont continue scan on known non-lemmy instances
+      // this is because they might eventually change to be lemmy, but we don't want to crawl them often (CRAWL_AGED_TIME.FEDIVERSE)
       if (
         knownFediverseServer.name !== "lemmy" &&
         knownFediverseServer.name !== "lemmybb" &&
-        // knownFediverseServer.name !== "mbin" &&
-        knownFediverseServer.time &&
-        Date.now() - knownFediverseServer.time < CRAWL_AGED_TIME.FEDIVERSE // re-scan fedi servers to check their status
+        knownFediverseServer.time >= fediCutOffMsEpoch
       ) {
         throw new CrawlTooRecentError(
-          `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}"`,
+          `Skipping - Too recent known non-lemmy server "${knownFediverseServer.name}" [${logging.formatDuration(lastCrawledFediMsAgo)} ago]`,
         );
       }
+
+      console.log(
+        `[Instance] [${baseUrl}] Found known fediverse server ${knownFediverseServer.name} ${knownFediverseServer.version} [${logging.formatDuration(lastCrawledFediMsAgo)} ago]`,
+      );
+    } else {
+      console.log(`[Instance] [${baseUrl}] Not a known fediverse server, continuing crawl...`);
     }
 
     //  last crawl if it's been successfully too recently
     const lastCrawl = await storage.tracking.getLastCrawl("instance", instanceBaseUrl);
     if (lastCrawl) {
       const lastCrawledMsAgo = Date.now() - lastCrawl.time;
-      throw new CrawlTooRecentError(`Skipping - Crawled too recently (${lastCrawledMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Crawled too recently [${logging.formatDuration(lastCrawledMsAgo)} ago]`,
+      );
     }
 
     // check when the latest entry to errors was too recent
     const lastErrorTs = await storage.tracking.getOneError("instance", instanceBaseUrl);
     if (lastErrorTs) {
       const lastErrorMsAgo = Date.now() - lastErrorTs.time;
-      throw new CrawlTooRecentError(`Skipping - Error too recently (${lastErrorMsAgo / 1000}s ago)`);
+      throw new CrawlTooRecentError(
+        `Skipping - Error too recently [${logging.formatDuration(lastErrorMsAgo)} ago]`,
+      );
     }
 
     const crawler = new InstanceCrawler(instanceBaseUrl);
     const instanceData = await crawler.crawl();
 
+    // console.log(`[Instance] [${baseUrl}] Instance data crawled`, instanceData.siteData?.federated);
+
     // start crawl jobs for federated instances
-    if (instanceData.siteData.federated.linked && instanceData.siteData.federated.linked.length > 0) {
+    if (
+      instanceData.siteData?.federated?.linked?.length > 0 &&
+      instanceData.siteData.federated.linked.length > 0
+    ) {
       const countFederated = await crawlFederatedInstanceJobs(instanceData.siteData.federated);
 
       logging.info(`[Instance] [${baseUrl}] Created ${countFederated.length} federated instance jobs`);
@@ -408,9 +494,7 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
 
       await storage.tracking.upsertError("instance", baseUrl, errorDetail);
     } else {
-      // console.log("error", error);
-
-      const errorDetail = {
+      const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,
         isAxiosError: error.isAxiosError,
@@ -420,11 +504,9 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
         duration: Date.now() - startTime,
       };
 
-      // console.log("errorDetail", errorDetail);
-
-      logging.error(`[Instance] [${baseUrl}] Error: ${error.message}`);
-
       await storage.tracking.upsertError("instance", baseUrl, errorDetail);
+
+      logging.error(`[Instance] [${baseUrl}] Other Error: ${error.message}`);
     }
   }
 
