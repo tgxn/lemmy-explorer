@@ -26,7 +26,7 @@ import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
 
 import OutputFileWriter from "./file_writer";
 
-import {
+import type {
   IMetaDataOutput,
   IInstanceDataOutput,
   IRegistrationMode,

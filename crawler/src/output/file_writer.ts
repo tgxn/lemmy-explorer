@@ -3,7 +3,7 @@ import { open, rm, mkdir, FileHandle, readdir, stat } from "node:fs/promises";
 
 import { OUTPUT_DIR } from "../lib/const";
 
-import {
+import type {
   IMetaDataOutput,
   IInstanceDataOutput,
   ICommunityDataOutput,
