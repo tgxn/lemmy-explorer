@@ -8,9 +8,9 @@ import { CrawlError, CrawlTooRecentError } from "../lib/error";
 import storage from "../lib/crawlStorage";
 import CrawlClient from "../lib/CrawlClient";
 
-const TIME_BETWEEN_PAGES = 2000;
-const RETRY_PAGE_COUNT = 2;
-const PAGE_TIMEOUT = 5000;
+const TIME_BETWEEN_PAGES = 2500;
+const RETRY_PAGE_COUNT = 3;
+const PAGE_TIMEOUT = 10000;
 
 /**
  * Each instance is a unique baseURL
@@ -278,7 +278,9 @@ export default class CommunityCrawler {
     // if this page had non-zero results
     if (communities.length > 0) {
       // sleep between pages
+      console.log(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
       await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      logging.debug(`${this.logPrefix} Page ${pageNumber}, Crawling next page...`);
 
       const subResults = await this.crawlCommunityPaginatedList(pageNumber + 1);
       if (subResults.length > 0) {
@@ -292,36 +294,37 @@ export default class CommunityCrawler {
   async getPageData(pageNumber: number = 1) {
     logging.debug(`${this.logPrefix} Page ${pageNumber}, Fetching...`);
 
-    let communityList;
     try {
-      communityList = await this.client.getUrlWithRetry(
+      const communityList = await this.client.getUrlWithRetry(
         "https://" + this.crawlDomain + "/api/v3/community/list",
         {
           params: {
-            type_: "Local",
-            sort: "Old",
-            limit: 50,
-            page: pageNumber,
-            show_nsfw: true, // Added in 0.18.x? ish...
+            type_: "Local", // Local communities only
+            sort: "Old", // Oldest communities first to maintain ordering
+            limit: 50, // Limit to 50 communities per page - Lemmy's maximum
+            show_nsfw: true, // Show NSFW communities
+            page: pageNumber, // Page number to fetch
           },
           timeout: PAGE_TIMEOUT,
         },
-        RETRY_PAGE_COUNT, // retry count per-page
+        RETRY_PAGE_COUNT,
       );
+
+      const communities = communityList.data.communities;
+
+      // must be an array
+      if (!Array.isArray(communities)) {
+        logging.error(`${this.logPrefix} Community list not an array:`, communityList.data.substr(0, 15));
+        throw new CrawlError(`Community list not an array: ${communities}`);
+      }
+
+      return communities;
+
     } catch (e) {
       // throw new CrawlError("Failed to get community page");
       throw new CrawlError(e.message, e);
     }
 
-    const communities = communityList.data.communities;
-
-    // must be an array
-    if (!Array.isArray(communities)) {
-      logging.error(`${this.logPrefix} Community list not an array:`, communityList.data.substr(0, 15));
-      throw new CrawlError(`Community list not an array: ${communities}`);
-    }
-
-    return communities;
   }
 }
 
