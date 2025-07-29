@@ -69,20 +69,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
 
-      # Install + Cache Crawler Dependencies
-      - name: Cache Node Modules | Crawler
-        id: cache-crawler-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-crawler-yarn
+      # Yarn Install ./crawler
+      - name: Yarn Install ./crawler
+        uses: ./.github/actions/yarn-install
         with:
-          path: ./crawler/node_modules/
-          key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
-
-      - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./crawler
+          working-directory: ./crawler
 
       # Run Crawler Output Script
       - name: Run Health Script
@@ -108,20 +99,11 @@ jobs:
         working-directory: ./
         run: cp -r ./.redis/dump.rdb ./pages/public/data/lemmyverse.rdb
 
-      # build pages frontend
-      - name: Cache Node Modules | Pages
-        id: cache-pages-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-pages-yarn
+      # Yarn Install ./pages
+      - name: Yarn Install ./pages
+        uses: ./.github/actions/yarn-install
         with:
-          path: ./pages/node_modules/
-          key: cache-pages-yarn-${{ hashFiles('pages/yarn.lock') }}
-
-      - name: Install Dependencies
-        if: steps.cache-pages-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./pages
+          working-directory: ./pages
 
       - name: Build the Frontend for Pages
         run: yarn build
@@ -136,9 +118,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      # stop redis
-      - name: Stop Redis
-        working-directory: ./crawler
-        if: always()
-        run: ${{ env.COMPOSE_COMMAND }} down

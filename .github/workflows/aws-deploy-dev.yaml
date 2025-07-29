@@ -54,20 +54,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
 
-      # Install + Cache Crawler Dependencies
-      - name: Cache Node Modules | Crawler
-        id: cache-crawler-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-crawler-yarn
+      # Yarn Install ./crawler
+      - name: Yarn Install ./crawler
+        uses: ./.github/actions/yarn-install
         with:
-          path: ./crawler/node_modules/
-          key: cache-crawler-yarn-${{ hashFiles('crawler/yarn.lock') }}
-
-      - name: Install Node Modules | Crawler
-        if: steps.cache-crawler-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./crawler
+          working-directory: ./crawler
 
       # Run Crawler Output Script
       - name: Run Health Script
@@ -86,20 +77,11 @@ jobs:
           path: |
             ./frontend/public/data/
 
-      # Install + Cache Frontend Dependencies
-      - name: Cache Node Modules | Frontend
-        id: cache-frontend-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-frontend-yarn
+      # Yarn Install ./frontend
+      - name: Yarn Install ./frontend
+        uses: ./.github/actions/yarn-install
         with:
-          path: ./frontend/node_modules/
-          key: cache-frontend-yarn-${{ hashFiles('frontend/yarn.lock') }}
-
-      - name: Install Node Modules | Frontend
-        if: steps.cache-frontend-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./frontend
+          working-directory: ./frontend
 
       # Build Frontend to ./frontend/dist
       - name: Build the Frontend
@@ -114,20 +96,11 @@ jobs:
           name: "config.json"
           json: ${{ vars.CONFIG_JSON }}
 
-      # Install + Cache CDK Dependencies
-      - name: Cache Node Modules | CDK
-        id: cache-cdk-yarn
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-cdk-yarn
+      # Yarn Install ./cdk
+      - name: Yarn Install ./cdk
+        uses: ./.github/actions/yarn-install
         with:
-          path: ./cdk/node_modules/
-          key: cache-cdk-yarn-${{ hashFiles('cdk/yarn.lock') }}
-
-      - name: Install Node Modules | CDK
-        if: steps.cache-cdk-yarn.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
-        working-directory: ./cdk
+          working-directory: ./cdk
 
       - name: CDK Bootstrap
         run: yarn bootstrap
@@ -156,9 +129,3 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      # stop redis
-      - name: Stop Redis
-        working-directory: ./crawler
-        if: always()
-        run: ${{ env.COMPOSE_COMMAND }} down
