@@ -9,22 +9,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # - name: Cache Node Modules
-    #   id: cache-yarn
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: ${{ inputs.working-directory }}/node_modules
-    #     key: ${{ inputs.cache-key-prefix }}-${{ hashFiles(inputs.lockfile) }}
-    #   env:
-    #     cache-name: ${{ inputs.cache-key-prefix }}
-
-    # - name: Install Node Modules
-    #   if: steps.cache-yarn.outputs.cache-hit != 'true'
-    #   shell: bash
-    #   run: yarn --frozen-lockfile
-    #   working-directory: ${{ inputs.working-directory }}
-
-    # Install + Cache Crawler Dependencies
+    # Cache Dependencies
     - name: Cache Node Modules (${{ inputs.working-directory }})
       id: cache-yarn
       uses: actions/cache@v4
@@ -34,6 +19,7 @@ runs:
         path: ${{ inputs.working-directory }}/node_modules/
         key: yarn-cache-${{ hashFiles('${{ inputs.working-directory }}/yarn.lock') }}
 
+    # Install Dependencies
     - name: Install Node Modules (${{ inputs.working-directory }})
       if: steps.cache-yarn.outputs.cache-hit != 'true'
       shell: bash
