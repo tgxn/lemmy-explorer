@@ -114,16 +114,20 @@ export default class CommunityCrawler {
   }
 
   // * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
-  async crawlSingle(communityName: string) {
+  async crawlSingle(communityName: string): Promise<ICommunityData | null> {
     try {
       logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
 
       const communityData = await this.getSingleCommunityData(communityName);
 
       logging.info(`${this.logPrefix} crawlSingle Ended Success: ${communityName}`, communityData);
+
+      return communityData;
     } catch (error) {
       logging.error(`${this.logPrefix} crawlSingle ERROR Community: ${communityName}`, error.message);
     }
+
+    return null;
   }
 
   async getSingleCommunityData(communityName: string): Promise<any> {
@@ -387,8 +391,6 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = as
   baseUrl,
   community,
 }) => {
-  let communityData: any = null;
-
   if (!baseUrl || !community) {
     logging.error(`[OneCommunity] [${baseUrl}] Missing baseUrl or community`);
     throw new CrawlError("Missing baseUrl or community");
@@ -397,7 +399,9 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = as
   try {
     const crawler = new CommunityCrawler(baseUrl);
 
-    communityData = await crawler.crawlSingle(community);
+    const communityData = await crawler.crawlSingle(community);
+
+    return communityData;
   } catch (error) {
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[OneCommunity] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
@@ -417,5 +421,5 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = as
     }
   }
 
-  return communityData;
+  return null;
 };

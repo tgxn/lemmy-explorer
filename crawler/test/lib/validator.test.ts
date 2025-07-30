@@ -24,6 +24,7 @@ describe("getActorBaseUrl", () => {
 
   test("returns false for invalid domain", () => {
     expect(getActorBaseUrl("https://invalid/u/user")).toBe(false);
+    1;
   });
 
   test("throws for malformed actor id", () => {
