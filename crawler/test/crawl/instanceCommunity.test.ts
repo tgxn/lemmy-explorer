@@ -4,11 +4,6 @@ import { jest } from "@jest/globals";
 const instanceStore: Record<string, any> = {};
 const communityStore: Record<string, any> = {};
 
-jest.mock("../../src/lib/crawlStorage", () => ({
-  __esModule: true,
-  default: storageMock,
-}));
-
 const storageMock = {
   connect: jest.fn(),
   close: jest.fn(),
@@ -37,8 +32,10 @@ const storageMock = {
   piefed: { upsert: jest.fn(), setTrackedAttribute: jest.fn() },
 };
 
-import { instanceProcessor } from "../../src/crawl/instance";
-import { communityListProcessor, singleCommunityProcessor } from "../../src/crawl/community";
+jest.mock("../../src/lib/crawlStorage", () => ({
+  __esModule: true,
+  default: storageMock,
+}));
 
 jest.mock("../../src/queue/community_list", () => ({
   __esModule: true,
@@ -65,6 +62,9 @@ jest.mock("../../src/queue/piefed", () => ({
   },
 }));
 
+import { instanceProcessor } from "../../src/crawl/instance";
+import { communityListProcessor, singleCommunityProcessor } from "../../src/crawl/community";
+
 describe("crawl jobs live", () => {
   jest.setTimeout(30000);
 
@@ -83,6 +83,7 @@ describe("crawl jobs live", () => {
     expect(result).toBeTruthy();
     expect(result).toHaveProperty("nodeData");
     expect(result).toHaveProperty("siteData");
+
     expect(storageMock.instance.upsert).toHaveBeenCalledWith(
       instanceBaseUrl,
       expect.objectContaining({ nodeData: expect.any(Object) }),
@@ -96,6 +97,7 @@ describe("crawl jobs live", () => {
 
     expect(Array.isArray(result)).toBe(true);
     expect((result as any[]).length).toBeGreaterThan(0);
+
     expect(storageMock.community.upsert).toHaveBeenCalled();
   });
 
@@ -109,6 +111,7 @@ describe("crawl jobs live", () => {
 
     expect(result).toBeTruthy();
     expect((result as any).community.name).toBe(testCommunity);
+
     expect(storageMock.community.upsert).toHaveBeenCalledWith(
       instanceBaseUrl,
       expect.objectContaining({ community: expect.objectContaining({ name: "lemmyverse" }) }),
