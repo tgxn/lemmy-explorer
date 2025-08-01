@@ -21,7 +21,7 @@ import Failures from "../util/failures";
 
 // used to run tasks against db that exist after they are complete
 export default async function runTask(taskName: string) {
-  logging.silly("Running Task:", taskName);
+  logging.debug("Running Task:", taskName);
 
   if (taskName == null) {
     logging.error("taskName is null");
@@ -116,7 +116,7 @@ export default async function runTask(taskName: string) {
       });
 
       logging.info("Queue Health Metrics");
-      console.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
+      logging.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
 
       // record health
       const agedAge = new CrawlAged();
@@ -153,7 +153,7 @@ export default async function runTask(taskName: string) {
       break;
   }
 
-  logging.silly("Task Complete:", taskName);
+  logging.debug("Task Complete:", taskName);
   await storage.close();
 
   return process.exit(0);

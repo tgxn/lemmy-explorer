@@ -144,7 +144,7 @@ export default class InstanceCrawler {
           .map((instance: ILemmyFederatedInstanceData) => instance.domain),
       };
 
-      console.log(`${this.crawlDomain}: fetched federated instances separately`, {
+      logging.debug(`${this.crawlDomain}: fetched federated instances separately`, {
         linked: federationData.linked.length,
         allowed: federationData.allowed.length,
         blocked: federationData.blocked.length,
@@ -152,7 +152,7 @@ export default class InstanceCrawler {
 
       siteInfo.data.federated_instances = federationData;
     } else {
-      console.log(`${this.crawlDomain}: fetched federated instances separately`, {
+      logging.debug(`${this.crawlDomain}: fetched federated instances separately`, {
         linked: siteInfo.data.federated_instances.linked.length,
         allowed: siteInfo.data.federated_instances.allowed.length,
         blocked: siteInfo.data.federated_instances.blocked.length,
@@ -179,13 +179,13 @@ export default class InstanceCrawler {
 
     // scan mbin instances that are found
     if (nodeInfo.software.name == "mbin") {
-      console.log(`${this.crawlDomain}: found mbin instance  - creating job`);
+      logging.info(`${this.crawlDomain}: found mbin instance  - creating job`);
       await this.mbinQueue.createJob(this.crawlDomain);
     }
 
     // scan piefed instances that are found
     if (nodeInfo.software.name == "piefed") {
-      console.log(`${this.crawlDomain}: found piefed instance  - creating job`);
+      logging.info(`${this.crawlDomain}: found piefed instance  - creating job`);
       await this.piefedQueue.createJob(this.crawlDomain);
     }
 
@@ -200,12 +200,12 @@ export default class InstanceCrawler {
 
     const actorBaseUrl = getActorBaseUrl(siteInfo.site_view.site.actor_id);
     if (!actorBaseUrl) {
-      console.error(`${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
+      logging.error(`${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
       throw new CrawlError(`${this.crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
     }
 
     if (actorBaseUrl !== this.crawlDomain) {
-      console.error(
+      logging.error(
         `${this.crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`,
       );
       throw new CrawlError(
@@ -295,7 +295,7 @@ export default class InstanceCrawler {
         siteInfo.site_view.counts.users_active_month,
       );
     } catch (e) {
-      console.error(e);
+      logging.error(e);
     }
 
     return instanceData;
@@ -422,11 +422,11 @@ export const instanceProcessor: IJobProcessor<IInstanceData | null> = async ({ b
         );
       }
 
-      console.log(
+      logging.debug(
         `[Instance] [${baseUrl}] Found known fediverse server ${knownFediverseServer.name} ${knownFediverseServer.version} [${logging.formatDuration(lastCrawledFediMsAgo)} ago]`,
       );
     } else {
-      console.log(`[Instance] [${baseUrl}] Not a known fediverse server, continuing crawl...`);
+      logging.debug(`[Instance] [${baseUrl}] Not a known fediverse server, continuing crawl...`);
     }
 
     //  last crawl if it's been successfully too recently
