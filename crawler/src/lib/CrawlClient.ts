@@ -3,11 +3,10 @@ import axios, { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } f
 
 import { HTTPError, CrawlError } from "./error";
 
-import { AXIOS_REQUEST_TIMEOUT, CRAWLER_USER_AGENT, CRAWLER_ATTRIB_URL } from "./const";
+import { AXIOS_REQUEST_TIMEOUT, CRAWLER_USER_AGENT, CRAWLER_ATTRIB_URL, sleepThreadMs } from "./const";
 
 // backoff after failed request
 const RETRY_BACKOFF_SECONDS = 2;
-
 export default class CrawlClient {
   private axios: AxiosInstance;
 
@@ -64,11 +63,7 @@ export default class CrawlClient {
         if (current < maxRetries) {
           const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
 
-          // logging.debug(
-          //   `getUrlWithRetry: retrying GET ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`,
-          // );
-
-          await new Promise((resolve) => setTimeout(resolve, delaySeconds));
+          await sleepThreadMs(delaySeconds * 1000);
           continue;
         }
 

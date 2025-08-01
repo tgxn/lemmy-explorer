@@ -22,6 +22,8 @@ jest.mock("axios", () => {
 });
 
 describe("CrawlClient.getUrlWithRetry", () => {
+  jest.setTimeout(30000);
+
   test("retries the expected number of times", async () => {
     mockedAxiosInstance.get.mockRejectedValue(new Error("fail"));
 

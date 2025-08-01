@@ -4,6 +4,8 @@ function hoursToMs(hours: number): number {
   return hours * 60 * 60 * 1000;
 }
 
+export const sleepThreadMs = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const REDIS_URL: string = process.env.REDIS_URL || "redis://localhost:6379";
 
 export const LOG_LEVEL: string = process.env.LOG_LEVEL || "warn";

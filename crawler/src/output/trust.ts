@@ -596,15 +596,25 @@ export default class OutputTrust {
 
   async calcCommunityScore(baseUrl, community) {
     const instanceMetrics = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
+    console.log("instanceMetricsinstanceMetrics", instanceMetrics);
 
-    // multiply score based subscribers
-    const activityScore = community.counts.subscribers;
+    const instanceScore = instanceMetrics?.score || 0;
 
-    const activeScore = community.counts.users_active_month * 20;
+    const subscribers = community.counts.subscribers || 0;
 
-    // console.log("instanceMetricsinstanceMetrics", instanceMetrics);
+    const activeMonth = community.counts.users_active_month || 0;
+    const activeWeek = community.counts.users_active_week || 0;
 
-    const score = instanceMetrics.score * activityScore * activeScore;
+    const posts = community.counts.posts || 0;
+    const comments = community.counts.comments || 0;
+
+    const score =
+      instanceScore * 0.1 + // weight instance score lightly
+      subscribers + // add subscribers directly to the score
+      activeWeek * 20 + // heavily weight weekly active users
+      activeMonth * 5 + // moderately weight monthly active users
+      posts * 0.1 + // lightly weight the number of posts
+      comments * 0.05; // very lightly weight the number of comments
 
     return score;
   }

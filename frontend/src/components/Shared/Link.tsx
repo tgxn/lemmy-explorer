@@ -11,6 +11,8 @@ export function CopyLink({ copyText, linkProps }) {
   const [copied, setCopied] = React.useState(false);
   React.useEffect(() => {
     if (copied) {
+      // do not re-copy witihin 2 seconds
+      // this is to give them feedback that it has been copied
       setTimeout(() => {
         setCopied(false);
       }, 2000);

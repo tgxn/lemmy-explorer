@@ -14,7 +14,7 @@ import MBinQueue from "../queue/mbin";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import { CRAWL_AGED_TIME } from "../lib/const";
+import { CRAWL_AGED_TIME, sleepThreadMs } from "../lib/const";
 
 const TIME_BETWEEN_PAGES = 2000;
 
@@ -255,7 +255,7 @@ export default class CrawlMBin {
       await Promise.all(promises);
 
       // sleep between pages
-      await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      await sleepThreadMs(TIME_BETWEEN_PAGES);
 
       const subPromises = await this.crawlMagazinesData(crawlDomain, pageNumber + 1);
       if (subPromises.length > 0) {
