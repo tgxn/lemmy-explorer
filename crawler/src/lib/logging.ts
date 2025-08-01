@@ -4,7 +4,7 @@ import pretty from "pino-pretty";
 import { LOG_LEVEL } from "./const";
 const stream = pretty({
   colorize: true,
-  translateTime: "yyyy-mm-dd HH:MM:ss",
+  translateTime: "yyyy-mm-dd HH:MM:ss.l",
   ignore: "pid,hostname",
 
   customLevels: {
