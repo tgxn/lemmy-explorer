@@ -111,3 +111,37 @@ jobs:
       - name: Run Tests | Frontend
         run: yarn test
         working-directory: ./frontend
+
+  frontend-unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Download + Start Redis Docker
+      - name: Get Dump + Start Redis
+        uses: ./.github/actions/start-redis
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
+
+      # Yarn Install ./frontend
+      - name: Yarn Install ./frontend
+        uses: ./.github/actions/yarn-install
+        with:
+          working-directory: ./frontend
+
+      # install playwrite npx playwright install chromium --with-deps
+      - name: Install Playwright Dependencies
+        run: npx playwright install chromium firefox --with-deps
+        working-directory: ./frontend
+
+      - name: Run Unit Tests | Frontend
+        run: yarn test:unit
+        working-directory: ./frontend
