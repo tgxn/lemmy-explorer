@@ -2,11 +2,38 @@ import pino from "pino";
 import pretty from "pino-pretty";
 
 import { LOG_LEVEL } from "./const";
-
 const stream = pretty({
   colorize: true,
-  translateTime: "yyyy-mm-dd HH:MM:ss.SSS",
+  translateTime: "yyyy-mm-dd HH:MM:ss",
   ignore: "pid,hostname",
+
+  customLevels: {
+    trace: 10,
+    debug: 20,
+    info: 30,
+    warn: 40,
+    error: 50,
+    fatal: 60,
+  },
+
+  messageFormat: (log: Record<string, any>, messageKey: string): string => {
+    const msg = log[messageKey] as string;
+    switch (log.level) {
+      case 10:
+      case 20:
+        return `\x1b[90m${msg}\x1b[0m`; // grey
+      case 30:
+        return `\x1b[32m${msg}\x1b[0m`; // green
+      case 40:
+        return `\x1b[33m${msg}\x1b[0m`; // yellow
+      case 50:
+        return `\x1b[31m${msg}\x1b[0m`; // red
+      case 60:
+        return `\x1b[1;31m${msg}\x1b[0m`; // bold red
+      default:
+        return msg;
+    }
+  },
 });
 
 const baseLogger = pino({ level: LOG_LEVEL }, stream);
