@@ -4,6 +4,7 @@ import type { ICommunityData } from "../../../types/storage";
 import type { IJobProcessor } from "../queue/BaseQueue";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
+import { sleepThreadMs } from "../lib/const";
 
 import storage from "../lib/crawlStorage";
 import CrawlClient from "../lib/CrawlClient";
@@ -274,7 +275,7 @@ export default class CommunityCrawler {
     if (communities.length > 0) {
       // sleep between pages
       console.log(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
-      await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      await sleepThreadMs(TIME_BETWEEN_PAGES);
       logging.debug(`${this.logPrefix} Page ${pageNumber}, Crawling next page...`);
 
       const subResults = await this.crawlCommunityPaginatedList(pageNumber + 1);

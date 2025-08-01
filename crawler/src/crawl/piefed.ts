@@ -16,7 +16,7 @@ import PiefedQueue from "../queue/piefed";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import { CRAWL_AGED_TIME } from "../lib/const";
+import { CRAWL_AGED_TIME, sleepThreadMs } from "../lib/const";
 
 import { getActorBaseUrl } from "../lib/validator";
 
@@ -264,7 +264,7 @@ export default class CrawlPiefed {
       await Promise.all(promises);
 
       // sleep between pages
-      await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      await sleepThreadMs(TIME_BETWEEN_PAGES);
 
       const subPromises = await this.crawlCommunitiesData(crawlDomain, pageNumber + 1);
       if (subPromises.length > 0) {
