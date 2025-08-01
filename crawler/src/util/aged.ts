@@ -179,7 +179,7 @@ export default class CrawlAged {
 
     for (const instance of agedInstances) {
       const baseUrl = instance.siteData.site.actor_id.split("/")[2];
-      logging.silly(`Adding Aged Instance: ${baseUrl}`);
+      logging.info(`Adding Aged Instance: ${baseUrl}`);
       this.addInstance(baseUrl);
     }
 

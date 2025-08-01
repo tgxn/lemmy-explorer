@@ -100,12 +100,12 @@ export default class CrawlPiefed {
       const piefedQueue = new PiefedQueue(false);
       for (const piefedServer of piefedServers) {
         this.logPrefix = `[CrawlPiefed] [${piefedServer.base}]`;
-        console.log(`${this.logPrefix} create job ${piefedServer.base}`);
+        logging.info(`${this.logPrefix} create job ${piefedServer.base}`);
 
         await piefedQueue.createJob(piefedServer.base);
       }
     } catch (e) {
-      console.error(`${this.logPrefix} error scanning piefed instance`, e);
+      logging.error(`${this.logPrefix} error scanning piefed instance`, e);
     }
   }
 

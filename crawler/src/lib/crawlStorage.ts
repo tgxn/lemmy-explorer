@@ -53,14 +53,14 @@ export class CrawlStorage {
   async connect() {
     if (!this.client.isOpen) {
       await this.client.connect();
-      logging.silly("CrawlStorage Opened", REDIS_URL);
+      logging.debug("CrawlStorage Opened", REDIS_URL);
     }
   }
 
   async close() {
     if (this.client.isOpen) {
       await this.client.quit();
-      logging.silly("CrawlStorage Closed");
+      logging.debug("CrawlStorage Closed");
     }
   }
 

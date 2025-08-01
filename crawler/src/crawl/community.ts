@@ -144,7 +144,7 @@ export default class CommunityCrawler {
       );
 
       if (communityData.data.community_view) {
-        console.log(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
+        logging.debug(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
 
         await this.storeCommunityData(communityData.data.community_view);
 
@@ -274,7 +274,7 @@ export default class CommunityCrawler {
     // if this page had non-zero results
     if (communities.length > 0) {
       // sleep between pages
-      console.log(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
+      logging.debug(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
       await sleepThreadMs(TIME_BETWEEN_PAGES);
       logging.debug(`${this.logPrefix} Page ${pageNumber}, Crawling next page...`);
 
