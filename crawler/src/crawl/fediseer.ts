@@ -23,7 +23,7 @@ export default class CrawlFediseer {
 
     mergedInstances = [...fediseerWhitelist.data.instances];
 
-    console.log(`got ${fediseerWhitelist.data.instances.length} instances from page ${page}`);
+    logging.debug(`got ${fediseerWhitelist.data.instances.length} instances from page ${page}`);
 
     if (fediseerWhitelist.data.instances.length != perPage) {
       return mergedInstances;
@@ -50,7 +50,7 @@ export default class CrawlFediseer {
      */
 
     const fediseerTopTagsData = await this.client.getUrl(`/tags`);
-    console.log(`fediseer top tags total: ${fediseerTopTagsData.data.length}`);
+    logging.info(`fediseer top tags total: ${fediseerTopTagsData.data.length}`);
 
     const fediseerWhitelist = await this.getAllPagesData();
 
@@ -66,7 +66,7 @@ export default class CrawlFediseer {
           (fediseerTag: IFediseerTag) => fediseerTag.tag == tag,
         );
 
-        if (!fediseerTag) console.log("fediseerTag not found in top tags", tag, fediseerTag);
+        if (!fediseerTag) logging.warn("fediseerTag not found in top tags", tag, fediseerTag);
 
         return { tag: tag, rank: fediseerTag ? fediseerTag.count : 0 };
       });

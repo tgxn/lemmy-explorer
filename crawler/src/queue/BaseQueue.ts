@@ -48,10 +48,10 @@ export default class BaseQueue<T> {
 
   async createJob(jobId: string, jobData: any, onSuccess: ISuccessCallback<T> = null) {
     const job = this.queue.createJob(jobData);
-    logging.silly(`${this.logPrefix} createJob`, jobData);
+    logging.debug(`${this.logPrefix} createJob`, jobData);
 
     job.on("succeeded", (result) => {
-      logging.silly(`${this.logPrefix} ${job.id} succeeded`, jobData);
+      logging.debug(`${this.logPrefix} ${job.id} succeeded`, jobData);
       onSuccess && onSuccess(result);
     });
 
