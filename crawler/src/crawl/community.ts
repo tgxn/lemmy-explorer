@@ -1,6 +1,6 @@
 import logging from "../lib/logging";
 
-import type { ICommunityData } from "../../../types/storage";
+import type { ICommunityData, IErrorData } from "../../../types/storage";
 import type { IJobProcessor } from "../queue/BaseQueue";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
@@ -369,7 +369,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[Community] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
     } else {
-      const errorDetail = {
+      const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,
         isAxiosError: error.isAxiosError,
