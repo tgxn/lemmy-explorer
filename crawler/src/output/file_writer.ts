@@ -2,6 +2,7 @@ import path from "node:path";
 import { rm, mkdir, writeFile, readdir, stat } from "node:fs/promises";
 
 import { OUTPUT_DIR } from "../lib/const";
+import logging from "../lib/logging";
 
 import { IMetaDataOutput, IInstanceDataOutput, ICommunityDataOutput } from "../../../types/output";
 
@@ -267,7 +268,7 @@ export default class OutputFileWriter {
     try {
       await writeFile(fileName, data);
     } catch (err) {
-      console.error(`Failed to write ${fileName}`, err);
+      logging.error(`Failed to write ${fileName}`, err);
       throw err;
     }
   }
@@ -309,7 +310,7 @@ export default class OutputFileWriter {
     }));
 
     //  output to a table
-    console.table(topFiles, ["name", "size"]);
+    logging.table(topFiles, ["name", "size"]);
   }
 
   // get the size of a directory recursively

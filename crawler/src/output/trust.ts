@@ -1,13 +1,10 @@
 import divinator from "divinator";
 
 import storage from "../lib/crawlStorage";
-import { IInstanceData, ICommunityData, IInstanceDataKeyValue } from "../../../types/storage";
-// import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
-// import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
-// import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
-import { IFediseerInstanceData } from "../../../types/storage";
+import logging from "../lib/logging";
 
-import { BaseURL, ActorID } from "../../../types/basic";
+import type { BaseURL, ActorID } from "../../../types/basic";
+import type { IInstanceData, ICommunityData, IFediseerInstanceData } from "../../../types/storage";
 
 // import {
 //   IErrorData,
@@ -157,7 +154,7 @@ export default class OutputTrust {
 
         let guarantor: string | undefined;
         if (instanceGuarantor !== undefined && instanceGuarantor.guarantor !== null) {
-          console.log(baseUrl, "instanceGuarantor", instanceGuarantor.guarantor);
+          logging.info(baseUrl, "instanceGuarantor", instanceGuarantor.guarantor);
           guarantor = instanceGuarantor.guarantor;
         }
 
@@ -451,7 +448,7 @@ export default class OutputTrust {
     // console.log("instanceGuarantor", instanceGuarantor);
     if (instanceGuarantor !== null) {
       if (reasons.length > 0) {
-        console.log(
+        logging.info(
           `skipping sus checks for instance: ${baseUrl} with guarantor: ${instanceGuarantor} (that sould have been marked as sus otherwise!)`,
           reasons,
         );
@@ -578,13 +575,13 @@ export default class OutputTrust {
       }
 
       if (baseUrlDeviations.length > 0) {
-        console.log("instance deviates!!", this.instancesWithMetrics[index].baseurl, baseUrlDeviations);
+        logging.warn("instance deviates!!", this.instancesWithMetrics[index].baseurl, baseUrlDeviations);
 
         deviations[this.instancesWithMetrics[index].baseurl] = baseUrlDeviations;
       }
     }
 
-    console.log("deviations", Object.keys(deviations).length);
+    logging.warn("deviations", Object.keys(deviations).length);
 
     return deviations;
   }
@@ -638,7 +635,7 @@ export default class OutputTrust {
       "literature.cafe",
       "enterprise.lemmy.ml",
     ];
-    if (log.includes(baseUrl)) console.log(baseUrl, "scores", scores, "overall", score);
+    if (log.includes(baseUrl)) logging.info(baseUrl, "scores", scores, "overall", score);
 
     return score;
   }
@@ -731,8 +728,8 @@ export default class OutputTrust {
     //   } Blocked: ${Object.keys(blockedFederation).length}`
     // );
 
-    console.log("Global Federation Counts (counts of urls in merged lists)");
-    console.table({
+    logging.info("Global Federation Counts (counts of urls in merged lists)");
+    logging.table({
       linked: Object.keys(linkedFederation).length,
       allowed: Object.keys(allowedFederation).length,
       blocked: Object.keys(blockedFederation).length,
