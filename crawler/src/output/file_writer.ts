@@ -112,7 +112,7 @@ export default class OutputFileWriter {
     this.piefedCommunitiesPerFile = 500;
   }
 
-  async storeInstanceData(instanceArray) {
+  async storeInstanceData(instanceArray: IInstanceDataOutput[]): Promise<void> {
     await this.storeChunkedData("instance", this.instancesPerFile, instanceArray);
 
     // minified version, just names and base urls
@@ -127,7 +127,7 @@ export default class OutputFileWriter {
     await this.writeJsonFile(`${this.publicDataFolder}/instance.min.json`, JSON.stringify(minInstanceArray));
   }
 
-  async storeCommunityData(communityArray) {
+  async storeCommunityData(communityArray: ICommunityDataOutput[]): Promise<void> {
     await this.storeChunkedData("community", this.communitiesPerFile, communityArray);
 
     for (let i = 0; i < communityArray.length; i++) {
@@ -185,7 +185,10 @@ export default class OutputFileWriter {
   /**
    * this method is used to store the community metrics data
    */
-  public async storeCommunityMetricsData(instanceBaseUrl: string, communityData: any) {
+  public async storeCommunityMetricsData(
+    instanceBaseUrl: BaseURL,
+    communityData: ICommunityDataOutput,
+  ): Promise<void> {
     // make sure the directory exists for the instance
     await mkdir(`${this.communityMetricsPath}/${instanceBaseUrl}`, {
       recursive: true,
@@ -238,7 +241,7 @@ export default class OutputFileWriter {
   /**
    * this method is used to split the data into smaller files for easier loading
    */
-  private async storeChunkedData(chunkName: string, perFile: number, dataArray: []): Promise<void> {
+  private async storeChunkedData(chunkName: string, perFile: number, dataArray: any[]): Promise<void> {
     await this.writeJsonFile(`${this.publicDataFolder}/${chunkName}.full.json`, JSON.stringify(dataArray));
 
     // mapped versions and the metadata
