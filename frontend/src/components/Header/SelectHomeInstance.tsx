@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 
@@ -128,8 +128,10 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   );
 });
 
-export default function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
-  const homeInstance = useSelector((state: any) => state.configReducer.homeInstance);
+export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+
+  const dispatch = useDispatch();
 
   const {
     isLoading: loadingIns,

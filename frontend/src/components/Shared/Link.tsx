@@ -52,7 +52,7 @@ export function CopyLink({ copyText, linkProps }) {
 }
 
 type ICommunityLinkProps = {
-  baseType: string;
+  baseType?: string;
   community: {
     baseurl: string;
     name: string;

@@ -71,6 +71,7 @@ function CommunityList({ items }: ICommunityListProps) {
                     }}
                   >
                     <ExtCommunityLink
+                      baseType="lemmy"
                       community={rowData}
                       sx={{
                         color: "var(--joy-palette-primary-50)",
