@@ -244,7 +244,8 @@ export default class CrawlPiefed {
       return federatedInstances;
     } catch (error) {
       logging.error(`${this.logPrefix} [${crawlDomain}] error fetching federated instances`, error);
-      throw new CrawlError(`Failed to fetch federated instances for ${crawlDomain}`, error);
+      // throw new CrawlError(`Failed to fetch federated instances for ${crawlDomain}`, error);
+      return null;
     }
   }
 
