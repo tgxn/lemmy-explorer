@@ -110,6 +110,13 @@ export class OutputUtils {
 
   // given an error message from redis, figure out what it relates to..
   static findErrorType(errorMessage: string): string {
+    console.log("findErrorType", errorMessage);
+
+    if (!errorMessage || errorMessage.length === 0) {
+      logging.error("empty error message");
+      return "unknown";
+    }
+
     if (
       errorMessage.includes("ENOENT") ||
       errorMessage.includes("ECONNREFUSED") ||
@@ -183,7 +190,7 @@ export class OutputUtils {
       return "invalidActorId";
     }
 
-    logging.debug("unhandled error", errorMessage);
+    logging.trace("unhandled error", errorMessage);
     return "unknown";
   }
 
@@ -744,10 +751,10 @@ export default class CrawlOutput {
         const instanceTrustData = this.trust.getInstance(siteBaseUrl);
 
         // console.log("instanceTrustData", instanceTrustData);
-        const score = instanceTrustData.score;
+        const score = instanceTrustData?.score || 0;
 
         // ignore instances that have no data
-        const susReason = instanceTrustData.reasons;
+        const susReason = instanceTrustData?.reasons || [];
 
         const admins: string[] = instance.siteData.admins.map((admin) => admin.person.actor_id);
 
@@ -808,11 +815,11 @@ export default class CrawlOutput {
           uptime: siteUptime,
 
           isSuspicious: susReason.length > 0 ? true : false,
-          metrics: instanceTrustData.metrics || null,
-          tags: instanceTrustData.tags || [],
+          metrics: instanceTrustData?.metrics || null,
+          tags: instanceTrustData?.tags || [],
           susReason: susReason,
 
-          trust: instanceTrustData,
+          trust: instanceTrustData || [],
 
           blocks: {
             incoming: incomingBlocks,
@@ -1049,6 +1056,7 @@ export default class CrawlOutput {
           error: value.error,
           time: value.time,
         };
+        console.log("instanceData ERRORddd122", value.error);
         instanceData.type = OutputUtils.findErrorType(value.error);
 
         if (errorTypes[instanceData.type] === undefined) {

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { open, rm, mkdir, FileHandle, readdir, stat } from "node:fs/promises";
+import { rm, mkdir, writeFile, readdir, stat } from "node:fs/promises";
 
 import { OUTPUT_DIR } from "../lib/const";
 
@@ -12,6 +12,8 @@ import {
   IFediverseDataOutput,
   IClassifiedErrorOutput,
 } from "../../../types/output";
+
+import { BaseURL, ActorID } from "../../../types/basic";
 
 /**
  * OutputFileWriter - This class handles writing the output JSON files.
@@ -267,13 +269,11 @@ export default class OutputFileWriter {
    * this method is used to write a JSON file
    */
   private async writeJsonFile(fileName: string, data: string): Promise<void> {
-    let filehandle: FileHandle | null = null;
     try {
-      filehandle = await open(fileName, "w");
-
-      await filehandle?.writeFile(data);
-    } finally {
-      await filehandle?.close();
+      await writeFile(fileName, data);
+    } catch (err) {
+      console.error(`Failed to write ${fileName}`, err);
+      throw err;
     }
   }
 
