@@ -119,7 +119,7 @@ type IVirtualTableProps = {
   children: (props: { width: number }) => React.ReactNode;
 };
 
-const VirtualTable = React.memo(function ({ items, children }: IVirtualTableProps) {
+function VirtualTable({ items, children }: IVirtualTableProps) {
   return (
     <WindowScroller>
       {({ height, scrollTop }) => (
@@ -158,5 +158,6 @@ const VirtualTable = React.memo(function ({ items, children }: IVirtualTableProp
       )}
     </WindowScroller>
   );
-});
-export default VirtualTable;
+}
+
+export default React.memo(VirtualTable);

@@ -19,7 +19,7 @@ type ICommunityListProps = {
   items: any[];
 };
 
-const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
+function CommunityList({ items }: ICommunityListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -180,5 +180,6 @@ const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
       ]}
     </VirtualTable>
   );
-});
-export default CommunityList;
+}
+
+export default React.memo(CommunityList);
