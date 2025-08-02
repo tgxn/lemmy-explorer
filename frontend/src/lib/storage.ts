@@ -3,7 +3,7 @@
 class Storage {
   private keyName: string;
   private store: any;
-  private userConfig: any;
+  private writeTimeout?: number;
 
   constructor() {
     this.keyName = "explorer_storage";
@@ -11,14 +11,20 @@ class Storage {
 
     if (localStorage.getItem(this.keyName)) {
       this.store = JSON.parse(localStorage.getItem(this.keyName));
-      console.log("loaded config", this.userConfig);
+      console.log("loaded config", this.store);
     } else {
       console.log("no config found in localstorage");
     }
+
+    window.addEventListener("storage", (event: StorageEvent) => {
+      if (event.key === this.keyName && event.newValue) {
+        this.store = JSON.parse(event.newValue);
+      }
+    });
   }
 
   /**
-   * Write the config to localstorage
+   * Write the config to localstorage immediately
    *
    * @returns {void}
    */
@@ -27,7 +33,23 @@ class Storage {
 
     console.log("wrote config", writeConfigData);
 
-    return localStorage.setItem(this.keyName, writeConfigData);
+    localStorage.setItem(this.keyName, writeConfigData);
+  }
+
+  /**
+   * Debounce writes to localstorage
+   *
+   * @returns {void}
+   */
+  private scheduleWrite(): void {
+    if (this.writeTimeout) {
+      clearTimeout(this.writeTimeout);
+    }
+
+    this.writeTimeout = window.setTimeout(() => {
+      this.writeTimeout = undefined;
+      this.writeConfig();
+    }, 200);
   }
 
   /**
@@ -55,7 +77,7 @@ class Storage {
   set(configKey: string, configValue: any): void {
     this.store[configKey] = configValue;
 
-    return this.writeConfig();
+    return this.scheduleWrite();
   }
 
   /**
@@ -67,7 +89,7 @@ class Storage {
   remove(configKey: string): void {
     delete this.store[configKey];
 
-    return this.writeConfig();
+    return this.scheduleWrite();
   }
 }
 
