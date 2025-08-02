@@ -9,16 +9,27 @@ class Storage {
     this.keyName = "explorer_storage";
     this.store = {};
 
-    if (localStorage.getItem(this.keyName)) {
-      this.store = JSON.parse(localStorage.getItem(this.keyName));
-      console.log("loaded config", this.store);
+    const existing = localStorage.getItem(this.keyName);
+    if (existing) {
+      try {
+        this.store = JSON.parse(existing);
+        console.log("loaded config", this.store);
+      } catch (e) {
+        console.warn("corrupted config in localstorage", e);
+        this.store = {};
+      }
     } else {
       console.log("no config found in localstorage");
     }
 
     window.addEventListener("storage", (event: StorageEvent) => {
       if (event.key === this.keyName && event.newValue) {
-        this.store = JSON.parse(event.newValue);
+        try {
+          this.store = JSON.parse(event.newValue);
+        } catch (e) {
+          console.warn("corrupted config in storage event", e);
+          this.store = {};
+        }
       }
     });
   }
