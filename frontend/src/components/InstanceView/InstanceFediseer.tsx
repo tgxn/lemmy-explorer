@@ -88,7 +88,7 @@ export default function InstanceFediseer({ instance }) {
             {tags.map((t, idx) => {
               const label = typeof t === "string" ? t : t.tag;
               return (
-                <Chip key={idx} variant="soft" color="primary" size="sm">
+                <Chip key={idx} variant="solid" color="primary" size="sm">
                   {label}
                 </Chip>
               );
