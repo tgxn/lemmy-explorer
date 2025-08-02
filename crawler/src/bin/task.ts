@@ -115,8 +115,14 @@ export default async function runTask(taskName: string) {
         ...piefedQHeCounts,
       });
 
-      logging.info("Queue Health Metrics");
-      logging.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
+      // logging.info("Queue Health Metrics");
+      logging.table("Queue Health Metrics", healthData, [
+        "queue",
+        "waiting",
+        "active",
+        "succeeded",
+        "failed",
+      ]);
 
       // record health
       const agedAge = new CrawlAged();

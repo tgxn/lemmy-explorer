@@ -110,7 +110,7 @@ export class OutputUtils {
 
   // given an error message from redis, figure out what it relates to..
   static findErrorType(errorMessage: string): string {
-    console.log("findErrorType", errorMessage);
+    // console.log("findErrorType", errorMessage);
 
     if (!errorMessage || errorMessage.length === 0) {
       logging.error("empty error message");
@@ -217,7 +217,7 @@ export class OutputUtils {
       piefedCommunitiesArray.length === 0 ||
       returnStats.length === 0
     ) {
-      console.log("Empty Array");
+      logging.debug("Empty Array");
       issues.push("Empty Array(s)");
     }
 
@@ -228,7 +228,7 @@ export class OutputUtils {
       const found = returnInstanceArray.find((i) => i.baseurl === instance.baseurl);
 
       if (found && found !== instance) {
-        console.log("Duplicate Instance", instance.baseurl);
+        logging.debug("Duplicate Instance", instance.baseurl);
         issues.push("Duplicate Instance: " + instance.baseurl);
       }
     }
@@ -241,7 +241,7 @@ export class OutputUtils {
     if (lovecraft) {
       // console.log("Lovecraft on Lemmy.World", lovecraft);
     } else {
-      console.log("Lovecraft not on Lemmy.World");
+      logging.debug("Lovecraft not on Lemmy.World");
       issues.push("Lovecraft not on Lemmy.World");
     }
 
@@ -255,7 +255,7 @@ export class OutputUtils {
       const percent = (diff / previousValue) * 100;
 
       if (percent > pct) {
-        console.log("Percent Diff", value, previousValue, percent);
+        logging.debug("Percent Diff", value, previousValue, percent);
         return false;
       }
 
@@ -306,13 +306,13 @@ export class OutputUtils {
       const isValid = checkChangeIsValid(item.new, item.old);
 
       if (!isValid) {
-        console.log("Percent Diff", item.type, item.new, item.old);
+        logging.debug("Percent Diff", item.type, item.new, item.old);
         issues.push("Percent Diff: " + item.type);
       }
     }
 
     if (issues.length > 0) {
-      console.log("Validation Issues", issues);
+      logging.error("Validation Issues", issues);
 
       throw new Error("Validation Issues: " + issues.join(", "));
     }
@@ -438,7 +438,7 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - instance.lastCrawled;
       if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
-        console.log("Sus Site has expired, the age of the record is too old", instance.base);
+        logging.debug("Sus Site has expired, the age of the record is too old", instance.base);
         return false;
       }
 
@@ -511,7 +511,7 @@ export default class CrawlOutput {
     let previousRun: any = await client.getUrl("https://lemmyverse.net/data/meta.json");
     previousRun = previousRun.data;
 
-    console.log("Done; Total vs. Output");
+    // logging.debug("Done; Total vs. Output");
 
     function calcChangeDisplay(current: number, previous: number) {
       return `${current > previous ? "+" : ""}${current - previous} (${(
@@ -520,7 +520,8 @@ export default class CrawlOutput {
       ).toFixed(2)}%)`;
     }
 
-    console.table(
+    logging.table(
+      "Done; Total vs. Output",
       {
         Instances: {
           ExportName: "Instances",
@@ -772,12 +773,12 @@ export default class CrawlOutput {
 
             return -1;
           } catch (e) {
-            console.error("error parsing registration mode", instance.siteData.config?.registration_mode);
+            logging.error("error parsing registration mode", instance.siteData.config?.registration_mode);
             return -1;
           }
         })();
 
-        // console.log("instanceTrustData.tags", instanceTrustData.tags);
+        // logging.debug("instanceTrustData.tags", instanceTrustData.tags);
         const instanceDataOut: IInstanceDataOutput = {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
@@ -973,13 +974,13 @@ export default class CrawlOutput {
       }
       return true;
     });
-    console.log(`Filtered ${preFilterFails - storeCommunityData.length} fails`);
+    logging.info(`Filtered ${preFilterFails - storeCommunityData.length} fails`);
 
     // remove communities not updated in 24h
     let preFilterAge = storeCommunityData.length;
     storeCommunityData = storeCommunityData.filter((community) => {
       if (!community.time) {
-        console.log("no time", community);
+        logging.debug("no time", community);
         return false; // record needs time
       }
 
@@ -1002,7 +1003,7 @@ export default class CrawlOutput {
 
       return true;
     });
-    console.log(`Filtered ${preFilterAge - storeCommunityData.length} age`);
+    logging.info(`Filtered ${preFilterAge - storeCommunityData.length} age`);
 
     // remove those not being in the instance list
     if (returnInstanceArray) {
@@ -1023,7 +1024,7 @@ export default class CrawlOutput {
 
         return true;
       });
-      console.log(`Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`);
+      logging.info(`Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`);
     }
 
     // filter blank
@@ -1056,7 +1057,7 @@ export default class CrawlOutput {
           error: value.error,
           time: value.time,
         };
-        console.log("instanceData ERRORddd122", value.error);
+        // logging.info("instanceData ERRORddd122", value.error);
         instanceData.type = OutputUtils.findErrorType(value.error);
 
         if (errorTypes[instanceData.type] === undefined) {
@@ -1067,7 +1068,7 @@ export default class CrawlOutput {
 
         instanceErrors.push(instanceData);
       } catch (e) {
-        console.error("error parsing error", key, value);
+        logging.error("error parsing error", key, value);
         throw e;
       }
     }
@@ -1083,8 +1084,8 @@ export default class CrawlOutput {
     //   }
     // });
 
-    console.log("Error Types by Count");
-    console.table(errorTypes);
+    // logging.info("Error Types by Count");
+    logging.table("Error Types by Count", errorTypes);
 
     logging.debug("instanceErrors", instanceErrors.length, errorTypes);
 
@@ -1198,7 +1199,7 @@ export default class CrawlOutput {
       };
     });
 
-    console.log("outputVersionsArray", outputVersionsArray.length);
+    logging.debug("outputVersionsArray", outputVersionsArray.length);
 
     const acc: any = [];
     Object.values(outputVersionsArray).forEach((key: any) => {
