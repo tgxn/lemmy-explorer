@@ -1,7 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
 
-import Moment from "react-moment";
 import { useColorScheme } from "@mui/joy/styles";
 
 import { useNavigate } from "react-router-dom";
@@ -22,7 +20,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import InfoIcon from "@mui/icons-material/Info";
 
-import { TinyNumber, BannerImage } from "../Shared/Display";
+import { BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 

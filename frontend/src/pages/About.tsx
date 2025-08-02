@@ -13,7 +13,6 @@ import Divider from "@mui/joy/Divider";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import PaidIcon from "@mui/icons-material/Paid";
 import DataObjectIcon from "@mui/icons-material/DataObject";
-import { colors } from "@mui/joy";
 
 // this is a Button that links to a Lemmy instance
 // it should be outlined, green and have a Lemmy icon

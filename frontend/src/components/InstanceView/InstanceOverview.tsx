@@ -40,7 +40,7 @@ function plusMinusIndicator(value) {
   return value > 0 ? "+" : value < 0 ? "-" : "";
 }
 
-export default function InstanceOverview({ metricsData }) {
+function InstanceOverview({ metricsData }) {
   const { instance, users, comments, posts } = metricsData;
 
   const usersWeekChange = React.useMemo(() => {
@@ -172,3 +172,7 @@ export default function InstanceOverview({ metricsData }) {
     </Box>
   );
 }
+
+export default React.memo(InstanceOverview, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps.metricsData) === JSON.stringify(nextProps.metricsData);
+});

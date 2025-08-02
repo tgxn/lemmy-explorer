@@ -10,9 +10,7 @@ export type IJobData = { baseUrl?: string; community?: string };
 
 export type IJobProcessor<T> = (processorConfig: IJobData) => Promise<T | null>;
 
-// export type ISuccessCallback = ((resultData: any) => void) | null;
 export type ISuccessCallback<T> = ((resultData: T) => void) | null;
-// export type ISuccessCallback1 = ISuccessCallback | null;
 
 export default class BaseQueue<T> {
   protected queueName: string;
@@ -48,10 +46,10 @@ export default class BaseQueue<T> {
 
   async createJob(jobId: string, jobData: any, onSuccess: ISuccessCallback<T> = null) {
     const job = this.queue.createJob(jobData);
-    logging.debug(`${this.logPrefix} createJob`, jobData);
+    logging.trace(`${this.logPrefix} createJob`, jobData);
 
     job.on("succeeded", (result) => {
-      logging.debug(`${this.logPrefix} ${job.id} succeeded`, jobData);
+      logging.trace(`${this.logPrefix} ${job.id} succeeded`, jobData);
       onSuccess && onSuccess(result);
     });
 

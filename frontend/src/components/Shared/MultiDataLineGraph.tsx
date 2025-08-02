@@ -8,25 +8,6 @@ import { SimpleNumberFormat } from "./Display";
 
 import { ResponsiveContainer, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
-// import { scaleLog } from "d3-scale";
-
-// const CustomTooltip = ({ active, payload, label }) => {
-//   console.info(payload);
-//   if (active && payload && payload.length) {
-//     return (
-//       <Box>
-//         {payload.map((i) => (
-//           <p className="label">
-//             {i.name}: <SimpleNumberFormat value={i.value} />{" "}
-//           </p>
-//         ))}
-//       </Box>
-//     );
-//   }
-
-//   return null;
-// };
-
 type IMultiDataLineGraphProps = {
   dataSeries: any[];
   dataSeriesInfo: {

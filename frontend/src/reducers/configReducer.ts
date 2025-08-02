@@ -1,5 +1,3 @@
-/* global localStorage */
-
 import storage from "../lib/storage";
 
 export function setHomeInstance(baseUrl, type = "lemmy") {

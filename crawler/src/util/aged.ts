@@ -43,7 +43,7 @@ export default class CrawlAged {
     const errors = await storage.tracking.getAllErrors("*");
     const lastCrawls = await storage.tracking.listAllLastCrawl();
 
-    console.log("Record Counts", magazines.length);
+    logging.info("Record Counts", magazines.length);
 
     const healthData: any = [];
 
@@ -84,8 +84,7 @@ export default class CrawlAged {
 
           return age;
         } catch (e) {
-          console.error(e);
-          console.log(record);
+          logging.error(record, e);
 
           return 0;
         }
@@ -141,8 +140,9 @@ export default class CrawlAged {
       ...errorAgeDistribution.buckets,
     });
 
-    console.log("Data Age Distribution");
-    console.table(healthData, [
+    // logging.info("Data Age Distribution");
+    // console.log("Age Distribution (in milliseconds):");
+    logging.table("Data Age Distribution", healthData, [
       "table",
       "1-2 hours",
       "2-4 hours",
@@ -211,7 +211,7 @@ export default class CrawlAged {
       // if (!community) return true;
 
       if (!community.lastCrawled) {
-        console.log("no lastCrawled", community.community.actor_id);
+        logging.warn("no lastCrawled", community.community.actor_id);
         setByBase(community);
         return true;
       }
@@ -244,7 +244,7 @@ export default class CrawlAged {
       .sort((a, b) => a.count - b.count)
       .filter((a) => a.count > 100);
 
-    console.table(baseCounts);
+    logging.table("baseCounts", baseCounts);
 
     for (const community of agedCommunities) {
       const baseUrl = community.community.actor_id.split("/")[2];

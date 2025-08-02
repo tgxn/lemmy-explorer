@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
@@ -29,7 +29,10 @@ import InstanceFilter from "../components/Shared/InstanceFilter";
 import CommunityGrid from "./GridView/Community";
 import CommunityList from "./ListView/Community";
 
-function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = false }) {
+export default function Communities({ filterBaseUrl = false }) {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -340,9 +343,3 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
     </Box>
   );
 }
-
-const mapStateToProps = (state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-  filteredInstances: state.configReducer.filteredInstances,
-});
-export default connect(mapStateToProps)(Communities);

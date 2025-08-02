@@ -1,17 +1,12 @@
 import path from "node:path";
-import { open, rm, mkdir, FileHandle, readdir, stat } from "node:fs/promises";
+import { rm, mkdir, writeFile, readdir, stat } from "node:fs/promises";
 
 import { OUTPUT_DIR } from "../lib/const";
+import logging from "../lib/logging";
 
-import {
-  IMetaDataOutput,
-  IInstanceDataOutput,
-  ICommunityDataOutput,
-  IMBinInstanceOutput,
-  IMBinMagazineOutput,
-  IFediverseDataOutput,
-  IClassifiedErrorOutput,
-} from "../../../types/output";
+import { IMetaDataOutput, IInstanceDataOutput, ICommunityDataOutput } from "../../../types/output";
+
+import { BaseURL } from "../../../types/basic";
 
 /**
  * OutputFileWriter - This class handles writing the output JSON files.
@@ -110,7 +105,7 @@ export default class OutputFileWriter {
     this.piefedCommunitiesPerFile = 500;
   }
 
-  async storeInstanceData(instanceArray) {
+  async storeInstanceData(instanceArray: IInstanceDataOutput[]): Promise<void> {
     await this.storeChunkedData("instance", this.instancesPerFile, instanceArray);
 
     // minified version, just names and base urls
@@ -125,7 +120,7 @@ export default class OutputFileWriter {
     await this.writeJsonFile(`${this.publicDataFolder}/instance.min.json`, JSON.stringify(minInstanceArray));
   }
 
-  async storeCommunityData(communityArray) {
+  async storeCommunityData(communityArray: ICommunityDataOutput[]): Promise<void> {
     await this.storeChunkedData("community", this.communitiesPerFile, communityArray);
 
     for (let i = 0; i < communityArray.length; i++) {
@@ -183,7 +178,10 @@ export default class OutputFileWriter {
   /**
    * this method is used to store the community metrics data
    */
-  public async storeCommunityMetricsData(instanceBaseUrl: string, communityData: any) {
+  public async storeCommunityMetricsData(
+    instanceBaseUrl: BaseURL,
+    communityData: ICommunityDataOutput,
+  ): Promise<void> {
     // make sure the directory exists for the instance
     await mkdir(`${this.communityMetricsPath}/${instanceBaseUrl}`, {
       recursive: true,
@@ -236,7 +234,7 @@ export default class OutputFileWriter {
   /**
    * this method is used to split the data into smaller files for easier loading
    */
-  private async storeChunkedData(chunkName: string, perFile: number, dataArray: []): Promise<void> {
+  private async storeChunkedData(chunkName: string, perFile: number, dataArray: any[]): Promise<void> {
     await this.writeJsonFile(`${this.publicDataFolder}/${chunkName}.full.json`, JSON.stringify(dataArray));
 
     // mapped versions and the metadata
@@ -267,13 +265,11 @@ export default class OutputFileWriter {
    * this method is used to write a JSON file
    */
   private async writeJsonFile(fileName: string, data: string): Promise<void> {
-    let filehandle: FileHandle | null = null;
     try {
-      filehandle = await open(fileName, "w");
-
-      await filehandle?.writeFile(data);
-    } finally {
-      await filehandle?.close();
+      await writeFile(fileName, data);
+    } catch (err) {
+      logging.error(`Failed to write ${fileName}`, err);
+      throw err;
     }
   }
 
@@ -314,7 +310,7 @@ export default class OutputFileWriter {
     }));
 
     //  output to a table
-    console.table(topFiles, ["name", "size"]);
+    logging.table("topFiles", topFiles, ["name", "size"]);
   }
 
   // get the size of a directory recursively

@@ -50,7 +50,7 @@ export type IInstanceDataOutput = {
   metrics: Object | null;
   tags: string[];
   susReason: string[];
-  trust: [];
+  trust: any;
   blocks: {
     incoming: number;
     outgoing: number;

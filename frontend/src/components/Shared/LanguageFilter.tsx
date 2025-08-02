@@ -2,10 +2,9 @@ import React from "react";
 
 import Autocomplete from "@mui/joy/Autocomplete";
 
-import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import LanguageIcon from "@mui/icons-material/Language";
 
-import { DEFAULT_LANGS, BETTER_LANGS_LIST } from "../../lib/const";
+import { BETTER_LANGS_LIST } from "../../lib/const";
 
 type ILanguageFilterProps = {
   languageCodes: string[];

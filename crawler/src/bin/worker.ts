@@ -58,10 +58,10 @@ export default async function startWorker(startWorkerName: string) {
 
         const aged = new CrawlAged();
         await aged.createJobs();
-
-        await storage.close();
       } catch (e) {
         logging.error("Error in Aged Cron Task", e);
+      } finally {
+        await storage.close();
       }
     });
 
@@ -79,48 +79,64 @@ export default async function startWorker(startWorkerName: string) {
     // shares CRON_SCHEDULES.MBIN
     logging.info("Creating MBin Cron Task", CRON_SCHEDULES.MBIN);
     cron.schedule(CRON_SCHEDULES.MBIN, async (time) => {
-      logging.info("Running MBin Cron Task", time);
-      await storage.connect();
+      try {
+        logging.info("Running MBin Cron Task", time);
+        await storage.connect();
 
-      const mbinScan = new CrawlMBin();
-      await mbinScan.createJobsAllMBin();
-
-      await storage.close();
+        const mbinScan = new CrawlMBin();
+        await mbinScan.createJobsAllMBin();
+      } catch (e) {
+        logging.error("Error in MBin Cron Task", e);
+      } finally {
+        await storage.close();
+      }
     });
 
     // shares CRON_SCHEDULES.PIEFED
     logging.info("Creating Piefed Cron Task", CRON_SCHEDULES.PIEFED);
     cron.schedule(CRON_SCHEDULES.PIEFED, async (time) => {
-      logging.info("Running Piefed Cron Task", time);
-      await storage.connect();
+      try {
+        logging.info("Running Piefed Cron Task", time);
+        await storage.connect();
 
-      const piefedScan = new CrawlPiefed();
-      await piefedScan.createJobsAllPiefed();
-
-      await storage.close();
+        const piefedScan = new CrawlPiefed();
+        await piefedScan.createJobsAllPiefed();
+      } catch (e) {
+        logging.error("Error in Piefed Cron Task", e);
+      } finally {
+        await storage.close();
+      }
     });
 
     logging.info("Creating Uptime Cron Task", CRON_SCHEDULES.UPTIME);
     cron.schedule(CRON_SCHEDULES.UPTIME, async (time) => {
-      logging.info("Running Uptime Cron Task", time);
-      await storage.connect();
+      try {
+        logging.info("Running Uptime Cron Task", time);
+        await storage.connect();
 
-      const uptime = new CrawlUptime();
-      await uptime.crawl();
-
-      await storage.close();
+        const uptime = new CrawlUptime();
+        await uptime.crawl();
+      } catch (e) {
+        logging.error("Error in Uptime Cron Task", e);
+      } finally {
+        await storage.close();
+      }
     });
 
     // Crawl Fediseer
     logging.info("Creating CrawlFediseer Cron Task", CRON_SCHEDULES.FEDISEER);
     cron.schedule(CRON_SCHEDULES.FEDISEER, async (time) => {
-      logging.info("Running CrawlFediseer Cron Task", time);
-      await storage.connect();
+      try {
+        logging.info("Running CrawlFediseer Cron Task", time);
+        await storage.connect();
 
-      const fediseerCrawl = new CrawlFediseer();
-      await fediseerCrawl.crawl();
-
-      await storage.close();
+        const fediseerCrawl = new CrawlFediseer();
+        await fediseerCrawl.crawl();
+      } catch (e) {
+        logging.error("Error in CrawlFediseer Cron Task", e);
+      } finally {
+        await storage.close();
+      }
     });
 
     logging.info("Cron Tasks Created");

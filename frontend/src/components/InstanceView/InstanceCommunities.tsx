@@ -1,14 +1,16 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import useCachedMultipart from "../../hooks/useCachedMultipart";
 import Box from "@mui/joy/Box";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../Shared/Display";
+import { LinearValueLoader, PageError } from "../Shared/Display";
 
 import Communities from "../Communities";
 
-function InstanceCommunities({ instance, homeBaseUrl }) {
+export default function InstanceCommunities({ instance }) {
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
     "communityData",
     "community",
@@ -31,8 +33,3 @@ function InstanceCommunities({ instance, homeBaseUrl }) {
     </Box>
   );
 }
-
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-export default connect(mapStateToProps)(InstanceCommunities);

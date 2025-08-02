@@ -1,4 +1,4 @@
-import React, { useMemo, PureComponent } from "react";
+import React, { useMemo } from "react";
 
 import useQueryCache from "../../hooks/useQueryCache";
 import moment from "moment";

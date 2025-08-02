@@ -5,10 +5,6 @@ import { Column } from "react-virtualized";
 import Avatar from "@mui/joy/Avatar";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
-import Link from "@mui/joy/Link";
-import Tooltip from "@mui/joy/Tooltip";
-
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import VirtualTable from "./VirtualTable";
 
@@ -75,6 +71,7 @@ function CommunityList({ items }: ICommunityListProps) {
                     }}
                   >
                     <ExtCommunityLink
+                      baseType="lemmy"
                       community={rowData}
                       sx={{
                         color: "var(--joy-palette-primary-50)",

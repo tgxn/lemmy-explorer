@@ -6,7 +6,6 @@ import { useTheme } from "@mui/joy/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 import Box from "@mui/joy/Box";
-import Sheet from "@mui/joy/Sheet";
 import Menu from "@mui/joy/Menu";
 import IconButton from "@mui/joy/IconButton";
 import Tooltip from "@mui/joy/Tooltip";

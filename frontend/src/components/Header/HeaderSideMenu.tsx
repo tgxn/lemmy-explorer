@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import Moment from "react-moment";
 
@@ -14,10 +14,6 @@ import Menu from "@mui/joy/Menu";
 import MenuItem from "@mui/joy/MenuItem";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListDivider from "@mui/joy/ListDivider";
-
-// import SvgIcon from "@mui/material/SvgIcon";
-// import MBinIcon from "./MBinIcon";
-// import PiefedIcon from "./PiefedIcon";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
@@ -94,12 +90,10 @@ function ColorSchemeToggle({ onClick, variant, ...props }: IColorSchemeTogglePro
   );
 }
 
-type IHeaderSideMenuProps = {
-  filterSuspicious: boolean;
-  dispatch: Function;
-};
+export default function HeaderSideMenu() {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const dispatch = useDispatch();
 
-function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -288,7 +282,3 @@ function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
     </>
   );
 }
-const mapStateToProps = (state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-});
-export default connect(mapStateToProps)(HeaderSideMenu);
