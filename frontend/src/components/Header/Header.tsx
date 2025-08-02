@@ -10,52 +10,12 @@ import Box from "@mui/joy/Box";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
 import Tab from "@mui/joy/Tab";
-// import Typography from "@mui/joy/Typography";
 
 import { SimpleNumberFormat } from "../Shared/Display";
 import HeaderSideMenu from "./HeaderSideMenu";
 import HeaderMainButton from "./HeaderMainButton";
 
 import { setHomeInstance } from "../../reducers/configReducer";
-
-// export default function MobileMenu() {
-//   const buttonRef = React.useRef(null);
-//   const [open, setOpen] = React.useState(false);
-
-//   const handleClose = () => {
-//     setOpen(false);
-//   };
-
-//   return (
-//     <div>
-//       <Button
-//         ref={buttonRef}
-//         id="basic-demo-button"
-//         aria-controls={'basic-menu'}
-//         aria-haspopup="true"
-//         aria-expanded={open ? 'true' : undefined}
-//         variant="outlined"
-//         color="neutral"
-//         onClick={() => {
-//           setOpen(!open);
-//         }}
-//       >
-//         Dashboard
-//       </Button>
-//       <Menu
-//         id="basic-menu"
-//         anchorEl={buttonRef.current}
-//         open={open}
-//         onClose={handleClose}
-//         aria-labelledby="basic-demo-button"
-//       >
-//         <MenuItem onClick={handleClose}>Profile</MenuItem>
-//         <MenuItem onClick={handleClose}>My account</MenuItem>
-//         <MenuItem onClick={handleClose}>Logout</MenuItem>
-//       </Menu>
-//     </div>
-//   );
-// }
 
 export default function Header() {
   const [searchParams, setSearchParams] = useSearchParams();

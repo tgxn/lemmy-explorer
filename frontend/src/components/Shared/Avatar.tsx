@@ -18,7 +18,7 @@ export function IconAvatar({ src, alt }: { src: string; alt: string }) {
   return <Avatar alt={alt} src={src} size="lg" sx={style} />;
 }
 
-const InstanceAvatarBase = React.memo(function ({
+function InstanceAvatarBase({
   instance,
   homeBaseUrl,
   dispatch,
@@ -93,7 +93,7 @@ const InstanceAvatarBase = React.memo(function ({
       </Tooltip>
     </Badge>
   );
-});
+}
 
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
