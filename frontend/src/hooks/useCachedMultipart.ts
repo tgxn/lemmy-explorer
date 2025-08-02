@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
 import axios from "axios";
-import { useQuery, useQueries } from "@tanstack/react-query";
+import { QueryKey, UseQueryResult, useQuery } from "@tanstack/react-query";
 
-export default function useCachedMultipart(queryKey: string, metadataPath: string) {
-  // load metadata
-  const {
-    isSuccess: isMetaSuccess,
-    isLoading: isMetaLoading,
-    isError: isMetaError,
-    error: metaError,
-    data: meta,
-    isFetching: isMetaFetching,
-  } = useQuery({
-    queryKey: [queryKey, metadataPath],
+interface Metadata {
+  count: number;
+}
+
+interface HookResult<T> {
+  isLoading: boolean;
+  loadingPercent: number;
+  isSuccess: boolean;
+  isError: boolean;
+  error: any;
+  data: T[] | null;
+}
+
+export default function useCachedMultipart<T = any>(
+  queryKey: QueryKey | string,
+  metadataPath: string,
+): HookResult<T> {
+  const [loadedChunks, setLoadedChunks] = useState(0);
+
+  const metaQuery: UseQueryResult<Metadata, Error> = useQuery({
+    queryKey: [queryKey, metadataPath, "meta"],
     queryFn: () =>
       axios
-        .get(`/data/${metadataPath}.json`, {
+        .get<Metadata>(`/data/${metadataPath}.json`, {
           timeout: 15000,
         })
         .then((res) => res.data),
@@ -27,60 +37,74 @@ export default function useCachedMultipart(queryKey: string, metadataPath: strin
     cacheTime: Infinity,
   });
 
-  const [pageQueries, setPageQueries] = useState([]);
+  const dataQuery: UseQueryResult<T[], Error> = useQuery({
+    queryKey: [queryKey, metadataPath, "data"],
+    enabled: metaQuery.isSuccess,
+    queryFn: async () => {
+      const requests: Promise<T[]>[] = Array.from({ length: metaQuery.data?.count ?? 0 }, (_, i) =>
+        axios
+          .get<T[]>(`/data/${metadataPath}/${i}.json`, {
+            timeout: 15000,
+          })
+          .then((res) => {
+            setLoadedChunks((c) => c + 1);
+            return res.data;
+          }),
+      );
 
-  const results: any = useQueries({
-    queries: pageQueries,
+      const results = await Promise.all(requests);
+      return results.flat();
+    },
+    retry: 2,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
+    cacheTime: Infinity,
   });
 
-  useEffect(() => {
-    if (isMetaSuccess) {
-      const dataFileCount = meta.count;
+  const loadingPercent = metaQuery.data?.count ? (loadedChunks / metaQuery.data.count) * 100 : 0;
 
-      const queries = [];
+  // useEffect(() => {
+  //   if (isMetaSuccess) {
+  //     const dataFileCount = meta.count;
 
-      for (let i = 0; i < dataFileCount; i++) {
-        queries.push({
-          queryKey: [queryKey, metadataPath, i],
-          queryFn: () =>
-            axios
-              .get(`/data/${metadataPath}/${i}.json`, {
-                timeout: 15000,
-              })
-              .then((res) => res.data),
-          retry: 2,
-          refetchOnWindowFocus: false,
-          refetchOnMount: false,
-          staleTime: Infinity,
-          cacheTime: Infinity,
-        });
-      }
+  //     const queries = [];
 
-      // results.queries = queries;
-      setPageQueries(queries);
-    }
-  }, [isMetaSuccess]);
+  //     for (let i = 0; i < dataFileCount; i++) {
+  //       queries.push({
+  //         queryKey: [queryKey, metadataPath, i],
+  //         queryFn: () =>
+  //           axios
+  //             .get(`/data/${metadataPath}/${i}.json`, {
+  //               timeout: 15000,
+  //             })
+  //             .then((res) => res.data),
+  //         retry: 2,
+  //         refetchOnWindowFocus: false,
+  //         refetchOnMount: false,
+  //         staleTime: Infinity,
+  //         cacheTime: Infinity,
+  //       });
+  //     }
 
-  if (results.length > 0 && results.every((result) => result.isSuccess)) {
-    console.log("useCachedMultipart useEffect", results);
-    console.log("all results are success");
+  //     // results.queries = queries;
+  //     setPageQueries(queries);
+  //   }
+  // }, [isMetaSuccess]);
 
-    // concat all the `data` key (which is an array) into one big array
-    const resultsData = results.map((result) => result.data).flat();
-
+  if (dataQuery.isSuccess) {
     return {
       isLoading: false,
       loadingPercent: 100,
       isSuccess: true,
       isError: false,
       error: null,
-      data: resultsData,
+      data: dataQuery.data,
     };
   }
 
   // error result
-  if (results.length > 0 && results.some((result) => result.isError)) {
-    console.log("useCachedMultipart useEffect", results);
+  if (dataQuery.isError) {
     console.log("some results are error");
 
     return {
@@ -88,16 +112,16 @@ export default function useCachedMultipart(queryKey: string, metadataPath: strin
       loadingPercent: 100,
       isSuccess: false,
       isError: true,
-      error: results.find((result) => result.isError).error.message,
+      error: dataQuery.error,
       data: null,
     };
   }
 
-  let loadingPercent = 0;
-  if (results.length > 0) {
-    loadingPercent = results.filter((result) => result.isSuccess).length / results.length;
-    loadingPercent = loadingPercent * 100;
-  }
+  // let loadingPercent = 0;
+  // if (results.length > 0) {
+  //   loadingPercent = results.filter((result) => result.isSuccess).length / results.length;
+  //   loadingPercent = loadingPercent * 100;
+  // }
   console.log("useCachedMultipart loadingPercent", loadingPercent);
 
   return {
