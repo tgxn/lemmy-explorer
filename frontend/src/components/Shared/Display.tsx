@@ -12,7 +12,7 @@ type IContentSkeletonProps = {
   radius?: string;
 };
 
-export const ContentSkeleton = React.memo(function ({ radius = "4px" }: IContentSkeletonProps) {
+export function ContentSkeleton({ radius = "4px" }: IContentSkeletonProps) {
   return (
     <Box
       sx={(theme) => ({
@@ -37,14 +37,14 @@ export const ContentSkeleton = React.memo(function ({ radius = "4px" }: IContent
       />
     </Box>
   );
-});
+}
 
 type IContentErrorProps = {
   message?: string;
   bgcolor?: string;
 };
 
-export const ContentError = React.memo(function ({ message, bgcolor = "#ff55551c" }: IContentErrorProps) {
+export function ContentError({ message, bgcolor = "#ff55551c" }: IContentErrorProps) {
   return (
     <Box
       component="div"
@@ -71,9 +71,9 @@ export const ContentError = React.memo(function ({ message, bgcolor = "#ff55551c
       </>
     </Box>
   );
-});
+}
 
-export const PageLoading = React.memo(function () {
+export function PageLoading() {
   return (
     <Box
       sx={{
@@ -109,13 +109,13 @@ export const PageLoading = React.memo(function () {
       </LinearProgress>
     </Box>
   );
-});
+}
 
 type IPageErrorProps = {
   error?: string;
 };
 
-export const PageError = React.memo(function ({ error }: IPageErrorProps) {
+export function PageError({ error }: IPageErrorProps) {
   return (
     <Box
       sx={(theme) => ({
@@ -141,22 +141,22 @@ export const PageError = React.memo(function ({ error }: IPageErrorProps) {
       )}
     </Box>
   );
-});
+}
 
 type ISimpleNumberFormatProps = {
   value: number;
   displayType?: "input" | "text" | undefined;
 };
 
-export const SimpleNumberFormat = React.memo(({ value, displayType = "text" }: ISimpleNumberFormatProps) => {
+export function SimpleNumberFormat({ value, displayType = "text" }: ISimpleNumberFormatProps) {
   return <NumericFormat displayType={displayType} value={value} allowLeadingZeros thousandSeparator="," />;
-});
+}
 
 type ITinyNumberProps = {
   value: number;
 };
 
-export const TinyNumber = React.memo(({ value }: ITinyNumberProps) => {
+export function TinyNumber({ value }: ITinyNumberProps) {
   const number = React.useMemo(() => {
     if (value >= 1000000) {
       return (value / 1000000).toFixed(1).replace(/\.0$/, "") + "m";
@@ -168,13 +168,13 @@ export const TinyNumber = React.memo(({ value }: ITinyNumberProps) => {
   }, [value]);
 
   return <React.Fragment>{number}</React.Fragment>;
-});
+}
 
 type IBannerImageProps = {
   imageSrc: string;
 };
 
-export const BannerImage = React.memo(({ imageSrc }: IBannerImageProps) => {
+export function BannerImage({ imageSrc }: IBannerImageProps) {
   const { src, isLoading, error } = useImage({
     srcList: imageSrc,
     useSuspense: false,
@@ -202,49 +202,47 @@ export const BannerImage = React.memo(({ imageSrc }: IBannerImageProps) => {
       )}
     </React.Fragment>
   );
-});
+}
 
 type ILinerValueLoaderProps = {
   message?: string;
   progress?: number;
 };
 
-export const LinearValueLoader = React.memo(
-  ({ message = "Loading...", progress = 0 }: ILinerValueLoaderProps) => {
-    return (
-      <Box
+export function LinearValueLoader({ message = "Loading...", progress = 0 }: ILinerValueLoaderProps) {
+  return (
+    <Box
+      sx={{
+        p: 0,
+        mt: 5,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <LinearProgress
+        determinate
+        variant="outlined"
+        color="neutral"
+        thickness={32}
+        value={progress}
         sx={{
-          p: 0,
-          mt: 5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          maxWidth: "80%",
+          "--LinearProgress-radius": "8px",
+          "--LinearProgress-progressThickness": "24px",
+          boxShadow: "sm",
+          borderColor: "grey.500",
         }}
       >
-        <LinearProgress
-          determinate
-          variant="outlined"
-          color="neutral"
-          thickness={32}
-          value={progress}
-          sx={{
-            maxWidth: "80%",
-            "--LinearProgress-radius": "8px",
-            "--LinearProgress-progressThickness": "24px",
-            boxShadow: "sm",
-            borderColor: "grey.500",
-          }}
+        <Typography
+          level="body3"
+          fontWeight="xl"
+          textColor="common.white"
+          sx={{ mixBlendMode: "difference" }}
         >
-          <Typography
-            level="body3"
-            fontWeight="xl"
-            textColor="common.white"
-            sx={{ mixBlendMode: "difference" }}
-          >
-            {message} {`${Math.round(progress)}%`}
-          </Typography>
-        </LinearProgress>
-      </Box>
-    );
-  },
-);
+          {message} {`${Math.round(progress)}%`}
+        </Typography>
+      </LinearProgress>
+    </Box>
+  );
+}

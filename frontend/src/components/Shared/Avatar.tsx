@@ -9,14 +9,14 @@ import HomeIcon from "@mui/icons-material/Home";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
-export const IconAvatar = React.memo(function ({ src, alt }: { src: string; alt: string }) {
+export function IconAvatar({ src, alt }: { src: string; alt: string }) {
   let style = {
     display: "flex",
     borderRadius: 8,
     bgcolor: "background.level1",
   };
   return <Avatar alt={alt} src={src} size="lg" sx={style} />;
-});
+}
 
 const InstanceAvatarBase = React.memo(function ({
   instance,

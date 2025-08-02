@@ -30,7 +30,7 @@ import MBinList from "../components/ListView/MBin";
 
 import { IMBinMagazineOutput } from "../../../types/output";
 
-function MBinMagazines() {
+export default function MBinMagazines() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const {
@@ -321,4 +321,3 @@ function MBinMagazines() {
     </Container>
   );
 }
-export default React.memo(MBinMagazines);

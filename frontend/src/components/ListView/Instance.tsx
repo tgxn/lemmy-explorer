@@ -26,7 +26,7 @@ type IInstanceListProps = {
   items: any[];
 };
 
-const InstanceList = React.memo(function ({ items }: IInstanceListProps) {
+function InstanceList({ items }: IInstanceListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -267,5 +267,6 @@ const InstanceList = React.memo(function ({ items }: IInstanceListProps) {
       ]}
     </VirtualTable>
   );
-});
-export default InstanceList;
+}
+
+export default React.memo(InstanceList);
