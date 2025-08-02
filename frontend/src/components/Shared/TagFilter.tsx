@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -55,13 +55,17 @@ import { Tooltip } from "@mui/joy";
 
 type ICustomFilterToggleProps = {
   tagValue: string;
-  filteredTags: any;
-  dispatch: any;
-  [key: string]: any;
+  // filteredTags: any;
+  // dispatch: any;
+  // [key: string]: any;
 };
 
 const CustomFilterToggle = React.memo((props: ICustomFilterToggleProps) => {
-  const { tagValue, filteredTags, dispatch, ...other } = props;
+  const { tagValue } = props;
+  const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
+  const dispatch = useDispatch();
+
+  // const { tagValue, filteredTags, dispatch, ...other } = props;
 
   const currentFilter = React.useMemo(() => {
     return filteredTags.find((instance) => instance.tag == tagValue);
@@ -149,10 +153,6 @@ const CustomFilterToggle = React.memo((props: ICustomFilterToggleProps) => {
   );
 });
 
-const ConnectedFilterToggle = connect((state: any) => ({
-  filteredTags: state.configReducer.filteredTags,
-}))(CustomFilterToggle);
-
 function renderRow(props) {
   const { data, index, style } = props;
   const dataSet = data[index];
@@ -210,7 +210,7 @@ function renderRow(props) {
             {dataSet.tag} ({dataSet.count})
           </>
         </FormLabel>
-        <ConnectedFilterToggle tagValue={dataSet.tag} />
+        <CustomFilterToggle tagValue={dataSet.tag} />
       </FormControl>
     </ListItem>
   );

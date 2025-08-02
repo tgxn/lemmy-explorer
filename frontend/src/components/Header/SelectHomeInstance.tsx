@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 
@@ -128,7 +128,9 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   );
 });
 
-function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
+export default function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
+  const homeInstance = useSelector((state: any) => state.configReducer.homeInstance);
+
   const {
     isLoading: loadingIns,
     error: errorIns,
@@ -258,8 +260,3 @@ function SelectHomeInstance({ onSetMBin, onSetPiefed, homeBaseUrl, dispatch }) {
     </FormControl>
   );
 }
-
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-export default connect(mapStateToProps)(SelectHomeInstance);

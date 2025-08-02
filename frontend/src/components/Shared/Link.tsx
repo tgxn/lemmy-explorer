@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import Link from "@mui/joy/Link";
 import Tooltip from "@mui/joy/Tooltip";
@@ -58,12 +58,15 @@ type ICommunityLinkProps = {
     name: string;
     title: string;
   };
-  homeBaseUrl: string;
-  instanceType: string;
+  // homeBaseUrl: string;
+  // instanceType: string;
   [key: string]: any;
 };
 
-function CommunityLink({ baseType, community, homeBaseUrl, instanceType, ...props }: ICommunityLinkProps) {
+export function ExtCommunityLink({ baseType, community, ...props }: ICommunityLinkProps) {
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+  const instanceType = useSelector((state: any) => state.configReducer.instanceType);
+
   const [instanceLink, tooltipTitle] = React.useMemo(() => {
     let instanceLink = `https://${community.baseurl}/c/${community.name}`;
     let tooltipTitle = `${community.baseurl}/c/${community.name}`;
@@ -114,16 +117,6 @@ function CommunityLink({ baseType, community, homeBaseUrl, instanceType, ...prop
   );
 }
 
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-  instanceType: state.configReducer.instanceType,
-});
-export const ExtCommunityLink = connect(mapStateToProps)(CommunityLink);
-
-export function ExtInstanceLink({ instance, ...props }) {
-  return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
-}
-
 export function ExtLink({ linkName, linkUrl, target = "_blank", ...props }) {
   return (
     <Link
@@ -143,4 +136,8 @@ export function ExtLink({ linkName, linkUrl, target = "_blank", ...props }) {
       {linkName} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
     </Link>
   );
+}
+
+export function ExtInstanceLink({ instance, ...props }) {
+  return <ExtLink linkName={instance.name} linkUrl={instance.url} {...props} />;
 }

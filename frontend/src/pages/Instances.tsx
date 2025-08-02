@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useCachedMultipart from "../hooks/useCachedMultipart";
@@ -34,7 +34,10 @@ import InstanceList from "../components/ListView/Instance";
 
 import TagFilter from "../components/Shared/TagFilter";
 
-function Instances({ filterSuspicious, filteredTags }) {
+export default function Instances() {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -398,9 +401,3 @@ function Instances({ filterSuspicious, filteredTags }) {
     </Container>
   );
 }
-
-const mapStateToProps = (state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-  filteredTags: state.configReducer.filteredTags,
-});
-export default connect(mapStateToProps)(Instances);

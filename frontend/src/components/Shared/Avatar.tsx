@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import Avatar from "@mui/joy/Avatar";
 import Tooltip from "@mui/joy/Tooltip";
@@ -18,15 +18,10 @@ export function IconAvatar({ src, alt }: { src: string; alt: string }) {
   return <Avatar alt={alt} src={src} size="lg" sx={style} />;
 }
 
-const InstanceAvatarBase = React.memo(function ({
-  instance,
-  homeBaseUrl,
-  dispatch,
-}: {
-  instance: any;
-  homeBaseUrl: string;
-  dispatch: any;
-}) {
+export const InstanceAvatar = React.memo(function ({ instance }: { instance: any }) {
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+  const dispatch = useDispatch();
+
   const [isHover, setIsHover] = React.useState(false);
   const isHomeUrl = homeBaseUrl == instance.baseurl;
 
@@ -94,8 +89,3 @@ const InstanceAvatarBase = React.memo(function ({
     </Badge>
   );
 });
-
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-export const InstanceAvatar = connect(mapStateToProps)(InstanceAvatarBase);

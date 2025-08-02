@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import Moment from "react-moment";
 
@@ -94,12 +94,10 @@ function ColorSchemeToggle({ onClick, variant, ...props }: IColorSchemeTogglePro
   );
 }
 
-type IHeaderSideMenuProps = {
-  filterSuspicious: boolean;
-  dispatch: Function;
-};
+export default function HeaderSideMenu() {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const dispatch = useDispatch();
 
-function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -288,7 +286,3 @@ function HeaderSideMenu({ filterSuspicious, dispatch }: IHeaderSideMenuProps) {
     </>
   );
 }
-const mapStateToProps = (state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-});
-export default connect(mapStateToProps)(HeaderSideMenu);
