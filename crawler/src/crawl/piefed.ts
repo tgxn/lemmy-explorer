@@ -215,32 +215,37 @@ export default class CrawlPiefed {
   }
 
   async crawlFederatedInstances(crawlDomain: string) {
-    const fedReq = await this.client.getUrlWithRetry(
-      "https://" + crawlDomain + "/api/alpha/federated_instances",
-    );
+    try {
+      const fedReq = await this.client.getUrlWithRetry(
+        "https://" + crawlDomain + "/api/alpha/federated_instances",
+      );
 
-    const federatedInstances = fedReq.data.federated_instances.linked;
+      const federatedInstances = fedReq.data.federated_instances.linked;
 
-    logging.info(`${this.logPrefix} [${crawlDomain}] federatedInstances`, federatedInstances.length);
+      logging.info(`${this.logPrefix} [${crawlDomain}] federatedInstances`, federatedInstances.length);
 
-    for (var instance of federatedInstances) {
-      // if it has a software and domain, we put it in fediverse table
-      if (instance.domain && instance.software) {
-        await storage.fediverse.upsert(instance.domain, {
-          name: instance.software,
-          version: instance.version,
-          time: Date.now(),
-        });
-        // logging.info(`${this.logPrefix} [${crawlDomain}] upserted ${instance.software}:${instance.domain}`);
+      for (var instance of federatedInstances) {
+        // if it has a software and domain, we put it in fediverse table
+        if (instance.domain && instance.software) {
+          await storage.fediverse.upsert(instance.domain, {
+            name: instance.software,
+            version: instance.version,
+            time: Date.now(),
+          });
+          // logging.info(`${this.logPrefix} [${crawlDomain}] upserted ${instance.software}:${instance.domain}`);
+        }
+
+        if (instance.software === "piefed") {
+          logging.info(`${this.logPrefix} [${crawlDomain}] create job ${instance.domain}`);
+          this.piefedQueue.createJob(instance.domain);
+        }
       }
 
-      if (instance.software === "piefed") {
-        logging.info(`${this.logPrefix} [${crawlDomain}] create job ${instance.domain}`);
-        this.piefedQueue.createJob(instance.domain);
-      }
+      return federatedInstances;
+    } catch (error) {
+      logging.error(`${this.logPrefix} [${crawlDomain}] error fetching federated instances`, error);
+      throw new CrawlError(`Failed to fetch federated instances for ${crawlDomain}`, error);
     }
-
-    return federatedInstances;
   }
 
   async crawlCommunitiesData(
