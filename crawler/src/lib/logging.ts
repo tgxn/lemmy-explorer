@@ -87,8 +87,10 @@ const logging: ILogging = {
   fatal: (message: string, ...args: any[]) => baseLogger.fatal(message, ...args),
 
   table: (tableTitle: string, ...data: any[]) => {
+    console.log();
     console.info(tableTitle);
     console.table(...data);
+    console.log();
   },
   formatDuration: formatDuration,
 };
