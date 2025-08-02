@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 
 import { useMasonry, usePositioner, useContainerPosition, useScroller } from "masonic";
 
@@ -11,7 +10,7 @@ type ICommunityGridProps = {
   items: any[];
 };
 
-const CommunityGrid = function ({ items }: ICommunityGridProps) {
+function CommunityGrid({ items }: ICommunityGridProps) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -36,5 +35,6 @@ const CommunityGrid = function ({ items }: ICommunityGridProps) {
     overscanBy: 6,
     render: CardAsCallback,
   });
-};
-export default CommunityGrid;
+}
+
+export default React.memo(CommunityGrid);

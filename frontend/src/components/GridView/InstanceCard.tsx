@@ -30,7 +30,7 @@ import { InstanceAvatar } from "../Shared/Avatar";
 
 import CardStatBox from "../Shared/CardStatBox";
 
-export default function InstanceCard({ instance }) {
+function InstanceCard({ instance }) {
   const navigate = useNavigate();
   const { mode } = useColorScheme();
 
@@ -204,3 +204,5 @@ export default function InstanceCard({ instance }) {
     </Card>
   );
 }
+
+export default React.memo(InstanceCard);
