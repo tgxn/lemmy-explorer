@@ -22,6 +22,7 @@ import InstanceOverview from "../components/InstanceView/InstanceOverview";
 import InstanceUserGrowth from "../components/InstanceView/InstanceUserGrowth";
 import InstanceVersions from "../components/InstanceView/InstanceVersions";
 import InstanceCommunities from "../components/InstanceView/InstanceCommunities";
+import InstanceFediseer from "../components/InstanceView/InstanceFediseer";
 
 export default function InstanceView() {
   const params = useParams();
@@ -48,6 +49,8 @@ export default function InstanceView() {
       setTabIndex(2);
     } else if (path.endsWith("version-history")) {
       setTabIndex(3);
+    } else if (path.endsWith("fediseer")) {
+      setTabIndex(4);
     }
   }, []);
 
@@ -68,6 +71,9 @@ export default function InstanceView() {
 
       case 3:
         navigate("version-history");
+        break;
+      case 4:
+        navigate("fediseer");
         break;
     }
   };
@@ -152,6 +158,9 @@ export default function InstanceView() {
               <Tab variant={tabIndex === 3 ? "solid" : "soft"} color={tabIndex === 3 ? "primary" : "neutral"}>
                 Version History
               </Tab>
+              <Tab variant={tabIndex === 4 ? "solid" : "soft"} color={tabIndex === 4 ? "primary" : "neutral"}>
+                Fediseer
+              </Tab>
               {/* <Tab>Instance Debugger</Tab> */}
             </TabList>
           </Tabs>
@@ -173,7 +182,8 @@ export default function InstanceView() {
                 element={
                   <InstanceVersions instance={metricsData.instance} versionSeries={metricsData.versions} />
                 }
-              />
+              />{" "}
+              <Route path="/fediseer" element={<InstanceFediseer instance={metricsData.instance} />} />
             </Routes>
           </Box>
         </Box>
