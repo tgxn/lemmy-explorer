@@ -30,7 +30,7 @@ import PiefedList from "../components/ListView/Piefed";
 
 import { IPiefedCommunityDataOutput } from "../../../types/output";
 
-function PiefedCommunities() {
+export default function PiefedCommunities() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const {
@@ -321,4 +321,3 @@ function PiefedCommunities() {
     </Container>
   );
 }
-export default React.memo(PiefedCommunities);

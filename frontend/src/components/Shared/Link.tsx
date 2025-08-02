@@ -63,58 +63,57 @@ type ICommunityLinkProps = {
   [key: string]: any;
 };
 
-const CommunityLink = React.memo(
-  ({ baseType, community, homeBaseUrl, instanceType, ...props }: ICommunityLinkProps) => {
-    const [instanceLink, tooltipTitle] = React.useMemo(() => {
-      let instanceLink = `https://${community.baseurl}/c/${community.name}`;
-      let tooltipTitle = `${community.baseurl}/c/${community.name}`;
+function CommunityLink({ baseType, community, homeBaseUrl, instanceType, ...props }: ICommunityLinkProps) {
+  const [instanceLink, tooltipTitle] = React.useMemo(() => {
+    let instanceLink = `https://${community.baseurl}/c/${community.name}`;
+    let tooltipTitle = `${community.baseurl}/c/${community.name}`;
 
-      if (baseType == "mbin") {
-        instanceLink = `https://${community.baseurl}/m/${community.name}`;
-        tooltipTitle = `${community.baseurl}/m/${community.name}`;
+    if (baseType == "mbin") {
+      instanceLink = `https://${community.baseurl}/m/${community.name}`;
+      tooltipTitle = `${community.baseurl}/m/${community.name}`;
+    }
+
+    // user has a home instance
+    // note - piefed uses /c/ so does not need it's own selector here
+    if (homeBaseUrl) {
+      // if the user is
+      if (instanceType == "mbin") {
+        instanceLink = `https://${homeBaseUrl}/m/${community.name}`;
+        tooltipTitle = `${homeBaseUrl}/m/${community.name}`;
+      } else {
+        instanceLink = `https://${homeBaseUrl}/c/${community.name}`;
+        tooltipTitle = `${homeBaseUrl}/c/${community.name}`;
       }
 
-      // user has a home instance
-      // note - piefed uses /c/ so does not need it's own selector here
-      if (homeBaseUrl) {
-        // if the user is
-        if (instanceType == "mbin") {
-          instanceLink = `https://${homeBaseUrl}/m/${community.name}`;
-          tooltipTitle = `${homeBaseUrl}/m/${community.name}`;
-        } else {
-          instanceLink = `https://${homeBaseUrl}/c/${community.name}`;
-          tooltipTitle = `${homeBaseUrl}/c/${community.name}`;
-        }
-
-        // if this community isn't on their instance, add the qualifier
-        if (homeBaseUrl != community.baseurl) {
-          instanceLink = `${instanceLink}@${community.baseurl}`;
-          tooltipTitle = `${tooltipTitle}@${community.baseurl}`;
-        }
+      // if this community isn't on their instance, add the qualifier
+      if (homeBaseUrl != community.baseurl) {
+        instanceLink = `${instanceLink}@${community.baseurl}`;
+        tooltipTitle = `${tooltipTitle}@${community.baseurl}`;
       }
+    }
 
-      return [instanceLink, tooltipTitle];
-    }, [community, homeBaseUrl, instanceType]);
+    return [instanceLink, tooltipTitle];
+  }, [community, homeBaseUrl, instanceType]);
 
-    return (
-      <Tooltip title={tooltipTitle} variant="soft" placement="top-start">
-        <Link
-          level="body1"
-          variant="plain"
-          // alt={community.title}
-          color="neutral"
-          href={instanceLink}
-          target="_blank"
-          component={"a"}
-          {...props}
-        >
-          {community.title}
-          <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
-        </Link>
-      </Tooltip>
-    );
-  },
-);
+  return (
+    <Tooltip title={tooltipTitle} variant="soft" placement="top-start">
+      <Link
+        level="body1"
+        variant="plain"
+        // alt={community.title}
+        color="neutral"
+        href={instanceLink}
+        target="_blank"
+        component={"a"}
+        {...props}
+      >
+        {community.title}
+        <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
+      </Link>
+    </Tooltip>
+  );
+}
+
 const mapStateToProps = (state) => ({
   homeBaseUrl: state.configReducer.homeBaseUrl,
   instanceType: state.configReducer.instanceType,
