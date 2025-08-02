@@ -77,7 +77,7 @@ export class OutputUtils {
 
       return stripped.trim();
     } catch (e) {
-      console.error("error stripping markdown", text);
+      logging.error("error stripping markdown", text);
       throw e;
     }
   }
@@ -93,16 +93,16 @@ export class OutputUtils {
 
         // if not a number
         if (isNaN(publishTime)) {
-          console.error("error parsing publish time", lemmyFormatTime);
+          logging.error("error parsing publish time", lemmyFormatTime);
           publishTime = 0;
         }
 
         // console.log("publishTime", publishTime);
       } catch (e) {
-        console.error("error parsing publish time", lemmyFormatTime);
+        logging.error("error parsing publish time", lemmyFormatTime);
       }
     } else {
-      console.error("no publish time", lemmyFormatTime);
+      logging.error("no publish time", lemmyFormatTime);
     }
 
     return publishTime;
@@ -183,7 +183,7 @@ export class OutputUtils {
       return "invalidActorId";
     }
 
-    logging.silly("unhandled error", errorMessage);
+    logging.debug("unhandled error", errorMessage);
     return "unknown";
   }
 

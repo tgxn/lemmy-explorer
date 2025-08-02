@@ -1,6 +1,6 @@
 import logging from "../lib/logging";
 
-import type { ICommunityData } from "../../../types/storage";
+import type { ICommunityData, IErrorData } from "../../../types/storage";
 import type { IJobProcessor } from "../queue/BaseQueue";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
@@ -144,7 +144,7 @@ export default class CommunityCrawler {
       );
 
       if (communityData.data.community_view) {
-        console.log(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
+        logging.debug(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
 
         await this.storeCommunityData(communityData.data.community_view);
 
@@ -274,7 +274,7 @@ export default class CommunityCrawler {
     // if this page had non-zero results
     if (communities.length > 0) {
       // sleep between pages
-      console.log(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
+      logging.debug(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
       await sleepThreadMs(TIME_BETWEEN_PAGES);
       logging.debug(`${this.logPrefix} Page ${pageNumber}, Crawling next page...`);
 
@@ -369,7 +369,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[Community] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
     } else {
-      const errorDetail = {
+      const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,
         isAxiosError: error.isAxiosError,

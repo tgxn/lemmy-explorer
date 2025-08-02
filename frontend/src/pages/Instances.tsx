@@ -27,6 +27,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import { parseVersion, compareVersionStrings } from "../lib/utils";
 
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
@@ -205,6 +206,22 @@ function Instances({ filterSuspicious, filteredTags }) {
       instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
     } else if (orderBy === "comments") {
       instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
+    } else if (orderBy === "version") {
+      instances = instances.sort((a, b) => {
+        const compared = compareVersionStrings(a.version, b.version);
+
+        // if they are the same, we should compare the score
+        if (compared === 0) {
+          return b.score - a.score;
+        }
+
+        // otherwise, return the compared value
+        return compared;
+      });
+      console.log(
+        "Sorted instances by version",
+        instances.map((i) => i.version),
+      );
     } else if (orderBy === "oldest") {
       instances = instances.sort((a, b) => {
         // timestamps are like 2023-06-14 02:30:32
@@ -286,6 +303,7 @@ function Instances({ filterSuspicious, filteredTags }) {
           <Option value="active_month">Active Users (month)</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
+          <Option value="version">Version (newest first)</Option>
           <Option value="oldest">Oldest</Option>
           <Option value="published">Newest Publish Time</Option>
         </Select>

@@ -6,7 +6,7 @@ import logging from "../lib/logging";
 
 import storage from "../lib/crawlStorage";
 import { IFediverseDataKeyValue } from "../../../types/storage";
-import { IPiefedCommunityData } from "../../../types/storage";
+import { IPiefedCommunityData, IErrorData } from "../../../types/storage";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
 
@@ -100,12 +100,12 @@ export default class CrawlPiefed {
       const piefedQueue = new PiefedQueue(false);
       for (const piefedServer of piefedServers) {
         this.logPrefix = `[CrawlPiefed] [${piefedServer.base}]`;
-        console.log(`${this.logPrefix} create job ${piefedServer.base}`);
+        logging.info(`${this.logPrefix} create job ${piefedServer.base}`);
 
         await piefedQueue.createJob(piefedServer.base);
       }
     } catch (e) {
-      console.error(`${this.logPrefix} error scanning piefed instance`, e);
+      logging.error(`${this.logPrefix} error scanning piefed instance`, e);
     }
   }
 
@@ -139,7 +139,7 @@ export default class CrawlPiefed {
   async crawlInstanceData(crawlDomain: string) {
     const nodeInfo = await this.getNodeInfo(crawlDomain);
 
-    console.log(`${this.logPrefix} [${crawlDomain}] nodeInfo`, nodeInfo);
+    logging.info(`${this.logPrefix} [${crawlDomain}] nodeInfo`, nodeInfo);
 
     if (!nodeInfo.software) {
       throw new CrawlError("no software key found for " + crawlDomain);
@@ -154,16 +154,16 @@ export default class CrawlPiefed {
     }
 
     const [siteInfo, siteHeaders] = await this.getSiteInfo(crawlDomain);
-    console.log(`${crawlDomain}: found piefed instance`, siteHeaders, siteInfo);
+    logging.info(`${crawlDomain}: found piefed instance`, siteHeaders, siteInfo);
 
     const actorBaseUrl = getActorBaseUrl(siteInfo.site_view.site.actor_id);
     if (!actorBaseUrl) {
-      console.error(`${crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
+      logging.error(`${crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
       throw new CrawlError(`${crawlDomain}: invalid actor id: ${siteInfo.site_view.site.actor_id}`);
     }
 
     if (actorBaseUrl !== crawlDomain) {
-      console.error(
+      logging.error(
         `${crawlDomain}: actor id does not match instance domain: ${siteInfo.site_view.site.actor_id}`,
       );
       throw new CrawlError(
@@ -177,7 +177,7 @@ export default class CrawlPiefed {
   async getNodeInfo(crawlDomain: string) {
     const wellKnownUrl = "https://" + crawlDomain + "/.well-known/nodeinfo";
 
-    console.log(`${this.logPrefix} [${crawlDomain}] wellKnownUrl`, wellKnownUrl);
+    logging.info(`${this.logPrefix} [${crawlDomain}] wellKnownUrl`, wellKnownUrl);
 
     const wellKnownInfo = await this.client.getUrlWithRetry(
       wellKnownUrl,
@@ -215,32 +215,38 @@ export default class CrawlPiefed {
   }
 
   async crawlFederatedInstances(crawlDomain: string) {
-    const fedReq = await this.client.getUrlWithRetry(
-      "https://" + crawlDomain + "/api/alpha/federated_instances",
-    );
+    try {
+      const fedReq = await this.client.getUrlWithRetry(
+        "https://" + crawlDomain + "/api/alpha/federated_instances",
+      );
 
-    const federatedInstances = fedReq.data.federated_instances.linked;
+      const federatedInstances = fedReq.data.federated_instances.linked;
 
-    console.log(`${this.logPrefix} [${crawlDomain}] federatedInstances`, federatedInstances.length);
+      logging.info(`${this.logPrefix} [${crawlDomain}] federatedInstances`, federatedInstances.length);
 
-    for (var instance of federatedInstances) {
-      // if it has a software and domain, we put it in fediverse table
-      if (instance.domain && instance.software) {
-        await storage.fediverse.upsert(instance.domain, {
-          name: instance.software,
-          version: instance.version,
-          time: Date.now(),
-        });
-        // console.log(`${this.logPrefix} [${crawlDomain}] upserted ${instance.software}:${instance.domain}`);
+      for (var instance of federatedInstances) {
+        // if it has a software and domain, we put it in fediverse table
+        if (instance.domain && instance.software) {
+          await storage.fediverse.upsert(instance.domain, {
+            name: instance.software,
+            version: instance.version,
+            time: Date.now(),
+          });
+          // logging.info(`${this.logPrefix} [${crawlDomain}] upserted ${instance.software}:${instance.domain}`);
+        }
+
+        if (instance.software === "piefed") {
+          logging.info(`${this.logPrefix} [${crawlDomain}] create job ${instance.domain}`);
+          this.piefedQueue.createJob(instance.domain);
+        }
       }
 
-      if (instance.software === "piefed") {
-        console.log(`${this.logPrefix} [${crawlDomain}] create job ${instance.domain}`);
-        this.piefedQueue.createJob(instance.domain);
-      }
+      return federatedInstances;
+    } catch (error) {
+      logging.error(`${this.logPrefix} [${crawlDomain}] error fetching federated instances`, error);
+      // throw new CrawlError(`Failed to fetch federated instances for ${crawlDomain}`, error);
+      return null;
     }
-
-    return federatedInstances;
   }
 
   async crawlCommunitiesData(
@@ -387,11 +393,13 @@ export const piefedInstanceProcessor: IJobProcessor<IIncomingPiefedCommunityData
 
     const instanceData = await crawler.crawlInstanceData(baseUrl);
 
+    logging.info(`[PiefedQueue] [${baseUrl}] instanceData`, instanceData);
+
     await crawler.crawlFederatedInstances(baseUrl);
 
     const communitiesData = await crawler.crawlCommunitiesData(baseUrl);
 
-    console.log("communitiesData", communitiesData.length);
+    logging.debug("communitiesData", communitiesData.length);
 
     await storage.tracking.setLastCrawl("piefed", `${baseUrl}`, instanceData);
 
@@ -406,13 +414,16 @@ export const piefedInstanceProcessor: IJobProcessor<IIncomingPiefedCommunityData
       return true;
     }
 
-    const errorDetail = {
+    const errorDetail: IErrorData = {
       error: error.message,
-      // stack: error.stack,
+      stack: error.stack,
       isAxiosError: error.isAxiosError,
       requestUrl: error.isAxiosError ? error.request.url : null,
       time: Date.now(),
+      duration: Date.now() - startTime,
     };
+
+    logging.error(`[Community] [${baseUrl}] Error: ${error.message}`);
 
     await storage.tracking.upsertError("piefed", baseUrl, errorDetail);
 
