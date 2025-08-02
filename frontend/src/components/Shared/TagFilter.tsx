@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { connect, useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
@@ -12,7 +12,6 @@ import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
-import Switch from "@mui/joy/Switch";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import ModalClose from "@mui/joy/ModalClose";
@@ -24,12 +23,6 @@ import IconButton from "@mui/joy/IconButton";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
-
-// import { ToggleButtonGroup } from "@mui/joy";
-// import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-// import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
-// import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
-// import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 
 import { setFilteredTags } from "../../reducers/configReducer";
 

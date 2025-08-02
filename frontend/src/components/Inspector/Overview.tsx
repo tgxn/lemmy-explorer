@@ -7,10 +7,6 @@ import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
 import Sheet from "@mui/joy/Sheet";
 
-import Card from "@mui/joy/Card";
-import CardOverflow from "@mui/joy/CardOverflow";
-import Typography from "@mui/joy/Typography";
-
 import { NumberStat } from "../Shared/StatGridCards";
 
 export default function InspectorOverview() {

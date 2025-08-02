@@ -8,8 +8,6 @@ import { SimpleNumberFormat } from "../Shared/Display";
 
 import { CartesianGrid, ResponsiveContainer, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
-import { scaleLog } from "d3-scale";
-
 const CustomTooltip = ({ active, payload, label }) => {
   console.info(payload);
   if (active && payload && payload.length) {

@@ -27,7 +27,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
-import { parseVersion, compareVersionStrings } from "../lib/utils";
+import { compareVersionStrings } from "../lib/utils";
 
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";

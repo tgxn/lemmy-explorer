@@ -4,7 +4,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
-import Tab, { tabClasses } from "@mui/joy/Tab";
+import Tab from "@mui/joy/Tab";
 import TabPanel from "@mui/joy/TabPanel";
 
 import Container from "@mui/joy/Container";

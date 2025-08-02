@@ -13,7 +13,7 @@ import ListDivider from "@mui/joy/ListDivider";
 import FormLabel from "@mui/joy/FormLabel";
 import FormHelperText from "@mui/joy/FormHelperText";
 import Typography from "@mui/joy/Typography";
-import Switch, { switchClasses } from "@mui/joy/Switch";
+import Switch from "@mui/joy/Switch";
 
 import CottageIcon from "@mui/icons-material/Cottage";
 import HomeIcon from "@mui/icons-material/Home";
