@@ -7,12 +7,10 @@ import { Column } from "react-virtualized";
 import Avatar from "@mui/joy/Avatar";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
-import Link from "@mui/joy/Link";
 import Tooltip from "@mui/joy/Tooltip";
 
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import RestoreIcon from "@mui/icons-material/Restore";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";

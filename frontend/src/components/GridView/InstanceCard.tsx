@@ -20,7 +20,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import InfoIcon from "@mui/icons-material/Info";
 
-import { TinyNumber, BannerImage } from "../Shared/Display";
+import { BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 

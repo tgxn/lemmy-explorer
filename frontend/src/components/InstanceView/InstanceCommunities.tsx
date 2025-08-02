@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import useCachedMultipart from "../../hooks/useCachedMultipart";
 import Box from "@mui/joy/Box";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../Shared/Display";
+import { LinearValueLoader, PageError } from "../Shared/Display";
 
 import Communities from "../Communities";
 
