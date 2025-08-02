@@ -298,9 +298,9 @@ export class OutputUtils {
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
 
-      // TEMP skip if there are more items in the new payload
+      // increasing amount is totally fine
       if (item.new > item.old) {
-        return;
+        continue;
       }
 
       const isValid = checkChangeIsValid(item.new, item.old);
