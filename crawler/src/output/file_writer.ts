@@ -3,17 +3,9 @@ import { rm, mkdir, writeFile, readdir, stat } from "node:fs/promises";
 
 import { OUTPUT_DIR } from "../lib/const";
 
-import {
-  IMetaDataOutput,
-  IInstanceDataOutput,
-  ICommunityDataOutput,
-  IMBinInstanceOutput,
-  IMBinMagazineOutput,
-  IFediverseDataOutput,
-  IClassifiedErrorOutput,
-} from "../../../types/output";
+import { IMetaDataOutput, IInstanceDataOutput, ICommunityDataOutput } from "../../../types/output";
 
-import { BaseURL, ActorID } from "../../../types/basic";
+import { BaseURL } from "../../../types/basic";
 
 /**
  * OutputFileWriter - This class handles writing the output JSON files.
