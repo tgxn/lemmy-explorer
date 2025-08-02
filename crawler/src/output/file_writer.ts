@@ -310,7 +310,7 @@ export default class OutputFileWriter {
     }));
 
     //  output to a table
-    logging.table(topFiles, ["name", "size"]);
+    logging.table("topFiles", topFiles, ["name", "size"]);
   }
 
   // get the size of a directory recursively

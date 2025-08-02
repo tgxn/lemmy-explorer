@@ -728,8 +728,8 @@ export default class OutputTrust {
     //   } Blocked: ${Object.keys(blockedFederation).length}`
     // );
 
-    logging.info("Global Federation Counts (counts of urls in merged lists)");
-    logging.table({
+    // logging.info("Global Federation Counts (counts of urls in merged lists)");
+    logging.table("Global Federation Counts (counts of urls in merged lists)", {
       linked: Object.keys(linkedFederation).length,
       allowed: Object.keys(allowedFederation).length,
       blocked: Object.keys(blockedFederation).length,

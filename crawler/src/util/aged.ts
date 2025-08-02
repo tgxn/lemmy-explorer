@@ -140,8 +140,9 @@ export default class CrawlAged {
       ...errorAgeDistribution.buckets,
     });
 
-    logging.info("Data Age Distribution");
-    logging.table(healthData, [
+    // logging.info("Data Age Distribution");
+    // console.log("Age Distribution (in milliseconds):");
+    logging.table("Data Age Distribution", healthData, [
       "table",
       "1-2 hours",
       "2-4 hours",
@@ -243,7 +244,7 @@ export default class CrawlAged {
       .sort((a, b) => a.count - b.count)
       .filter((a) => a.count > 100);
 
-    logging.table(baseCounts);
+    logging.table("baseCounts", baseCounts);
 
     for (const community of agedCommunities) {
       const baseUrl = community.community.actor_id.split("/")[2];

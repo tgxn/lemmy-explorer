@@ -511,7 +511,7 @@ export default class CrawlOutput {
     let previousRun: any = await client.getUrl("https://lemmyverse.net/data/meta.json");
     previousRun = previousRun.data;
 
-    logging.debug("Done; Total vs. Output");
+    // logging.debug("Done; Total vs. Output");
 
     function calcChangeDisplay(current: number, previous: number) {
       return `${current > previous ? "+" : ""}${current - previous} (${(
@@ -521,6 +521,7 @@ export default class CrawlOutput {
     }
 
     logging.table(
+      "Done; Total vs. Output",
       {
         Instances: {
           ExportName: "Instances",
@@ -1083,8 +1084,8 @@ export default class CrawlOutput {
     //   }
     // });
 
-    logging.info("Error Types by Count");
-    logging.table(errorTypes);
+    // logging.info("Error Types by Count");
+    logging.table("Error Types by Count", errorTypes);
 
     logging.debug("instanceErrors", instanceErrors.length, errorTypes);
 
