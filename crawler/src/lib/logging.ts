@@ -36,16 +36,22 @@ const levelColours: Record<number, string> = {
   60: "\x1b[1;31m", // fatal - bold red
 };
 
+const stringifyArg = (arg: any) => {
+  if (typeof arg === "string") return arg;
+  try {
+    const json = JSON.stringify(arg);
+    return json === undefined ? String(arg) : json;
+  } catch {
+    return util.inspect(arg, { depth: null, breakLength: Infinity });
+  }
+};
 const formatMessage = (log: Record<string, any>, messageKey: string) => {
-  // const levelLabel = `[${log.levelLabel}]`;
   const baseMsg = log[messageKey] as string;
-  const args = log.args ? util.inspect(log.args, { depth: null }) : "";
   const colour = levelColours[log.level] ?? "";
   const reset = colour ? "\x1b[0m" : "";
 
-  return `${colour}${baseMsg}${args ? " " + args : ""}${reset}`;
+  return `${colour}${baseMsg}${reset}`;
 };
-
 const stream = pretty({
   colorize: true,
   translateTime: "yyyy-mm-dd HH:MM:ss.l",
@@ -78,13 +84,23 @@ type ILogging = {
   formatDuration: (ms: number) => string;
 };
 
+type Level = "trace" | "debug" | "info" | "warn" | "error" | "fatal";
+
+const buildLog = (level: Level): ILogFunction => {
+  return (message: string, ...args: any[]) => {
+    const extra = args.map(stringifyArg).join(" ");
+    const finalMessage = extra ? `${message} ${extra}` : message;
+    (baseLogger as any)[level](finalMessage);
+  };
+};
+
 const logging: ILogging = {
-  trace: (message: string, ...args: any[]) => baseLogger.trace(message, ...args),
-  debug: (message: string, ...args: any[]) => baseLogger.debug(message, ...args),
-  info: (message: string, ...args: any[]) => baseLogger.info(message, ...args),
-  warn: (message: string, ...args: any[]) => baseLogger.warn(message, ...args),
-  error: (message: string, ...args: any[]) => baseLogger.error(message, ...args),
-  fatal: (message: string, ...args: any[]) => baseLogger.fatal(message, ...args),
+  trace: buildLog("trace"),
+  debug: buildLog("debug"),
+  info: buildLog("info"),
+  warn: buildLog("warn"),
+  error: buildLog("error"),
+  fatal: buildLog("fatal"),
 
   table: (tableTitle: string, ...data: any[]) => {
     console.log();
