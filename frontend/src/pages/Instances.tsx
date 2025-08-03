@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -64,8 +64,13 @@ export default function Instances() {
   }, []);
 
   // update query params
-  // @TODO this should not happen on page load?
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;

@@ -48,17 +48,11 @@ import { Tooltip } from "@mui/joy";
 
 type ICustomFilterToggleProps = {
   tagValue: string;
-  // filteredTags: any;
-  // dispatch: any;
-  // [key: string]: any;
 };
 
-const CustomFilterToggle = React.memo((props: ICustomFilterToggleProps) => {
-  const { tagValue } = props;
+const CustomFilterToggle = React.memo(({ tagValue }: ICustomFilterToggleProps) => {
   const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
   const dispatch = useDispatch();
-
-  // const { tagValue, filteredTags, dispatch, ...other } = props;
 
   const currentFilter = React.useMemo(() => {
     return filteredTags.find((instance) => instance.tag == tagValue);

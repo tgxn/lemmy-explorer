@@ -25,11 +25,15 @@ describe("CrawlClient.getUrlWithRetry", () => {
   jest.setTimeout(30000);
 
   test("retries the expected number of times", async () => {
-    mockedAxiosInstance.get.mockRejectedValue(new Error("fail"));
+    mockedAxiosInstance.get.mockRejectedValue({
+      message: "fail",
+      config: { url: "https://example.com" },
+    });
 
     const client = new CrawlClient();
-    await expect(client.getUrlWithRetry("https://example.com", {}, 2)).rejects.toThrow();
 
-    expect(mockedAxiosInstance.get).toHaveBeenCalledTimes(3);
+    await expect(client.getUrlWithRetry("https://example.com", {}, 2)).rejects.toThrow("fail (attempts: 2)");
+
+    expect(mockedAxiosInstance.get).toHaveBeenCalledTimes(2);
   });
 });

@@ -97,12 +97,11 @@ export default class CrawlPiefed {
       const piefedServers = await this.getInstances();
       logging.info(`Piefed Instances Total: ${piefedServers.length}`);
 
-      const piefedQueue = new PiefedQueue(false);
       for (const piefedServer of piefedServers) {
         this.logPrefix = `[CrawlPiefed] [${piefedServer.base}]`;
         logging.info(`${this.logPrefix} create job ${piefedServer.base}`);
 
-        await piefedQueue.createJob(piefedServer.base);
+        await this.piefedQueue.createJob(piefedServer.base);
       }
     } catch (e) {
       logging.error(`${this.logPrefix} error scanning piefed instance`, e);
@@ -243,6 +242,14 @@ export default class CrawlPiefed {
 
       return federatedInstances;
     } catch (error) {
+      // throw if not enabled at this stage
+      if (error.data && error.data.message && error.data.message.includes("alpha api is not enabled")) {
+        logging.warn(
+          `${this.logPrefix} [${crawlDomain}] alpha api is not enabled, skipping federated instances`,
+        );
+        throw new CrawlError(`alpha api is not enabled for ${crawlDomain}`);
+      }
+
       logging.error(`${this.logPrefix} [${crawlDomain}] error fetching federated instances`, error);
       // throw new CrawlError(`Failed to fetch federated instances for ${crawlDomain}`, error);
       return null;
