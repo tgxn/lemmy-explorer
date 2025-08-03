@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import axios from "axios";
 import { QueryKey, UseQueryResult, useQuery } from "@tanstack/react-query";
 
-interface Metadata {
+interface MultiPartMetadata {
   count: number;
 }
 
-interface HookResult<T> {
+interface CachedDataResult<T> {
   isLoading: boolean;
   loadingPercent: number;
   isSuccess: boolean;
@@ -19,14 +19,14 @@ interface HookResult<T> {
 export default function useCachedMultipart<T = any>(
   queryKey: QueryKey | string,
   metadataPath: string,
-): HookResult<T> {
-  const [loadedChunks, setLoadedChunks] = useState(0);
+): CachedDataResult<T> {
+  const [loadedChunks, setLoadedChunks] = useState<number>(0);
 
-  const metaQuery: UseQueryResult<Metadata, Error> = useQuery({
+  const metaQuery: UseQueryResult<MultiPartMetadata, Error> = useQuery({
     queryKey: [queryKey, metadataPath, "meta"],
     queryFn: () =>
       axios
-        .get<Metadata>(`/data/${metadataPath}.json`, {
+        .get<MultiPartMetadata>(`/data/${metadataPath}.json`, {
           timeout: 15000,
         })
         .then((res) => res.data),
@@ -44,10 +44,10 @@ export default function useCachedMultipart<T = any>(
       const requests: Promise<T[]>[] = Array.from({ length: metaQuery.data?.count ?? 0 }, (_, i) =>
         axios
           .get<T[]>(`/data/${metadataPath}/${i}.json`, {
-            timeout: 15000,
+            timeout: 10000,
           })
           .then((res) => {
-            setLoadedChunks((c) => c + 1);
+            setLoadedChunks((current: number) => current + 1);
             return res.data;
           }),
       );
@@ -61,36 +61,6 @@ export default function useCachedMultipart<T = any>(
     staleTime: Infinity,
     cacheTime: Infinity,
   });
-
-  const loadingPercent = metaQuery.data?.count ? (loadedChunks / metaQuery.data.count) * 100 : 0;
-
-  // useEffect(() => {
-  //   if (isMetaSuccess) {
-  //     const dataFileCount = meta.count;
-
-  //     const queries = [];
-
-  //     for (let i = 0; i < dataFileCount; i++) {
-  //       queries.push({
-  //         queryKey: [queryKey, metadataPath, i],
-  //         queryFn: () =>
-  //           axios
-  //             .get(`/data/${metadataPath}/${i}.json`, {
-  //               timeout: 15000,
-  //             })
-  //             .then((res) => res.data),
-  //         retry: 2,
-  //         refetchOnWindowFocus: false,
-  //         refetchOnMount: false,
-  //         staleTime: Infinity,
-  //         cacheTime: Infinity,
-  //       });
-  //     }
-
-  //     // results.queries = queries;
-  //     setPageQueries(queries);
-  //   }
-  // }, [isMetaSuccess]);
 
   if (dataQuery.isSuccess) {
     return {
@@ -117,11 +87,7 @@ export default function useCachedMultipart<T = any>(
     };
   }
 
-  // let loadingPercent = 0;
-  // if (results.length > 0) {
-  //   loadingPercent = results.filter((result) => result.isSuccess).length / results.length;
-  //   loadingPercent = loadingPercent * 100;
-  // }
+  const loadingPercent = metaQuery.data?.count ? (loadedChunks / metaQuery.data.count) * 100 : 0;
   console.log("useCachedMultipart loadingPercent", loadingPercent);
 
   return {
