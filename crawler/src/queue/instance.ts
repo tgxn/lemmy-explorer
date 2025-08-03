@@ -3,6 +3,7 @@ import BaseQueue, { ISuccessCallback } from "./BaseQueue";
 import type { IInstanceData } from "../../../types/storage";
 
 import { instanceProcessor } from "../crawl/instance";
+import logging from "../lib/logging";
 
 export default class InstanceQueue extends BaseQueue<IInstanceData | null> {
   constructor(isWorker = false, queueName = "instance") {
@@ -15,7 +16,7 @@ export default class InstanceQueue extends BaseQueue<IInstanceData | null> {
 
     // dont create blank jobs
     if (trimmedUrl == "") {
-      console.warn("createJob: trimmedUrl is blank", instanceBaseUrl);
+      logging.warn("createJob: trimmedUrl is blank", instanceBaseUrl);
       return;
     }
 

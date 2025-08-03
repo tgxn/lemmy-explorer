@@ -11,7 +11,7 @@ export const REDIS_URL: string = process.env.REDIS_URL || "redis://localhost:637
 export const LOG_LEVEL: string = process.env.LOG_LEVEL || "warn";
 
 // should there be a cron job to upload the exported data to s3 automatically?
-export const AUTO_UPLOAD_S3: boolean = Boolean(process.env.AUTO_UPLOAD_S3) || false;
+export const AUTO_UPLOAD_S3: boolean = process.env.AUTO_UPLOAD_S3 === "true";
 
 export const REDIS_DUMP_FILE: string = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
 export const CHECKPOINT_DIR: string = process.env.CHECKPOINT_DIR || ".data/checkpoint/";

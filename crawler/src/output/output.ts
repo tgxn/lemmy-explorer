@@ -1,28 +1,20 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 
-import removeMd from "remove-markdown";
-
 import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS, PIEFED_DEV_URLS } from "../lib/const";
 import logging from "../lib/logging";
 
 import CrawlClient from "../lib/CrawlClient";
 
 import storage from "../lib/crawlStorage";
-import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
-import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
-import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
-import { IPiefedCommunityData, IPiefedCommunityDataKeyValue } from "../../../types/storage";
-import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
-// import { IFediseerInstanceData } from "../lib/storage/fediseer";
+import { IInstanceData } from "../../../types/storage";
+import { ICommunityData } from "../../../types/storage";
+import { IMagazineData } from "../../../types/storage";
+import { IPiefedCommunityData } from "../../../types/storage";
+import { IFediverseDataKeyValue } from "../../../types/storage";
 
-import {
-  IErrorData,
-  IErrorDataKeyValue,
-  ILastCrawlData,
-  ILastCrawlDataKeyValue,
-} from "../../../types/storage";
-import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
+import { IErrorData, IErrorDataKeyValue } from "../../../types/storage";
+import { IFullUptimeData } from "../../../types/storage";
 
 import OutputFileWriter from "./file_writer";
 
@@ -31,310 +23,15 @@ import {
   IInstanceDataOutput,
   IRegistrationMode,
   ICommunityDataOutput,
-  IMBinInstanceOutput,
   IMBinMagazineOutput,
   IPiefedCommunityDataOutput,
   IFediverseDataOutput,
   IClassifiedErrorOutput,
 } from "../../../types/output";
 
+import OutputUtils from "./utils";
 import OutputTrust from "./trust";
-
-export class OutputUtils {
-  static safeSplit(text: string, maxLength: number) {
-    // split byu space and rejoin till above the length
-    const words = text.split(" ");
-    let result = "";
-
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-
-      const newString = result + " " + word;
-
-      // if the word is too long, split it
-      if (newString.length > maxLength) {
-        break;
-      }
-
-      result = newString;
-    }
-
-    return result.trim();
-  }
-
-  // strip markdown, optionally substring
-  static stripMarkdownSubStr(text: string, maxLength: number = -1) {
-    if (!text || text.length === 0) {
-      return "";
-    }
-
-    try {
-      const stripped = removeMd(text);
-
-      if (maxLength > 0) {
-        return OutputUtils.safeSplit(stripped, maxLength);
-      }
-
-      return stripped.trim();
-    } catch (e) {
-      logging.error("error stripping markdown", text);
-      throw e;
-    }
-  }
-
-  // calculate community published time epoch
-  static parseLemmyTimeToUnix(lemmyFormatTime: string): number {
-    let publishTime: number = 0;
-
-    if (lemmyFormatTime) {
-      try {
-        // why do some instances have Z on the end -.-
-        publishTime = new Date(lemmyFormatTime.replace(/(\.\d{6}Z?)/, "Z")).getTime();
-
-        // if not a number
-        if (isNaN(publishTime)) {
-          logging.error("error parsing publish time", lemmyFormatTime);
-          publishTime = 0;
-        }
-
-        // console.log("publishTime", publishTime);
-      } catch (e) {
-        logging.error("error parsing publish time", lemmyFormatTime);
-      }
-    } else {
-      logging.error("no publish time", lemmyFormatTime);
-    }
-
-    return publishTime;
-  }
-
-  // given an error message from redis, figure out what it relates to..
-  static findErrorType(errorMessage: string): string {
-    if (
-      errorMessage.includes("ENOENT") ||
-      errorMessage.includes("ECONNREFUSED") ||
-      errorMessage.includes("ECONNRESET") ||
-      errorMessage.includes("ENOTFOUND") ||
-      errorMessage.includes("EAI_AGAIN") ||
-      errorMessage.includes("socket hang up") ||
-      errorMessage.includes("Client network socket disconnected")
-    ) {
-      return "connectException";
-    }
-
-    if (errorMessage.includes("timeout of")) {
-      return "timeout";
-    }
-
-    if (
-      errorMessage.includes("self-signed certificate") ||
-      errorMessage.includes("does not match certificate's altnames") ||
-      errorMessage.includes("tlsv1 unrecognized name") ||
-      errorMessage.includes("tlsv1 alert internal error") ||
-      errorMessage.includes("ssl3_get_record:wrong version number") ||
-      errorMessage.includes("unable to verify the first certificate") ||
-      errorMessage.includes("unable to get local issuer certificate") ||
-      errorMessage.includes("certificate has expired")
-    ) {
-      return "sslException";
-    }
-
-    if (errorMessage.includes("baseUrl is not a valid domain")) {
-      return "invalidBaseUrl";
-    }
-
-    if (
-      errorMessage.includes("code 300") ||
-      errorMessage.includes("code 400") ||
-      errorMessage.includes("code 403") ||
-      errorMessage.includes("code 404") ||
-      errorMessage.includes("code 406") ||
-      errorMessage.includes("code 410") ||
-      errorMessage.includes("code 500") ||
-      errorMessage.includes("code 502") ||
-      errorMessage.includes("code 503") ||
-      errorMessage.includes("code 520") ||
-      errorMessage.includes("code 521") ||
-      errorMessage.includes("code 523") ||
-      errorMessage.includes("code 525") ||
-      errorMessage.includes("code 526") ||
-      errorMessage.includes("code 530") ||
-      errorMessage.includes("Maximum number of redirects exceeded")
-    ) {
-      return "httpException";
-    }
-
-    if (
-      errorMessage.includes("no diaspora rel in") ||
-      errorMessage.includes("wellKnownInfo.data.links is not iterable") ||
-      errorMessage.includes("missing /.well-known/nodeinfo links")
-    ) {
-      return "httpException";
-    }
-
-    if (errorMessage.includes("not a lemmy instance")) {
-      return "notLemmy";
-    }
-
-    if (
-      errorMessage.includes("invalid actor id") ||
-      errorMessage.includes("actor id does not match instance domain")
-    ) {
-      return "invalidActorId";
-    }
-
-    logging.debug("unhandled error", errorMessage);
-    return "unknown";
-  }
-
-  // ensure the output is okay for the website
-  static async validateOutput(
-    previousRun,
-    returnInstanceArray: IInstanceDataOutput[],
-    returnCommunityArray: ICommunityDataOutput[],
-    mbinInstanceArray: string[],
-    mbinMagazineArray: IMBinMagazineOutput[],
-    piefedInstanceArray: string[],
-    piefedCommunitiesArray: IPiefedCommunityDataOutput[],
-    returnStats: IFediverseDataOutput[],
-  ) {
-    const issues: string[] = [];
-
-    // check that there is data in all arrays
-    if (
-      returnInstanceArray.length === 0 ||
-      returnCommunityArray.length === 0 ||
-      mbinInstanceArray.length === 0 ||
-      mbinMagazineArray.length === 0 ||
-      piefedInstanceArray.length === 0 ||
-      piefedCommunitiesArray.length === 0 ||
-      returnStats.length === 0
-    ) {
-      console.log("Empty Array");
-      issues.push("Empty Array(s)");
-    }
-
-    // check for duplicate baseurls
-    for (let i = 0; i < returnInstanceArray.length; i++) {
-      const instance = returnInstanceArray[i];
-
-      const found = returnInstanceArray.find((i) => i.baseurl === instance.baseurl);
-
-      if (found && found !== instance) {
-        console.log("Duplicate Instance", instance.baseurl);
-        issues.push("Duplicate Instance: " + instance.baseurl);
-      }
-    }
-
-    // check if lovecraft is visible on lemmy.world
-    const lovecraft = returnCommunityArray.find(
-      (community) => community.url === "https://lemmy.world/c/lovecraft_mythos",
-    );
-
-    if (lovecraft) {
-      // console.log("Lovecraft on Lemmy.World", lovecraft);
-    } else {
-      console.log("Lovecraft not on Lemmy.World");
-      issues.push("Lovecraft not on Lemmy.World");
-    }
-
-    // check values are < 10% different
-    const checkChangeIsValid = (value, previousValue, pct = 15) => {
-      if (!value || !previousValue) {
-        return false;
-      }
-
-      const diff = Math.abs(value - previousValue);
-      const percent = (diff / previousValue) * 100;
-
-      if (percent > pct) {
-        console.log("Percent Diff", value, previousValue, percent);
-        return false;
-      }
-
-      return true;
-    };
-
-    // check that the output is not too different from the previous run
-    const data: any = [];
-    data.push({
-      type: "instances",
-      new: returnInstanceArray.length,
-      old: previousRun.instances,
-    });
-
-    // check that community counts haven't changed heaps
-    data.push({
-      type: "communities",
-      new: returnCommunityArray.length,
-      old: previousRun.communities,
-    });
-
-    data.push({
-      type: "fediverse",
-      new: returnStats.length,
-      old: previousRun.fediverse,
-    });
-
-    data.push({
-      type: "magazines",
-      new: mbinMagazineArray.length,
-      old: previousRun.magazines,
-    });
-
-    data.push({
-      type: "mbin_instances",
-      new: mbinInstanceArray.length,
-      old: previousRun.mbin_instances,
-    });
-
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-
-      // TEMP skip if there are more items in the new payload
-      if (item.new > item.old) {
-        return;
-      }
-
-      const isValid = checkChangeIsValid(item.new, item.old);
-
-      if (!isValid) {
-        console.log("Percent Diff", item.type, item.new, item.old);
-        issues.push("Percent Diff: " + item.type);
-      }
-    }
-
-    if (issues.length > 0) {
-      console.log("Validation Issues", issues);
-
-      throw new Error("Validation Issues: " + issues.join(", "));
-    }
-
-    return true;
-  }
-
-  static validateVersion(version: string): string | false {
-    // strip quotation marks that come either first or last
-    if (version.startsWith('"')) {
-      version = version.substring(1);
-    }
-    if (version.endsWith('"')) {
-      version = version.substring(0, version.length - 1);
-    }
-
-    // skip containing "unknown"
-    if (version.includes("unknown")) {
-      return false;
-    }
-
-    // skip if the value doesn't contain at least one `.` OR `-`
-    if (!version.includes(".") && !version.includes("-")) {
-      return false;
-    }
-
-    return version;
-  }
-}
+import OutputClassifier from "./classifier";
 
 /**
  * this generates the .json files for the frontend /public folder
@@ -431,7 +128,7 @@ export default class CrawlOutput {
       // remove communities with age more than the max
       const recordAge = Date.now() - instance.lastCrawled;
       if (recordAge > OUTPUT_MAX_AGE.INSTANCE) {
-        console.log("Sus Site has expired, the age of the record is too old", instance.base);
+        logging.debug("Sus Site has expired, the age of the record is too old", instance.base);
         return false;
       }
 
@@ -504,7 +201,7 @@ export default class CrawlOutput {
     let previousRun: any = await client.getUrl("https://lemmyverse.net/data/meta.json");
     previousRun = previousRun.data;
 
-    console.log("Done; Total vs. Output");
+    // logging.debug("Done; Total vs. Output");
 
     function calcChangeDisplay(current: number, previous: number) {
       return `${current > previous ? "+" : ""}${current - previous} (${(
@@ -513,7 +210,8 @@ export default class CrawlOutput {
       ).toFixed(2)}%)`;
     }
 
-    console.table(
+    logging.table(
+      "Done; Total vs. Output",
       {
         Instances: {
           ExportName: "Instances",
@@ -744,10 +442,10 @@ export default class CrawlOutput {
         const instanceTrustData = this.trust.getInstance(siteBaseUrl);
 
         // console.log("instanceTrustData", instanceTrustData);
-        const score = instanceTrustData.score;
+        const score = instanceTrustData?.score || 0;
 
         // ignore instances that have no data
-        const susReason = instanceTrustData.reasons;
+        const susReason = instanceTrustData?.reasons || [];
 
         const admins: string[] = instance.siteData.admins.map((admin) => admin.person.actor_id);
 
@@ -765,12 +463,12 @@ export default class CrawlOutput {
 
             return -1;
           } catch (e) {
-            console.error("error parsing registration mode", instance.siteData.config?.registration_mode);
+            logging.error("error parsing registration mode", instance.siteData.config?.registration_mode);
             return -1;
           }
         })();
 
-        // console.log("instanceTrustData.tags", instanceTrustData.tags);
+        // logging.debug("instanceTrustData.tags", instanceTrustData.tags);
         const instanceDataOut: IInstanceDataOutput = {
           baseurl: siteBaseUrl,
           url: instance.siteData.site.actor_id,
@@ -808,11 +506,11 @@ export default class CrawlOutput {
           uptime: siteUptime,
 
           isSuspicious: susReason.length > 0 ? true : false,
-          metrics: instanceTrustData.metrics || null,
-          tags: instanceTrustData.tags || [],
+          metrics: instanceTrustData?.metrics || null,
+          tags: instanceTrustData?.tags || [],
           susReason: susReason,
 
-          trust: instanceTrustData,
+          trust: instanceTrustData || [],
 
           blocks: {
             incoming: incomingBlocks,
@@ -966,13 +664,13 @@ export default class CrawlOutput {
       }
       return true;
     });
-    console.log(`Filtered ${preFilterFails - storeCommunityData.length} fails`);
+    logging.info(`Filtered ${preFilterFails - storeCommunityData.length} fails`);
 
     // remove communities not updated in 24h
     let preFilterAge = storeCommunityData.length;
     storeCommunityData = storeCommunityData.filter((community) => {
       if (!community.time) {
-        console.log("no time", community);
+        logging.debug("no time", community);
         return false; // record needs time
       }
 
@@ -995,7 +693,7 @@ export default class CrawlOutput {
 
       return true;
     });
-    console.log(`Filtered ${preFilterAge - storeCommunityData.length} age`);
+    logging.info(`Filtered ${preFilterAge - storeCommunityData.length} age`);
 
     // remove those not being in the instance list
     if (returnInstanceArray) {
@@ -1016,7 +714,7 @@ export default class CrawlOutput {
 
         return true;
       });
-      console.log(`Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`);
+      logging.info(`Filtered ${preFilterInstance - storeCommunityData.length} NO_instance`);
     }
 
     // filter blank
@@ -1049,7 +747,8 @@ export default class CrawlOutput {
           error: value.error,
           time: value.time,
         };
-        instanceData.type = OutputUtils.findErrorType(value.error);
+        // logging.info("instanceData ERRORddd122", value.error);
+        instanceData.type = OutputClassifier.findErrorType(value.error);
 
         if (errorTypes[instanceData.type] === undefined) {
           errorTypes[instanceData.type] = 0;
@@ -1059,7 +758,7 @@ export default class CrawlOutput {
 
         instanceErrors.push(instanceData);
       } catch (e) {
-        console.error("error parsing error", key, value);
+        logging.error("error parsing error", key, value);
         throw e;
       }
     }
@@ -1075,8 +774,27 @@ export default class CrawlOutput {
     //   }
     // });
 
-    console.log("Error Types by Count");
-    console.table(errorTypes);
+    // logging.info("Error Types by Count");
+    logging.table("Error Types by Count", errorTypes);
+
+    // loop all errors, detect type, if unknown add to an object of all that type of error (grouped by the error string)
+    const unknownErrors = instanceErrors.filter((err) => err.type === "unknown");
+
+    const errorStrings: Set<string> = new Set();
+    unknownErrors.forEach((err) => {
+      // console.error("Unknown Error", err.error);
+
+      errorStrings.add(err.error);
+    });
+    logging.table(
+      "Unknown Errors Grouped",
+      Array.from(errorStrings).map((error) => {
+        return {
+          error: error,
+          count: unknownErrors.filter((e) => e.error === error).length,
+        };
+      }),
+    );
 
     logging.debug("instanceErrors", instanceErrors.length, errorTypes);
 
@@ -1190,7 +908,7 @@ export default class CrawlOutput {
       };
     });
 
-    console.log("outputVersionsArray", outputVersionsArray.length);
+    logging.debug("outputVersionsArray", outputVersionsArray.length);
 
     const acc: any = [];
     Object.values(outputVersionsArray).forEach((key: any) => {

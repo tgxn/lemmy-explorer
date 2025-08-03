@@ -20,10 +20,7 @@ function CommunityGrid({ items }: ICommunityGridProps) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardAsCallback = React.useCallback(
-    (props) => <CommunityCard community={props.data} />,
-    [isScrolling],
-  );
+  const CardAsCallback = React.useCallback((props) => <CommunityCard community={props.data} />, []);
 
   return useMasonry({
     containerRef,

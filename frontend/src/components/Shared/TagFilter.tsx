@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -12,7 +12,6 @@ import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
-import Switch from "@mui/joy/Switch";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import ModalClose from "@mui/joy/ModalClose";
@@ -24,12 +23,6 @@ import IconButton from "@mui/joy/IconButton";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
-
-// import { ToggleButtonGroup } from "@mui/joy";
-// import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-// import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
-// import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
-// import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 
 import { setFilteredTags } from "../../reducers/configReducer";
 
@@ -55,13 +48,11 @@ import { Tooltip } from "@mui/joy";
 
 type ICustomFilterToggleProps = {
   tagValue: string;
-  filteredTags: any;
-  dispatch: any;
-  [key: string]: any;
 };
 
-const CustomFilterToggle = React.memo((props: ICustomFilterToggleProps) => {
-  const { tagValue, filteredTags, dispatch, ...other } = props;
+const CustomFilterToggle = React.memo(({ tagValue }: ICustomFilterToggleProps) => {
+  const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
+  const dispatch = useDispatch();
 
   const currentFilter = React.useMemo(() => {
     return filteredTags.find((instance) => instance.tag == tagValue);
@@ -149,10 +140,6 @@ const CustomFilterToggle = React.memo((props: ICustomFilterToggleProps) => {
   );
 });
 
-const ConnectedFilterToggle = connect((state: any) => ({
-  filteredTags: state.configReducer.filteredTags,
-}))(CustomFilterToggle);
-
 function renderRow(props) {
   const { data, index, style } = props;
   const dataSet = data[index];
@@ -210,7 +197,7 @@ function renderRow(props) {
             {dataSet.tag} ({dataSet.count})
           </>
         </FormLabel>
-        <ConnectedFilterToggle tagValue={dataSet.tag} />
+        <CustomFilterToggle tagValue={dataSet.tag} />
       </FormControl>
     </ListItem>
   );
