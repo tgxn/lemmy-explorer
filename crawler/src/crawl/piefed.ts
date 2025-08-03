@@ -243,6 +243,13 @@ export default class CrawlPiefed {
 
       return federatedInstances;
     } catch (error) {
+
+      // throw if not enabled at this stage
+      if(error.data && error.data.message && error.data.message.includes("alpha api is not enabled")) {
+        logging.warn(`${this.logPrefix} [${crawlDomain}] alpha api is not enabled, skipping federated instances`);
+        throw new CrawlError(`alpha api is not enabled for ${crawlDomain}`);
+      }
+
       logging.error(`${this.logPrefix} [${crawlDomain}] error fetching federated instances`, error);
       // throw new CrawlError(`Failed to fetch federated instances for ${crawlDomain}`, error);
       return null;
