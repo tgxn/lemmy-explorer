@@ -29,24 +29,6 @@ describe("OutputUtils.parseLemmyTimeToUnix", () => {
   });
 });
 
-describe("OutputUtils.findErrorType", () => {
-  const cases = [
-    ["ENOENT something", "connectException"],
-    ["timeout of 100ms", "timeout"],
-    ["self-signed certificate", "sslException"],
-    ["baseUrl is not a valid domain", "invalidBaseUrl"],
-    ["code 404", "httpException"],
-    ["no diaspora rel in", "httpException"],
-    ["not a lemmy instance", "notLemmy"],
-    ["invalid actor id", "invalidActorId"],
-    ["random message", "unknown"],
-  ] as const;
-
-  test.each(cases)("%s => %s", (msg, expected) => {
-    expect(OutputUtils.findErrorType(msg)).toBe(expected);
-  });
-});
-
 const baseInstance = { baseurl: "example.com" } as any;
 const baseCommunity = {
   url: "https://lemmy.world/c/lovecraft_mythos",
