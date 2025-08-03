@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -60,14 +60,24 @@ function Communities({ filterBaseUrl = false }) {
   }, []);
 
   // update query params
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
 
-    setSearchParams(parms);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
   }, [orderBy, showNSFW, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json

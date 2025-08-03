@@ -9,6 +9,11 @@ import Typography from "@mui/joy/Typography";
 
 import { ExtLink } from "../Shared/Link";
 
+function boolText(value) {
+  if (value === undefined || value === null) return "Unknown";
+  return value ? "Yes" : "No";
+}
+
 export default function InstanceFediseer({ instance }) {
   const trust = instance.trust || {};
   const uptime = instance.uptime;
@@ -64,6 +69,24 @@ export default function InstanceFediseer({ instance }) {
                 <td>{trust.moderators}</td>
               </tr>
             )}
+            {trust.visibility_endorsements && (
+              <tr>
+                <th>Visibility - Endorsements</th>
+                <td>{trust.visibility_endorsements}</td>
+              </tr>
+            )}
+            {trust.visibility_censures && (
+              <tr>
+                <th>Visibility - Censures</th>
+                <td>{trust.visibility_censures}</td>
+              </tr>
+            )}
+            {trust.visibility_hesitations && (
+              <tr>
+                <th>Visibility - Hesitations</th>
+                <td>{trust.visibility_hesitations}</td>
+              </tr>
+            )}
             <tr>
               <th>Details</th>
               <td>
@@ -78,6 +101,74 @@ export default function InstanceFediseer({ instance }) {
           </tbody>
         </Table>
       </Box>
+      {(trust.open_registrations !== undefined ||
+        trust.email_verify !== undefined ||
+        trust.approval_required !== undefined ||
+        trust.has_captcha !== undefined) && (
+        <Box>
+          <Typography level="h3" gutterBottom>
+            Registration
+          </Typography>
+          <Table size="sm">
+            <tbody>
+              {trust.open_registrations !== undefined && (
+                <tr>
+                  <th>Open Registrations</th>
+                  <td>{boolText(trust.open_registrations)}</td>
+                </tr>
+              )}
+              {trust.email_verify !== undefined && (
+                <tr>
+                  <th>Email Verification</th>
+                  <td>{boolText(trust.email_verify)}</td>
+                </tr>
+              )}
+              {trust.approval_required !== undefined && (
+                <tr>
+                  <th>Approval Required</th>
+                  <td>{boolText(trust.approval_required)}</td>
+                </tr>
+              )}
+              {trust.has_captcha !== undefined && (
+                <tr>
+                  <th>Captcha</th>
+                  <td>{boolText(trust.has_captcha)}</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Box>
+      )}
+
+      {(trust.software || trust.version || trust.claimed !== undefined) && (
+        <Box>
+          <Typography level="h3" gutterBottom>
+            Software
+          </Typography>
+          <Table size="sm">
+            <tbody>
+              {trust.software && (
+                <tr>
+                  <th>Software</th>
+                  <td>{trust.software}</td>
+                </tr>
+              )}
+              {trust.version && (
+                <tr>
+                  <th>Version</th>
+                  <td>{trust.version}</td>
+                </tr>
+              )}
+              {trust.claimed !== undefined && (
+                <tr>
+                  <th>Claimed</th>
+                  <td>{boolText(trust.claimed)}</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Box>
+      )}
 
       {tags.length > 0 && (
         <Box>
@@ -87,9 +178,15 @@ export default function InstanceFediseer({ instance }) {
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {tags.map((t, idx) => {
               const label = typeof t === "string" ? t : t.tag;
+              const count = typeof t === "string" ? undefined : t.count;
+              const rank = typeof t === "string" ? undefined : t.rank;
+              const extras = [];
+              if (count !== undefined) extras.push(count);
+              if (rank !== undefined) extras.push(`#${rank}`);
               return (
                 <Chip key={idx} variant="solid" color="primary" size="sm">
                   {label}
+                  {extras.length ? ` (${extras.join(", ")})` : ""}
                 </Chip>
               );
             })}
