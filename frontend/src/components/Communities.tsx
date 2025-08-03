@@ -29,7 +29,7 @@ import InstanceFilter from "../components/Shared/InstanceFilter";
 import CommunityGrid from "./GridView/Community";
 import CommunityList from "./ListView/Community";
 
-export default function Communities({ filterBaseUrl = false }) {
+function Communities({ filterBaseUrl = false }) {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
   const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
 
@@ -343,3 +343,5 @@ export default function Communities({ filterBaseUrl = false }) {
     </Box>
   );
 }
+
+export default React.memo(Communities);
