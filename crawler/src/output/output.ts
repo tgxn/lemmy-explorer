@@ -13,12 +13,8 @@ import { IMagazineData } from "../../../types/storage";
 import { IPiefedCommunityData } from "../../../types/storage";
 import { IFediverseDataKeyValue } from "../../../types/storage";
 
-import {
-  IErrorData,
-  IErrorDataKeyValue,
-
-} from "../../../types/storage";
-import {  IFullUptimeData } from "../../../types/storage";
+import { IErrorData, IErrorDataKeyValue } from "../../../types/storage";
+import { IFullUptimeData } from "../../../types/storage";
 
 import OutputFileWriter from "./file_writer";
 

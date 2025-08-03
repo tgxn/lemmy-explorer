@@ -10,7 +10,6 @@ import {
   IFediverseDataOutput,
 } from "../../../types/output";
 
-
 export default class OutputUtils {
   static safeSplit(text: string, maxLength: number) {
     // split byu space and rejoin till above the length
@@ -78,7 +77,6 @@ export default class OutputUtils {
 
     return publishTime;
   }
-
 
   // ensure the output is okay for the website
   static async validateOutput(
