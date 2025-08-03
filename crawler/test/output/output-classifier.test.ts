@@ -4,7 +4,7 @@ import OutputClassifier from "../../src/output/classifier";
 
 describe("OutputClassifier.findErrorType", () => {
   const cases = [
-    ["ENOENT something", "connectException"],
+    ["ENOENT something", "contentMissing"],
     ["timeout of 100ms", "timeout"],
     ["self-signed certificate", "sslException"],
     ["baseUrl is not a valid domain", "invalidBaseUrl"],

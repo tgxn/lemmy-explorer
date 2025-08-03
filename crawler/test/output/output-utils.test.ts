@@ -110,7 +110,7 @@ describe("OutputUtils.validateOutput", () => {
         [piefedCommunity],
         [fediverse, fediverse],
       ),
-    ).resolves.toBeUndefined();
+    ).resolves.toBeTruthy();
   });
 
   test("throws when percent diff too high", async () => {

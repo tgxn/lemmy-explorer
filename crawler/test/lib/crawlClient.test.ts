@@ -32,7 +32,7 @@ describe("CrawlClient.getUrlWithRetry", () => {
 
     const client = new CrawlClient();
 
-    await expect(client.getUrlWithRetry("https://example.com", {}, 2)).rejects.toThrow("attempts: 2");
+    await expect(client.getUrlWithRetry("https://example.com", {}, 2)).rejects.toThrow("fail (attempts: 2)");
 
     expect(mockedAxiosInstance.get).toHaveBeenCalledTimes(2);
   });

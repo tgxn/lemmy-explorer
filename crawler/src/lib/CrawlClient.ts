@@ -66,13 +66,14 @@ export default class CrawlClient {
           await sleepThreadMs(delaySeconds * 1000);
           continue;
         }
+
         logging.error(`getUrlWithRetry: failed to GET ${url} after ${attempts + 1}/${maxRetries} attempts`, {
           error: e,
           url,
           options,
         });
 
-        throw new HTTPError(`${e.message} (attempts: ${attempts})`, {
+        throw new HTTPError(`${e.message} (attempts: ${attempts + 1})`, {
           isAxiosError: true,
           code: e.code,
           url: e.config.url,
