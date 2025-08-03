@@ -1,7 +1,7 @@
 // // CURRENTLY UNUSED
 
 // import React from "react";
-// import { connect } from "react-redux";
+// import { useSelector, useDispatch } from "react-redux";
 
 // import Button from "@mui/joy/Button";
 // import Modal from "@mui/joy/Modal";
@@ -11,7 +11,11 @@
 
 // import { showInstanceModal } from "../../reducers/modalReducer";
 
-// function InstanceModal({ isOpen, setOpen, instance }) {
+// function InstanceModal() {
+//   const isOpen = useSelector((state: any) => state.modalReducer.instanceModalOpen);
+//   const instance = useSelector((state: any) => state.modalReducer.instanceData);
+//   const dispatch = useDispatch();
+//   const setOpen = (instanceData) => dispatch(showInstanceModal(instanceData));
 //   return (
 //     <Modal
 //       // aria-labelledby="modal-title"
@@ -51,12 +55,4 @@
 //   );
 // }
 
-// const mapStateToProps = (state) => ({
-//   isOpen: state.modalReducer.instanceModalOpen,
-//   instance: state.modalReducer.instanceData,
-// });
-// const mapDispatchToProps = (dispatch) => ({
-//   setOpen: (instanceData) => dispatch(showInstanceModal(instanceData)),
-// });
-
-// export default connect(mapStateToProps, mapDispatchToProps)(InstanceModal);
+// export default InstanceModal;

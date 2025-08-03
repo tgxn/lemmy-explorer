@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import Box from "@mui/joy/Box";
 import IconButton from "@mui/joy/IconButton";
@@ -22,7 +22,11 @@ import { changeInstanceType } from "../../reducers/configReducer";
 
 import SelectHomeInstance from "./SelectHomeInstance";
 
-function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
+export default function HomeInstanceButton() {
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+  const instanceType = useSelector((state: any) => state.configReducer.instanceType);
+  const dispatch = useDispatch();
+
   const [isMBinInstance, _setIsMBinInstance] = React.useState<boolean>(instanceType === "mbin");
   const [isPiefedInstance, _setIsPiefedInstance] = React.useState<boolean>(instanceType === "piefed");
 
@@ -142,9 +146,3 @@ function HomeInstanceButton({ homeBaseUrl, instanceType, dispatch }) {
     </>
   );
 }
-
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-  instanceType: state.configReducer.instanceType,
-});
-export default connect(mapStateToProps)(HomeInstanceButton);

@@ -1,5 +1,5 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -31,13 +31,14 @@ const LISTBOX_PADDING = 6; // px
 
 type ICustomSwitchProps = {
   baseUrl: string;
-  filteredInstances: string[];
-  dispatch: any;
-  // [key: string]: any;
+  [key: string]: any;
 };
 
 const CustomSwitch = React.memo((props: ICustomSwitchProps) => {
-  const { baseUrl, filteredInstances, dispatch, ...other } = props;
+  const { baseUrl, ...other } = props;
+  const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
+
+  const dispatch = useDispatch();
 
   const filtered = filteredInstances.indexOf(baseUrl) !== -1;
 
@@ -57,9 +58,6 @@ const CustomSwitch = React.memo((props: ICustomSwitchProps) => {
     <Switch {...other} checked={!filtered} onChange={(event) => changeValue(event)} sx={{ ml: "auto" }} />
   );
 });
-const ConnectedSwitch = connect((state: any) => ({
-  filteredInstances: state.configReducer.filteredInstances,
-}))(CustomSwitch);
 
 function renderRow(props) {
   const { data, index, style } = props;
@@ -103,7 +101,7 @@ function renderRow(props) {
             {dataSet.name} ({dataSet.base})
           </>
         </FormLabel>
-        <ConnectedSwitch baseUrl={dataSet.base} />
+        <CustomSwitch baseUrl={dataSet.base} />
       </FormControl>
     </ListItem>
   );
@@ -112,11 +110,14 @@ function renderRow(props) {
 type IInstanceDialogProps = {
   isOpen: boolean;
   onClose: any;
-  filterSuspicious: boolean;
-  dispatch: any;
+  // filterSuspicious: boolean;
+  // dispatch: any;
 };
 
-const InstanceDialog = React.memo(({ isOpen, onClose, filterSuspicious, dispatch }: IInstanceDialogProps) => {
+const InstanceDialog = React.memo(({ isOpen, onClose }: IInstanceDialogProps) => {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const dispatch = useDispatch();
+
   const {
     isLoading: loadingIns,
     error: errorIns,
@@ -232,20 +233,18 @@ const InstanceDialog = React.memo(({ isOpen, onClose, filterSuspicious, dispatch
     </Modal>
   );
 });
-const ConnectedDialog = connect((state: any) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-}))(InstanceDialog);
 
 type IInstanceFilterProps = {
   filteredInstances: any[];
 };
 
-const InstanceFilter = React.memo(({ filteredInstances }: IInstanceFilterProps) => {
+const InstanceFilter = React.memo(() => {
+  const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
   const [filterOpen, setFilterOpen] = React.useState(false);
 
   return (
     <>
-      <ConnectedDialog isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
+      <InstanceDialog isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
       <IconButton
         variant={filteredInstances.length > 0 ? "solid" : "soft"}
         color={filteredInstances.length > 0 ? "info" : "neutral"}
@@ -262,7 +261,5 @@ const InstanceFilter = React.memo(({ filteredInstances }: IInstanceFilterProps) 
     </>
   );
 });
-const mapStateToProps = (state) => ({
-  filteredInstances: state.configReducer.filteredInstances,
-});
-export default connect(mapStateToProps)(InstanceFilter);
+
+export default InstanceFilter;

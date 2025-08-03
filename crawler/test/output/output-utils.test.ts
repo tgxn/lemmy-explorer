@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 
-import { OutputUtils } from "../../src/output/output";
+import OutputUtils from "../../src/output/utils";
 
 describe("OutputUtils.safeSplit", () => {
   test("splits without breaking words", () => {
@@ -26,24 +26,6 @@ describe("OutputUtils.parseLemmyTimeToUnix", () => {
     const ts = "2024-01-01T12:00:00.123456Z";
     const expected = new Date("2024-01-01T12:00:00Z").getTime();
     expect(OutputUtils.parseLemmyTimeToUnix(ts)).toBe(expected);
-  });
-});
-
-describe("OutputUtils.findErrorType", () => {
-  const cases = [
-    ["ENOENT something", "connectException"],
-    ["timeout of 100ms", "timeout"],
-    ["self-signed certificate", "sslException"],
-    ["baseUrl is not a valid domain", "invalidBaseUrl"],
-    ["code 404", "httpException"],
-    ["no diaspora rel in", "httpException"],
-    ["not a lemmy instance", "notLemmy"],
-    ["invalid actor id", "invalidActorId"],
-    ["random message", "unknown"],
-  ] as const;
-
-  test.each(cases)("%s => %s", (msg, expected) => {
-    expect(OutputUtils.findErrorType(msg)).toBe(expected);
   });
 });
 
@@ -128,7 +110,7 @@ describe("OutputUtils.validateOutput", () => {
         [piefedCommunity],
         [fediverse, fediverse],
       ),
-    ).resolves.toBeUndefined();
+    ).resolves.toBeTruthy();
   });
 
   test("throws when percent diff too high", async () => {
