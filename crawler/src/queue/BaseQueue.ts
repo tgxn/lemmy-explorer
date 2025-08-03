@@ -57,30 +57,26 @@ export default class BaseQueue<T> {
   }
 
   process(): void {
-    this.queue.process(async (job): Promise<any> => {
+    this.queue.process(async (job): Promise<T | undefined> => {
       await storage.connect();
 
       try {
-        logging.info(``);
-        logging.info(`# ${this.logPrefix} [${job.data.baseUrl}] Starting Job Processor`);
+        logging.info(`${this.logPrefix} [${job.data.baseUrl}] Starting Job Processor`);
 
         const timeStart = Date.now();
 
-        const resultData = await this.jobProcessor(job.data);
+        const resultData: T | null = await this.jobProcessor(job.data);
 
         const timeEnd = Date.now();
         const duration = timeEnd - timeStart;
         logging.info(
-          `# ${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${logging.formatDuration(duration)}`,
+          `${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${logging.formatDuration(duration)}`,
         );
 
-        // if (!resultData) {
-        //   logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
-        //   throw new Error("Processor returned null or undefined");
-        // }
-
-        // close redis connection on end of job
-        await storage.close();
+        if (!resultData) {
+          logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
+          throw new Error("Processor returned null or undefined");
+        }
 
         return resultData;
       } catch (error) {
@@ -100,12 +96,11 @@ export default class BaseQueue<T> {
           await storage.tracking.upsertError(this.queueName, job.data.baseUrl, errorDetail);
 
           logging.error(`${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`, error);
+
+          return;
         }
-
-        // close redis connection on end of job
+      } finally {
         await storage.close();
-
-        return null;
       }
     });
   }
