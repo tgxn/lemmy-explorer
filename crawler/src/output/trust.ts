@@ -38,7 +38,7 @@ import type { IInstanceData, ICommunityData, IFediseerInstanceData } from "../..
  * - "tags" - ["cloudflare"]
  */
 
-type IINstanceMetrics = {
+type IInstanceMetrics = {
   baseurl: BaseURL;
   base: BaseURL;
   actor_id: ActorID;
@@ -90,7 +90,7 @@ export default class OutputTrust {
   public allowedFederation: { [key: string]: number } | null = null;
   public blockedFederation: { [key: string]: number } | null = null;
 
-  public instancesWithMetrics: IINstanceMetrics[] | null = null;
+  public instancesWithMetrics: IInstanceMetrics[] | null = null;
   public allInstanceMetrics: IAllInstanceMetrics | null = null;
   public deviations;
 
@@ -642,7 +642,7 @@ export default class OutputTrust {
 
   async calcCommunityScore(baseUrl: BaseURL, community: ICommunityData): Promise<number> {
     const instanceMetrics = this.instancesWithMetrics?.find(
-      (instance: IINstanceMetrics) => instance.baseurl === baseUrl,
+      (instance: IInstanceMetrics) => instance.baseurl === baseUrl,
     );
 
     const instanceScore = instanceMetrics?.score || 0;
