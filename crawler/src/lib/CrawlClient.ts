@@ -71,11 +71,7 @@ export default class CrawlClient {
           continue;
         }
 
-        logging.error(`getUrlWithRetry: failed to GET ${url} after ${attempts + 1}/${maxRetries} attempts`, {
-          error: e,
-          url,
-          options,
-        });
+        logging.error(`getUrlWithRetry: failed to GET ${url} after ${attempts + 1}/${maxRetries} attempts`);
 
         throw new HTTPError(`${e.message} (attempts: ${attempts + 1})`, {
           isAxiosError: true,
