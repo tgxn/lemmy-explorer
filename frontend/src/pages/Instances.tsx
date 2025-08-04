@@ -73,7 +73,7 @@ export default function Instances() {
 
     const parms: any = {};
 
-    if (debounceFilterText) parms.query = debounceFilterText;
+    if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
     if (showOpenOnly) parms.open = showOpenOnly;
 
