@@ -80,6 +80,10 @@ jobs:
 
   frontend-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -111,6 +115,32 @@ jobs:
       - name: Run Tests | Frontend
         run: yarn test
         working-directory: ./frontend
+
+      - name: Upload Playwright Screenshots
+        if: always()
+        id: upload-screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: frontend/output/results/**/*.png
+          if-no-files-found: ignore
+
+      - name: Comment with screenshots
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
+        with:
+          script: |
+            const url = process.env.ARTIFACT_URL;
+            if (url) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `Playwright screenshots: [download here](${url})`
+              });
+            }
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
