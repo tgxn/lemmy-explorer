@@ -22,13 +22,12 @@ describe("getActorBaseUrl", () => {
     expect(getActorBaseUrl("https://example.com/u/user")).toBe("example.com");
   });
 
-  test("returns false for invalid domain", () => {
-    expect(getActorBaseUrl("https://invalid/u/user")).toBe(false);
-    1;
+  test("returns null for invalid domain", () => {
+    expect(getActorBaseUrl("https://invalid/u/user")).toBeNull();
   });
 
-  test("throws for malformed actor id", () => {
-    expect(() => getActorBaseUrl("badstring")).toThrow();
+  test("returns null for malformed actor id", () => {
+    expect(getActorBaseUrl("badstring")).toBeNull();
   });
 });
 
@@ -37,7 +36,7 @@ describe("getActorCommunity", () => {
     expect(getActorCommunity("https://example.com/c/pics")).toBe("pics");
   });
 
-  test("returns undefined when missing", () => {
-    expect(getActorCommunity("https://example.com/c/")).toBe("");
+  test("returns null when missing", () => {
+    expect(getActorCommunity("https://example.com/c/")).toBeNull();
   });
 });
