@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -60,7 +60,13 @@ function Communities({ filterBaseUrl = false }) {
   }, []);
 
   // update query params
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
@@ -68,7 +74,7 @@ function Communities({ filterBaseUrl = false }) {
     if (showNSFW != false) parms.nsfw = showNSFW;
 
     setSearchParams(parms);
-  }, [orderBy, showNSFW, filterText]);
+  }, [orderBy, showNSFW, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
