@@ -75,6 +75,7 @@ export default class BaseQueue<T> {
 
         if (!resultData) {
           logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
+
           throw new Error("Processor returned null or undefined");
         }
 
