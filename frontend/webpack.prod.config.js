@@ -26,6 +26,7 @@ module.exports = merge(common, {
 
   optimization: {
     minimize: true,
+    moduleIds: "deterministic",
     runtimeChunk: "single",
     minimizer: [
       new CssMinimizerPlugin(),
@@ -53,15 +54,10 @@ module.exports = merge(common, {
       maxInitialRequests: 5,
       // enforceSizeThreshold: 50000,
       cacheGroups: {
-        defaultVendors: {
+        vendors: {
           test: /[\\/]node_modules[\\/]/,
-          priority: -10,
-          reuseExistingChunk: true,
-        },
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true,
+          name: "vendors",
+          chunks: "all",
         },
       },
     },

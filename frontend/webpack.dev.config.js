@@ -24,6 +24,13 @@ module.exports = merge(common, {
     minimize: false,
     splitChunks: {
       chunks: "all",
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          chunks: "all",
+        },
+      },
     },
   },
   plugins: [
