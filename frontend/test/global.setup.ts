@@ -4,14 +4,17 @@ import path from "node:path";
 import fs from "node:fs";
 
 async function globalSetup(config: FullConfig) {
-  // delete screeshots
-  const screenshotsFolder = path.join("./output/screens");
-  if (fs.existsSync(screenshotsFolder)) {
-    fs.rm(screenshotsFolder, { recursive: true, force: true }, (error) => {
-      if (error) {
-        console.error("Error deleting screenshots", error);
-      }
-    });
+  // delete previous Playwright outputs
+  const folders = ["./output/screens", "./output/results"];
+  for (const folder of folders) {
+    const folderPath = path.join(folder);
+    if (fs.existsSync(folderPath)) {
+      fs.rm(folderPath, { recursive: true, force: true }, (error) => {
+        if (error) {
+          console.error(`Error deleting ${folder}`, error);
+        }
+      });
+    }
   }
 }
 
