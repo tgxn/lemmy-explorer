@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 
 import axios from "axios";
 import { QueryKey, UseQueryResult, useQuery } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ export default function useCachedMultipart<T = any>(
   const [loadedChunks, setLoadedChunks] = useState<number>(0);
 
   const metaQuery: UseQueryResult<MultiPartMetadata, Error> = useQuery({
-    queryKey: [queryKey, metadataPath, "meta"],
+    queryKey: [queryKey, metadataPath, "metadata"],
     queryFn: () =>
       axios
         .get<MultiPartMetadata>(`/data/${metadataPath}.json`, {
@@ -41,10 +41,11 @@ export default function useCachedMultipart<T = any>(
     queryKey: [queryKey, metadataPath, "data"],
     enabled: metaQuery.isSuccess,
     queryFn: async () => {
-      const requests: Promise<T[]>[] = Array.from({ length: metaQuery.data?.count ?? 0 }, (_, i) =>
+      const dataChunkLength = metaQuery.data?.count ?? 0;
+      const requests: Promise<T[]>[] = Array.from({ length: dataChunkLength }, (_, index) =>
         axios
-          .get<T[]>(`/data/${metadataPath}/${i}.json`, {
-            timeout: 10000,
+          .get<T[]>(`/data/${metadataPath}/${index}.json`, {
+            timeout: 7500,
           })
           .then((res) => {
             setLoadedChunks((current: number) => current + 1);
