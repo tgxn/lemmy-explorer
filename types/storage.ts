@@ -60,16 +60,23 @@ export type IFediseerTag = {
   rank?: number;
 };
 
-export type IFediseerInstanceData = {
+type IFediseerInstanceData = {
+  visibility_endorsements: "OPEN" | "ENDORSED" | "PRIVATE";
+  visibility_censures: "OPEN" | "ENDORSED" | "PRIVATE";
+  visibility_hesitations: "OPEN" | "ENDORSED" | "PRIVATE";
+
+  flags: IFediseerInstanceFlags[];
   id: number;
   domain: string;
   software: string;
   version: string;
+
   claimed: number;
   open_registrations: boolean;
   email_verify: boolean;
   approval_required: boolean;
   has_captcha: boolean;
+
   approvals: number;
   endorsements: number;
   guarantor: string;
@@ -78,14 +85,14 @@ export type IFediseerInstanceData = {
   moderators: number;
 
   state: "UP" | "UNREACHABLE" | "OFFLINE" | "DECOMMISSIONED";
+};
 
-  tags: IFediseerTag[] | string[];
+export type IFediseerInstanceDataTagsString = IFediseerInstanceData & {
+  tags: string[];
+};
 
-  visibility_endorsements: "OPEN" | "ENDORSED" | "PRIVATE";
-  visibility_censures: "OPEN" | "ENDORSED" | "PRIVATE";
-  visibility_hesitations: "OPEN" | "ENDORSED" | "PRIVATE";
-
-  flags: IFediseerInstanceFlags[];
+export type IFediseerInstanceDataTagsObject = IFediseerInstanceData & {
+  tags: IFediseerTag[];
 };
 
 /// FEDIVERSE
