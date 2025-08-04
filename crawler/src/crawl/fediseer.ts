@@ -93,34 +93,7 @@ export default class CrawlFediseer {
       },
     );
 
-    // // map count and rank into tags, based on data from fediseerTopTagsData [{ tag, count }]
-    // fediseerWhitelist.forEach((instance: IFediseerInstanceDataTagsString) => {
-    //   const parsedTagsArray: IFediseerTag[] = instance.tags.map(
-    //     (tag: IFediseerTag | string): IFediseerTag => {
-    //       // find tree tag in fediseerTopTagsData
-    //       const index: number = fediseerTopTagsData.data.findIndex(
-    //         (fediseerTag: IFediseerTag) => fediseerTag.tag == tag,
-    //       );
-
-    //       const fediseerTag: IFediseerTag | undefined =
-    //         index >= 0 ? fediseerTopTagsData.data[index] : undefined;
-
-    //       if (!fediseerTag) logging.warn("fediseerTag not found in top tags", tag, fediseerTag);
-
-    //       return {
-    //         tag: typeof tag === "string" ? tag : tag.tag,
-    //         count: fediseerTag ? fediseerTag.count : undefined,
-    //         rank: index >= 0 ? index + 1 : undefined,
-    //       };
-    //     },
-    //   );
-
-    //   instance.tags = parsedTagsArray;
-    // });
-
     logging.trace("fediseerWhitelist", fediseerWhitelist);
-
-    // const instances = [...fediseerWhitelist];
 
     await storage.fediseer.addNew(fediseerWhitelist);
 
