@@ -96,9 +96,9 @@ export default class BaseQueue<T> {
           await storage.tracking.upsertError(this.queueName, job.data.baseUrl, errorDetail);
 
           logging.error(`${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`, error);
-
-          return;
         }
+
+        return;
       } finally {
         await storage.close();
       }
