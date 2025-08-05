@@ -124,23 +124,6 @@ jobs:
           name: playwright-results
           path: frontend/output/report/
 
-      # - name: Comment with screenshots
-      #   if: github.event_name == 'pull_request'
-      #   uses: actions/github-script@v7
-      #   env:
-      #     ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
-      #   with:
-      #     script: |
-      #       const url = process.env.ARTIFACT_URL;
-      #       if (url) {
-      #         await github.rest.issues.createComment({
-      #           issue_number: context.issue.number,
-      #           owner: context.repo.owner,
-      #           repo: context.repo.repo,
-      #           body: `Playwright screenshots: [download here](${url})`
-      #         });
-      #       }
-
       - name: Create/Update Comment
         env:
           HEAD_SHA: ${{ env.HEAD_SHA }}
@@ -155,8 +138,6 @@ jobs:
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
-
-            ![Playwright Results](${{ steps.upload-results.outputs.artifact-url }}/report/index.html)
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
