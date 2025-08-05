@@ -197,7 +197,7 @@ jobs:
 
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
-            [Playwright Report](<a href="${{ env.CI_BASE_URL }}/report/index.html" target="_blank">Playwright Report</a>)
+            [Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
 
             ![Screenshot](${{ env.CI_BASE_URL }}/screens/main.png)
 
