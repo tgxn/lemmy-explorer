@@ -197,13 +197,13 @@ jobs:
 
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
-            [Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
+            [Playwright Report](<a href="${{ env.CI_BASE_URL }}/report/index.html" target="_blank">Playwright Report</a>)
 
             ![Screenshot](${{ env.CI_BASE_URL }}/screens/main.png)
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
 
-          reactions: "+1, -1, laugh, confused, heart, hooray, rocket, eyes"
+          reactions: "+1, heart, rocket, hooray"
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
