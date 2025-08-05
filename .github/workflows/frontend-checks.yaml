@@ -220,11 +220,11 @@ jobs:
 
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
-            [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
+            [Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
 
             ![Screenshot](${{ env.CI_BASE_URL }}/screens/main.png)
 
-            ![Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
+            [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
 
           reactions: "+1"
 
