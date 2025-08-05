@@ -133,9 +133,8 @@ jobs:
       - name: Upload First Image to S3
         shell: bash
         env:
-          CI_S3_BUCKET: ${{ vars.CI_S3_BUCKET }}
-          CI_AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
-          CI_AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
         run: |
           # find the first png from frontend/output/report
           screenshot=$(find frontend/output/report -type f -name "*.png" | head -n 1)
@@ -147,8 +146,8 @@ jobs:
 
           # Upload the screenshot to S3
           UPLOAD_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/screens/main.png"
-          echo "Uploading $screenshot to s3://$CI_S3_BUCKET/$UPLOAD_PATH"
-          aws s3 cp "$screenshot" "s3://$CI_S3_BUCKET/$UPLOAD_PATH"
+          echo "Uploading $screenshot to s3://${{ vars.CI_S3_BUCKET }}/$UPLOAD_PATH"
+          aws s3 cp "$screenshot" "s3://${{ vars.CI_S3_BUCKET }}/$UPLOAD_PATH"
 
           # Upload playwright report to S3
           REPORT_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/report"
