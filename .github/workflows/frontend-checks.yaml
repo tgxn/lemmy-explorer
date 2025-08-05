@@ -101,6 +101,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
 
+      # Yarn Install ./crawler
+      - name: Yarn Install ./crawler
+        uses: ./.github/actions/yarn-install
+        with:
+          working-directory: ./crawler
+
+      # Run Crawler Output Script
+      - name: Run Health Script
+        run: yarn health
+        working-directory: ./crawler
+
+      - name: Run Output Script
+        run: yarn output
+        working-directory: ./crawler
+
       # Yarn Install ./frontend
       - name: Yarn Install ./frontend
         uses: ./.github/actions/yarn-install
@@ -158,46 +173,6 @@ jobs:
           BASE_URL="https://ci.lemmyverse.net/run/${{ github.event.pull_request.number }}/${{ env.GITHUB_JOB }}"
           echo "CI_BASE_URL=$BASE_URL" >> $GITHUB_ENV
 
-      # - name: Comment with screenshots
-      #   if: github.event_name == 'pull_request'
-      #   id: screenshot-path
-      #   uses: actions/github-script@v7
-      #   # env:
-      #   #   ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
-      #   #   CI_AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
-      #   #   CI_AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
-      #   with:
-      #     result-encoding: string
-      #     script: |
-      #       const url = process.env.ARTIFACT_URL;
-
-      #       const fs = require('fs');
-      #       const path = require('path');
-
-      #       const reportDir = path.join(__dirname, 'frontend', 'output', 'report');
-      #       const files = fs.readdirSync(reportDir);
-      #       const screenshotFile = files.find(file => file.endsWith('.png'));
-      #       if (!screenshotFile) {
-      #         throw new Error('No screenshot found in the report directory');
-      #       }
-
-      #       const screenshotPath = path.join(reportDir, screenshotFile);
-      #       return screenshotPath;
-
-      # - name: Upload Screenshot to S3 CI Bucket
-      #   if: always()
-      #   id: upload-screenshots
-      #   uses: aws-actions/s3-sync@v0.2.0
-      #   with:
-      #     bucket: ${{ vars.CI_S3_BUCKET }}
-      #     source-dir: ${{ steps.screenshot-path.outputs.result }}
-      #     destination-dir: playwright-screens/${{ github.event.pull_request.number }}/
-
-      # - name: Generate Artifact URL
-      #   id: generate-artifact-url
-      #   run: |
-      #     echo "ARTIFACT_URL=https://${{ vars.CI_S3_BUCKET }}.s3.amazonaws.com/playwright-results/${{ github.event.pull_request.number }}/" >> $GITHUB_ENV
-
       - name: Find Comment
         uses: peter-evans/find-comment@v3
         id: find-comment
@@ -226,7 +201,7 @@ jobs:
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
 
-          reactions: "+1"
+          reactions: "+1, -1, laugh, confused, heart, hooray, rocket, eyes"
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
