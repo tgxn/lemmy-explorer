@@ -116,13 +116,83 @@ jobs:
         run: yarn test
         working-directory: ./frontend
 
-      - name: Upload Playwright Results
+      - name: Upload Playwright Report
         if: always()
-        id: upload-results
+        id: upload-report
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-results
+          name: playwright-report
           path: frontend/output/report/
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          arch: amd64
+
+      - name: Upload First Image to S3
+        shell: bash
+        env:
+          CI_S3_BUCKET: ${{ vars.CI_S3_BUCKET }}
+          CI_AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
+          CI_AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # find the first png from frontend/output/report
+          screenshot=$(find frontend/output/report -type f -name "*.png" | head -n 1)
+          if [ -z "$screenshot" ]; then
+            echo "No screenshot found in frontend/output/report"
+            exit 1
+          fi
+          echo "Found screenshot: $screenshot"
+
+          # Upload the screenshot to S3
+          UPLOAD_PATH="screens/${{ github.event.pull_request.number }}/${{ github.run.id }}"
+          echo "Uploading $screenshot to s3://$CI_S3_BUCKET/$UPLOAD_PATH"
+          aws s3 cp "$screenshot" "s3://$CI_S3_BUCKET/$UPLOAD_PATH"
+
+          # Generate the file URL
+          FILE_URL="https://ci.lemmyverse.net/$UPLOAD_PATH"
+          echo "SCREENSHOT_FILE_URL=$(echo $FILE_URL)" >> $GITHUB_ENV
+
+      # - name: Comment with screenshots
+      #   if: github.event_name == 'pull_request'
+      #   id: screenshot-path
+      #   uses: actions/github-script@v7
+      #   # env:
+      #   #   ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
+      #   #   CI_AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
+      #   #   CI_AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
+      #   with:
+      #     result-encoding: string
+      #     script: |
+      #       const url = process.env.ARTIFACT_URL;
+
+      #       const fs = require('fs');
+      #       const path = require('path');
+
+      #       const reportDir = path.join(__dirname, 'frontend', 'output', 'report');
+      #       const files = fs.readdirSync(reportDir);
+      #       const screenshotFile = files.find(file => file.endsWith('.png'));
+      #       if (!screenshotFile) {
+      #         throw new Error('No screenshot found in the report directory');
+      #       }
+
+      #       const screenshotPath = path.join(reportDir, screenshotFile);
+      #       return screenshotPath;
+
+      # - name: Upload Screenshot to S3 CI Bucket
+      #   if: always()
+      #   id: upload-screenshots
+      #   uses: aws-actions/s3-sync@v0.2.0
+      #   with:
+      #     bucket: ${{ vars.CI_S3_BUCKET }}
+      #     source-dir: ${{ steps.screenshot-path.outputs.result }}
+      #     destination-dir: playwright-screens/${{ github.event.pull_request.number }}/
+
+      # - name: Generate Artifact URL
+      #   id: generate-artifact-url
+      #   run: |
+      #     echo "ARTIFACT_URL=https://${{ vars.CI_S3_BUCKET }}.s3.amazonaws.com/playwright-results/${{ github.event.pull_request.number }}/" >> $GITHUB_ENV
 
       - name: Find Comment
         uses: peter-evans/find-comment@v3
@@ -147,6 +217,8 @@ jobs:
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
+
+            ![Screenshot](${{ env.SCREENSHOT_FILE_URL }})
           reactions: "+1"
 
   frontend-unit-tests:
