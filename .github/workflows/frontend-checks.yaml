@@ -146,13 +146,17 @@ jobs:
           echo "Found screenshot: $screenshot"
 
           # Upload the screenshot to S3
-          UPLOAD_PATH="screens/${{ github.event.pull_request.number }}/${{ github.run.id }}"
+          UPLOAD_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/screens/main.png"
           echo "Uploading $screenshot to s3://$CI_S3_BUCKET/$UPLOAD_PATH"
           aws s3 cp "$screenshot" "s3://$CI_S3_BUCKET/$UPLOAD_PATH"
 
-          # Generate the file URL
-          FILE_URL="https://ci.lemmyverse.net/$UPLOAD_PATH"
-          echo "SCREENSHOT_FILE_URL=$(echo $FILE_URL)" >> $GITHUB_ENV
+          # Upload playwright report to S3
+          REPORT_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/report"
+          echo "Uploading frontend/output/report to s3://$CI_S3_BUCKET/$REPORT_PATH"
+          aws s3 sync frontend/output/report "s3://$CI_S3_BUCKET/$REPORT_PATH"
+
+          # Generate the URL for the artifacts
+          echo "CI_BASE_URL=run/${{ github.event.pull_request.number }}/${{ github.run.id }}" >> $GITHUB_ENV
 
       # - name: Comment with screenshots
       #   if: github.event_name == 'pull_request'
@@ -218,7 +222,10 @@ jobs:
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
 
-            ![Screenshot](${{ env.SCREENSHOT_FILE_URL }})
+            ![Screenshot](${{ env.CI_BASE_URL }}/screens/main.png)
+
+            ![Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
+
           reactions: "+1"
 
   frontend-unit-tests:
