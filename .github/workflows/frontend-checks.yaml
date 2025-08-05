@@ -145,7 +145,7 @@ jobs:
           fi
           echo "Found screenshot: $screenshot"
 
-          # Upload the screenshot to S3
+          # Upload the screenshot to S3CI_BASE_URL
           UPLOAD_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/screens/main.png"
           echo "Uploading $screenshot to s3://$CI_S3_BUCKET/$UPLOAD_PATH"
           aws s3 cp "$screenshot" "s3://$CI_S3_BUCKET/$UPLOAD_PATH"
