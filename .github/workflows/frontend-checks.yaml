@@ -194,32 +194,32 @@ jobs:
       #   run: |
       #     echo "ARTIFACT_URL=https://${{ vars.CI_S3_BUCKET }}.s3.amazonaws.com/playwright-results/${{ github.event.pull_request.number }}/" >> $GITHUB_ENV
 
-      - name: Find Comment
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "## Playwright Test Results"
+      # - name: Find Comment
+      #   uses: peter-evans/find-comment@v3
+      #   id: find-comment
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     comment-author: "github-actions[bot]"
+      #     body-includes: "## Playwright Test Results"
 
-      - name: Create/Update Comment
-        env:
-          HEAD_SHA: ${{ env.HEAD_SHA }}
-          ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          edit-mode: replace
-          body: |-
-            ## Playwright Test Results
+      # - name: Create/Update Comment
+      #   env:
+      #     HEAD_SHA: ${{ env.HEAD_SHA }}
+      #     ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
+      #   uses: peter-evans/create-or-update-comment@v4
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     comment-id: ${{ steps.find-comment.outputs.comment-id }}
+      #     edit-mode: replace
+      #     body: |-
+      #       ## Playwright Test Results
 
-            Playwright tests have been run against this pull request. You can find the results in the attached artifact.
+      #       Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
-            [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
+      #       [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
 
-            ![Screenshot](${{ env.SCREENSHOT_FILE_URL }})
-          reactions: "+1"
+      #       ![Screenshot](${{ env.SCREENSHOT_FILE_URL }})
+      #     reactions: "+1"
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
