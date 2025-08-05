@@ -3,8 +3,8 @@ import { rm, mkdir, readFile, copyFile } from "node:fs/promises";
 
 import { S3Client, PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
 
-import logging from "../lib/logging";
 import { AWS_REGION, PUBLISH_S3_BUCKET, CHECKPOINT_DIR, REDIS_DUMP_FILE } from "../lib/const";
+import logging from "../lib/logging";
 
 // upload a copy of the file in REDIS_DUMP_FILE to S3
 export async function syncCheckpoint() {
