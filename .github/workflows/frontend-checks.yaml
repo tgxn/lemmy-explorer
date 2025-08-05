@@ -132,6 +132,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
+          body-includes: "## Playwright Tests Results"
           body: |-
             ## Playwright Tests Results
 
