@@ -124,6 +124,14 @@ jobs:
           name: playwright-results
           path: frontend/output/report/
 
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "## Playwright Tests Results"
+
       - name: Create/Update Comment
         env:
           HEAD_SHA: ${{ env.HEAD_SHA }}
@@ -131,14 +139,15 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
-          body-includes: "## Playwright Tests Results"
           body: |-
             ## Playwright Tests Results
 
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
+          reactions: "+1"
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
