@@ -116,31 +116,47 @@ jobs:
         run: yarn test
         working-directory: ./frontend
 
-      - name: Upload Playwright Screenshots
+      - name: Upload Playwright Results
         if: always()
-        id: upload-screenshots
+        id: upload-results
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-screenshots
-          path: frontend/output/results/**/*.png
-          if-no-files-found: ignore
+          name: playwright-results
+          path: frontend/output/report/
 
-      - name: Comment with screenshots
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+      # - name: Comment with screenshots
+      #   if: github.event_name == 'pull_request'
+      #   uses: actions/github-script@v7
+      #   env:
+      #     ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
+      #   with:
+      #     script: |
+      #       const url = process.env.ARTIFACT_URL;
+      #       if (url) {
+      #         await github.rest.issues.createComment({
+      #           issue_number: context.issue.number,
+      #           owner: context.repo.owner,
+      #           repo: context.repo.repo,
+      #           body: `Playwright screenshots: [download here](${url})`
+      #         });
+      #       }
+
+      - name: Create/Update Comment
         env:
+          HEAD_SHA: ${{ env.HEAD_SHA }}
           ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          script: |
-            const url = process.env.ARTIFACT_URL;
-            if (url) {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `Playwright screenshots: [download here](${url})`
-              });
-            }
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |-
+            ## Playwright Tests Results
+
+            Playwright tests have been run against this pull request. You can find the results in the attached artifact.
+
+            [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
+
+            ![Playwright Results](${{ steps.upload-results.outputs.artifact-url }}/report/index.html)
 
   frontend-unit-tests:
     runs-on: ubuntu-latest
