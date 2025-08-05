@@ -136,26 +136,26 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
         run: |
-          # find the first png from frontend/output/report
-          screenshot=$(find frontend/output/report -type f -name "*.png" | head -n 1)
+          # find the first png from frontend/output/results
+          screenshot=$(find frontend/output/results -type f -name "*.png" | head -n 1)
           if [ -z "$screenshot" ]; then
-            echo "No screenshot found in frontend/output/report"
+            echo "No screenshot found in frontend/output/results"
             exit 1
           fi
           echo "Found screenshot: $screenshot"
 
           # Upload the screenshot to S3
-          UPLOAD_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/screens/main.png"
+          UPLOAD_PATH="run/${{ github.event.pull_request.number }}/${{ env.GITHUB_JOB }}/screens/main.png"
           echo "Uploading $screenshot to s3://${{ vars.CI_S3_BUCKET }}/$UPLOAD_PATH"
           aws s3 cp "$screenshot" "s3://${{ vars.CI_S3_BUCKET }}/$UPLOAD_PATH"
 
           # Upload playwright report to S3
-          REPORT_PATH="run/${{ github.event.pull_request.number }}/${{ github.run.id }}/report"
+          REPORT_PATH="run/${{ github.event.pull_request.number }}/${{ env.GITHUB_JOB }}/report"
           echo "Uploading frontend/output/report to s3://$CI_S3_BUCKET/$REPORT_PATH"
           aws s3 sync frontend/output/report "s3://$CI_S3_BUCKET/$REPORT_PATH"
 
           # Generate the URL for the artifacts
-          echo "CI_BASE_URL=run/${{ github.event.pull_request.number }}/${{ github.run.id }}" >> $GITHUB_ENV
+          echo "CI_BASE_URL=run/${{ github.event.pull_request.number }}/${{ env.GITHUB_JOB }}" >> $GITHUB_ENV
 
       # - name: Comment with screenshots
       #   if: github.event_name == 'pull_request'
