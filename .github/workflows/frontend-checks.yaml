@@ -152,7 +152,7 @@ jobs:
           # Upload playwright report to S3
           REPORT_PATH="run/${{ github.event.pull_request.number }}/${{ env.GITHUB_JOB }}/report"
           echo "Uploading frontend/output/report to s3://$CI_S3_BUCKET/$REPORT_PATH"
-          aws s3 sync frontend/output/report "s3://$CI_S3_BUCKET/$REPORT_PATH"
+          aws s3 sync frontend/output/report "s3://${{ vars.CI_S3_BUCKET }}/$REPORT_PATH"
 
           # Generate the URL for the artifacts
           echo "CI_BASE_URL=run/${{ github.event.pull_request.number }}/${{ env.GITHUB_JOB }}" >> $GITHUB_ENV
