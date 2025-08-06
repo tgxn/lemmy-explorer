@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import "../config/test.utils";
 
 // Test critical UI interactions such as toggling color scheme
 
@@ -8,7 +9,10 @@ const getColorScheme = async (page) => {
 
 test.describe("ui interactions", () => {
   test("toggle color scheme", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", {
+      waitUntil: "networkidle",
+    });
+
     const initial = await getColorScheme(page);
     await page.locator("#toggle-mode").first().click();
     const toggled = await getColorScheme(page);
@@ -18,7 +22,9 @@ test.describe("ui interactions", () => {
 
 // verify that toggling dark mode updates the color scheme
 test("toggle color scheme", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/", {
+    waitUntil: "networkidle",
+  });
 
   const root = page.locator("html");
   const before = await root.getAttribute("data-joy-color-scheme");

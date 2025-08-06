@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 
 import Moment from "react-moment";
 
@@ -25,6 +25,171 @@ type IInstanceListProps = {
 };
 
 function InstanceList({ items }: IInstanceListProps) {
+  const renderTitle = useCallback(({ rowData }) => {
+    // console.log(rowData);
+    return (
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            flexShrink: 0,
+            // pt: 1.5,
+
+            p: 1,
+            px: 3,
+          }}
+        >
+          <Avatar
+            alt={rowData.name}
+            src={rowData.icon}
+            sx={{
+              display: "flex",
+            }}
+          />
+        </Box>
+
+        <Box
+          sx={{
+            p: 0.5,
+            flexGrow: 1,
+            overflow: "hidden",
+          }}
+        >
+          <Typography
+            level="body3"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "16px",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+            }}
+          >
+            <ExtInstanceLink
+              instance={rowData}
+              sx={{
+                color: "var(--joy-palette-primary-50)",
+              }}
+            />
+          </Typography>
+
+          <Typography level="body3">
+            <CopyLink
+              copyText={rowData.baseurl}
+              linkProps={{
+                variant: "plain",
+                color: "neutral",
+                sx: {
+                  color: "var(--joy-palette-primary-50)",
+                },
+              }}
+            />
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }, []);
+
+  const renderActiveUsers = useCallback(
+    ({ rowData }) => (
+      <>
+        Week: <TinyNumber value={rowData.counts.users_active_week} /> / Month:{" "}
+        <TinyNumber value={rowData.counts.users_active_month} />
+      </>
+    ),
+    [],
+  );
+
+  const renderPosts = useCallback(({ rowData }) => <TinyNumber value={rowData.counts.posts} />, []);
+
+  const renderComments = useCallback(({ rowData }) => <TinyNumber value={rowData.counts.comments} />, []);
+
+  const renderBlocks = useCallback(
+    ({ rowData }) => (
+      <Box
+        sx={{
+          px: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Tooltip title="This instance's blocklist" variant="soft" placement="top-start">
+          <Box
+            sx={{
+              px: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <KeyboardDoubleArrowUpIcon /> {rowData.blocks.outgoing}
+          </Box>
+        </Tooltip>
+
+        <Tooltip title="Instances blocking this one" variant="soft" placement="top-start">
+          <Box
+            sx={{
+              px: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <KeyboardDoubleArrowDownIcon /> {rowData.blocks.incoming}
+          </Box>
+        </Tooltip>
+      </Box>
+    ),
+    [],
+  );
+
+  const renderVersion = useCallback(({ rowData }) => <TinyNumber value={rowData.version} />, []);
+
+  const renderFirstSeen = useCallback(({ rowData }) => {
+    if (rowData.uptime?.uptime_alltime)
+      return (
+        <>
+          <Tooltip title="First Seen" variant="soft" placement="top-start">
+            <Box
+              sx={{
+                cursor: "default",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}
+              >
+                <RestoreIcon />
+                <Moment fromNow>{rowData.uptime?.date_created}</Moment>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}
+              >
+                <TrendingUpIcon />
+                {rowData.uptime?.uptime_alltime}%
+              </Box>
+            </Box>
+          </Tooltip>
+        </>
+      );
+
+    if (!rowData.uptime?.uptime_alltime)
+      return (
+        <>
+          <ThumbDownIcon />
+        </>
+      );
+  }, []);
+
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -39,69 +204,7 @@ function InstanceList({ items }: IInstanceListProps) {
           headerStyle={{
             justifyContent: "left",
           }}
-          cellRenderer={({ rowData }) => {
-            // console.log(rowData);
-            return (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Box
-                  sx={{
-                    flexShrink: 0,
-                    // pt: 1.5,
-
-                    p: 1,
-                    px: 3,
-                  }}
-                >
-                  <Avatar
-                    alt={rowData.name}
-                    src={rowData.icon}
-                    sx={{
-                      display: "flex",
-                    }}
-                  />
-                </Box>
-
-                <Box
-                  sx={{
-                    p: 0.5,
-                    flexGrow: 1,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Typography
-                    level="body3"
-                    sx={{
-                      fontWeight: "bold",
-                      fontSize: "16px",
-                      overflow: "hidden",
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    <ExtInstanceLink
-                      instance={rowData}
-                      sx={{
-                        color: "var(--joy-palette-primary-50)",
-                      }}
-                    />
-                  </Typography>
-
-                  <Typography level="body3">
-                    <CopyLink
-                      copyText={rowData.baseurl}
-                      linkProps={{
-                        variant: "plain",
-                        color: "neutral",
-                        sx: {
-                          color: "var(--joy-palette-primary-50)",
-                        },
-                      }}
-                    />
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          }}
+          cellRenderer={renderTitle}
         />,
 
         <Column
@@ -113,12 +216,7 @@ function InstanceList({ items }: IInstanceListProps) {
           headerStyle={{
             justifyContent: "left",
           }}
-          cellRenderer={({ rowData }) => (
-            <>
-              Week: <TinyNumber value={rowData.counts.users_active_week} /> / Month:{" "}
-              <TinyNumber value={rowData.counts.users_active_month} />
-            </>
-          )}
+          cellRenderer={renderActiveUsers}
         />,
 
         <Column
@@ -130,7 +228,7 @@ function InstanceList({ items }: IInstanceListProps) {
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.posts} />}
+          cellRenderer={renderPosts}
         />,
 
         <Column
@@ -142,7 +240,7 @@ function InstanceList({ items }: IInstanceListProps) {
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.comments} />}
+          cellRenderer={renderComments}
         />,
 
         <Column
@@ -155,42 +253,7 @@ function InstanceList({ items }: IInstanceListProps) {
             justifyContent: "center",
             alignItems: "center",
           }}
-          cellRenderer={({ rowData }) => (
-            <Box
-              sx={{
-                px: 1,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Tooltip title="This instance's blocklist" variant="soft" placement="top-start">
-                <Box
-                  sx={{
-                    px: 1,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <KeyboardDoubleArrowUpIcon /> {rowData.blocks.outgoing}
-                </Box>
-              </Tooltip>
-
-              <Tooltip title="Instances blocking this one" variant="soft" placement="top-start">
-                <Box
-                  sx={{
-                    px: 1,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <KeyboardDoubleArrowDownIcon /> {rowData.blocks.incoming}
-                </Box>
-              </Tooltip>
-            </Box>
-          )}
+          cellRenderer={renderBlocks}
         />,
 
         <Column
@@ -202,7 +265,7 @@ function InstanceList({ items }: IInstanceListProps) {
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.version} />}
+          cellRenderer={renderVersion}
         />,
 
         <Column
@@ -217,50 +280,7 @@ function InstanceList({ items }: IInstanceListProps) {
             display: "flex",
             justifyContent: "flex-start",
           }}
-          cellRenderer={({ rowData }) => {
-            if (rowData.uptime?.uptime_alltime)
-              return (
-                <>
-                  <Tooltip title="First Seen" variant="soft" placement="top-start">
-                    <Box
-                      sx={{
-                        cursor: "default",
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-start",
-                          alignItems: "center",
-                        }}
-                      >
-                        <RestoreIcon />
-                        <Moment fromNow>{rowData.uptime?.date_created}</Moment>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-start",
-                          alignItems: "center",
-                        }}
-                      >
-                        <TrendingUpIcon />
-                        {rowData.uptime?.uptime_alltime}%
-                      </Box>
-                    </Box>
-                  </Tooltip>
-                </>
-              );
-
-            if (!rowData.uptime?.uptime_alltime)
-              return (
-                <>
-                  <ThumbDownIcon />
-                </>
-              );
-          }}
+          cellRenderer={renderFirstSeen}
         />,
       ]}
     </VirtualTable>

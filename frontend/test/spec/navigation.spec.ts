@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import "../config/test.utils";
 
 // Helper to check local storage
 async function getStorage(page) {
@@ -7,7 +8,9 @@ async function getStorage(page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/", {
+    waitUntil: "networkidle",
+  });
 });
 
 test("navigate between Instances and Communities", async ({ page }) => {
@@ -16,6 +19,7 @@ test("navigate between Instances and Communities", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Communities" }).click();
   await expect(page.locator('input[placeholder="Filter Communities"]')).toBeVisible();
+  await expect(page).toHaveURL(/\/communities$/);
 });
 
 test("switch instance view type", async ({ page }) => {
