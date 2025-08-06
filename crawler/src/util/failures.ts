@@ -16,6 +16,7 @@
 import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
 
+import type { BaseURL, ActorID } from "../../../types/basic";
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 import { getActorBaseUrl } from "../lib/validator";
 
@@ -82,9 +83,8 @@ export default class FailureCrawl {
     logging.debug("last_crawl: keep", keep, "remove", remove);
   }
 
-  isInstanceValid(baseUrl, actorId) {
+  isInstanceValid(baseUrl: BaseURL, actorId: ActorID) {
     const actorBaseUrl = getActorBaseUrl(actorId);
-
     if (!actorBaseUrl) {
       logging.error(baseUrl, "INVALID fail", actorId);
       return false;

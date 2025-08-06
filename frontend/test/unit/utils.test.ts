@@ -1,4 +1,4 @@
-import { parseVersion, compareVersionStrings } from "../src/lib/utils";
+import { parseVersion, compareVersionStrings } from "../../src/lib/utils";
 
 describe("parseVersion", () => {
   it("parses standard versions", () => {
