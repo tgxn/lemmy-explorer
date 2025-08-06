@@ -2,7 +2,9 @@ import validator from "validator";
 
 import logging from "./logging";
 
-export function isValidLemmyDomain(domain: string): boolean {
+import type { BaseURL, ActorID } from "../../../types/basic";
+
+export function isValidLemmyDomain(domain: BaseURL): boolean {
   // if it's not a string
   if (typeof domain !== "string") {
     logging.error("domain is not a string", domain);
@@ -12,18 +14,45 @@ export function isValidLemmyDomain(domain: string): boolean {
   return validator.isFQDN(domain, { allow_numeric_tld: true });
 }
 
-export function getActorBaseUrl(actorId: string): string | false {
-  const actorBaseUrl = actorId.split("/")[2];
+export function getActorBaseUrl(actorId: ActorID | undefined): string | null {
+  if (typeof actorId !== "string") {
+    logging.error("actorId is not a string", actorId);
+    return null;
+  }
+
+  const parts = actorId.split("/");
+  if (parts.length < 3) {
+    logging.error("actorId has invalid structure", actorId);
+    return null;
+  }
+
+  const actorBaseUrl = parts[2];
 
   if (isValidLemmyDomain(actorBaseUrl)) {
     return actorBaseUrl;
   }
 
-  return false;
+  return null;
 }
 
-export function getActorCommunity(actorId: string): string {
-  const actorCommunity = actorId.split("/")[4];
+export function getActorCommunity(actorId: string | undefined): string | null {
+  if (typeof actorId !== "string") {
+    logging.error("actorId is not a string", actorId);
+    return null;
+  }
+
+  const parts = actorId.split("/");
+  if (parts.length < 5) {
+    logging.error("actorId has invalid structure", actorId);
+    return null;
+  }
+
+  const actorCommunity = parts[4];
+
+  if (!actorCommunity) {
+    logging.error("actorId missing community segment", actorId);
+    return null;
+  }
 
   return actorCommunity;
 }

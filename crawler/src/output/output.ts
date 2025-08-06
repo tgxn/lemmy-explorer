@@ -1,24 +1,18 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 
-import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS, PIEFED_DEV_URLS } from "../lib/const";
-import logging from "../lib/logging";
+import type {
+  IInstanceData,
+  ICommunityData,
+  IMagazineData,
+  IPiefedCommunityData,
+  IFediverseDataKeyValue,
+  IErrorData,
+  IErrorDataKeyValue,
+  IFullUptimeData,
+} from "../../../types/storage";
 
-import CrawlClient from "../lib/CrawlClient";
-
-import storage from "../lib/crawlStorage";
-import { IInstanceData } from "../../../types/storage";
-import { ICommunityData } from "../../../types/storage";
-import { IMagazineData } from "../../../types/storage";
-import { IPiefedCommunityData } from "../../../types/storage";
-import { IFediverseDataKeyValue } from "../../../types/storage";
-
-import { IErrorData, IErrorDataKeyValue } from "../../../types/storage";
-import { IFullUptimeData } from "../../../types/storage";
-
-import OutputFileWriter from "./file_writer";
-
-import {
+import type {
   IMetaDataOutput,
   IInstanceDataOutput,
   IRegistrationMode,
@@ -29,6 +23,13 @@ import {
   IClassifiedErrorOutput,
 } from "../../../types/output";
 
+import { OUTPUT_MAX_AGE, EXPORT_MAX_LENGTHS, PIEFED_DEV_URLS } from "../lib/const";
+import logging from "../lib/logging";
+import storage from "../lib/crawlStorage";
+
+import CrawlClient from "../lib/CrawlClient";
+
+import OutputFileWriter from "./file_writer";
 import OutputUtils from "./utils";
 import OutputTrust from "./trust";
 import OutputClassifier from "./classifier";

@@ -15,7 +15,7 @@ export default defineConfig({
   //   globalSetup: require.resolve("./global-setup"),
 
   // delete screens on startuip
-  globalSetup: require.resolve("./test/global.setup.ts"),
+  globalSetup: require.resolve("./test/config/global.setup.ts"),
 
   //   // path to the global teardown files.
   //   globalTeardown: require.resolve("./global-teardown"),
@@ -60,6 +60,7 @@ export default defineConfig({
   use: {
     // Base URL to use in actions like `await page.goto('/')`.
     baseURL: "http://127.0.0.1:9191",
+    screenshot: "on",
 
     // Collect trace when retrying the failed test.
     // trace: "on-first-retry",
