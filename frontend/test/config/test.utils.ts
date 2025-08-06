@@ -3,7 +3,10 @@ import { test } from "@playwright/test";
 // Save a screenshot after each test in a flat directory with a stable name.
 // Screenshots contain the test name and are saved in the `output/screens` directory.
 test.afterEach(async ({ page }) => {
-  const testName = test.info().title.replace(/[^a-zA-Z0-9]/g, "_");
+  const testName = test
+    .info()
+    .title.replace(/[^a-zA-Z0-9]/g, "_")
+    .toLowerCase();
 
   const path = `output/screens/${testName}.png`;
 

@@ -151,25 +151,23 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
         run: |
-          # find the first png from frontend/output/results
-          screenshot=$(find frontend/output/results -type f -name "*.png" | head -n 1)
-          if [ -z "$screenshot" ]; then
-            echo "No screenshot found in frontend/output/results"
-            exit 1
-          fi
-          echo "Found screenshot: $screenshot"
-
           RUN_BASE_PATH="run/${{ github.event.pull_request.number }}/${{ github.run_number }}"
 
+          SCREEN_DIR="frontend/output/screens"
+          REPORT_DIR="frontend/output/report"
+          S3_BUCKET="${{ vars.CI_S3_BUCKET }}"
+
           # Upload the screenshot to S3
-          UPLOAD_PATH="$RUN_BASE_PATH/screens/main.png"
-          echo "Uploading $screenshot to s3://${{ vars.CI_S3_BUCKET }}/$UPLOAD_PATH"
-          aws s3 cp "$screenshot" "s3://${{ vars.CI_S3_BUCKET }}/$UPLOAD_PATH"
+          if [ -d "$SCREEN_DIR" ]; then
+            echo "Uploading screenshots from $SCREEN_DIR to s3://$S3_BUCKET/$RUN_BASE_PATH/screens"
+            aws s3 sync "$SCREEN_DIR" "s3://$S3_BUCKET/$RUN_BASE_PATH/screens"
+          else
+            echo "No screenshots directory found at $SCREEN_DIR"
+          fi
 
           # Upload playwright report to S3
-          REPORT_PATH="$RUN_BASE_PATH/report"
-          echo "Uploading frontend/output/report to s3://$CI_S3_BUCKET/$REPORT_PATH"
-          aws s3 sync frontend/output/report "s3://${{ vars.CI_S3_BUCKET }}/$REPORT_PATH"
+          echo "Uploading report from $REPORT_DIR to s3://$S3_BUCKET/$RUN_BASE_PATH/report"
+          aws s3 sync "$REPORT_DIR" "s3://$S3_BUCKET/$RUN_BASE_PATH/report"
 
           # Generate the URL for the artifacts
           BASE_URL="https://ci.lemmyverse.net/$RUN_BASE_PATH"
@@ -199,7 +197,7 @@ jobs:
 
             [Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
 
-            ![Screenshot](${{ env.CI_BASE_URL }}/screens/main.png)
+            ![Screenshot](${{ env.CI_BASE_URL }}/screens/navigate_between_instances_and_communities.png)
 
             [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
 
