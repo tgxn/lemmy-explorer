@@ -28,6 +28,41 @@ module.exports = {
   optimization: {
     sideEffects: true,
     usedExports: true,
+    splitChunks: {
+      chunks: "all",
+      minSize: 50000,
+      maxSize: 150000,
+      minChunks: 1,
+      maxAsyncRequests: 10,
+      maxInitialRequests: 3,
+      // enforceSizeThreshold: 50000,
+      cacheGroups: {
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/,
+          name: "react",
+          chunks: "all",
+          priority: 30,
+        },
+        tanstack: {
+          test: /[\\/]node_modules[\\/](@tanstack|react-query|@tanstack|react-table)[\\/]/,
+          name: "tanstack",
+          chunks: "all",
+          priority: 20,
+        },
+        mui: {
+          test: /[\\/]node_modules[\\/](@mui|@emotion|tss-react)[\\/]/,
+          name: "mui",
+          chunks: "all",
+          priority: 10,
+        },
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          chunks: "all",
+          priority: 0,
+        },
+      },
+    },
   },
   module: {
     rules: [
