@@ -11,7 +11,7 @@ test.afterEach(async ({ page }) => {
   const path = `output/screens/${testName}.png`;
 
   // wait 1000 ms to ensure the page is fully rendered
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(7500);
 
   await page.screenshot({ path });
   console.log("Screenshot saved to", path);

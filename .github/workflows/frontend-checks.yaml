@@ -179,7 +179,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: "github-actions[bot]"
-          body-includes: "## Playwright Test Results"
+          body-includes: "## Frontend Test Results"
 
       - name: Create/Update Comment
         env:
@@ -191,7 +191,7 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           edit-mode: replace
           body: |-
-            ## Playwright Test Results
+            ## Frontend Test Results
 
             Playwright tests have been run against this pull request. You can find the results in the attached artifact.
 
@@ -199,7 +199,7 @@ jobs:
 
             ![Screenshot](${{ env.CI_BASE_URL }}/screens/navigate_between_instances_and_communities.png)
 
-            [Download Playwright Results](${{ steps.upload-results.outputs.artifact-url }})
+            [Download Playwright Report](${{ steps.upload-report.outputs.artifact-url }})
 
           reactions: "+1, heart, rocket, hooray"
 
