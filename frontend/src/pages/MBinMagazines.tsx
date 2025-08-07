@@ -29,6 +29,8 @@ import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from ".
 const MBinGrid = React.lazy(() => import("../components/GridView/MBin"));
 const MBinList = React.lazy(() => import("../components/ListView/MBin"));
 
+import { sortItems, ISorterDefinition, filterByText } from "../lib/utils";
+
 export default function MBinMagazines() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -118,63 +120,23 @@ export default function MBinMagazines() {
     if (debounceFilterText) {
       console.log(`Filtering magazines by ${debounceFilterText}`);
 
-      // split the value on spaces, look for values starting with "-"
-      // if found, remove the "-" and add to the exclude list
-      // if not found, apend to the search query
-      let exclude = [];
-      let include = [];
-
-      let searchTerms = debounceFilterText.toLowerCase().split(" ");
-      searchTerms.forEach((term) => {
-        if (term.startsWith("-") && term.substring(1) !== "") {
-          exclude.push(term.substring(1));
-        } else if (term !== "") {
-          include.push(term);
-        }
-      });
-      console.log(`Include: ${include.join(", ")}`);
-      console.log(`Exclude: ${exclude.join(", ")}`);
-
-      // search for any included terms
-      if (include.length > 0) {
-        console.log(`Searching for ${include.length} terms`);
-        include.forEach((term) => {
-          communties = communties.filter((community) => {
-            return (
-              (community.name && community.name.toLowerCase().includes(term)) ||
-              (community.title && community.title.toLowerCase().includes(term)) ||
-              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.description && community.description.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
-
-      // filter out every excluded term
-      if (exclude.length > 0) {
-        console.log(`Filtering out ${exclude.length} terms`);
-        exclude.forEach((term) => {
-          communties = communties.filter((community) => {
-            return !(
-              (community.name && community.name.toLowerCase().includes(term)) ||
-              (community.title && community.title.toLowerCase().includes(term)) ||
-              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.description && community.description.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
+      communties = filterByText(communties, debounceFilterText, (magazine) => [
+        magazine.name,
+        magazine.title,
+        magazine.baseurl,
+        magazine.description,
+      ]);
     }
     console.log(`Filtered ${communties.length} magazines`);
 
     // sorting
-    if (orderBy === "subscriptions") {
-      communties = communties.sort((a, b) => b.subscriptions - a.subscriptions);
-    } else if (orderBy === "posts") {
-      communties = communties.sort((a, b) => b.posts - a.posts);
-    } else if (orderBy === "name") {
-      communties = communties.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    const sorters: ISorterDefinition = {
+      subscriptions: (a, b) => b.subscriptions - a.subscriptions,
+      posts: (a, b) => b.posts - a.posts,
+      name: (a, b) => a.name.localeCompare(b.name),
+    };
+
+    communties = sortItems(communties, orderBy, sorters);
 
     console.log(`Sorted ${communties.length} magazines`);
 
