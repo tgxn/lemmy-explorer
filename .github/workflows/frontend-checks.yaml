@@ -197,19 +197,28 @@ jobs:
 
             [Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
 
+            ### Instances
             ![Instances](${{ env.CI_BASE_URL }}/screens/main___1080p__instances_page_screenshot.png)
+
+            ### Communities
             ![Communities](${{ env.CI_BASE_URL }}/screens/main___1080p__communities_page_screenshot.png)
 
             <details>
-              <summary>Mobile Screenshots</summary>
-              ![Instances](${{ env.CI_BASE_URL }}/screens/main___mobile__communities_page_screenshot.png)
-              ![Communities](${{ env.CI_BASE_URL }}/screens/main___mobile__instances_page_screenshot.png)
+            <summary>Mobile Screenshots</summary>
+
+            ![Instances](${{ env.CI_BASE_URL }}/screens/main___mobile__communities_page_screenshot.png)
+
+            ![Communities](${{ env.CI_BASE_URL }}/screens/main___mobile__instances_page_screenshot.png)
+
             </details>
 
             <details>
-              <summary>Instance Overview Screenshots</summary>
-              ![Screenshot](${{ env.CI_BASE_URL }}/screens/main__instance_view_overview_lemmy_world.png)
-              ![Screenshot](${{ env.CI_BASE_URL }}/screens/main__instance_view_stats_lemmy_world.png)
+            <summary>Instance Overview Screenshots</summary>
+
+            ![Screenshot](${{ env.CI_BASE_URL }}/screens/main__instance_view_overview_lemmy_world.png)
+
+            ![Screenshot](${{ env.CI_BASE_URL }}/screens/main__instance_view_stats_lemmy_world.png)
+
             </details>
 
             _[Download Playwright Artifact](${{ steps.upload-report.outputs.artifact-url }})_
