@@ -47,14 +47,14 @@ export default function Instances() {
   const { isLoading, loadingPercent, isSuccess, isError, error, data } =
     useCachedMultipart<IInstanceDataOutput>("instanceData", "instance");
 
-  const [viewType, setViewType] = useStorage("instance.viewType", "grid");
+  const [viewType, setViewType] = useStorage<string>("instance.viewType", "grid");
 
-  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
-  const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
+  const [orderBy, setOrderBy] = useStorage<string>("instance.orderBy", "smart");
+  const [showOpenOnly, setShowOpenOnly] = useStorage<boolean>("instance.showOpenOnly", false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = useStorage("instance.filterText", "");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const [filterText, setFilterText] = useStorage<string>("instance.filterText", "");
+  const debounceFilterText = useDebounce<string>(filterText, 500);
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
 
@@ -62,7 +62,7 @@ export default function Instances() {
   useEffect(() => {
     if (searchParams.has("query")) setFilterText(searchParams.get("query"));
     if (searchParams.has("order")) setOrderBy(searchParams.get("order"));
-    if (searchParams.has("open")) setShowOpenOnly(searchParams.get("open"));
+    if (searchParams.has("open")) setShowOpenOnly(searchParams.get("open") !== "false");
   }, []);
 
   // update query params

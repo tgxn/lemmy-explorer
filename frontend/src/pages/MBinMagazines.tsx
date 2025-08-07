@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
@@ -41,19 +41,16 @@ export default function MBinMagazines() {
     isSuccess,
     isError,
     error,
-    data: multiPartData,
+    data: magData,
   } = useCachedMultipart<IMBinMagazineOutput>("magazinesData", "magazines");
 
-  const magData: IMBinMagazineOutput[] = multiPartData;
-
-  const [viewType, setViewType] = useStorage("mbin.viewType", "grid");
-
-  const [orderBy, setOrderBy] = React.useState("subscriptions");
-  const [showNSFW, setShowNSFW] = React.useState(false);
+  const [viewType, setViewType] = useStorage<string>("mbin.viewType", "grid");
+  const [orderBy, setOrderBy] = useState<string>("subscriptions");
+  const [showNSFW, setShowNSFW] = useState<boolean | null>(false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const [filterText, setFilterText] = useState<string>("");
+  const debounceFilterText = useDebounce<string>(filterText, 500);
 
   // load query params
   useEffect(() => {
@@ -66,15 +63,25 @@ export default function MBinMagazines() {
   }, []);
 
   // update query params
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
-    if (orderBy != "smart") parms.order = orderBy;
+    if (orderBy != "subscriptions") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
 
-    setSearchParams(parms);
-  }, [orderBy, showNSFW, filterText]);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
+  }, [orderBy, showNSFW, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const magazinesData = React.useMemo(() => {

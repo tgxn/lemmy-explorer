@@ -26,7 +26,8 @@ module.exports = merge(common, {
 
   optimization: {
     minimize: true,
-    runtimeChunk: "single",
+    moduleIds: "deterministic",
+    // runtimeChunk: "single",
     minimizer: [
       new CssMinimizerPlugin(),
       new TerserPlugin({
@@ -44,26 +45,21 @@ module.exports = merge(common, {
         extractComments: false,
       }),
     ],
-    splitChunks: {
-      chunks: "all",
-      minSize: 50000,
-      maxSize: 150000,
-      minChunks: 1,
-      maxAsyncRequests: 10,
-      maxInitialRequests: 5,
-      // enforceSizeThreshold: 50000,
-      cacheGroups: {
-        defaultVendors: {
-          test: /[\\/]node_modules[\\/]/,
-          priority: -10,
-          reuseExistingChunk: true,
-        },
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true,
-        },
-      },
-    },
+    // splitChunks: {
+    //   chunks: "all",
+    //   minSize: 50000,
+    //   maxSize: 150000,
+    //   minChunks: 1,
+    //   maxAsyncRequests: 10,
+    //   maxInitialRequests: 5,
+    //   // enforceSizeThreshold: 50000,
+    //   cacheGroups: {
+    //     vendors: {
+    //       test: /[\\/]node_modules[\\/]/,
+    //       name: "vendors",
+    //       chunks: "all",
+    //     },
+    //   },
+    // },
   },
 });
