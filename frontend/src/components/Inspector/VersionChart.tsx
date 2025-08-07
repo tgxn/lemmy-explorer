@@ -110,6 +110,31 @@ export default function VersionChart() {
           })}
         </AreaChart>
       </ResponsiveContainer>
+
+      <Box>
+        {/* data table of top versions */}
+        {/* would be good to loist out :
+        - latest verions by % of total
+        - the first instance seen at that version
+        - the amount of current instances on that version */}
+        latest version distribution
+        <Box sx={{ display: "flex", flexDirection: "column", p: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "row" }}>
+            <Box sx={{ display: "flex", flexDirection: "row" }}>
+              <Box>Version</Box>
+              <Box>Count</Box>
+            </Box>
+          </Box>
+          {datasetSeries.map((version, index) => {
+            return (
+              <Box key={version} sx={{ display: "flex", flexDirection: "row" }}>
+                <Box>{version}</Box>
+                <Box>{dataset[0][version]}</Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
     </Box>
   );
 }
