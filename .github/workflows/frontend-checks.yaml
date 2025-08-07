@@ -165,6 +165,15 @@ jobs:
             echo "No screenshots directory found at $SCREEN_DIR"
           fi
 
+          # put the instances screenshot into a different folder for persistence
+          TRACK_SCREEN="frontend/output/screens/main___1080p__instances_page_screenshot.png"
+          if [ -f "$TRACK_SCREEN" ]; then
+            echo "Uploading instances screenshot from $TRACK_SCREEN to s3://$S3_BUCKET/$RUN_BASE_PATH/screens/main___1080p__instances_page_screenshot.png"
+            aws s3 cp "$TRACK_SCREEN" "s3://$S3_BUCKET/screens/main___1080p__instances_page_screenshot-$(date +%Y%m%d%H%M%S).png"
+          else
+            echo "No instances screenshot found at $TRACK_SCREEN"
+          fi
+
           # Upload playwright report to S3
           echo "Uploading report from $REPORT_DIR to s3://$S3_BUCKET/$RUN_BASE_PATH/report"
           aws s3 sync "$REPORT_DIR" "s3://$S3_BUCKET/$RUN_BASE_PATH/report"
