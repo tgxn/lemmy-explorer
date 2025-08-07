@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
-import useCachedMultipart from "../hooks/useCachedMultipart";
-
 import { useDebounce } from "@uidotdev/usehooks";
+
 import useStorage from "../hooks/useStorage";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
@@ -14,25 +14,24 @@ import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 import Typography from "@mui/joy/Typography";
-
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
 
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
-
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+
 import { compareVersionStrings } from "../lib/utils";
 
-import InstanceGrid from "../components/GridView/Instance";
-import InstanceList from "../components/ListView/Instance";
-
 import TagFilter from "../components/Shared/TagFilter";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+
+const InstanceGrid = React.lazy(() => import("../components/GridView/Instance"));
+const InstanceList = React.lazy(() => import("../components/ListView/Instance"));
 
 export default function Instances() {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
@@ -403,8 +402,16 @@ export default function Instances() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
-        {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <InstanceGrid items={instancesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <InstanceList items={instancesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Container>
   );

@@ -12,7 +12,6 @@ import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
 
@@ -22,13 +21,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import type { IMBinMagazineOutput } from "../../../types/output";
+
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 
-import MBinGrid from "../components/GridView/MBin";
-import MBinList from "../components/ListView/MBin";
-
-import { IMBinMagazineOutput } from "../../../types/output";
+const MBinGrid = React.lazy(() => import("../components/GridView/MBin"));
+const MBinList = React.lazy(() => import("../components/ListView/MBin"));
 
 export default function MBinMagazines() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -322,8 +321,16 @@ export default function MBinMagazines() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <MBinGrid items={magazinesData} />}
-        {isSuccess && viewType == "list" && <MBinList items={magazinesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <MBinGrid items={magazinesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <MBinList items={magazinesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Container>
   );
