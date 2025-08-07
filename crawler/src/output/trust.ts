@@ -4,7 +4,12 @@ import storage from "../lib/crawlStorage";
 import logging from "../lib/logging";
 
 import type { BaseURL, ActorID } from "../../../types/basic";
-import type { IInstanceData, ICommunityData, IFediseerInstanceData } from "../../../types/storage";
+import type {
+  IInstanceData,
+  ICommunityData,
+  IFediseerInstanceDataTagsObject,
+  IFediseerTag,
+} from "../../../types/storage";
 
 // import {
 //   IErrorData,
@@ -83,7 +88,7 @@ type IAllInstanceMetrics = {
 export default class OutputTrust {
   private instanceList: IInstanceData[] | null;
 
-  public fediseerData: IFediseerInstanceData[] | null = null;
+  public fediseerData: IFediseerInstanceDataTagsObject[] | null = null;
   public endorsements;
 
   public linkedFederation: { [key: string]: number } | null = null;
@@ -150,12 +155,12 @@ export default class OutputTrust {
           throw new Error("fediseerData not loaded in getInstancesWithMetrics");
         }
 
-        const instanceGuarantor = this.fediseerData.find((instance) => instance.domain === baseUrl);
+        const fediseerEntry = this.fediseerData.find((instance) => instance.domain === baseUrl);
 
         let guarantor: string | undefined;
-        if (instanceGuarantor !== undefined && instanceGuarantor.guarantor !== null) {
-          logging.info(baseUrl, "instanceGuarantor", instanceGuarantor.guarantor);
-          guarantor = instanceGuarantor.guarantor;
+        if (fediseerEntry !== undefined && fediseerEntry.guarantor !== null) {
+          logging.info(baseUrl, "instanceGuarantor", fediseerEntry.guarantor);
+          guarantor = fediseerEntry.guarantor;
         }
 
         return {
@@ -179,6 +184,24 @@ export default class OutputTrust {
 
           guarantor,
           endorsements: this.endorsements[baseUrl] || 0,
+
+          //  endorsements: fediseerEntry?.endorsements || 0,
+          approvals: fediseerEntry?.approvals,
+          state: fediseerEntry?.state,
+          censure_reasons: fediseerEntry?.censure_reasons || null,
+          flags: fediseerEntry?.flags || [],
+          sysadmins: fediseerEntry?.sysadmins,
+          moderators: fediseerEntry?.moderators,
+          visibility_endorsements: fediseerEntry?.visibility_endorsements,
+          visibility_censures: fediseerEntry?.visibility_censures,
+          visibility_hesitations: fediseerEntry?.visibility_hesitations,
+          open_registrations: fediseerEntry?.open_registrations,
+          email_verify: fediseerEntry?.email_verify,
+          approval_required: fediseerEntry?.approval_required,
+          has_captcha: fediseerEntry?.has_captcha,
+          software: fediseerEntry?.software,
+          version: fediseerEntry?.version,
+          claimed: fediseerEntry?.claimed,
         };
       }),
     );
