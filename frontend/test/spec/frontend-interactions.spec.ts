@@ -50,9 +50,10 @@ test.describe("instances interactions", () => {
 
   test("enter search terms", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
+
     await page.fill('input[placeholder="Filter Instances"]', "example");
-    await page.waitForTimeout(600);
-    await expect(page).toHaveURL("/search?query=example");
+    await page.waitForTimeout(1000);
+    await expect(page).toHaveURL("/?query=example");
   });
 });
 
@@ -77,14 +78,22 @@ test.describe("mbin interactions", () => {
 
   test("search and order in mbin magazines", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
+
     await page
       .getByRole("button", { name: /Lemmy Explorer/i })
       .first()
       .click();
+
     await page.getByRole("menuitem", { name: /MBin Explorer/i }).click();
     await expect(page).toHaveURL("/mbin/magazines");
+
     await page.fill('input[placeholder="Filter Magazines"]', "test");
-    await expect(page).toHaveURL("/?query=test");
+    // expect to not change instantly
+    await expect(page).toHaveURL("/mbin/magazines");
+    await page.waitForTimeout(650);
+    await expect(page).toHaveURL("/mbin/magazines?query=test");
+
+    // this will change instanly
     await page.getByRole("combobox").first().click();
     await page.getByRole("option", { name: /Posts/i }).click();
     await expect(page).toHaveURL(/order=posts/);
