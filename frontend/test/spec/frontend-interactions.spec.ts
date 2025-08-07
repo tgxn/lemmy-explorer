@@ -1,4 +1,6 @@
-import { test, expect } from "../config/test.utils";
+import { test, expect } from "@playwright/test";
+import { setupGlobalHooks } from "../config/test.utils";
+setupGlobalHooks();
 
 const instancesData = [
   {

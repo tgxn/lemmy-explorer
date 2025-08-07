@@ -1,4 +1,6 @@
-import { test, expect } from "../config/test.utils";
+import { test, expect } from "@playwright/test";
+import { setupGlobalHooks } from "../config/test.utils";
+setupGlobalHooks();
 
 test("should remain unchanged on initial load with params", async ({ page }) => {
   const path = "/?query=foo&order=users&open=true";
