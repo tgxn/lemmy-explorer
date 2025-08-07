@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
-import "../config/test.utils";
+import { setupGlobalHooks } from "../config/test.utils";
+setupGlobalHooks();
 
 test("main: (1080p) instances page screenshot", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });

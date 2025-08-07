@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
-import "../config/test.utils";
+import { setupGlobalHooks } from "../config/test.utils";
+setupGlobalHooks();
 
 // Helper to check local storage
 async function getStorage(page) {

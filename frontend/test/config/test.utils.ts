@@ -1,18 +1,20 @@
 import { test } from "@playwright/test";
 
-// Save a screenshot after each test in a flat directory with a stable name.
-// Screenshots contain the test name and are saved in the `output/screens` directory.
-test.afterEach(async ({ page }) => {
-  const testName = test
-    .info()
-    .title.replace(/[^a-zA-Z0-9]/g, "_")
-    .toLowerCase();
+export function setupGlobalHooks() {
+  // Save a screenshot after each test in a flat directory with a stable name.
+  // Screenshots contain the test name and are saved in the `output/screens` directory.
+  test.afterEach(async ({ page }, testInfo) => {
+    const testName = testInfo.title.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+    const path = `output/screens/${testName}.png`;
 
-  const path = `output/screens/${testName}.png`;
+    // to ensure the page is fully rendered
+    await Promise.all([
+      page.waitForLoadState("networkidle"),
+      page.waitForFunction(() => document.readyState === "complete"),
+    ]);
+    await page.waitForTimeout(2000);
 
-  // wait 1000 ms to ensure the page is fully rendered
-  await page.waitForTimeout(7500);
-
-  await page.screenshot({ path });
-  console.log("Screenshot saved to", path);
-});
+    await page.screenshot({ path });
+    console.log("📸 Screenshot saved:", path);
+  });
+}
