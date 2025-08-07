@@ -11,13 +11,11 @@ import Tooltip from "@mui/joy/Tooltip";
 import MessageIcon from "@mui/icons-material/Message";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 
-import { TinyNumber, BannerImage } from "../Shared/Display";
+import type { IPiefedCommunityDataOutput } from "../../../../types/output";
 
+import { TinyNumber } from "../Shared/Display";
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
-
 import { IconAvatar } from "../Shared/Avatar";
-
-import { IPiefedCommunityDataOutput } from "../../../../types/output";
 
 type PiefedCardProps = {
   community: IPiefedCommunityDataOutput;

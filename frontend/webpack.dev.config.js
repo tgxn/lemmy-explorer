@@ -22,9 +22,16 @@ module.exports = merge(common, {
   optimization: {
     // Instruct webpack not to obfuscate the resulting code
     minimize: false,
-    splitChunks: {
-      chunks: "all",
-    },
+    // splitChunks: {
+    //   chunks: "all",
+    //   cacheGroups: {
+    //     vendors: {
+    //       test: /[\\/]node_modules[\\/]/,
+    //       name: "vendors",
+    //       chunks: "all",
+    //     },
+    //   },
+    // },
   },
   plugins: [
     new webpack.EnvironmentPlugin({

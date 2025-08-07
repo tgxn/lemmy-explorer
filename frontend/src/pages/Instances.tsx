@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
-import useCachedMultipart from "../hooks/useCachedMultipart";
-
 import { useDebounce } from "@uidotdev/usehooks";
+
 import useStorage from "../hooks/useStorage";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 
 import Container from "@mui/joy/Container";
 import Select, { selectClasses } from "@mui/joy/Select";
@@ -14,25 +14,28 @@ import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
 import Checkbox from "@mui/joy/Checkbox";
 import Typography from "@mui/joy/Typography";
-
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
 
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
-
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import SortIcon from "@mui/icons-material/Sort";
 import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+
 import { compareVersionStrings } from "../lib/utils";
 
-import InstanceGrid from "../components/GridView/Instance";
-import InstanceList from "../components/ListView/Instance";
-
 import TagFilter from "../components/Shared/TagFilter";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+
+const InstanceGrid = React.lazy(() => import("../components/GridView/Instance"));
+const InstanceList = React.lazy(() => import("../components/ListView/Instance"));
+
+import { sortItems, ISorterDefinition, filterByText } from "../lib/utils";
+
+import type { IInstanceDataOutput } from "../../../types/output";
 
 export default function Instances() {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
@@ -40,10 +43,8 @@ export default function Instances() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
-    "instanceData",
-    "instance",
-  );
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } =
+    useCachedMultipart<IInstanceDataOutput>("instanceData", "instance");
 
   const [viewType, setViewType] = useStorage<string>("instance.viewType", "grid");
 
@@ -137,57 +138,6 @@ export default function Instances() {
       instances = instances.filter((instance) => !instance.isSuspicious);
     }
 
-    if (debounceFilterText) {
-      console.log(`Filtering instances by ${debounceFilterText}`);
-
-      // split the value on spaces, look for values starting with "-"
-      // if found, remove the "-" and add to the exclude list
-      // if not found, apend to the search query
-      let exclude: string[] = [];
-      let include: string[] = [];
-
-      let searchTerms = debounceFilterText.toLowerCase().split(" ");
-      searchTerms.forEach((term) => {
-        if (term.startsWith("-") && term.substring(1) !== "") {
-          exclude.push(term.substring(1));
-        } else if (term !== "") {
-          include.push(term);
-        }
-      });
-      console.log(`Include: ${include.join(", ")}`);
-      console.log(`Exclude: ${exclude.join(", ")}`);
-
-      // search for any included terms
-      if (include.length > 0) {
-        console.log(`Searching for ${include.length} terms`);
-        include.forEach((term) => {
-          instances = instances.filter((instance) => {
-            return (
-              (instance.name && instance.name.toLowerCase().includes(term)) ||
-              (instance.title && instance.title.toLowerCase().includes(term)) ||
-              (instance.baseurl && instance.baseurl.toLowerCase().includes(term)) ||
-              (instance.desc && instance.desc.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
-
-      // search for any excluded terms
-      if (exclude.length > 0) {
-        console.log(`Excluding ${exclude.length} terms`);
-        exclude.forEach((term) => {
-          instances = instances.filter((instance) => {
-            return !(
-              (instance.name && instance.name.toLowerCase().includes(term)) ||
-              (instance.baseurl && instance.baseurl.toLowerCase().includes(term)) ||
-              (instance.title && instance.title.toLowerCase().includes(term)) ||
-              (instance.desc && instance.desc.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
-    }
-
     // filter lang codes
     if (filterLangCodes.length > 0) {
       console.log(`Filtering instances by ${filterLangCodes}`);
@@ -203,22 +153,26 @@ export default function Instances() {
       });
     }
 
-    if (orderBy === "smart") {
-      instances = instances.sort((a, b) => b.score - a.score);
-    } else if (orderBy === "users") {
-      instances = instances.sort((a, b) => b.usage.users.total - a.usage.users.total);
-    } else if (orderBy === "active_day") {
-      instances = instances.sort((a, b) => b.counts.users_active_day - a.counts.users_active_day);
-    } else if (orderBy === "active") {
-      instances = instances.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
-    } else if (orderBy === "active_month") {
-      instances = instances.sort((a, b) => b.counts.users_active_month - a.counts.users_active_month);
-    } else if (orderBy === "posts") {
-      instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
-    } else if (orderBy === "comments") {
-      instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
-    } else if (orderBy === "version") {
-      instances = instances.sort((a, b) => {
+    if (debounceFilterText) {
+      console.log(`Filtering instances by ${debounceFilterText}`);
+
+      instances = filterByText(instances, debounceFilterText, (instance) => [
+        instance.name,
+        instance.baseurl,
+        instance.desc,
+      ]);
+    }
+
+    // sorting
+    const sorters: ISorterDefinition = {
+      smart: (a, b) => b.score - a.score,
+      users: (a, b) => b.usage.users.total - a.usage.users.total,
+      active_day: (a, b) => b.counts.users_active_day - a.counts.users_active_day,
+      active: (a, b) => b.counts.users_active_week - a.counts.users_active_week,
+      active_month: (a, b) => b.counts.users_active_month - a.counts.users_active_month,
+      posts: (a, b) => b.usage.localPosts - a.usage.localPosts,
+      comments: (a, b) => b.usage.localComments - a.usage.localComments,
+      version: (a, b) => {
         const compared = compareVersionStrings(a.version, b.version);
 
         // if they are the same, we should compare the score
@@ -228,13 +182,8 @@ export default function Instances() {
 
         // otherwise, return the compared value
         return compared;
-      });
-      console.log(
-        "Sorted instances by version",
-        instances.map((i) => i.version),
-      );
-    } else if (orderBy === "oldest") {
-      instances = instances.sort((a, b) => {
+      },
+      oldest: (a, b) => {
         // timestamps are like 2023-06-14 02:30:32
         // we need to sort the array by the oldest uptime date
         // if there's no date on the record, it should go to the bottom of the list
@@ -246,11 +195,14 @@ export default function Instances() {
 
         if (aDate < bDate) return -1;
         if (aDate > bDate) return 1;
+
         return 0;
-      });
-    } else if (orderBy === "published") {
-      instances = instances.sort((a, b) => b.published - a.published);
-    }
+      },
+      published: (a, b) => b.published - a.published,
+    };
+    instances = sortItems(instances, orderBy, sorters);
+
+    console.debug(`Sorted ${instances.length} communities`);
 
     // return a clone so that it triggers a re-render  on sort
     return [...instances];
@@ -403,8 +355,16 @@ export default function Instances() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <InstanceGrid items={instancesData} />}
-        {isSuccess && viewType == "list" && <InstanceList items={instancesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <InstanceGrid items={instancesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <InstanceList items={instancesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Container>
   );

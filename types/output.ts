@@ -20,6 +20,10 @@ export type IMetaDataOutput = {
   blocked?: any;
 };
 
+export interface IMultiPartMetadata {
+  count: number;
+}
+
 // -1: Unknown, 0: Closed, 1: RequireApplication, 2: Open
 export type IRegistrationMode = -1 | 0 | 1 | 2;
 

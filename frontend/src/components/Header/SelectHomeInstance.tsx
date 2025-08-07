@@ -128,9 +128,8 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   );
 });
 
-export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
+export default function SelectHomeInstance() {
   const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
-
   const dispatch = useDispatch();
 
   const {
@@ -185,18 +184,6 @@ export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
 
   const onChange = (newValue) => {
     console.log("onChange", newValue);
-
-    if (newValue?.type === "mbin") {
-      onSetMBin(true);
-      onSetPiefed(false);
-      // return;
-    } else if (newValue?.type === "piefed") {
-      onSetMBin(false);
-      onSetPiefed(true);
-    } else if (newValue?.type === "lemmy") {
-      onSetMBin(false);
-      onSetPiefed(false);
-    }
 
     if (newValue == null) {
       dispatch(setHomeInstance(null));

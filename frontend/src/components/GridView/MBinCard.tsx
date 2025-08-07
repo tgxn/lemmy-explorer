@@ -11,13 +11,11 @@ import Tooltip from "@mui/joy/Tooltip";
 import MessageIcon from "@mui/icons-material/Message";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 
+import type { IMBinMagazineOutput } from "../../../../types/output";
+
 import { TinyNumber } from "../Shared/Display";
-
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
-
 import { IconAvatar } from "../Shared/Avatar";
-
-import { IMBinMagazineOutput } from "../../../../types/output";
 
 type MBinCardProps = {
   magazine: IMBinMagazineOutput;
@@ -171,7 +169,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
               <TinyNumber value={magazine.posts} />
             </Typography>
           </Tooltip>
-          {/* 
+          {/*
           <Divider orientation="vertical" />
           <Tooltip title="Comments" variant="soft">
             <Typography
