@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -45,14 +45,14 @@ export default function Instances() {
     "instance",
   );
 
-  const [viewType, setViewType] = useStorage("instance.viewType", "grid");
+  const [viewType, setViewType] = useStorage<string>("instance.viewType", "grid");
 
-  const [orderBy, setOrderBy] = useStorage("instance.orderBy", "smart");
-  const [showOpenOnly, setShowOpenOnly] = useStorage("instance.showOpenOnly", false);
+  const [orderBy, setOrderBy] = useStorage<string>("instance.orderBy", "smart");
+  const [showOpenOnly, setShowOpenOnly] = useStorage<boolean>("instance.showOpenOnly", false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = useStorage("instance.filterText", "");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const [filterText, setFilterText] = useStorage<string>("instance.filterText", "");
+  const debounceFilterText = useDebounce<string>(filterText, 500);
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
 
@@ -60,20 +60,28 @@ export default function Instances() {
   useEffect(() => {
     if (searchParams.has("query")) setFilterText(searchParams.get("query"));
     if (searchParams.has("order")) setOrderBy(searchParams.get("order"));
-    if (searchParams.has("open")) setShowOpenOnly(searchParams.get("open"));
+    if (searchParams.has("open")) setShowOpenOnly(searchParams.get("open") !== "false");
   }, []);
 
   // update query params
-  // @TODO this should not happen on page load?
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
     if (showOpenOnly) parms.open = showOpenOnly;
 
-    console.log(`Updating query params: ${JSON.stringify(parms)}`);
-    setSearchParams(parms);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
   }, [showOpenOnly, orderBy, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
@@ -135,8 +143,8 @@ export default function Instances() {
       // split the value on spaces, look for values starting with "-"
       // if found, remove the "-" and add to the exclude list
       // if not found, apend to the search query
-      let exclude = [];
-      let include = [];
+      let exclude: string[] = [];
+      let include: string[] = [];
 
       let searchTerms = debounceFilterText.toLowerCase().split(" ");
       searchTerms.forEach((term) => {

@@ -1,5 +1,7 @@
 import logging from "./logging";
 import axios, { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import http from "node:http";
+import https from "node:https";
 
 import { HTTPError, CrawlError } from "./error";
 
@@ -18,6 +20,8 @@ export default class CrawlClient {
         "User-Agent": CRAWLER_USER_AGENT,
         "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
       },
+      httpAgent: new http.Agent({ keepAlive: true }),
+      httpsAgent: new https.Agent({ keepAlive: true }),
     });
   }
 
@@ -67,11 +71,7 @@ export default class CrawlClient {
           continue;
         }
 
-        logging.error(`getUrlWithRetry: failed to GET ${url} after ${attempts + 1}/${maxRetries} attempts`, {
-          error: e,
-          url,
-          options,
-        });
+        logging.error(`getUrlWithRetry: failed to GET ${url} after ${attempts + 1}/${maxRetries} attempts`);
 
         throw new HTTPError(`${e.message} (attempts: ${attempts + 1})`, {
           isAxiosError: true,

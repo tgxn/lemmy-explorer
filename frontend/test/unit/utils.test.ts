@@ -1,4 +1,4 @@
-import { parseVersion, compareVersionStrings } from "../src/lib/utils";
+import { parseVersion, compareVersionStrings } from "../../src/lib/utils";
 
 describe("parseVersion", () => {
   it("parses standard versions", () => {
@@ -25,10 +25,22 @@ describe("compareVersionStrings", () => {
     expect(sorted).toEqual(["1.10.0", "1.3.0", "1.2.0"]);
   });
 
-  it("orders by suffix when numbers equal", () => {
-    const versions = ["1.0.0-beta", "1.0.0-alpha"];
+  it("places release versions before pre-releases", () => {
+    const versions = ["1.0.0-alpha", "1.0.0"];
     const sorted = versions.sort(compareVersionStrings);
-    expect(sorted).toEqual(["1.0.0-alpha", "1.0.0-beta"]);
+    expect(sorted).toEqual(["1.0.0", "1.0.0-alpha"]);
+  });
+
+  it("prioritizes numeric differences over suffix", () => {
+    const versions = ["1.0.1-alpha", "1.0.0"];
+    const sorted = versions.sort(compareVersionStrings);
+    expect(sorted).toEqual(["1.0.1-alpha", "1.0.0"]);
+  });
+
+  it("sorts prerelease identifiers alphabetically", () => {
+    const versions = ["1.0.0-alpha", "1.0.0-rc", "1.0.0-beta", "1.0.0"];
+    const sorted = versions.sort(compareVersionStrings);
+    expect(sorted).toEqual(["1.0.0", "1.0.0-alpha", "1.0.0-beta", "1.0.0-rc"]);
   });
 
   it("treats invalid versions as equal", () => {
