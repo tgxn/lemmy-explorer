@@ -1,6 +1,5 @@
 import React from "react";
 
-import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
@@ -10,11 +9,9 @@ import CardOverflow from "@mui/joy/CardOverflow";
 import Tooltip from "@mui/joy/Tooltip";
 
 import MessageIcon from "@mui/icons-material/Message";
-import ForumIcon from "@mui/icons-material/Forum";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
-import { TinyNumber, BannerImage } from "../Shared/Display";
+import { TinyNumber } from "../Shared/Display";
 
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 

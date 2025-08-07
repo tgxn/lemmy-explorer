@@ -5,10 +5,6 @@ import { Column } from "react-virtualized";
 import Avatar from "@mui/joy/Avatar";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
-import Link from "@mui/joy/Link";
-import Tooltip from "@mui/joy/Tooltip";
-
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import VirtualTable from "./VirtualTable";
 
@@ -21,7 +17,7 @@ type IPiefedListProps = {
   items: IPiefedCommunityDataOutput[];
 };
 
-const PiefedList = React.memo(function ({ items }: IPiefedListProps) {
+function PiefedList({ items }: IPiefedListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -125,5 +121,5 @@ const PiefedList = React.memo(function ({ items }: IPiefedListProps) {
       ]}
     </VirtualTable>
   );
-});
-export default PiefedList;
+}
+export default React.memo(PiefedList);

@@ -1,14 +1,10 @@
-import React from "react";
+import React, { useCallback } from "react";
 
 import { Column } from "react-virtualized";
 
 import Avatar from "@mui/joy/Avatar";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
-import Link from "@mui/joy/Link";
-import Tooltip from "@mui/joy/Tooltip";
-
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import VirtualTable from "./VirtualTable";
 
@@ -19,68 +15,55 @@ type ICommunityListProps = {
   items: any[];
 };
 
-const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
-  return (
-    <VirtualTable items={items}>
-      {({ width }) => [
-        <Column
-          key="title"
-          label="Title"
-          dataKey="title"
-          flexGrow={1}
-          flexShrink={1}
-          width={width}
-          minWidth={350}
-          headerStyle={{
-            justifyContent: "left",
+function CommunityList({ items }: ICommunityListProps) {
+  const renderCommunityTitle = useCallback(({ rowData }) => {
+    // console.log(rowData);
+    return (
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            flexShrink: 0,
+            // pt: 1.5,
+
+            p: 1,
+            px: 3,
           }}
-          cellRenderer={({ rowData }) => {
-            // console.log(rowData);
-            return (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Box
-                  sx={{
-                    flexShrink: 0,
-                    // pt: 1.5,
+        >
+          <Avatar
+            alt={rowData.name}
+            src={rowData.icon}
+            sx={{
+              display: "flex",
+            }}
+          />
+        </Box>
 
-                    p: 1,
-                    px: 3,
-                  }}
-                >
-                  <Avatar
-                    alt={rowData.name}
-                    src={rowData.icon}
-                    sx={{
-                      display: "flex",
-                    }}
-                  />
-                </Box>
-
-                <Box
-                  sx={{
-                    p: 0.5,
-                    flexGrow: 1,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Typography
-                    level="body3"
-                    sx={{
-                      fontWeight: "bold",
-                      fontSize: "16px",
-                      overflow: "hidden",
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                      color: "var(--joy-palette-primary-50)",
-                    }}
-                  >
-                    <ExtCommunityLink
-                      community={rowData}
-                      sx={{
-                        color: "var(--joy-palette-primary-50)",
-                      }}
-                    />
-                    {/* <Tooltip
+        <Box
+          sx={{
+            p: 0.5,
+            flexGrow: 1,
+            overflow: "hidden",
+          }}
+        >
+          <Typography
+            level="body3"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "16px",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              color: "var(--joy-palette-primary-50)",
+            }}
+          >
+            <ExtCommunityLink
+              baseType="lemmy"
+              community={rowData}
+              sx={{
+                color: "var(--joy-palette-primary-50)",
+              }}
+            />
+            {/* <Tooltip
                       title={"Visit: " + rowData.title + (homeBaseUrl ? " inside " + homeBaseUrl : "")}
                       variant="soft"
                       placement="top-start"
@@ -105,24 +88,59 @@ const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
                         {rowData.name} <OpenInNewIcon fontSize={"small"} sx={{ ml: 1 }} />
                       </Link>
                     </Tooltip> */}
-                  </Typography>
+          </Typography>
 
-                  <Typography level="body3">
-                    <CopyLink
-                      copyText={rowData.baseurl}
-                      linkProps={{
-                        variant: "plain",
-                        color: "neutral",
-                        sx: {
-                          color: "var(--joy-palette-primary-50)",
-                        },
-                      }}
-                    />
-                  </Typography>
-                </Box>
-              </Box>
-            );
+          <Typography level="body3">
+            <CopyLink
+              copyText={rowData.baseurl}
+              linkProps={{
+                variant: "plain",
+                color: "neutral",
+                sx: {
+                  color: "var(--joy-palette-primary-50)",
+                },
+              }}
+            />
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }, []);
+
+  const renderActiveUsers = useCallback(
+    ({ rowData }) => (
+      <>
+        Week: <TinyNumber value={rowData.counts.users_active_week} /> / Month:{" "}
+        <TinyNumber value={rowData.counts.users_active_month} />
+      </>
+    ),
+    [],
+  );
+
+  const renderSubscribers = useCallback(
+    ({ rowData }) => <TinyNumber value={rowData.counts.subscribers} />,
+    [],
+  );
+
+  const renderPosts = useCallback(({ rowData }) => <TinyNumber value={rowData.counts.posts} />, []);
+
+  const renderComments = useCallback(({ rowData }) => <TinyNumber value={rowData.counts.comments} />, []);
+
+  return (
+    <VirtualTable items={items}>
+      {({ width }) => [
+        <Column
+          key="title"
+          label="Title"
+          dataKey="title"
+          flexGrow={1}
+          flexShrink={1}
+          width={width}
+          minWidth={350}
+          headerStyle={{
+            justifyContent: "left",
           }}
+          cellRenderer={renderCommunityTitle}
         />,
 
         <Column
@@ -134,12 +152,7 @@ const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
           headerStyle={{
             justifyContent: "left",
           }}
-          cellRenderer={({ rowData }) => (
-            <>
-              Week: <TinyNumber value={rowData.counts.users_active_week} /> / Month:{" "}
-              <TinyNumber value={rowData.counts.users_active_month} />
-            </>
-          )}
+          cellRenderer={renderActiveUsers}
         />,
 
         <Column
@@ -151,7 +164,7 @@ const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.subscribers} />}
+          cellRenderer={renderSubscribers}
         />,
 
         <Column
@@ -163,7 +176,7 @@ const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.posts} />}
+          cellRenderer={renderPosts}
         />,
 
         <Column
@@ -175,10 +188,11 @@ const CommunityList = React.memo(function ({ items }: ICommunityListProps) {
             display: "flex",
             justifyContent: "center",
           }}
-          cellRenderer={({ rowData }) => <TinyNumber value={rowData.counts.comments} />}
+          cellRenderer={renderComments}
         />,
       ]}
     </VirtualTable>
   );
-});
-export default CommunityList;
+}
+
+export default React.memo(CommunityList);

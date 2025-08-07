@@ -1,11 +1,16 @@
 import divinator from "divinator";
 
 import storage from "../lib/crawlStorage";
-import { IInstanceData, IInstanceDataKeyValue } from "../../../types/storage";
-// import { ICommunityData, ICommunityDataKeyValue } from "../../../types/storage";
-// import { IMagazineData, IMagazineDataKeyValue } from "../../../types/storage";
-// import { IFediverseData, IFediverseDataKeyValue } from "../../../types/storage";
-import { IFediseerInstanceData } from "../../../types/storage";
+import logging from "../lib/logging";
+
+import type { BaseURL, ActorID } from "../../../types/basic";
+import type {
+  IInstanceData,
+  ICommunityData,
+  IFediseerInstanceDataTagsObject,
+  IFediseerTag,
+} from "../../../types/storage";
+
 // import {
 //   IErrorData,
 //   IErrorDataKeyValue,
@@ -38,19 +43,60 @@ import { IFediseerInstanceData } from "../../../types/storage";
  * - "tags" - ["cloudflare"]
  */
 
+type IInstanceMetrics = {
+  baseurl: BaseURL;
+  base: BaseURL;
+  actor_id: ActorID;
+
+  metrics: {
+    usersTotal: number;
+    usersMonth: number;
+    usersWeek: number;
+
+    totalActivity: number;
+    localPosts: number;
+    localComments: number;
+
+    averageUsers?: number; // average users per scan
+    biggestJump?: number; // biggest jump in users per scan
+    averagePerMinute?: number; // average users per minute
+    userActivityScore?: number; // total users / total activity
+    activityUserScore?: number; // total activity / total users
+    userActiveMonthScore?: number; // total users / active month users
+  };
+
+  users: number;
+  name: string;
+
+  tags: string[];
+  guarantor?: string; // if this instance is guaranteed by a fediseer instance, who is it?
+  endorsements: number; // how many endorsements does this instance have?
+
+  score?: number; // overall score for the instance, used for sorting
+  reasons?: string[]; // reasons why this instance is suspicious
+
+  lastCrawled: number;
+};
+
+type IAllInstanceMetrics = {
+  userActivityScores: number[];
+  activityUserScores: number[];
+  userActiveMonthScores: number[];
+};
+
 // create a new isntance for the overall output, and call methods on it
 export default class OutputTrust {
   private instanceList: IInstanceData[] | null;
 
-  public fediseerData: IFediseerInstanceData[] | null = null;
+  public fediseerData: IFediseerInstanceDataTagsObject[] | null = null;
   public endorsements;
 
   public linkedFederation: { [key: string]: number } | null = null;
   public allowedFederation: { [key: string]: number } | null = null;
   public blockedFederation: { [key: string]: number } | null = null;
 
-  public instancesWithMetrics;
-  public allInstanceMetrics;
+  public instancesWithMetrics: IInstanceMetrics[] | null = null;
+  public allInstanceMetrics: IAllInstanceMetrics | null = null;
   public deviations;
 
   // init  this once per output
@@ -109,12 +155,12 @@ export default class OutputTrust {
           throw new Error("fediseerData not loaded in getInstancesWithMetrics");
         }
 
-        const instanceGuarantor = this.fediseerData.find((instance) => instance.domain === baseUrl);
+        const fediseerEntry = this.fediseerData.find((instance) => instance.domain === baseUrl);
 
-        let guarantor: string | null = null;
-        if (instanceGuarantor !== undefined && instanceGuarantor.guarantor !== null) {
-          console.log(baseUrl, "instanceGuarantor", instanceGuarantor.guarantor);
-          guarantor = instanceGuarantor.guarantor;
+        let guarantor: string | undefined;
+        if (fediseerEntry !== undefined && fediseerEntry.guarantor !== null) {
+          logging.info(baseUrl, "instanceGuarantor", fediseerEntry.guarantor);
+          guarantor = fediseerEntry.guarantor;
         }
 
         return {
@@ -138,16 +184,38 @@ export default class OutputTrust {
 
           guarantor,
           endorsements: this.endorsements[baseUrl] || 0,
+
+          //  endorsements: fediseerEntry?.endorsements || 0,
+          approvals: fediseerEntry?.approvals,
+          state: fediseerEntry?.state,
+          censure_reasons: fediseerEntry?.censure_reasons || null,
+          flags: fediseerEntry?.flags || [],
+          sysadmins: fediseerEntry?.sysadmins,
+          moderators: fediseerEntry?.moderators,
+          visibility_endorsements: fediseerEntry?.visibility_endorsements,
+          visibility_censures: fediseerEntry?.visibility_censures,
+          visibility_hesitations: fediseerEntry?.visibility_hesitations,
+          open_registrations: fediseerEntry?.open_registrations,
+          email_verify: fediseerEntry?.email_verify,
+          approval_required: fediseerEntry?.approval_required,
+          has_captcha: fediseerEntry?.has_captcha,
+          software: fediseerEntry?.software,
+          version: fediseerEntry?.version,
+          claimed: fediseerEntry?.claimed,
         };
       }),
     );
 
-    // get all metrics into one object
+    // get all metrics into one object, defaulting to 0 if not present
     this.allInstanceMetrics = {
-      userActivityScores: this.instancesWithMetrics.map((instance) => instance.metrics.userActivityScore),
-      activityUserScores: this.instancesWithMetrics.map((instance) => instance.metrics.activityUserScore),
+      userActivityScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.userActivityScore || 0,
+      ),
+      activityUserScores: this.instancesWithMetrics.map(
+        (instance) => instance.metrics.activityUserScore || 0,
+      ),
       userActiveMonthScores: this.instancesWithMetrics.map(
-        (instance) => instance.metrics.userActiveMonthScore,
+        (instance) => instance.metrics.userActiveMonthScore || 0,
       ),
     };
 
@@ -403,7 +471,7 @@ export default class OutputTrust {
     // console.log("instanceGuarantor", instanceGuarantor);
     if (instanceGuarantor !== null) {
       if (reasons.length > 0) {
-        console.log(
+        logging.info(
           `skipping sus checks for instance: ${baseUrl} with guarantor: ${instanceGuarantor} (that sould have been marked as sus otherwise!)`,
           reasons,
         );
@@ -419,7 +487,7 @@ export default class OutputTrust {
 
   // getters for the data
   getInstanceGuarantor(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
+    const instanceGuarantor = this.instancesWithMetrics?.find((instance) => instance.baseurl === baseUrl);
 
     if (instanceGuarantor?.guarantor) {
       return instanceGuarantor.guarantor;
@@ -441,7 +509,7 @@ export default class OutputTrust {
   // }
 
   getInstance(baseUrl: string) {
-    const instanceTrustDetails = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
+    const instanceTrustDetails = this.instancesWithMetrics?.find((instance) => instance.baseurl === baseUrl);
 
     if (instanceTrustDetails) {
       return instanceTrustDetails;
@@ -457,19 +525,20 @@ export default class OutputTrust {
   getSusInstances() {
     const susInstances: any = [];
 
-    for (const instance of this.instancesWithMetrics) {
-      if (instance.reasons.length > 0) {
-        susInstances.push({
-          users: instance.users,
-          name: instance.name,
-          base: instance.baseurl,
-          actor_id: instance.actor_id,
-          metrics: instance.metrics,
-          reasons: instance.reasons,
-          lastCrawled: instance.lastCrawled,
-        });
+    if (this.instancesWithMetrics)
+      for (const instance of this.instancesWithMetrics) {
+        if (instance.reasons && instance.reasons.length > 0) {
+          susInstances.push({
+            users: instance.users,
+            name: instance.name,
+            base: instance.baseurl,
+            actor_id: instance.actor_id,
+            metrics: instance.metrics,
+            reasons: instance.reasons,
+            lastCrawled: instance.lastCrawled,
+          });
+        }
       }
-    }
 
     // remove instances not updated in 24h
     // this.instanceList = this.instanceList.filter((instance) => {
@@ -488,7 +557,7 @@ export default class OutputTrust {
   }
 
   getInstanceSusReasons(baseUrl) {
-    const instanceGuarantor = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
+    const instanceGuarantor = this.instancesWithMetrics?.find((instance) => instance.baseurl === baseUrl);
 
     if (instanceGuarantor?.reasons) {
       return instanceGuarantor.reasons;
@@ -509,9 +578,9 @@ export default class OutputTrust {
   */
   async calcInstanceDeviation() {
     // these returns an array of deviations for each value in the array
-    let response1 = divinator.zscore(this.allInstanceMetrics.userActivityScores, 0.75);
-    let response2 = divinator.zscore(this.allInstanceMetrics.activityUserScores, 0.75);
-    let response3 = divinator.zscore(this.allInstanceMetrics.userActiveMonthScores, 0.75);
+    let response1 = divinator.zscore(this.allInstanceMetrics?.userActivityScores, 0.75);
+    let response2 = divinator.zscore(this.allInstanceMetrics?.activityUserScores, 0.75);
+    let response3 = divinator.zscore(this.allInstanceMetrics?.userActiveMonthScores, 0.75);
 
     // deviations are stored as arrays of booleans (true if they are outside the allowed range)
     const deviations = {};
@@ -529,13 +598,13 @@ export default class OutputTrust {
       }
 
       if (baseUrlDeviations.length > 0) {
-        console.log("instance deviates!!", this.instancesWithMetrics[index].baseurl, baseUrlDeviations);
+        logging.warn("instance deviates!!", this.instancesWithMetrics[index].baseurl, baseUrlDeviations);
 
         deviations[this.instancesWithMetrics[index].baseurl] = baseUrlDeviations;
       }
     }
 
-    console.log("deviations", Object.keys(deviations).length);
+    logging.warn("deviations", Object.keys(deviations).length);
 
     return deviations;
   }
@@ -589,22 +658,33 @@ export default class OutputTrust {
       "literature.cafe",
       "enterprise.lemmy.ml",
     ];
-    if (log.includes(baseUrl)) console.log(baseUrl, "scores", scores, "overall", score);
+    if (log.includes(baseUrl)) logging.info(baseUrl, "scores", scores, "overall", score);
 
     return score;
   }
 
-  async calcCommunityScore(baseUrl, community) {
-    const instanceMetrics = this.instancesWithMetrics.find((instance) => instance.baseurl === baseUrl);
+  async calcCommunityScore(baseUrl: BaseURL, community: ICommunityData): Promise<number> {
+    const instanceMetrics = this.instancesWithMetrics?.find(
+      (instance: IInstanceMetrics) => instance.baseurl === baseUrl,
+    );
 
-    // multiply score based subscribers
-    const activityScore = community.counts.subscribers;
+    const instanceScore = instanceMetrics?.score || 0;
 
-    const activeScore = community.counts.users_active_month * 20;
+    const subscribers = community.counts.subscribers || 0;
 
-    // console.log("instanceMetricsinstanceMetrics", instanceMetrics);
+    const activeMonth = community.counts.users_active_month || 0;
+    const activeWeek = community.counts.users_active_week || 0;
 
-    const score = instanceMetrics.score * activityScore * activeScore;
+    const posts = community.counts.posts || 0;
+    const comments = community.counts.comments || 0;
+
+    const score =
+      instanceScore * 0.1 + // weight instance score lightly
+      subscribers + // add subscribers directly to the score
+      activeWeek * 20 + // heavily weight weekly active users
+      activeMonth * 5 + // moderately weight monthly active users
+      posts * 0.1 + // lightly weight the number of posts
+      comments * 0.05; // very lightly weight the number of comments
 
     return score;
   }
@@ -671,8 +751,8 @@ export default class OutputTrust {
     //   } Blocked: ${Object.keys(blockedFederation).length}`
     // );
 
-    console.log("Global Federation Counts (counts of urls in merged lists)");
-    console.table({
+    // logging.info("Global Federation Counts (counts of urls in merged lists)");
+    logging.table("Global Federation Counts (counts of urls in merged lists)", {
       linked: Object.keys(linkedFederation).length,
       allowed: Object.keys(allowedFederation).length,
       blocked: Object.keys(blockedFederation).length,

@@ -1,7 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
 
-import Moment from "react-moment";
 import { useColorScheme } from "@mui/joy/styles";
 
 import { useNavigate } from "react-router-dom";
@@ -22,7 +20,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import InfoIcon from "@mui/icons-material/Info";
 
-import { TinyNumber, BannerImage } from "../Shared/Display";
+import { BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtInstanceLink } from "../Shared/Link";
 
@@ -30,7 +28,7 @@ import { InstanceAvatar } from "../Shared/Avatar";
 
 import CardStatBox from "../Shared/CardStatBox";
 
-export default function InstanceCard({ instance }) {
+function InstanceCard({ instance }) {
   const navigate = useNavigate();
   const { mode } = useColorScheme();
 
@@ -204,3 +202,5 @@ export default function InstanceCard({ instance }) {
     </Card>
   );
 }
+
+export default React.memo(InstanceCard);

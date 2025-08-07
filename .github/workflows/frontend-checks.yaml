@@ -80,6 +80,162 @@ jobs:
 
   frontend-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Download + Start Redis Docker
+      - name: Get Dump + Start Redis
+        uses: ./.github/actions/start-redis
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
+
+      # Yarn Install ./crawler
+      - name: Yarn Install ./crawler
+        uses: ./.github/actions/yarn-install
+        with:
+          working-directory: ./crawler
+
+      # Run Crawler Output Script
+      - name: Run Health Script
+        run: yarn health
+        working-directory: ./crawler
+
+      - name: Run Output Script
+        run: yarn output
+        working-directory: ./crawler
+
+      # Yarn Install ./frontend
+      - name: Yarn Install ./frontend
+        uses: ./.github/actions/yarn-install
+        with:
+          working-directory: ./frontend
+
+      # install playwrite npx playwright install chromium --with-deps
+      - name: Install Playwright Dependencies
+        run: npx playwright install chromium firefox --with-deps
+        working-directory: ./frontend
+
+      - name: Run Tests | Frontend
+        run: yarn test
+        working-directory: ./frontend
+
+      - name: Upload Playwright Report
+        if: always()
+        id: upload-report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/output/report/
+
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          arch: amd64
+
+      - name: Upload First Image to S3
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CI_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CI_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          RUN_BASE_PATH="run/${{ github.event.pull_request.number }}/${{ github.run_number }}"
+
+          SCREEN_DIR="frontend/output/screens"
+          REPORT_DIR="frontend/output/report"
+          S3_BUCKET="${{ vars.CI_S3_BUCKET }}"
+
+          # Upload the screenshot to S3
+          if [ -d "$SCREEN_DIR" ]; then
+            echo "Uploading screenshots from $SCREEN_DIR to s3://$S3_BUCKET/$RUN_BASE_PATH/screens"
+            aws s3 sync "$SCREEN_DIR" "s3://$S3_BUCKET/$RUN_BASE_PATH/screens"
+          else
+            echo "No screenshots directory found at $SCREEN_DIR"
+          fi
+
+          # put the instances screenshot into a different folder for persistence
+          TRACK_SCREEN="frontend/output/screens/main___1080p__instances_page_screenshot.png"
+          if [ -f "$TRACK_SCREEN" ]; then
+            echo "Uploading instances screenshot from $TRACK_SCREEN to s3://$S3_BUCKET/$RUN_BASE_PATH/screens/main___1080p__instances_page_screenshot.png"
+            aws s3 cp "$TRACK_SCREEN" "s3://$S3_BUCKET/screens/main___1080p__instances_page_screenshot-$(date +%Y%m%d%H%M%S).png"
+          else
+            echo "No instances screenshot found at $TRACK_SCREEN"
+          fi
+
+          # Upload playwright report to S3
+          echo "Uploading report from $REPORT_DIR to s3://$S3_BUCKET/$RUN_BASE_PATH/report"
+          aws s3 sync "$REPORT_DIR" "s3://$S3_BUCKET/$RUN_BASE_PATH/report"
+
+          # Generate the URL for the artifacts
+          BASE_URL="https://ci.lemmyverse.net/$RUN_BASE_PATH"
+          echo "CI_BASE_URL=$BASE_URL" >> $GITHUB_ENV
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "## Frontend Test Results"
+
+      - name: Create/Update Comment
+        env:
+          HEAD_SHA: ${{ env.HEAD_SHA }}
+          ARTIFACT_URL: ${{ steps.upload-screenshots.outputs.artifact-url }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |-
+            ## Frontend Test Results
+
+            Playwright tests have been run against this pull request. You can find the results in the attached artifact.
+
+            [Playwright Report](${{ env.CI_BASE_URL }}/report/index.html)
+
+            ### Instances
+            ![Instances](${{ env.CI_BASE_URL }}/screens/main___1080p__instances_page_screenshot.png)
+
+            ### Communities
+            ![Communities](${{ env.CI_BASE_URL }}/screens/main___1080p__communities_page_screenshot.png)
+
+            <details>
+            <summary>Mobile Screenshots</summary>
+
+            ![Instances](${{ env.CI_BASE_URL }}/screens/main___mobile__communities_page_screenshot.png)
+
+            ![Communities](${{ env.CI_BASE_URL }}/screens/main___mobile__instances_page_screenshot.png)
+
+            </details>
+
+            <details>
+            <summary>Instance Overview Screenshots</summary>
+
+            ![Screenshot](${{ env.CI_BASE_URL }}/screens/main__instance_view_overview_lemmy_world.png)
+
+            ![Screenshot](${{ env.CI_BASE_URL }}/screens/main__instance_view_stats_lemmy_world.png)
+
+            </details>
+
+            _[Download Playwright Artifact](${{ steps.upload-report.outputs.artifact-url }})_
+
+          reactions: "+1, heart, rocket, hooray"
+
+  frontend-unit-tests:
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -108,6 +264,6 @@ jobs:
         run: npx playwright install chromium firefox --with-deps
         working-directory: ./frontend
 
-      - name: Run Tests | Frontend
-        run: yarn test
+      - name: Run Unit Tests | Frontend
+        run: yarn test:unit
         working-directory: ./frontend

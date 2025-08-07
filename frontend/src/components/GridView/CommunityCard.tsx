@@ -8,14 +8,13 @@ import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
 import Divider from "@mui/joy/Divider";
 import CardOverflow from "@mui/joy/CardOverflow";
-import Tooltip from "@mui/joy/Tooltip";
 
 import MessageIcon from "@mui/icons-material/Message";
 import ForumIcon from "@mui/icons-material/Forum";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
-import { TinyNumber, BannerImage } from "../Shared/Display";
+import { BannerImage } from "../Shared/Display";
 
 import { CopyLink, ExtCommunityLink } from "../Shared/Link";
 
@@ -23,7 +22,7 @@ import { IconAvatar } from "../Shared/Avatar";
 
 import CardStatBox from "../Shared/CardStatBox";
 
-export default function CommunityCard({ community }) {
+function CommunityCard({ community }) {
   const { mode } = useColorScheme();
 
   return (
@@ -176,3 +175,5 @@ export default function CommunityCard({ community }) {
     </Card>
   );
 }
+
+export default React.memo(CommunityCard);

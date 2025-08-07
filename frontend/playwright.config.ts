@@ -3,16 +3,16 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   // Look for test files in the "tests" directory, relative to this configuration file.
   testDir: "./test",
+  testMatch: ["**/*.spec.ts"],
+  testIgnore: ["**/*.test.ts"],
+
   outputDir: "./output/results",
 
   // Run all tests in parallel.
   fullyParallel: true,
 
   // path to the global setup files.
-  //   globalSetup: require.resolve("./global-setup"),
-
-  // delete screens on startuip
-  globalSetup: require.resolve("./test/global.setup.ts"),
+  globalSetup: require.resolve("./test/config/global.setup.ts"),
 
   //   // path to the global teardown files.
   //   globalTeardown: require.resolve("./global-teardown"),
@@ -26,8 +26,8 @@ export default defineConfig({
   // Retry on CI only.
   retries: process.env.CI ? 2 : 0,
 
-  // Opt out of parallel tests on CI.
-  workers: process.env.CI ? 1 : undefined,
+  // Run tests in files in parallel.
+  workers: process.env.CI ? 10 : undefined,
 
   // Reporter to use
   reporter: [["list"], ["html", { outputFolder: "./output/report" }]],
@@ -57,6 +57,7 @@ export default defineConfig({
   use: {
     // Base URL to use in actions like `await page.goto('/')`.
     baseURL: "http://127.0.0.1:9191",
+    screenshot: "on",
 
     // Collect trace when retrying the failed test.
     // trace: "on-first-retry",
