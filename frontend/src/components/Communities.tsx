@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
@@ -39,8 +40,7 @@ function Communities({ filterBaseUrl = false }) {
     "community",
   );
 
-  const [viewType, setViewType] = useStorage("community.viewType", "grid");
-
+  const [viewType, setViewType] = useStorage<string>("community.viewType", "grid");
   const [orderBy, setOrderBy] = React.useState<string>("smart");
   const [showNSFW, setShowNSFW] = React.useState<boolean | null>(false);
 
@@ -77,7 +77,7 @@ function Communities({ filterBaseUrl = false }) {
       console.log(`Updating query params: ${JSON.stringify(parms)}`);
       setSearchParams(parms);
     }
-  }, [orderBy, showNSFW, filterText]);
+  }, [orderBy, showNSFW, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {

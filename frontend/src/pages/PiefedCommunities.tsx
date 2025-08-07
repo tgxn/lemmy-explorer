@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useSearchParams } from "react-router-dom";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -38,19 +38,16 @@ export default function PiefedCommunities() {
     isSuccess,
     isError,
     error,
-    data: multiPartData,
-  } = useCachedMultipart("piefedCommunitiesData", "piefed_communities");
+    data: piefedCommunityData,
+  } = useCachedMultipart<IPiefedCommunityDataOutput>("piefedCommunitiesData", "piefed_communities");
 
-  const piefedCommunityData: IPiefedCommunityDataOutput[] = multiPartData;
-
-  const [viewType, setViewType] = useStorage("piefed.viewType", "grid");
-
-  const [orderBy, setOrderBy] = React.useState("subscriptions");
-  const [showNSFW, setShowNSFW] = React.useState(false);
+  const [viewType, setViewType] = useStorage<string>("piefed.viewType", "grid");
+  const [orderBy, setOrderBy] = useState<string>("subscriptions");
+  const [showNSFW, setShowNSFW] = useState<boolean | null>(false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const [filterText, setFilterText] = useState<string>("");
+  const debounceFilterText = useDebounce<string>(filterText, 500);
 
   // load query params
   useEffect(() => {
@@ -67,7 +64,7 @@ export default function PiefedCommunities() {
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
-    if (orderBy != "smart") parms.order = orderBy;
+    if (orderBy != "subscriptions") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
 
     setSearchParams(parms);
