@@ -16,6 +16,8 @@ import Add from "@mui/icons-material/Add";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
+import InstanceTypeIcon from "../Shared/InstanceTypeIcon";
+
 /**
  * This component renders a button that allows the user to select a home instance.
  *
@@ -44,11 +46,16 @@ function renderRow(props) {
 
   return (
     <AutocompleteOption key={dataSet[1].base} {...dataSet[0]} style={inlineStyle}>
-      {dataSet[1].name?.startsWith('Add "') && (
+      {dataSet[1].name?.startsWith('Add "') ? (
         <ListItemDecorator>
           <Add />
         </ListItemDecorator>
+      ) : (
+        <ListItemDecorator>
+          <InstanceTypeIcon type={dataSet[1].type} />
+        </ListItemDecorator>
       )}
+
       {typeof dataSet[1] == "string" && dataSet[1]}
       {dataSet[1].base && (
         <>
@@ -68,12 +75,9 @@ const OuterElementType = React.forwardRef((props, ref) => {
       {...props}
       {...outerProps}
       component="div"
-      // ref={ref}
       sx={{
-        // zIndex: 1300,
         "& ul": {
           padding: 0,
-          // zIndex: 1300,
           margin: 0,
           flexShrink: 0,
         },
