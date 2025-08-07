@@ -77,8 +77,11 @@ export default function Instances() {
     if (orderBy != "smart") parms.order = orderBy;
     if (showOpenOnly) parms.open = showOpenOnly;
 
-    console.log(`Updating query params: ${JSON.stringify(parms)}`);
-    setSearchParams(parms);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
   }, [showOpenOnly, orderBy, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
@@ -140,8 +143,8 @@ export default function Instances() {
       // split the value on spaces, look for values starting with "-"
       // if found, remove the "-" and add to the exclude list
       // if not found, apend to the search query
-      let exclude = [];
-      let include = [];
+      let exclude: string[] = [];
+      let include: string[] = [];
 
       let searchTerms = debounceFilterText.toLowerCase().split(" ");
       searchTerms.forEach((term) => {
