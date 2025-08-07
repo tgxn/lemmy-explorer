@@ -12,9 +12,7 @@ export function setupGlobalHooks() {
       page.waitForLoadState("networkidle"),
       page.waitForFunction(() => document.readyState === "complete"),
     ]);
-
-    // them wait 10 seconds
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(2000);
 
     await page.screenshot({ path });
     console.log("📸 Screenshot saved:", path);
