@@ -49,6 +49,11 @@ export function compareVersionStrings(va: string, vb: string): number {
   }
 
   // If numbers are equal, compare suffixes
+  if (aSuffix === bSuffix) return 0;
+  if (aSuffix === "") return -1; // release versions should come before pre-releases
+  if (bSuffix === "") return 1;
+
+  // Both have suffixes, compare descending lexicographically
   return aSuffix.localeCompare(bSuffix);
 }
 

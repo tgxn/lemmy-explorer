@@ -79,8 +79,11 @@ export default function Instances() {
     if (orderBy != "smart") parms.order = orderBy;
     if (showOpenOnly) parms.open = showOpenOnly;
 
-    console.log(`Updating query params: ${JSON.stringify(parms)}`);
-    setSearchParams(parms);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
   }, [showOpenOnly, orderBy, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json

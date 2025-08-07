@@ -79,8 +79,12 @@ function Communities({ filterBaseUrl }: ICommunitiesProps) {
     if (orderBy != "smart") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
 
-    setSearchParams(parms);
-  }, [orderBy, showNSFW, debounceFilterText]);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
+  }, [orderBy, showNSFW, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
