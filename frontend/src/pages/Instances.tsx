@@ -33,6 +33,7 @@ import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
 
 import TagFilter from "../components/Shared/TagFilter";
+import RegistrationModeFilter from "../components/Shared/RegistrationModeFilter";
 
 export default function Instances() {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
@@ -55,6 +56,7 @@ export default function Instances() {
   const debounceFilterText = useDebounce(filterText, 500);
 
   const [filterLangCodes, setFilterLangCodes] = useStorage("instance.filterLangCodes", []);
+  const [filterRegMode, setFilterRegMode] = useStorage("instance.filterRegMode", ["all"]);
 
   // load query params
   useEffect(() => {
@@ -327,10 +329,15 @@ export default function Instances() {
         <TagFilter />
 
         <Box sx={{ display: "flex", gap: 3 }}>
-          <Checkbox
+          {/* <Checkbox
             label="Open Only"
             checked={showOpenOnly}
             onChange={(event) => setShowOpenOnly(event.target.checked)}
+          /> */}
+
+          <RegistrationModeFilter
+            regMode={filterRegMode}
+            setRegMode={(regModeList) => setFilterRegMode(regModeList)}
           />
         </Box>
         <Box
