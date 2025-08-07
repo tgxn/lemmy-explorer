@@ -1,5 +1,4 @@
-import { test, expect } from "@playwright/test";
-import "../config/test.utils";
+import { test, expect } from "../config/test.utils";
 
 // Helper to check local storage
 async function getStorage(page) {

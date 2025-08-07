@@ -1,4 +1,7 @@
-import { test } from "@playwright/test";
+import { test as base } from "@playwright/test";
+
+export const test = base;
+export const expect = test.expect;
 
 // Save a screenshot after each test in a flat directory with a stable name.
 // Screenshots contain the test name and are saved in the `output/screens` directory.
