@@ -52,7 +52,7 @@ test.describe("instances interactions", () => {
     await page.goto("/", { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Filter Instances"]', "example");
     await page.waitForTimeout(600);
-    await expect(page).toHaveURL(/query=example/);
+    await expect(page).toHaveURL("/search?query=example");
   });
 });
 
@@ -82,9 +82,9 @@ test.describe("mbin interactions", () => {
       .first()
       .click();
     await page.getByRole("menuitem", { name: /MBin Explorer/i }).click();
-    await expect(page).toHaveURL(/\/mbin\/magazines/);
+    await expect(page).toHaveURL("/mbin/magazines");
     await page.fill('input[placeholder="Filter Magazines"]', "test");
-    await expect(page).toHaveURL(/query=test/);
+    await expect(page).toHaveURL("/?query=test");
     await page.getByRole("combobox").first().click();
     await page.getByRole("option", { name: /Posts/i }).click();
     await expect(page).toHaveURL(/order=posts/);

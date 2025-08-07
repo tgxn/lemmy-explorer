@@ -78,7 +78,7 @@ function Communities({ filterBaseUrl = false }) {
       console.log(`Updating query params: ${JSON.stringify(parms)}`);
       setSearchParams(parms);
     }
-  }, [orderBy, showNSFW, filterText]);
+  }, [orderBy, showNSFW, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
