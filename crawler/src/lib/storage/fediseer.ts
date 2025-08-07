@@ -1,6 +1,6 @@
 import { CrawlStorage } from "../crawlStorage";
 
-import { IFediseerInstanceData } from "../../../../types/storage";
+import { IFediseerInstanceDataTagsObject } from "../../../../types/storage";
 
 export default class Fediseer {
   private storage: CrawlStorage;
@@ -9,14 +9,14 @@ export default class Fediseer {
     this.storage = storage;
   }
 
-  async getLatest(): Promise<IFediseerInstanceData[]> {
+  async getLatest(): Promise<IFediseerInstanceDataTagsObject[]> {
     // records have uptime:timestamp key, extract the latest one
     const keys = await this.storage.client.keys(`fediseer:*`);
     const latestKey = keys.reduce((a, b) => (a > b ? a : b));
     return this.storage.getRedis(latestKey);
   }
 
-  async addNew(data: IFediseerInstanceData[]) {
+  async addNew(data: IFediseerInstanceDataTagsObject[]) {
     return this.storage.putRedis(`fediseer:${Date.now()}`, data);
   }
 }

@@ -17,7 +17,7 @@ type IPiefedListProps = {
   items: IPiefedCommunityDataOutput[];
 };
 
-const PiefedList = React.memo(function ({ items }: IPiefedListProps) {
+function PiefedList({ items }: IPiefedListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -121,5 +121,5 @@ const PiefedList = React.memo(function ({ items }: IPiefedListProps) {
       ]}
     </VirtualTable>
   );
-});
-export default PiefedList;
+}
+export default React.memo(PiefedList);

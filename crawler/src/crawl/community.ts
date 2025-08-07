@@ -1,9 +1,10 @@
 import logging from "../lib/logging";
 
-import type { ICommunityData } from "../../../types/storage";
+import type { ICommunityData, IErrorData } from "../../../types/storage";
 import type { IJobProcessor } from "../queue/BaseQueue";
 
 import { CrawlError, CrawlTooRecentError } from "../lib/error";
+import { sleepThreadMs } from "../lib/const";
 
 import storage from "../lib/crawlStorage";
 import CrawlClient from "../lib/CrawlClient";
@@ -114,16 +115,20 @@ export default class CommunityCrawler {
   }
 
   // * crawlSingle(communityName) - Crawls over `/api/v3/community` with a given community name and stores the results in redis.
-  async crawlSingle(communityName: string) {
+  async crawlSingle(communityName: string): Promise<ICommunityData | null> {
     try {
       logging.debug(`${this.logPrefix} crawlSingle Starting Crawl: ${communityName}`);
 
       const communityData = await this.getSingleCommunityData(communityName);
 
       logging.info(`${this.logPrefix} crawlSingle Ended Success: ${communityName}`, communityData);
+
+      return communityData;
     } catch (error) {
       logging.error(`${this.logPrefix} crawlSingle ERROR Community: ${communityName}`, error.message);
     }
+
+    return null;
   }
 
   async getSingleCommunityData(communityName: string): Promise<any> {
@@ -139,7 +144,7 @@ export default class CommunityCrawler {
       );
 
       if (communityData.data.community_view) {
-        console.log(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
+        logging.debug(`${this.logPrefix} Storing`, communityData.data.community_view.community.name);
 
         await this.storeCommunityData(communityData.data.community_view);
 
@@ -269,8 +274,8 @@ export default class CommunityCrawler {
     // if this page had non-zero results
     if (communities.length > 0) {
       // sleep between pages
-      console.log(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
-      await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      logging.debug(`${this.logPrefix} Sleeping for ${TIME_BETWEEN_PAGES}ms between pages`);
+      await sleepThreadMs(TIME_BETWEEN_PAGES);
       logging.debug(`${this.logPrefix} Page ${pageNumber}, Crawling next page...`);
 
       const subResults = await this.crawlCommunityPaginatedList(pageNumber + 1);
@@ -364,7 +369,7 @@ export const communityListProcessor: IJobProcessor<ICommunityData[]> = async ({ 
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[Community] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
     } else {
-      const errorDetail = {
+      const errorDetail: IErrorData = {
         error: error.message,
         stack: error.stack,
         isAxiosError: error.isAxiosError,
@@ -387,8 +392,6 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = as
   baseUrl,
   community,
 }) => {
-  let communityData: any = null;
-
   if (!baseUrl || !community) {
     logging.error(`[OneCommunity] [${baseUrl}] Missing baseUrl or community`);
     throw new CrawlError("Missing baseUrl or community");
@@ -397,7 +400,9 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = as
   try {
     const crawler = new CommunityCrawler(baseUrl);
 
-    communityData = await crawler.crawlSingle(community);
+    const communityData = await crawler.crawlSingle(community);
+
+    return communityData;
   } catch (error) {
     if (error instanceof CrawlTooRecentError) {
       logging.warn(`[OneCommunity] [${baseUrl}] CrawlTooRecentError: ${error.message}`);
@@ -417,5 +422,5 @@ export const singleCommunityProcessor: IJobProcessor<ICommunityData | null> = as
     }
   }
 
-  return communityData;
+  return null;
 };

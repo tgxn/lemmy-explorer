@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 
 import { useMasonry, usePositioner, useContainerPosition, useScroller } from "masonic";
 
@@ -11,7 +10,7 @@ type ICommunityGridProps = {
   items: any[];
 };
 
-const CommunityGrid = function ({ items }: ICommunityGridProps) {
+function CommunityGrid({ items }: ICommunityGridProps) {
   const containerRef = React.useRef(null);
 
   const [windowWidth, height] = useWindowSize();
@@ -21,10 +20,7 @@ const CommunityGrid = function ({ items }: ICommunityGridProps) {
 
   const { scrollTop, isScrolling } = useScroller(offset);
 
-  const CardAsCallback = React.useCallback(
-    (props) => <CommunityCard community={props.data} />,
-    [isScrolling],
-  );
+  const CardAsCallback = React.useCallback((props) => <CommunityCard community={props.data} />, []);
 
   return useMasonry({
     containerRef,
@@ -36,5 +32,6 @@ const CommunityGrid = function ({ items }: ICommunityGridProps) {
     overscanBy: 6,
     render: CardAsCallback,
   });
-};
-export default CommunityGrid;
+}
+
+export default React.memo(CommunityGrid);

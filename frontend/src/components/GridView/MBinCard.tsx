@@ -169,7 +169,7 @@ const MBinCard = React.memo(function ({ magazine }: MBinCardProps) {
               <TinyNumber value={magazine.posts} />
             </Typography>
           </Tooltip>
-          {/* 
+          {/*
           <Divider orientation="vertical" />
           <Tooltip title="Comments" variant="soft">
             <Typography

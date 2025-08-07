@@ -4,12 +4,14 @@ function hoursToMs(hours: number): number {
   return hours * 60 * 60 * 1000;
 }
 
+export const sleepThreadMs = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const REDIS_URL: string = process.env.REDIS_URL || "redis://localhost:6379";
 
 export const LOG_LEVEL: string = process.env.LOG_LEVEL || "warn";
 
 // should there be a cron job to upload the exported data to s3 automatically?
-export const AUTO_UPLOAD_S3: boolean = Boolean(process.env.AUTO_UPLOAD_S3) || false;
+export const AUTO_UPLOAD_S3: boolean = process.env.AUTO_UPLOAD_S3 === "true";
 
 export const REDIS_DUMP_FILE: string = process.env.REDIS_DUMP_FILE || ".data/redis/dump.rdb";
 export const CHECKPOINT_DIR: string = process.env.CHECKPOINT_DIR || ".data/checkpoint/";

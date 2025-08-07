@@ -29,7 +29,7 @@ import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from ".
 const PiefedGrid = React.lazy(() => import("../components/GridView/Piefed"));
 const PiefedList = React.lazy(() => import("../components/ListView/Piefed"));
 
-function PiefedCommunities() {
+export default function PiefedCommunities() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const {
@@ -328,4 +328,3 @@ function PiefedCommunities() {
     </Container>
   );
 }
-export default React.memo(PiefedCommunities);

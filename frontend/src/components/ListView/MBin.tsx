@@ -16,7 +16,7 @@ type IMBinListProps = {
   items: IMBinMagazineOutput[];
 };
 
-const MBinList = React.memo(function ({ items }: IMBinListProps) {
+function MBinList({ items }: IMBinListProps) {
   return (
     <VirtualTable items={items}>
       {({ width }) => [
@@ -120,5 +120,6 @@ const MBinList = React.memo(function ({ items }: IMBinListProps) {
       ]}
     </VirtualTable>
   );
-});
-export default MBinList;
+}
+
+export default React.memo(MBinList);

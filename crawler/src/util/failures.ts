@@ -13,8 +13,10 @@
  *
  */
 
+import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
 
+import type { BaseURL, ActorID } from "../../../types/basic";
 import { RECORD_TTL_TIMES_SECONDS } from "../lib/const";
 import { getActorBaseUrl } from "../lib/validator";
 
@@ -52,7 +54,7 @@ export default class FailureCrawl {
         keep++;
       }
     }
-    console.log("errors: update", keep, "remove", remove);
+    logging.debug("errors: update", keep, "remove", remove);
   }
 
   // add ttl to failures and last_crawl that dont have one already
@@ -78,19 +80,18 @@ export default class FailureCrawl {
         keep++;
       }
     }
-    console.log("last_crawl: keep", keep, "remove", remove);
+    logging.debug("last_crawl: keep", keep, "remove", remove);
   }
 
-  isInstanceValid(baseUrl, actorId) {
+  isInstanceValid(baseUrl: BaseURL, actorId: ActorID) {
     const actorBaseUrl = getActorBaseUrl(actorId);
-
     if (!actorBaseUrl) {
-      console.error(baseUrl, "INVALID fail", actorId);
+      logging.error(baseUrl, "INVALID fail", actorId);
       return false;
     }
 
     if (actorBaseUrl !== baseUrl) {
-      console.error(baseUrl, "match FAIL", `${actorBaseUrl} != ${baseUrl}`);
+      logging.error(baseUrl, "match FAIL", `${actorBaseUrl} != ${baseUrl}`);
       return false;
     }
 
@@ -99,7 +100,7 @@ export default class FailureCrawl {
 
   // clean out any instances from the db that have non-matching baseurl and key, or if the actorid is invalid
   async cleanInstancesWithInvalidBaseUrl() {
-    console.log("cleanInstancesWithInvalidBaseUrl");
+    logging.debug("cleanInstancesWithInvalidBaseUrl");
     const keys = await storage.instance.getAllWithKeys();
 
     for (const [key, value] of Object.entries(keys)) {
@@ -120,7 +121,7 @@ export default class FailureCrawl {
     }
 
     if (record.community.name.toLowerCase() != keyCommmunity) {
-      console.error("MATCH NAME", keyCommmunity, record?.community.name);
+      logging.error("MATCH NAME", keyCommmunity, record?.community.name);
       return false;
     }
 
@@ -128,7 +129,7 @@ export default class FailureCrawl {
   }
 
   async cleanCommunitiesWithInvalidBaseUrl() {
-    console.log("cleanCommunitiesWithInvalidBaseUrl");
+    logging.debug("cleanCommunitiesWithInvalidBaseUrl");
     const keys = await storage.community.getAllWithKeys();
 
     for (const [key, value] of Object.entries(keys)) {
@@ -144,7 +145,7 @@ export default class FailureCrawl {
       // check an instance exists for it=
       const instance = await storage.instance.getOne(keyBaseUrl);
       if (!instance) {
-        console.error("instance not found", keyBaseUrl, keyCommmunity);
+        logging.error("instance not found", keyBaseUrl, keyCommmunity);
         await storage.community.delete(keyBaseUrl, keyCommmunity);
         continue;
       }
@@ -159,7 +160,7 @@ export default class FailureCrawl {
     // for each key/value
     for (const [key, value] of Object.entries(keys)) {
       if (!value?.siteData?.site) {
-        console.info("unknwn", key, value);
+        logging.warn("unknwn", key, value);
 
         // delete
         // await client.del(key);

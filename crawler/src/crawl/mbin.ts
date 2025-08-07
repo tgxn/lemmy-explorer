@@ -14,7 +14,7 @@ import MBinQueue from "../queue/mbin";
 
 import CrawlClient from "../lib/CrawlClient";
 
-import { CRAWL_AGED_TIME } from "../lib/const";
+import { CRAWL_AGED_TIME, sleepThreadMs } from "../lib/const";
 
 const TIME_BETWEEN_PAGES = 2000;
 
@@ -96,12 +96,12 @@ export default class CrawlMBin {
       const mbinQueue = new MBinQueue(false);
       for (const mbinServer of mbinServers) {
         this.logPrefix = `[CrawlMBin] [${mbinServer.base}]`;
-        console.log(`${this.logPrefix} create job ${mbinServer.base}`);
+        logging.info(`${this.logPrefix} create job ${mbinServer.base}`);
 
         await mbinQueue.createJob(mbinServer.base);
       }
     } catch (e) {
-      console.error(`${this.logPrefix} error scanning mbin instance`, e);
+      logging.error(`${this.logPrefix} error scanning mbin instance`, e);
     }
   }
 
@@ -135,7 +135,7 @@ export default class CrawlMBin {
   async crawlInstanceData(crawlDomain: string) {
     const nodeInfo = await this.getNodeInfo(crawlDomain);
 
-    console.log(`${this.logPrefix} [${crawlDomain}] nodeInfo`, nodeInfo);
+    logging.info(`${this.logPrefix} [${crawlDomain}] nodeInfo`, nodeInfo);
 
     if (!nodeInfo.software) {
       throw new CrawlError("no software key found for " + crawlDomain);
@@ -150,7 +150,7 @@ export default class CrawlMBin {
     }
 
     const [siteInfo, siteHeaders] = await this.getSiteInfo(crawlDomain);
-    console.log(`${crawlDomain}: found mbin instance`, siteHeaders, siteInfo);
+    logging.debug(`${crawlDomain}: found mbin instance`, siteHeaders, siteInfo);
     // console.log(`${crawlDomain}: found mbin instance`, siteHeaders);
 
     // if (siteInfo.websiteDomain !== crawlDomain) {
@@ -159,7 +159,7 @@ export default class CrawlMBin {
     // }
 
     if (siteInfo.websiteDomain !== crawlDomain) {
-      console.error(
+      logging.error(
         `${crawlDomain}: actor id does not match instance domain: ${siteInfo.websiteDomain} !== ${crawlDomain}`,
       );
       throw new CrawlError(
@@ -173,7 +173,7 @@ export default class CrawlMBin {
   async getNodeInfo(crawlDomain: string) {
     const wellKnownUrl = "https://" + crawlDomain + "/.well-known/nodeinfo";
 
-    console.log(`${this.logPrefix} [${crawlDomain}] wellKnownUrl`, wellKnownUrl);
+    logging.debug(`${this.logPrefix} [${crawlDomain}] wellKnownUrl`, wellKnownUrl);
 
     const wellKnownInfo = await this.client.getUrlWithRetry(
       wellKnownUrl,
@@ -215,7 +215,7 @@ export default class CrawlMBin {
 
     const federatedInstances = fedReq.data.instances;
 
-    console.log(`${this.logPrefix} [${crawlDomain}] federatedInstances`, federatedInstances.length);
+    logging.info(`${this.logPrefix} [${crawlDomain}] federatedInstances`, federatedInstances.length);
 
     for (var instance of federatedInstances) {
       // if it has a software and domain, we put it in fediverse table
@@ -229,7 +229,7 @@ export default class CrawlMBin {
       }
 
       if (instance.software === "mbin") {
-        console.log(`${this.logPrefix} [${crawlDomain}] create job ${instance.domain}`);
+        logging.debug(`${this.logPrefix} [${crawlDomain}] create job ${instance.domain}`);
         this.mbinQueue.createJob(instance.domain);
       }
     }
@@ -255,7 +255,7 @@ export default class CrawlMBin {
       await Promise.all(promises);
 
       // sleep between pages
-      await new Promise((resolve) => setTimeout(resolve, TIME_BETWEEN_PAGES));
+      await sleepThreadMs(TIME_BETWEEN_PAGES);
 
       const subPromises = await this.crawlMagazinesData(crawlDomain, pageNumber + 1);
       if (subPromises.length > 0) {
@@ -378,7 +378,7 @@ export const mbinInstanceProcessor: IJobProcessor<IIncomingMagazineData[] | null
 
     const magazinesData: IIncomingMagazineData[] = await crawler.crawlMagazinesData(baseUrl);
 
-    console.log("magazinesData", magazinesData.length);
+    logging.debug("magazinesData", magazinesData.length);
     // console.log("magazinesData", magazinesData[0]);
 
     await storage.tracking.setLastCrawl("mbin", `${baseUrl}`, instanceData);

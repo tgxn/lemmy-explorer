@@ -29,7 +29,7 @@ import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from ".
 const MBinGrid = React.lazy(() => import("../components/GridView/MBin"));
 const MBinList = React.lazy(() => import("../components/ListView/MBin"));
 
-function MBinMagazines() {
+export default function MBinMagazines() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const {
@@ -328,4 +328,3 @@ function MBinMagazines() {
     </Container>
   );
 }
-export default React.memo(MBinMagazines);

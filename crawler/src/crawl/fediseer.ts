@@ -1,7 +1,11 @@
 import logging from "../lib/logging";
 import storage from "../lib/crawlStorage";
 
-import { IFediseerInstanceData, IFediseerTag } from "../../../types/storage";
+import {
+  IFediseerInstanceDataTagsString,
+  IFediseerInstanceDataTagsObject,
+  IFediseerTag,
+} from "../../../types/storage";
 
 import CrawlClient from "../lib/CrawlClient";
 
@@ -12,8 +16,8 @@ export default class CrawlFediseer {
     this.client = new CrawlClient("https://fediseer.com/api/v1/");
   }
 
-  async getAllPagesData(page: number = 1): Promise<IFediseerInstanceData[]> {
-    let mergedInstances: IFediseerInstanceData[] = [];
+  async getAllPagesData(page: number = 1): Promise<IFediseerInstanceDataTagsString[]> {
+    let mergedInstances: IFediseerInstanceDataTagsString[] = [];
 
     const perPage: number = 100;
 
@@ -23,7 +27,7 @@ export default class CrawlFediseer {
 
     mergedInstances = [...fediseerWhitelist.data.instances];
 
-    console.log(`got ${fediseerWhitelist.data.instances.length} instances from page ${page}`);
+    logging.debug(`got ${fediseerWhitelist.data.instances.length} instances from page ${page}`);
 
     if (fediseerWhitelist.data.instances.length != perPage) {
       return mergedInstances;
@@ -50,30 +54,46 @@ export default class CrawlFediseer {
      */
 
     const fediseerTopTagsData = await this.client.getUrl(`/tags`);
-    console.log(`fediseer top tags total: ${fediseerTopTagsData.data.length}`);
+    logging.info(`fediseer top tags total: ${fediseerTopTagsData.data.length}`);
 
-    const fediseerWhitelist = await this.getAllPagesData();
+    const topTags: IFediseerTag[] = fediseerTopTagsData.data;
+
+    const instancesRaw: IFediseerInstanceDataTagsString[] = await this.getAllPagesData();
 
     // logging.info(
     //   `https://fediseer.com/api/v1/whitelist?endorsements=0&guarantors=1`
     // );
-    logging.info(`fediseer whitelist total: ${fediseerWhitelist.length}`);
+    logging.info(`fediseer whitelist total: ${instancesRaw.length}`);
 
-    // map "rank" into tags, based on data from fediseerTopTagsData [{ tag, count }]
-    fediseerWhitelist.forEach((instance) => {
-      instance.tags = instance.tags.map((tag) => {
-        const fediseerTag = fediseerTopTagsData.data.find(
-          (fediseerTag: IFediseerTag) => fediseerTag.tag == tag,
-        );
+    const fediseerWhitelist: IFediseerInstanceDataTagsObject[] = instancesRaw.map(
+      (instanceString: IFediseerInstanceDataTagsString) => {
+        // logging.info("instance", instance.domain, instance.tags);
 
-        if (!fediseerTag) console.log("fediseerTag not found in top tags", tag, fediseerTag);
+        const instance: IFediseerInstanceDataTagsObject = {
+          ...instanceString,
+          tags: instanceString.tags.map((tag: IFediseerTag | string): IFediseerTag => {
+            // find tree tag in fediseerTopTagsData
+            const index: number = topTags.findIndex((fediseerTag: IFediseerTag) => fediseerTag.tag === tag);
 
-        return { tag: tag, rank: fediseerTag ? fediseerTag.count : 0 };
-      });
-    });
-    // console.log("fediseerWhitelist", fediseerWhitelist);
+            const fediseerTag: IFediseerTag | undefined = index >= 0 ? topTags[index] : undefined;
 
-    // const instances = [...fediseerWhitelist];
+            if (!fediseerTag) {
+              logging.warn("fediseerTag not found in top tags", tag, fediseerTag);
+            }
+
+            return {
+              tag: typeof tag === "string" ? tag : tag.tag,
+              count: fediseerTag ? fediseerTag.count : undefined,
+              rank: index >= 0 ? index + 1 : undefined,
+            };
+          }),
+        };
+
+        return instance;
+      },
+    );
+
+    logging.trace("fediseerWhitelist", fediseerWhitelist);
 
     await storage.fediseer.addNew(fediseerWhitelist);
 

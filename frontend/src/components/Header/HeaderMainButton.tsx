@@ -1,9 +1,14 @@
 import React from "react";
+
 import { useNavigate, useLocation } from "react-router-dom";
 
+import { useTheme } from "@mui/joy/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
 import Box from "@mui/joy/Box";
-import Sheet from "@mui/joy/Sheet";
 import Menu from "@mui/joy/Menu";
+import IconButton from "@mui/joy/IconButton";
+import Tooltip from "@mui/joy/Tooltip";
 import Button from "@mui/joy/Button";
 import MenuItem from "@mui/joy/MenuItem";
 import Typography from "@mui/joy/Typography";
@@ -91,14 +96,13 @@ function BrandMenuItem({
   );
 }
 
-// TODO need to make the button shring down to a small dropdown on small screens
 export default function HeaderMainButton() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
-  const [menuWidth, setMenuWidth] = React.useState<number>();
+  const [menuWidth, setMenuWidth] = React.useState<number | null>(null);
 
   const selectedSoftware = React.useMemo(() => {
     if (location.pathname.startsWith("/mbin")) {
@@ -110,10 +114,19 @@ export default function HeaderMainButton() {
     }
   }, [location.pathname]);
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (menuOpen) return handleCloseMenu();
 
-    setMenuWidth(event.currentTarget.clientWidth);
+    if (!isSmallScreen) {
+      setMenuWidth(event.currentTarget.clientWidth);
+    } else {
+      setMenuWidth(null);
+    }
+
+    // setMenuWidth(event.currentTarget.clientWidth);
     setAnchorEl(event.currentTarget);
     setMenuOpen(true);
   };
@@ -121,7 +134,7 @@ export default function HeaderMainButton() {
   const handleCloseMenu = () => {
     setMenuOpen(false);
     setAnchorEl(null);
-    setMenuWidth(undefined);
+    setMenuWidth(null);
   };
 
   return (
@@ -130,36 +143,63 @@ export default function HeaderMainButton() {
         userSelect: "none",
       }}
     >
-      <Button
-        aria-controls={menuOpen ? "left-side-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={menuOpen ? "true" : undefined}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          borderRadius: "8px",
-          p: 1,
-          backgroundColor: anchorEl ? "background.level2" : "background.level1",
-          cursor: "pointer",
-          "&:hover": {
-            backgroundColor: "background.level2",
-          },
-        }}
-        onClick={handleOpenMenu}
-      >
-        {selectedSoftware === "lemmy" && <BrandEntry icon="lemmy_64px.png" name="Lemmy Explorer" />}
-        {selectedSoftware === "mbin" && <BrandEntry icon="mbin_64px.png" name="MBin Explorer" />}
-        {selectedSoftware === "piefed" && <BrandEntry icon="piefed_64px.png" name="Piefed Explorer" />}
-
-        <ArrowDropDownIcon
+      {isSmallScreen ? (
+        <Tooltip title="Select Explorer" variant="soft">
+          <IconButton
+            aria-controls={"left-side-menu"}
+            aria-haspopup="true"
+            aria-expanded={menuOpen ? "true" : undefined}
+            variant="outlined"
+            color="neutral"
+            onClick={handleOpenMenu}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              borderRadius: "8px",
+              p: 1,
+              backgroundColor: anchorEl ? "background.level2" : "background.level1",
+              cursor: "pointer",
+            }}
+          >
+            <img
+              alt={selectedSoftware}
+              src={`/icons/${selectedSoftware}_64px.png`}
+              style={{ maxHeight: 28, borderRadius: 0 }}
+            />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <Button
+          aria-controls={"left-side-menu"}
+          aria-haspopup="true"
+          aria-expanded={menuOpen ? "true" : undefined}
           sx={{
-            color: "text.secondary",
-            fontSize: "1.5rem",
-            ml: 1,
-            mr: 1,
+            display: "flex",
+            alignItems: "center",
+            borderRadius: "8px",
+            p: 1,
+            backgroundColor: anchorEl ? "background.level2" : "background.level1",
+            cursor: "pointer",
+            "&:hover": {
+              backgroundColor: "background.level2",
+            },
           }}
-        />
-      </Button>
+          onClick={handleOpenMenu}
+        >
+          {selectedSoftware === "lemmy" && <BrandEntry icon="lemmy_64px.png" name="Lemmy Explorer" />}
+          {selectedSoftware === "mbin" && <BrandEntry icon="mbin_64px.png" name="MBin Explorer" />}
+          {selectedSoftware === "piefed" && <BrandEntry icon="piefed_64px.png" name="Piefed Explorer" />}
+
+          <ArrowDropDownIcon
+            sx={{
+              color: "text.secondary",
+              fontSize: "1.5rem",
+              ml: 1,
+              mr: 1,
+            }}
+          />
+        </Button>
+      )}
 
       <Menu
         id="left-side-menu"

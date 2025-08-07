@@ -2,7 +2,7 @@ import React from "react";
 
 import MultiDataLineGraph from "../Shared/MultiDataLineGraph";
 
-export default function InstanceUserGrowth({ metricsData }) {
+function InstanceUserGrowth({ metricsData }) {
   // console.log("userSeries", metricsData);
 
   // round to closest 1000
@@ -66,3 +66,7 @@ export default function InstanceUserGrowth({ metricsData }) {
     />
   );
 }
+
+export default React.memo(InstanceUserGrowth, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps.metricsData) === JSON.stringify(nextProps.metricsData);
+});

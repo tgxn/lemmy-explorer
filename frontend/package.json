@@ -13,7 +13,8 @@
     "test": "playwright test",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
-    "check:ts": "tsc --noEmit"
+    "check:ts": "tsc --noEmit",
+    "test:unit": "jest --coverage"
   },
   "dependencies": {
     "@babel/core": "^7.26.9",
@@ -52,6 +53,7 @@
     "tss-react": "^4.8.8"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@babel/polyfill": "^7.12.1",
     "@babel/register": "^7.22.5",
     "@playwright/test": "^1.43.1",
@@ -65,10 +67,12 @@
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.3",
     "playwright": "^1.43.1",
+    "jest": "^30.0.5",
     "prettier": "^3.5.2",
     "sass-loader": "^16.0.5",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.2.3",
+    "ts-jest": "29.4.0",
     "typescript": "^5.4.5",
     "url-loader": "^4.1.1",
     "webpack": "^5.88.1",

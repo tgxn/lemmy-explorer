@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import Moment from "react-moment";
 
@@ -27,7 +27,10 @@ import { CopyLink } from "../Shared/Link";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
-function InstanceCard({ instance, homeBaseUrl, dispatch }) {
+export default function InstanceCard({ instance }) {
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+  const dispatch = useDispatch();
+
   return (
     <Card
       variant="outlined"
@@ -268,8 +271,3 @@ function InstanceCard({ instance, homeBaseUrl, dispatch }) {
     </Card>
   );
 }
-
-const mapStateToProps = (state) => ({
-  homeBaseUrl: state.configReducer.homeBaseUrl,
-});
-export default connect(mapStateToProps)(InstanceCard);
