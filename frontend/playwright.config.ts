@@ -12,9 +12,6 @@ export default defineConfig({
   fullyParallel: true,
 
   // path to the global setup files.
-  //   globalSetup: require.resolve("./global-setup"),
-
-  // delete screens on startuip
   globalSetup: require.resolve("./test/config/global.setup.ts"),
 
   //   // path to the global teardown files.
