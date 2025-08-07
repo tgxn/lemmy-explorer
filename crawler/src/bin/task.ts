@@ -21,7 +21,7 @@ import Failures from "../util/failures";
 
 // used to run tasks against db that exist after they are complete
 export default async function runTask(taskName: string) {
-  logging.silly("Running Task:", taskName);
+  logging.debug("Running Task:", taskName);
 
   if (taskName == null) {
     logging.error("taskName is null");
@@ -30,131 +30,143 @@ export default async function runTask(taskName: string) {
 
   await storage.connect();
 
-  switch (taskName) {
-    // generate output .json files from data stored in redis
-    // @TODO add a flag to throw if there is no/very little change, overall <1%?
-    case "out":
-      logging.info("Generate JSON Output");
+  let exitCode = 0;
+  try {
+    switch (taskName) {
+      // generate output .json files from data stored in redis
+      // @TODO add a flag to throw if there is no/very little change, overall <1%?
+      case "out":
+        logging.info("Generate JSON Output");
 
-      const output = new CrawlOutput();
-      await output.start();
+        const output = new CrawlOutput();
+        await output.start();
 
-      break;
+        break;
 
-    case "sync":
-      logging.info("Sync JSON Output to S3");
+      case "sync":
+        logging.info("Sync JSON Output to S3");
 
-      await syncCheckpoint();
+        await syncCheckpoint();
 
-      break;
+        break;
 
-    case "clean":
-      logging.info("Cleaning data");
+      case "clean":
+        logging.info("Cleaning data");
 
-      const failures = new Failures();
-      await failures.clean();
+        const failures = new Failures();
+        await failures.clean();
 
-      break;
+        break;
 
-    case "fedi":
-      logging.info("Running Fediseer Crawl");
+      case "fedi":
+        logging.info("Running Fediseer Crawl");
 
-      const fediseerCrawl = new CrawlFediseer();
-      await fediseerCrawl.crawl();
+        const fediseerCrawl = new CrawlFediseer();
+        await fediseerCrawl.crawl();
 
-      break;
+        break;
 
-    // should we initialize the workers with a starter list of lemmy's?
-    case "init":
-      logging.warn("--init passed, creating seed jobs");
+      // should we initialize the workers with a starter list of lemmy's?
+      case "init":
+        logging.warn("--init passed, creating seed jobs");
 
-      // await crawler.createJob("lemmy.tgxn.net");
-      const crawler = new InstanceQueue();
-      for (var baseUrl of START_URLS) {
-        await crawler.createJob(baseUrl);
-      }
+        // await crawler.createJob("lemmy.tgxn.net");
+        const crawler = new InstanceQueue();
+        for (var baseUrl of START_URLS) {
+          await crawler.createJob(baseUrl);
+        }
 
-      break;
+        break;
 
-    // get redis bb queue health from redis
-    case "health":
-      const healthData: any[] = [];
+      // get redis bb queue health from redis
+      case "health":
+        const healthData: any[] = [];
 
-      const instanceCrawl = new InstanceQueue(false);
-      const counts = await instanceCrawl.queue.checkHealth();
-      healthData.push({
-        queue: "InstanceQueue",
-        ...counts,
-      });
+        const instanceCrawl = new InstanceQueue(false);
+        const counts = await instanceCrawl.queue.checkHealth();
+        healthData.push({
+          queue: "InstanceQueue",
+          ...counts,
+        });
 
-      const communityCrawl = new CommunityQueue(false);
-      const commCounts = await communityCrawl.queue.checkHealth();
-      healthData.push({
-        queue: "CommunityQueue",
-        ...commCounts,
-      });
+        const communityCrawl = new CommunityQueue(false);
+        const commCounts = await communityCrawl.queue.checkHealth();
+        healthData.push({
+          queue: "CommunityQueue",
+          ...commCounts,
+        });
 
-      const singleCommCrawl = new SingleCommunityQueue(false);
-      const commSingleCounts = await singleCommCrawl.queue.checkHealth();
-      healthData.push({
-        queue: "SingleCommunityQueue",
-        ...commSingleCounts,
-      });
+        const singleCommCrawl = new SingleCommunityQueue(false);
+        const commSingleCounts = await singleCommCrawl.queue.checkHealth();
+        healthData.push({
+          queue: "SingleCommunityQueue",
+          ...commSingleCounts,
+        });
 
-      const mbinQHealthCrawl = new MBinQueue(false);
-      const mbinQHeCounts = await mbinQHealthCrawl.queue.checkHealth();
-      healthData.push({
-        queue: "MBinQueue",
-        ...mbinQHeCounts,
-      });
+        const mbinQHealthCrawl = new MBinQueue(false);
+        const mbinQHeCounts = await mbinQHealthCrawl.queue.checkHealth();
+        healthData.push({
+          queue: "MBinQueue",
+          ...mbinQHeCounts,
+        });
 
-      const piefedQHealthCrawl = new PiefedQueue(false);
-      const piefedQHeCounts = await piefedQHealthCrawl.queue.checkHealth();
-      healthData.push({
-        queue: "PiefedQueue",
-        ...piefedQHeCounts,
-      });
+        const piefedQHealthCrawl = new PiefedQueue(false);
+        const piefedQHeCounts = await piefedQHealthCrawl.queue.checkHealth();
+        healthData.push({
+          queue: "PiefedQueue",
+          ...piefedQHeCounts,
+        });
 
-      logging.info("Queue Health Metrics");
-      console.table(healthData, ["queue", "waiting", "active", "succeeded", "failed"]);
+        // logging.info("Queue Health Metrics");
+        logging.table("Queue Health Metrics", healthData, [
+          "queue",
+          "waiting",
+          "active",
+          "succeeded",
+          "failed",
+        ]);
 
-      // record health
-      const agedAge = new CrawlAged();
-      await agedAge.recordAges();
+        // record health
+        const agedAge = new CrawlAged();
+        await agedAge.recordAges();
 
-      break;
+        break;
 
-    // adds ages domain jobs to queue
-    case "aged":
-      const aged = new CrawlAged();
-      await aged.createJobs();
+      // adds ages domain jobs to queue
+      case "aged":
+        const aged = new CrawlAged();
+        await aged.createJobs();
 
-      break;
+        break;
 
-    // create jobs for all known mbin instances
-    case "mbin":
-      const mbinScan = new CrawlMBin();
-      await mbinScan.createJobsAllMBin();
+      // create jobs for all known mbin instances
+      case "mbin":
+        const mbinScan = new CrawlMBin();
+        await mbinScan.createJobsAllMBin();
 
-      break;
+        break;
 
-    // create jobs for all known piefed instances
-    case "piefed":
-      const piefedScan = new CrawlPiefed();
-      await piefedScan.createJobsAllPiefed();
+      // create jobs for all known piefed instances
+      case "piefed":
+        const piefedScan = new CrawlPiefed();
+        await piefedScan.createJobsAllPiefed();
 
-      break;
+        break;
 
-    // crawl the fediverse uptime immediately
-    case "uptime":
-      const uptime = new CrawlUptime();
-      await uptime.crawl();
+      // crawl the fediverse uptime immediately
+      case "uptime":
+        const uptime = new CrawlUptime();
+        await uptime.crawl();
 
-      break;
+        break;
+    }
+
+    logging.debug("Task Complete:", taskName);
+  } catch (e) {
+    logging.error("Task Failed:", e);
+    exitCode = 1;
+  } finally {
+    await storage.close();
+    process.exit(exitCode);
   }
-
-  logging.silly("Task Complete:", taskName);
-  await storage.close();
-
-  return process.exit(0);
 }

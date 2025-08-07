@@ -10,9 +10,7 @@ export type IJobData = { baseUrl?: string; community?: string };
 
 export type IJobProcessor<T> = (processorConfig: IJobData) => Promise<T | null>;
 
-// export type ISuccessCallback = ((resultData: any) => void) | null;
 export type ISuccessCallback<T> = ((resultData: T) => void) | null;
-// export type ISuccessCallback1 = ISuccessCallback | null;
 
 export default class BaseQueue<T> {
   protected queueName: string;
@@ -48,10 +46,10 @@ export default class BaseQueue<T> {
 
   async createJob(jobId: string, jobData: any, onSuccess: ISuccessCallback<T> = null) {
     const job = this.queue.createJob(jobData);
-    logging.silly(`${this.logPrefix} createJob`, jobData);
+    logging.trace(`${this.logPrefix} createJob`, jobData);
 
     job.on("succeeded", (result) => {
-      logging.silly(`${this.logPrefix} ${job.id} succeeded`, jobData);
+      logging.trace(`${this.logPrefix} ${job.id} succeeded`, jobData);
       onSuccess && onSuccess(result);
     });
 
@@ -59,30 +57,27 @@ export default class BaseQueue<T> {
   }
 
   process(): void {
-    this.queue.process(async (job): Promise<any> => {
+    this.queue.process(async (job): Promise<T | undefined> => {
       await storage.connect();
 
       try {
-        logging.info(``);
-        logging.info(`# ${this.logPrefix} [${job.data.baseUrl}] Starting Job Processor`);
+        logging.info(`${this.logPrefix} [${job.data.baseUrl}] Starting Job Processor`);
 
         const timeStart = Date.now();
 
-        const resultData = await this.jobProcessor(job.data);
+        const resultData: T | null = await this.jobProcessor(job.data);
 
         const timeEnd = Date.now();
         const duration = timeEnd - timeStart;
         logging.info(
-          `# ${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${logging.formatDuration(duration)}`,
+          `${this.logPrefix} [${job.data.baseUrl}] Job Processor completed in ${logging.formatDuration(duration)}`,
         );
 
-        // if (!resultData) {
-        //   logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
-        //   throw new Error("Processor returned null or undefined");
-        // }
+        if (!resultData) {
+          logging.warn(`${this.logPrefix} [${job.data.baseUrl}] Processor returned null or undefined`);
 
-        // close redis connection on end of job
-        await storage.close();
+          throw new Error("Processor returned null or undefined");
+        }
 
         return resultData;
       } catch (error) {
@@ -104,10 +99,9 @@ export default class BaseQueue<T> {
           logging.error(`${this.logPrefix} [${job.data.baseUrl}] Error: ${error.message}`, error);
         }
 
-        // close redis connection on end of job
+        return;
+      } finally {
         await storage.close();
-
-        return null;
       }
     });
   }

@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useCachedMultipart from "../hooks/useCachedMultipart";
@@ -27,13 +27,17 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import LanguageFilter from "../components/Shared/LanguageFilter";
 import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import { compareVersionStrings } from "../lib/utils";
 
 import InstanceGrid from "../components/GridView/Instance";
 import InstanceList from "../components/ListView/Instance";
 
 import TagFilter from "../components/Shared/TagFilter";
 
-function Instances({ filterSuspicious, filteredTags }) {
+export default function Instances() {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -60,16 +64,24 @@ function Instances({ filterSuspicious, filteredTags }) {
   }, []);
 
   // update query params
-  // @TODO this should not happen on page load?
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
     if (showOpenOnly) parms.open = showOpenOnly;
 
-    console.log(`Updating query params: ${JSON.stringify(parms)}`);
-    setSearchParams(parms);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
   }, [showOpenOnly, orderBy, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
@@ -131,8 +143,8 @@ function Instances({ filterSuspicious, filteredTags }) {
       // split the value on spaces, look for values starting with "-"
       // if found, remove the "-" and add to the exclude list
       // if not found, apend to the search query
-      let exclude = [];
-      let include = [];
+      let exclude: string[] = [];
+      let include: string[] = [];
 
       let searchTerms = debounceFilterText.toLowerCase().split(" ");
       searchTerms.forEach((term) => {
@@ -205,6 +217,22 @@ function Instances({ filterSuspicious, filteredTags }) {
       instances = instances.sort((a, b) => b.usage.localPosts - a.usage.localPosts);
     } else if (orderBy === "comments") {
       instances = instances.sort((a, b) => b.usage.localComments - a.usage.localComments);
+    } else if (orderBy === "version") {
+      instances = instances.sort((a, b) => {
+        const compared = compareVersionStrings(a.version, b.version);
+
+        // if they are the same, we should compare the score
+        if (compared === 0) {
+          return b.score - a.score;
+        }
+
+        // otherwise, return the compared value
+        return compared;
+      });
+      console.log(
+        "Sorted instances by version",
+        instances.map((i) => i.version),
+      );
     } else if (orderBy === "oldest") {
       instances = instances.sort((a, b) => {
         // timestamps are like 2023-06-14 02:30:32
@@ -286,6 +314,7 @@ function Instances({ filterSuspicious, filteredTags }) {
           <Option value="active_month">Active Users (month)</Option>
           <Option value="posts">Posts</Option>
           <Option value="comments">Comments</Option>
+          <Option value="version">Version (newest first)</Option>
           <Option value="oldest">Oldest</Option>
           <Option value="published">Newest Publish Time</Option>
         </Select>
@@ -380,9 +409,3 @@ function Instances({ filterSuspicious, filteredTags }) {
     </Container>
   );
 }
-
-const mapStateToProps = (state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-  filteredTags: state.configReducer.filteredTags,
-});
-export default connect(mapStateToProps)(Instances);

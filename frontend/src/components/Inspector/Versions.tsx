@@ -3,7 +3,6 @@ import React, { PureComponent } from "react";
 import useCachedMultipart from "../../hooks/useCachedMultipart";
 
 import Box from "@mui/joy/Box";
-// import Typography from "@mui/joy/Typography";
 
 import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 

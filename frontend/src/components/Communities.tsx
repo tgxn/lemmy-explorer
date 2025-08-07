@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
 import useStorage from "../hooks/useStorage";
@@ -29,7 +29,10 @@ import InstanceFilter from "../components/Shared/InstanceFilter";
 import CommunityGrid from "./GridView/Community";
 import CommunityList from "./ListView/Community";
 
-function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = false }) {
+function Communities({ filterBaseUrl = false }) {
+  const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
+  const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
@@ -57,14 +60,24 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
   }, []);
 
   // update query params
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
     if (orderBy != "smart") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
 
-    setSearchParams(parms);
+    const newParams = new URLSearchParams(parms);
+    if (newParams.toString() !== searchParams.toString()) {
+      console.log(`Updating query params: ${JSON.stringify(parms)}`);
+      setSearchParams(parms);
+    }
   }, [orderBy, showNSFW, filterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
@@ -341,8 +354,4 @@ function Communities({ filterSuspicious, filteredInstances, filterBaseUrl = fals
   );
 }
 
-const mapStateToProps = (state) => ({
-  filterSuspicious: state.configReducer.filterSuspicious,
-  filteredInstances: state.configReducer.filteredInstances,
-});
-export default connect(mapStateToProps)(Communities);
+export default React.memo(Communities);

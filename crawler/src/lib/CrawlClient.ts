@@ -1,13 +1,14 @@
 import logging from "./logging";
 import axios, { AxiosResponse, AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import http from "node:http";
+import https from "node:https";
 
 import { HTTPError, CrawlError } from "./error";
 
-import { AXIOS_REQUEST_TIMEOUT, CRAWLER_USER_AGENT, CRAWLER_ATTRIB_URL } from "./const";
+import { AXIOS_REQUEST_TIMEOUT, CRAWLER_USER_AGENT, CRAWLER_ATTRIB_URL, sleepThreadMs } from "./const";
 
 // backoff after failed request
 const RETRY_BACKOFF_SECONDS = 2;
-
 export default class CrawlClient {
   private axios: AxiosInstance;
 
@@ -19,6 +20,8 @@ export default class CrawlClient {
         "User-Agent": CRAWLER_USER_AGENT,
         "X-Lemmy-SiteUrl": CRAWLER_ATTRIB_URL,
       },
+      httpAgent: new http.Agent({ keepAlive: true }),
+      httpsAgent: new https.Agent({ keepAlive: true }),
     });
   }
 
@@ -55,24 +58,22 @@ export default class CrawlClient {
     options: AxiosRequestConfig = {},
     maxRetries: number = 4,
   ): Promise<AxiosResponse> {
-    for (let current = 0; current <= maxRetries; current++) {
+    for (let attempts = 0; attempts < maxRetries; attempts++) {
       try {
         const axiosResponse: AxiosResponse = await this.axios.get(url, options);
 
         return axiosResponse;
       } catch (e) {
-        if (current < maxRetries) {
-          const delaySeconds = (current + 1) * RETRY_BACKOFF_SECONDS;
+        if (attempts < maxRetries - 1) {
+          const delaySeconds = (attempts + 1) * RETRY_BACKOFF_SECONDS;
 
-          // logging.debug(
-          //   `getUrlWithRetry: retrying GET ${url} attempt ${current + 1}, waiting ${delaySeconds} seconds`,
-          // );
-
-          await new Promise((resolve) => setTimeout(resolve, delaySeconds));
+          await sleepThreadMs(delaySeconds * 1000);
           continue;
         }
 
-        throw new HTTPError(`${e.message} (attempts: ${maxRetries})`, {
+        logging.error(`getUrlWithRetry: failed to GET ${url} after ${attempts + 1}/${maxRetries} attempts`);
+
+        throw new HTTPError(`${e.message} (attempts: ${attempts + 1})`, {
           isAxiosError: true,
           code: e.code,
           url: e.config.url,
@@ -82,7 +83,7 @@ export default class CrawlClient {
       }
     }
 
-    throw new CrawlError(`getUrlWithRetry: failed to GET ${url} after ${maxRetries} attempts`, {
+    throw new CrawlError(`getUrlWithRetry: failed to GET ${url}`, {
       url,
       options,
       maxRetries,
