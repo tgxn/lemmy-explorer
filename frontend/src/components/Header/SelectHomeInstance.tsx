@@ -184,14 +184,14 @@ export default function SelectHomeInstance() {
   return (
     <FormControl>
       <Autocomplete
-        sx={{ zIndex: 14000 }}
+        sx={{ zIndex: 10000 }}
         value={homeBaseUrl || ""}
         onChange={(event, newValue) => onChange(newValue)}
         selectOnFocus //to help the user clear the selected value.
         handleHomeEndKeys // to move focus inside the popup with the Home and End keys.
         freeSolo
         disableListWrap
-        placeholder="Select a home instance"
+        placeholder="Select your home instance"
         slots={{
           listbox: ListboxComponent,
         }}
@@ -212,7 +212,7 @@ export default function SelectHomeInstance() {
             {typeof option === "string" && option}
             {typeof option !== "string" && option.base && (
               <>
-                {option.name} ({option.base})
+                {option.name}&nbsp;<i>({option.base})</i>
               </>
             )}
           </AutocompleteOption>
