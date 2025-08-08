@@ -16,6 +16,8 @@ import Add from "@mui/icons-material/Add";
 
 import { setHomeInstance } from "../../reducers/configReducer";
 
+import InstanceTypeIcon from "../Shared/InstanceTypeIcon";
+
 /**
  * This component renders a button that allows the user to select a home instance.
  *
@@ -33,7 +35,7 @@ const LISTBOX_PADDING = 6; // px
 
 function renderRow(props) {
   const { data, index, style } = props;
-  const dataSet = data[index];
+  const option = data[index];
   const inlineStyle = {
     ...style,
     top: style.top + LISTBOX_PADDING,
@@ -42,21 +44,9 @@ function renderRow(props) {
     whiteSpace: "nowrap",
   };
 
-  return (
-    <AutocompleteOption key={dataSet[1].base} {...dataSet[0]} style={inlineStyle}>
-      {dataSet[1].name?.startsWith('Add "') && (
-        <ListItemDecorator>
-          <Add />
-        </ListItemDecorator>
-      )}
-      {typeof dataSet[1] == "string" && dataSet[1]}
-      {dataSet[1].base && (
-        <>
-          {dataSet[1].name} ({dataSet[1].base})
-        </>
-      )}
-    </AutocompleteOption>
-  );
+  return React.cloneElement(option, {
+    style: { ...option.props.style, ...inlineStyle },
+  });
 }
 
 const OuterElementContext = React.createContext({});
@@ -68,12 +58,9 @@ const OuterElementType = React.forwardRef((props, ref) => {
       {...props}
       {...outerProps}
       component="div"
-      // ref={ref}
       sx={{
-        // zIndex: 1300,
         "& ul": {
           padding: 0,
-          // zIndex: 1300,
           margin: 0,
           flexShrink: 0,
         },
@@ -98,7 +85,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   children[0].forEach((item) => {
     if (item) {
       itemData.push(item);
-      itemData.push(...(item.children || []));
+      // itemData.push(...(item.children || []));
     }
   });
 
@@ -197,23 +184,39 @@ export default function SelectHomeInstance() {
   return (
     <FormControl>
       <Autocomplete
-        sx={{ zIndex: 14000 }}
+        sx={{ zIndex: 10000 }}
         value={homeBaseUrl || ""}
         onChange={(event, newValue) => onChange(newValue)}
         selectOnFocus //to help the user clear the selected value.
         handleHomeEndKeys // to move focus inside the popup with the Home and End keys.
         freeSolo
         disableListWrap
-        placeholder="Select a home instance"
+        placeholder="Select your home instance"
         slots={{
           listbox: ListboxComponent,
         }}
         options={data || []}
         loading={data == null}
-        // getOptionSelected={(option, value) => option.code === value.code}
-        renderOption={(props, option) => [props, option]}
-        // TODO: Post React 18 update - validate this conversion, look like a hidden bug
-        // renderGroup={(params) => params}
+        renderOption={(props, option) => (
+          <AutocompleteOption {...props} key={typeof option === "string" ? option : option.base}>
+            {typeof option !== "string" && option.name?.startsWith('Add "') ? (
+              <ListItemDecorator>
+                <Add />
+              </ListItemDecorator>
+            ) : (
+              <ListItemDecorator>
+                <InstanceTypeIcon type={option.type} />
+              </ListItemDecorator>
+            )}
+
+            {typeof option === "string" && option}
+            {typeof option !== "string" && option.base && (
+              <>
+                {option.name}&nbsp;<i>({option.base})</i>
+              </>
+            )}
+          </AutocompleteOption>
+        )}
         filterOptions={(options, params) => {
           const filtered = filterOptions(options, params);
 

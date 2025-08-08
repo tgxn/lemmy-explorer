@@ -73,7 +73,6 @@ function CommunityCard({ community }) {
               fontSize: "14px",
               overflow: "hidden",
               whiteSpace: "nowrap",
-
               textOverflow: "ellipsis",
               pb: 0.5,
             }}
