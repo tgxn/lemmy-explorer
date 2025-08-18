@@ -104,7 +104,7 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
     <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 10000 }}>
       <OuterElementContext.Provider value={other}>
         <FixedSizeList
-          height={itemSize * 10 + LISTBOX_PADDING * 2}
+          height={itemSize * 12 + LISTBOX_PADDING * 2}
           innerElementType="ul"
           itemCount={itemCount}
           itemData={itemData}
