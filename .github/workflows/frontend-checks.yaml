@@ -32,7 +32,7 @@ jobs:
           working-directory: ./frontend
 
       - name: Check Style | Frontend
-        run: yarn format
+        run: yarn format:check
         working-directory: ./frontend
 
   frontend-checks-types:
