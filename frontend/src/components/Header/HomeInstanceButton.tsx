@@ -102,11 +102,18 @@ export default function HomeInstanceButton() {
               py: 1,
               fontSize: "0.75rem",
               color: "text.secondary",
+              zIndex: 15000,
             }}
           >
             <FormControl size="sm">
               <FormLabel>Instance Type</FormLabel>
-              <Select value={instanceType} onChange={(event, value) => dispatch(changeInstanceType(value))}>
+              <Select
+                value={instanceType}
+                onChange={(event, value) => dispatch(changeInstanceType(value))}
+                sx={{
+                  height: "2.5rem",
+                }}
+              >
                 <Option value="lemmy">Lemmy</Option>
                 <Option value="mbin">MBin</Option>
                 <Option value="piefed">Piefed</Option>

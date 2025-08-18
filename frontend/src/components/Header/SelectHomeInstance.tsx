@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 
-import { FixedSizeList } from "react-window";
+// https://github.com/bvaughn/react-window/issues/654#issuecomment-2846225272
+import { FixedSizeList as _FixedSizeList, FixedSizeListProps } from "react-window";
+const FixedSizeList = _FixedSizeList as unknown as React.ComponentType<FixedSizeListProps>;
 
 import { Popper } from "@mui/base/Popper";
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
@@ -15,6 +17,12 @@ import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import Add from "@mui/icons-material/Add";
 
 import { setHomeInstance } from "../../reducers/configReducer";
+
+type ISelectableInstance = {
+  base: string;
+  name?: string;
+  type?: "lemmy" | "mbin" | "piefed";
+};
 
 /**
  * This component renders a button that allows the user to select a home instance.
@@ -31,8 +39,8 @@ const filterOptions = createFilterOptions({
 
 const LISTBOX_PADDING = 6; // px
 
-function renderRow(props) {
-  const { data, index, style } = props;
+function renderRow({ data, index, style }) {
+  // const { data, index, style } = props;
   const dataSet = data[index];
   const inlineStyle = {
     ...style,
@@ -61,7 +69,7 @@ function renderRow(props) {
 
 const OuterElementContext = React.createContext({});
 
-const OuterElementType = React.forwardRef((props, ref) => {
+const OuterElementType = (props: any) => {
   const outerProps = React.useContext(OuterElementContext);
   return (
     <AutocompleteListbox
@@ -70,17 +78,15 @@ const OuterElementType = React.forwardRef((props, ref) => {
       component="div"
       // ref={ref}
       sx={{
-        // zIndex: 1300,
         "& ul": {
           padding: 0,
-          // zIndex: 1300,
           margin: 0,
           flexShrink: 0,
         },
       }}
     />
   );
-});
+};
 
 type IListboxComponentProps = {
   children: any;
@@ -93,7 +99,7 @@ type IListboxComponentProps = {
 // Adapter for react-window
 const ListboxComponent = React.forwardRef(function ListboxComponent(props: IListboxComponentProps) {
   const { children, anchorEl, open, modifiers, ref, ...other } = props;
-  const itemData = [];
+  const itemData: ISelectableInstance[] = [];
 
   children[0].forEach((item) => {
     if (item) {
@@ -103,23 +109,20 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   });
 
   const itemCount = itemData.length;
-  const itemSize = 40;
+  const itemSize = 50;
 
   return (
     <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 10000 }}>
       <OuterElementContext.Provider value={other}>
         <FixedSizeList
-          itemData={itemData}
-          height={itemSize * 8}
-          width="100%"
-          outerElementType={OuterElementType}
+          height={itemSize * 10 + LISTBOX_PADDING * 2}
           innerElementType="ul"
-          itemSize={itemSize}
-          overscanCount={5}
           itemCount={itemCount}
-          sx={(theme) => ({
-            zIndex: theme.zIndex.modal + 1000,
-          })}
+          itemData={itemData}
+          itemSize={itemSize}
+          outerElementType={OuterElementType}
+          width="100%"
+          // overscanCount={5}
         >
           {renderRow}
         </FixedSizeList>
@@ -150,7 +153,7 @@ export default function SelectHomeInstance() {
     data: dataPiefed,
   } = useQueryCache("piefedMinData", "piefed.min");
 
-  const data = React.useMemo(() => {
+  const data: ISelectableInstance[] = React.useMemo<ISelectableInstance[]>(() => {
     if (loadingIns || loadingMBin || loadingPiefed) {
       return null;
     }
@@ -159,7 +162,7 @@ export default function SelectHomeInstance() {
       return null;
     }
 
-    let data = [];
+    let data: ISelectableInstance[] = [];
 
     data = data.concat(dataIns.map((item) => ({ ...item, type: "lemmy" })));
 
