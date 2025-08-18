@@ -126,7 +126,7 @@ export function filterByText<T>(
 /*
 example usage:
 
-coinst items = [
+const items = [
   { name: "Item 1", description: "This is item one", tags: ["tag1", "tag2"] },
   { name: "Item 2", description: "This is item two", tags: ["tag2", "tag3"] },
   { name: "Item 3", description: "This is item three", tags: ["tag1", "tag3"] },
