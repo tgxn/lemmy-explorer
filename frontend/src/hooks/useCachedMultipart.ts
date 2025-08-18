@@ -3,9 +3,7 @@ import React, { useState, useMemo } from "react";
 import axios from "axios";
 import { QueryKey, UseQueryResult, useQuery } from "@tanstack/react-query";
 
-interface MultiPartMetadata {
-  count: number;
-}
+import { IMultiPartMetadata } from "../../../types/output";
 
 interface CachedDataResult<T> {
   isLoading: boolean;
@@ -22,11 +20,11 @@ export default function useCachedMultipart<T = any>(
 ): CachedDataResult<T> {
   const [loadedChunks, setLoadedChunks] = useState<number>(0);
 
-  const metaQuery: UseQueryResult<MultiPartMetadata, Error> = useQuery({
+  const metaQuery: UseQueryResult<IMultiPartMetadata, Error> = useQuery({
     queryKey: [queryKey, metadataPath, "metadata"],
     queryFn: () =>
       axios
-        .get<MultiPartMetadata>(`/data/${metadataPath}.json`, {
+        .get<IMultiPartMetadata>(`/data/${metadataPath}.json`, {
           timeout: 15000,
         })
         .then((res) => res.data),

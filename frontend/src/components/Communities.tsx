@@ -1,18 +1,18 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+
 import { useSelector } from "react-redux";
 
 import { useSearchParams } from "react-router-dom";
-import useStorage from "../hooks/useStorage";
-
-import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
+
+import useStorage from "../hooks/useStorage";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 
 import Typography from "@mui/joy/Typography";
 import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
 
@@ -22,26 +22,31 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
 import InstanceFilter from "../components/Shared/InstanceFilter";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 
-import CommunityGrid from "./GridView/Community";
-import CommunityList from "./ListView/Community";
+const CommunityGrid = React.lazy(() => import("./GridView/Community"));
+const CommunityList = React.lazy(() => import("./ListView/Community"));
 
-function Communities({ filterBaseUrl = false }) {
+import { sortItems, ISorterDefinition, filterByText } from "../lib/utils";
+
+import type { ICommunityDataOutput } from "../../../types/output";
+
+type ICommunitiesProps = {
+  filterBaseUrl?: string;
+};
+
+function Communities({ filterBaseUrl }: ICommunitiesProps) {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
   const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { isLoading, loadingPercent, isSuccess, isError, error, data } = useCachedMultipart(
-    "communityData",
-    "community",
-  );
+  const { isLoading, loadingPercent, isSuccess, isError, error, data } =
+    useCachedMultipart<ICommunityDataOutput>("communityData", "community");
 
-  const [viewType, setViewType] = useStorage("community.viewType", "grid");
-
+  const [viewType, setViewType] = useStorage<string>("community.viewType", "grid");
   const [orderBy, setOrderBy] = React.useState<string>("smart");
   const [showNSFW, setShowNSFW] = React.useState<boolean | null>(false);
 
@@ -78,7 +83,7 @@ function Communities({ filterBaseUrl = false }) {
       console.log(`Updating query params: ${JSON.stringify(parms)}`);
       setSearchParams(parms);
     }
-  }, [orderBy, showNSFW, filterText]);
+  }, [orderBy, showNSFW, debounceFilterText]);
 
   // this applies the filtering and sorting to the data loaded from .json
   const communitiesData = React.useMemo(() => {
@@ -100,7 +105,6 @@ function Communities({ filterBaseUrl = false }) {
       communties = communties.filter((community) => !community.isSuspicious);
     }
 
-    console.log(`Sorting communities by ${orderBy}`, filteredInstances);
     if (!filterBaseUrl && filteredInstances.length > 0) {
       console.log(`Filtering communities`, filteredInstances);
 
@@ -133,82 +137,29 @@ function Communities({ filterBaseUrl = false }) {
     if (debounceFilterText) {
       console.log(`Filtering communities by ${debounceFilterText}`);
 
-      // split the value on spaces, look for values starting with "-"
-      // if found, remove the "-" and add to the exclude list
-      // if not found, apend to the search query
-      let exclude: string[] = [];
-      let include: string[] = [];
-
-      let searchTerms = debounceFilterText.toLowerCase().split(" ");
-      searchTerms.forEach((term: string) => {
-        if (term.startsWith("-") && term.substring(1) !== "") {
-          exclude.push(term.substring(1));
-        } else if (term !== "") {
-          include.push(term);
-        }
-      });
-      console.log(`Include: ${include.join(", ")}`);
-      console.log(`Exclude: ${exclude.join(", ")}`);
-
-      // search for any included terms
-      if (include.length > 0) {
-        console.log(`Searching for ${include.length} terms`);
-        include.forEach((term) => {
-          communties = communties.filter((community) => {
-            return (
-              (community.name && community.name.toLowerCase().includes(term)) ||
-              (community.title && community.title.toLowerCase().includes(term)) ||
-              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.desc && community.desc.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
-
-      // filter out every excluded term
-      if (exclude.length > 0) {
-        console.log(`Filtering out ${exclude.length} terms`);
-        exclude.forEach((term) => {
-          communties = communties.filter((community) => {
-            return !(
-              (community.name && community.name.toLowerCase().includes(term)) ||
-              (community.title && community.title.toLowerCase().includes(term)) ||
-              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.desc && community.desc.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
+      communties = filterByText(communties, debounceFilterText, (community) => [
+        community.name,
+        community.title,
+        community.baseurl,
+        community.desc,
+      ]);
     }
     console.log(`Filtered ${communties.length} communities`);
 
     // sorting
+    const sorters: ISorterDefinition = {
+      smart: (a, b) => b.score - a.score,
+      subscribers: (a, b) => b.counts.subscribers - a.counts.subscribers,
+      active_day: (a, b) => b.counts.users_active_day - a.counts.users_active_day,
+      active: (a, b) => b.counts.users_active_week - a.counts.users_active_week,
+      active_month: (a, b) => b.counts.users_active_month - a.counts.users_active_month,
+      posts: (a, b) => b.counts.posts - a.counts.posts,
+      comments: (a, b) => b.counts.comments - a.counts.comments,
+      published: (a, b) => b.published - a.published,
+    };
+    communties = sortItems(communties, orderBy, sorters);
 
-    if (orderBy === "smart") {
-      communties = communties.sort((a, b) => b.score - a.score);
-    } else if (orderBy === "subscribers") {
-      communties = communties.sort((a, b) => b.counts.subscribers - a.counts.subscribers);
-    } else if (orderBy === "active_day") {
-      communties = communties.sort((a, b) => b.counts.users_active_day - a.counts.users_active_day);
-    } else if (orderBy === "active") {
-      communties = communties.sort((a, b) => b.counts.users_active_week - a.counts.users_active_week);
-    } else if (orderBy === "active_month") {
-      communties = communties.sort((a, b) => b.counts.users_active_month - a.counts.users_active_month);
-    } else if (orderBy === "posts") {
-      communties = communties.sort((a, b) => b.counts.posts - a.counts.posts);
-    } else if (orderBy === "comments") {
-      communties = communties.sort((a, b) => b.counts.comments - a.counts.comments);
-    } else if (orderBy === "published") {
-      communties = communties.sort((a, b) => b.published - a.published);
-    }
-    console.log(`Sorted ${communties.length} communities`);
-
-    console.log(
-      `updating communities data with ${communties.length} communities, removed: ${
-        data.length - communties.length
-      }`,
-      communties,
-    );
+    console.debug(`Sorted ${communties.length} communities`);
 
     console.timeEnd("sort+filter communities");
 
@@ -347,8 +298,16 @@ function Communities({ filterBaseUrl = false }) {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <CommunityGrid items={communitiesData} />}
-        {isSuccess && viewType == "list" && <CommunityList items={communitiesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <CommunityGrid items={communitiesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <CommunityList items={communitiesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Box>
   );
