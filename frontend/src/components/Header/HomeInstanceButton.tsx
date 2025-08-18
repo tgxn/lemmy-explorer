@@ -114,6 +114,7 @@ export default function HomeInstanceButton() {
                 sx={{
                   height: "2.5rem",
                 }}
+                startDecorator={<InstanceTypeIcon type={instanceType} />}
               >
                 <Option value="lemmy">
                   <ListItemDecorator>
@@ -134,6 +135,7 @@ export default function HomeInstanceButton() {
                   Piefed
                 </Option>
               </Select>
+
               {(instanceType === "piefed" || instanceType === "lemmy") && (
                 <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>
               )}
