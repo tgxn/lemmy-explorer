@@ -41,12 +41,22 @@ const filterOptions = createFilterOptions({
 
 const LISTBOX_PADDING = 6; // px
 
-function renderRow({ data, index, style }) {
+type RenderRowProps = {
+  data: ISelectableInstance;
+  index: number;
+  style: React.CSSProperties;
+};
+
+function renderRow({ data, index, style }: RenderRowProps) {
   // const { data, index, style } = props;
   const option = data[index];
-  const inlineStyle = {
+
+  // convert to int
+  const top = parseInt(style.top as string, 10);
+
+  const inlineStyle: React.CSSProperties = {
     ...style,
-    top: style.top + LISTBOX_PADDING,
+    top: top + LISTBOX_PADDING,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
