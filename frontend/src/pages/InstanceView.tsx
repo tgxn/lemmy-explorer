@@ -89,7 +89,9 @@ export default function InstanceView() {
           Instances
         </Link>
 
-        <Typography fontSize="inherit">{metricsData.instance.name}</Typography>
+        <Typography fontSize="inherit">
+          {metricsData.instance.name ? metricsData.instance.name : ""}
+        </Typography>
       </Breadcrumbs>
 
       <Box

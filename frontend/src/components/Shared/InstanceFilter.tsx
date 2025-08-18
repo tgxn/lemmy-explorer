@@ -4,7 +4,9 @@ import { useSelector, useDispatch } from "react-redux";
 import useQueryCache from "../../hooks/useQueryCache";
 import { useDebounce } from "@uidotdev/usehooks";
 
-import { FixedSizeList } from "react-window";
+// https://github.com/bvaughn/react-window/issues/654#issuecomment-2846225272
+import { FixedSizeList as _FixedSizeList, FixedSizeListProps } from "react-window";
+const FixedSizeList = _FixedSizeList as unknown as React.ComponentType<FixedSizeListProps>;
 
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import Button from "@mui/joy/Button";
@@ -190,6 +192,7 @@ const InstanceDialog = React.memo(({ isOpen, onClose }: IInstanceDialogProps) =>
         <FixedSizeList
           itemData={filteredData}
           height={itemSize * 10}
+          width="100%"
           innerElementType={(props) => <List {...props} />}
           itemSize={itemSize}
           overscanCount={5}

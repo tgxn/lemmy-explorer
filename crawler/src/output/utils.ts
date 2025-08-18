@@ -171,6 +171,7 @@ export default class OutputUtils {
       type: "magazines",
       new: mbinMagazineArray.length,
       old: previousRun.magazines,
+      pct: 30,
     });
 
     data.push({
@@ -187,7 +188,7 @@ export default class OutputUtils {
         continue;
       }
 
-      const isValid = checkChangeIsValid(item.new, item.old);
+      const isValid = checkChangeIsValid(item.new, item.old, item.pct ? item.pct : 15);
 
       if (!isValid) {
         logging.debug("Percent Diff", item.type, item.new, item.old);

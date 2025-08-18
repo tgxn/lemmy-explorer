@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 
 import useQueryCache from "../../hooks/useQueryCache";
 
-import { FixedSizeList } from "react-window";
+// https://github.com/bvaughn/react-window/issues/654#issuecomment-2846225272
+import { FixedSizeList as _FixedSizeList, FixedSizeListProps } from "react-window";
+const FixedSizeList = _FixedSizeList as unknown as React.ComponentType<FixedSizeListProps>;
 
 import { Popper } from "@mui/base/Popper";
 import Autocomplete, { createFilterOptions } from "@mui/joy/Autocomplete";
@@ -15,6 +17,14 @@ import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import Add from "@mui/icons-material/Add";
 
 import { setHomeInstance } from "../../reducers/configReducer";
+
+import InstanceTypeIcon from "../Shared/InstanceTypeIcon";
+
+type ISelectableInstance = {
+  base: string;
+  name?: string;
+  type?: "lemmy" | "mbin" | "piefed";
+};
 
 /**
  * This component renders a button that allows the user to select a home instance.
@@ -31,56 +41,51 @@ const filterOptions = createFilterOptions({
 
 const LISTBOX_PADDING = 6; // px
 
-function renderRow(props) {
-  const { data, index, style } = props;
-  const dataSet = data[index];
-  const inlineStyle = {
+type RenderRowProps = {
+  data: ISelectableInstance;
+  index: number;
+  style: React.CSSProperties;
+};
+
+function renderRow({ data, index, style }: RenderRowProps) {
+  // const { data, index, style } = props;
+  const option = data[index];
+
+  // convert to int
+  const top = parseInt(style.top as string, 10);
+
+  const inlineStyle: React.CSSProperties = {
     ...style,
-    top: style.top + LISTBOX_PADDING,
+    top: top + LISTBOX_PADDING,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   };
 
-  return (
-    <AutocompleteOption key={dataSet[1].base} {...dataSet[0]} style={inlineStyle}>
-      {dataSet[1].name?.startsWith('Add "') && (
-        <ListItemDecorator>
-          <Add />
-        </ListItemDecorator>
-      )}
-      {typeof dataSet[1] == "string" && dataSet[1]}
-      {dataSet[1].base && (
-        <>
-          {dataSet[1].name} ({dataSet[1].base})
-        </>
-      )}
-    </AutocompleteOption>
-  );
+  return React.cloneElement(option, {
+    style: { ...option.props.style, ...inlineStyle },
+  });
 }
 
 const OuterElementContext = React.createContext({});
 
-const OuterElementType = React.forwardRef((props, ref) => {
+const OuterElementType = (props: any) => {
   const outerProps = React.useContext(OuterElementContext);
   return (
     <AutocompleteListbox
       {...props}
       {...outerProps}
       component="div"
-      // ref={ref}
       sx={{
-        // zIndex: 1300,
         "& ul": {
           padding: 0,
-          // zIndex: 1300,
           margin: 0,
           flexShrink: 0,
         },
       }}
     />
   );
-});
+};
 
 type IListboxComponentProps = {
   children: any;
@@ -93,33 +98,30 @@ type IListboxComponentProps = {
 // Adapter for react-window
 const ListboxComponent = React.forwardRef(function ListboxComponent(props: IListboxComponentProps) {
   const { children, anchorEl, open, modifiers, ref, ...other } = props;
-  const itemData = [];
+  const itemData: ISelectableInstance[] = [];
 
   children[0].forEach((item) => {
     if (item) {
       itemData.push(item);
-      itemData.push(...(item.children || []));
+      // itemData.push(...(item.children || []));
     }
   });
 
   const itemCount = itemData.length;
-  const itemSize = 40;
+  const itemSize = 50;
 
   return (
     <Popper ref={ref} anchorEl={anchorEl} open={open} modifiers={modifiers} style={{ zIndex: 10000 }}>
       <OuterElementContext.Provider value={other}>
         <FixedSizeList
-          itemData={itemData}
-          height={itemSize * 8}
-          width="100%"
-          outerElementType={OuterElementType}
+          height={itemSize * 12 + LISTBOX_PADDING * 2}
           innerElementType="ul"
-          itemSize={itemSize}
-          overscanCount={5}
           itemCount={itemCount}
-          sx={(theme) => ({
-            zIndex: theme.zIndex.modal + 1000,
-          })}
+          itemData={itemData}
+          itemSize={itemSize}
+          outerElementType={OuterElementType}
+          width="100%"
+          // overscanCount={5}
         >
           {renderRow}
         </FixedSizeList>
@@ -128,9 +130,8 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(props: IList
   );
 });
 
-export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
+export default function SelectHomeInstance() {
   const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
-
   const dispatch = useDispatch();
 
   const {
@@ -151,7 +152,7 @@ export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
     data: dataPiefed,
   } = useQueryCache("piefedMinData", "piefed.min");
 
-  const data = React.useMemo(() => {
+  const data: ISelectableInstance[] = React.useMemo<ISelectableInstance[]>(() => {
     if (loadingIns || loadingMBin || loadingPiefed) {
       return null;
     }
@@ -160,7 +161,7 @@ export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
       return null;
     }
 
-    let data = [];
+    let data: ISelectableInstance[] = [];
 
     data = data.concat(dataIns.map((item) => ({ ...item, type: "lemmy" })));
 
@@ -186,18 +187,6 @@ export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
   const onChange = (newValue) => {
     console.log("onChange", newValue);
 
-    if (newValue?.type === "mbin") {
-      onSetMBin(true);
-      onSetPiefed(false);
-      // return;
-    } else if (newValue?.type === "piefed") {
-      onSetMBin(false);
-      onSetPiefed(true);
-    } else if (newValue?.type === "lemmy") {
-      onSetMBin(false);
-      onSetPiefed(false);
-    }
-
     if (newValue == null) {
       dispatch(setHomeInstance(null));
       return;
@@ -210,23 +199,39 @@ export default function SelectHomeInstance({ onSetMBin, onSetPiefed }) {
   return (
     <FormControl>
       <Autocomplete
-        sx={{ zIndex: 14000 }}
+        sx={{ zIndex: 10000 }}
         value={homeBaseUrl || ""}
         onChange={(event, newValue) => onChange(newValue)}
         selectOnFocus //to help the user clear the selected value.
         handleHomeEndKeys // to move focus inside the popup with the Home and End keys.
         freeSolo
         disableListWrap
-        placeholder="Select a home instance"
+        placeholder="Select your home instance"
         slots={{
           listbox: ListboxComponent,
         }}
         options={data || []}
         loading={data == null}
-        // getOptionSelected={(option, value) => option.code === value.code}
-        renderOption={(props, option) => [props, option]}
-        // TODO: Post React 18 update - validate this conversion, look like a hidden bug
-        // renderGroup={(params) => params}
+        renderOption={(props, option) => (
+          <AutocompleteOption {...props} key={typeof option === "string" ? option : option.base}>
+            {typeof option !== "string" && option.name?.startsWith('Add "') ? (
+              <ListItemDecorator>
+                <Add />
+              </ListItemDecorator>
+            ) : (
+              <ListItemDecorator>
+                <InstanceTypeIcon type={option.type} />
+              </ListItemDecorator>
+            )}
+
+            {typeof option === "string" && option}
+            {typeof option !== "string" && option.base && (
+              <>
+                {option.name}&nbsp;<i>({option.base})</i>
+              </>
+            )}
+          </AutocompleteOption>
+        )}
         filterOptions={(options, params) => {
           const filtered = filterOptions(options, params);
 
