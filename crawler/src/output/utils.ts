@@ -171,7 +171,7 @@ export default class OutputUtils {
       type: "magazines",
       new: mbinMagazineArray.length,
       old: previousRun.magazines,
-      pct: 30
+      pct: 30,
     });
 
     data.push({
