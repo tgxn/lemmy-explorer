@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useSearchParams } from "react-router-dom";
-import useStorage from "../hooks/useStorage";
-
-import useCachedMultipart from "../hooks/useCachedMultipart";
 import { useDebounce } from "@uidotdev/usehooks";
+
+import useStorage from "../hooks/useStorage";
+import useCachedMultipart from "../hooks/useCachedMultipart";
 
 import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
@@ -12,7 +12,6 @@ import Select, { selectClasses } from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Input from "@mui/joy/Input";
 import Box from "@mui/joy/Box";
-
 import ButtonGroup from "@mui/joy/ButtonGroup";
 import IconButton from "@mui/joy/IconButton";
 
@@ -22,13 +21,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
-import { LinearValueLoader, PageError, SimpleNumberFormat } from "../components/Shared/Display";
+import type { IPiefedCommunityDataOutput } from "../../../types/output";
+
 import TriStateCheckbox from "../components/Shared/TriStateCheckbox";
+import { LinearValueLoader, PageLoading, PageError, SimpleNumberFormat } from "../components/Shared/Display";
 
-import PiefedGrid from "../components/GridView/Piefed";
-import PiefedList from "../components/ListView/Piefed";
+const PiefedGrid = React.lazy(() => import("../components/GridView/Piefed"));
+const PiefedList = React.lazy(() => import("../components/ListView/Piefed"));
 
-import { IPiefedCommunityDataOutput } from "../../../types/output";
+import { sortItems, ISorterDefinition, filterByText } from "../lib/utils";
 
 export default function PiefedCommunities() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,19 +40,16 @@ export default function PiefedCommunities() {
     isSuccess,
     isError,
     error,
-    data: multiPartData,
-  } = useCachedMultipart("piefedCommunitiesData", "piefed_communities");
+    data: piefedCommunityData,
+  } = useCachedMultipart<IPiefedCommunityDataOutput>("piefedCommunitiesData", "piefed_communities");
 
-  const piefedCommunityData: IPiefedCommunityDataOutput[] = multiPartData;
-
-  const [viewType, setViewType] = useStorage("piefed.viewType", "grid");
-
-  const [orderBy, setOrderBy] = React.useState("subscriptions");
-  const [showNSFW, setShowNSFW] = React.useState(false);
+  const [viewType, setViewType] = useStorage<string>("piefed.viewType", "grid");
+  const [orderBy, setOrderBy] = useState<string>("subscriptions");
+  const [showNSFW, setShowNSFW] = useState<boolean | null>(false);
 
   // debounce the filter text input
-  const [filterText, setFilterText] = React.useState("");
-  const debounceFilterText = useDebounce(filterText, 500);
+  const [filterText, setFilterText] = useState<string>("");
+  const debounceFilterText = useDebounce<string>(filterText, 500);
 
   // load query params
   useEffect(() => {
@@ -68,7 +66,7 @@ export default function PiefedCommunities() {
     const parms: any = {};
 
     if (filterText) parms.query = filterText;
-    if (orderBy != "smart") parms.order = orderBy;
+    if (orderBy != "subscriptions") parms.order = orderBy;
     if (showNSFW != false) parms.nsfw = showNSFW;
 
     setSearchParams(parms);
@@ -112,63 +110,23 @@ export default function PiefedCommunities() {
     if (debounceFilterText) {
       console.log(`Filtering piefed communities by ${debounceFilterText}`);
 
-      // split the value on spaces, look for values starting with "-"
-      // if found, remove the "-" and add to the exclude list
-      // if not found, apend to the search query
-      let exclude = [];
-      let include = [];
-
-      let searchTerms = debounceFilterText.toLowerCase().split(" ");
-      searchTerms.forEach((term) => {
-        if (term.startsWith("-") && term.substring(1) !== "") {
-          exclude.push(term.substring(1));
-        } else if (term !== "") {
-          include.push(term);
-        }
-      });
-      console.log(`Include: ${include.join(", ")}`);
-      console.log(`Exclude: ${exclude.join(", ")}`);
-
-      // search for any included terms
-      if (include.length > 0) {
-        console.log(`Searching for ${include.length} terms`);
-        include.forEach((term) => {
-          communties = communties.filter((community) => {
-            return (
-              (community.name && community.name.toLowerCase().includes(term)) ||
-              (community.title && community.title.toLowerCase().includes(term)) ||
-              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.description && community.description.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
-
-      // filter out every excluded term
-      if (exclude.length > 0) {
-        console.log(`Filtering out ${exclude.length} terms`);
-        exclude.forEach((term) => {
-          communties = communties.filter((community) => {
-            return !(
-              (community.name && community.name.toLowerCase().includes(term)) ||
-              (community.title && community.title.toLowerCase().includes(term)) ||
-              (community.baseurl && community.baseurl.toLowerCase().includes(term)) ||
-              (community.description && community.description.toLowerCase().includes(term))
-            );
-          });
-        });
-      }
+      communties = filterByText(communties, debounceFilterText, (community) => [
+        community.name,
+        community.title,
+        community.baseurl,
+        community.description,
+      ]);
     }
-    console.log(`Filtered ${communties.length} magazines`);
+    console.log(`Filtered ${communties.length} communities`);
 
     // sorting
-    if (orderBy === "subscriptions") {
-      communties = communties.sort((a, b) => b.subscriptions_count - a.subscriptions_count);
-    } else if (orderBy === "posts") {
-      communties = communties.sort((a, b) => b.post_count - a.post_count);
-    } else if (orderBy === "name") {
-      communties = communties.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    const sorters: ISorterDefinition = {
+      subscriptions: (a, b) => b.subscriptions_count - a.subscriptions_count,
+      posts: (a, b) => b.post_count - a.post_count,
+      name: (a, b) => a.name.localeCompare(b.name),
+    };
+
+    communties = sortItems(communties, orderBy, sorters);
 
     console.log(`Sorted ${communties.length} piefed communities`);
 
@@ -315,8 +273,16 @@ export default function PiefedCommunities() {
         {isLoading && !isError && <LinearValueLoader progress={loadingPercent} />}
         {isError && <PageError error={error} />}
 
-        {isSuccess && viewType == "grid" && <PiefedGrid items={piefedCommunitiesData} />}
-        {isSuccess && viewType == "list" && <PiefedList items={piefedCommunitiesData} />}
+        {isSuccess && viewType == "grid" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <PiefedGrid items={piefedCommunitiesData} />
+          </React.Suspense>
+        )}
+        {isSuccess && viewType == "list" && (
+          <React.Suspense fallback={<PageLoading />}>
+            <PiefedList items={piefedCommunitiesData} />
+          </React.Suspense>
+        )}
       </Box>
     </Container>
   );

@@ -15,12 +15,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("navigate between Instances and Communities", async ({ page }) => {
-  // instances is default page
   await expect(page.locator('input[placeholder="Filter Instances"]')).toBeVisible();
 
   await page.getByRole("tab", { name: "Communities" }).click();
   await expect(page.locator('input[placeholder="Filter Communities"]')).toBeVisible();
-  await expect(page).toHaveURL(/\/communities$/);
+
+  await expect(page).toHaveURL("/communities");
 });
 
 test("switch instance view type", async ({ page }) => {
@@ -31,14 +31,15 @@ test("switch instance view type", async ({ page }) => {
 
 test("navigate between main pages", async ({ page }) => {
   await page.goto("/");
+
   // Instances tab is default
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL("/");
 
   // Click Communities tab
   await page.getByRole("tab", { name: /Communities/i }).click();
-  await expect(page).toHaveURL(/\/communities$/);
+  await expect(page).toHaveURL("/communities");
 
   // Navigate back to instances
   await page.getByRole("tab", { name: /Instances/i }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL("/");
 });

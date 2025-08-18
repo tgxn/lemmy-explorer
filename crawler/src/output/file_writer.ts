@@ -4,7 +4,15 @@ import { rm, mkdir, writeFile, readdir, stat } from "node:fs/promises";
 import { OUTPUT_DIR } from "../lib/const";
 import logging from "../lib/logging";
 
-import { IMetaDataOutput, IInstanceDataOutput, ICommunityDataOutput } from "../../../types/output";
+import type {
+  IMetaDataOutput,
+  IInstanceDataOutput,
+  ICommunityDataOutput,
+  IMBinInstanceOutput,
+  IMBinMagazineOutput,
+  IFediverseDataOutput,
+  IClassifiedErrorOutput,
+} from "../../../types/output";
 
 import { BaseURL } from "../../../types/basic";
 
