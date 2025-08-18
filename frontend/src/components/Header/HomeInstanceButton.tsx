@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import Box from "@mui/joy/Box";
@@ -23,6 +23,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import { changeInstanceType } from "../../reducers/configReducer";
 
 import SelectHomeInstance from "./SelectHomeInstance";
+import InstanceTypeIcon from "../Shared/InstanceTypeIcon";
 
 export default function HomeInstanceButton() {
   const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
@@ -102,20 +103,44 @@ export default function HomeInstanceButton() {
               py: 1,
               fontSize: "0.75rem",
               color: "text.secondary",
+              zIndex: 15000,
             }}
           >
             <FormControl size="sm">
               <FormLabel>Instance Type</FormLabel>
-              <Select value={instanceType} onChange={(event, value) => dispatch(changeInstanceType(value))}>
-                <Option value="lemmy">Lemmy</Option>
-                <Option value="mbin">MBin</Option>
-                <Option value="piefed">Piefed</Option>
+              <Select
+                value={instanceType}
+                onChange={(event, value) => dispatch(changeInstanceType(value))}
+                sx={{
+                  height: "2.5rem",
+                }}
+                startDecorator={<InstanceTypeIcon type={instanceType} />}
+              >
+                <Option value="lemmy">
+                  <ListItemDecorator>
+                    <InstanceTypeIcon type="lemmy" />
+                  </ListItemDecorator>
+                  Lemmy
+                </Option>
+                <Option value="mbin">
+                  <ListItemDecorator>
+                    <InstanceTypeIcon type="mbin" />
+                  </ListItemDecorator>
+                  MBin
+                </Option>
+                <Option value="piefed">
+                  <ListItemDecorator>
+                    <InstanceTypeIcon type="piefed" />
+                  </ListItemDecorator>
+                  Piefed
+                </Option>
               </Select>
+
+              {(instanceType === "piefed" || instanceType === "lemmy") && (
+                <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>
+              )}
               {instanceType === "mbin" && (
                 <FormHelperText sx={{ mt: 0 }}>Instance links use /m/</FormHelperText>
-              )}
-              {instanceType !== "piefed" && (
-                <FormHelperText sx={{ mt: 0 }}>Instance links use /c/</FormHelperText>
               )}
             </FormControl>
           </Box>
