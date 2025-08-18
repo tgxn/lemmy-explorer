@@ -103,6 +103,7 @@ export default function HomeInstanceButton() {
               py: 1,
               fontSize: "0.75rem",
               color: "text.secondary",
+              zIndex: 15000,
             }}
           >
             <FormControl size="sm">
@@ -110,9 +111,9 @@ export default function HomeInstanceButton() {
               <Select
                 value={instanceType}
                 onChange={(event, value) => dispatch(changeInstanceType(value))}
-                sx={(theme) => ({
-                  zIndex: theme.zIndex.modal + 2000,
-                })}
+                sx={{
+                  height: "2.5rem",
+                }}
               >
                 <Option value="lemmy">
                   <ListItemDecorator>
