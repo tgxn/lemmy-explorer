@@ -7,10 +7,10 @@ function InstanceUserGrowth({ metricsData }) {
 
   // round to closest 1000
   const minUsers = Math.floor(Number(metricsData.users[0].value) / 1000) * 1000;
-  const maxUsers = Math.ceil(Number(metricsData.users[metricsData.users.length - 1].value) / 1000) * 1000;
+  const maxUsers = Math.ceil(metricsData.users.reduce((max, metric) => Number(metric.value) > max ? Number(metric.value) : max, 0 ) / 1000) * 1000;
 
   const minPosts = Math.floor(Number(metricsData.posts[0].value) / 1000) * 1000;
-  const maxPosts = Math.ceil(Number(metricsData.posts[metricsData.posts.length - 1].value) / 1000) * 1000;
+  const maxPosts = Math.ceil(metricsData.posts.reduce((max, metric) => Number(metric.value) > max ? Number(metric.value) : max, 0 ) / 1000) * 1000
 
   // merge the arrays, with any that have the same time going into the same object
 
