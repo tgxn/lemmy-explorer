@@ -4,9 +4,11 @@ This is a ReactJS SPA that uses the data from the crawler to display and search 
 
 Data is retrieved using TanStack Query.
 
+We're a
+
 ## Development
 
-1. `npm install`
-2. `npm run start`
+1. `yarn install`
+2. `yarn start`
 
-> you can run the crawler `node index.js --out` to update the data
+> you can run `node index.js --out` in `crawler/` to update the data (it gets dumped into `frontend/dist/data/`)
