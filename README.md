@@ -1,6 +1,8 @@
-[![aws-deploy-prod](https://github.com/tgxn/lemmy-explorer/actions/workflows/aws-deploy-prod.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/aws-deploy-prod.yaml) [![publish-pages](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml)
+[![aws-deploy-prod](https://github.com/tgxn/lemmyverse.net/actions/workflows/deploy-pages.yaml/badge.svg)](https://github.com/tgxn/lemmyverse.net/actions/workflows/deploy-pages.yaml) [![publish-pages](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml/badge.svg)](https://github.com/tgxn/lemmy-explorer/actions/workflows/publish-pages.yaml)
 
 # Lemmy Explorer https://lemmyverse.net/
+
+> Note: Deployment has been moved to [GitHub pages](https://github.com/tgxn/lemmyverse.net), as S3 charges were coming up on USD $20/mo.
 
 Data Dumps: https://data.lemmyverse.net/
 
