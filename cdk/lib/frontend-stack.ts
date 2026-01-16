@@ -89,11 +89,11 @@ export class FrontendStack extends Stack {
       ],
     });
 
-    new route53.ARecord(this, "SiteAliasRecord", {
-      zone: route53.HostedZone.fromLookup(this, "Zone", { domainName: config.base_zone }),
-      recordName: config.domain,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
-    });
+    // new route53.ARecord(this, "SiteAliasRecord", {
+    //   zone: route53.HostedZone.fromLookup(this, "Zone", { domainName: config.base_zone }),
+    //   recordName: config.domain,
+    //   target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+    // });
 
     new CfnOutput(this, "DistributionId", {
       value: distribution.distributionId,
