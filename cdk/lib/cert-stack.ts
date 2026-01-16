@@ -13,13 +13,13 @@ export class CertStack extends Stack {
     super(scope, id, props);
 
     // get existing hosted zone and add cname
-    const myHostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
-      domainName: config.base_zone,
-    });
+    // const myHostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
+    //   domainName: config.base_zone,
+    // });
 
     this.cert = new acm.Certificate(this, "Certificate", {
       domainName: config.domain,
-      validation: acm.CertificateValidation.fromDns(myHostedZone),
+      // validation: acm.CertificateValidation.fromDns(myHostedZone),
     });
   }
 }
