@@ -15,13 +15,13 @@ const certStack = new CertStack(app, `LemmyExplorer-Cert-${config.environment}`,
   crossRegionReferences: true,
 });
 
-const buildStack = new BuildStack(app, `LemmyExplorer-Build-${config.environment}`, {
-  env: { region: "ap-southeast-2", account: config.account },
+new BuildStack(app, `LemmyExplorer-Build-${config.environment}`, {
+  env: { region: "us-east-1", account: config.account },
 });
 
 const frontendStack = new FrontendStack(app, `LemmyExplorer-Frontend-${config.environment}`, {
-  env: { region: "ap-southeast-2", account: config.account },
+  env: { region: "us-east-1", account: config.account },
   cert: certStack.cert,
-  crossRegionReferences: true,
+  // crossRegionReferences: true,
 });
 frontendStack.addDependency(certStack);
