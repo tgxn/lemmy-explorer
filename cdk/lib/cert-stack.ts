@@ -20,6 +20,7 @@ export class CertStack extends Stack {
     this.cert = new acm.Certificate(this, "Certificate", {
       domainName: config.domain,
       // validation: acm.CertificateValidation.fromDns(myHostedZone),
+      validation: acm.CertificateValidation.fromDns(), // Records must be added manually
     });
   }
 }
