@@ -10,18 +10,19 @@ import config from "../config.json";
 
 const app = new cdk.App();
 
-const certStack = new CertStack(app, `LemmyExplorer-Cert-${config.environment}`, {
+const certStack = new CertStack(app, `LemmyExplorerUS-Cert-${config.environment}`, {
   env: { region: "us-east-1", account: config.account },
   crossRegionReferences: true,
 });
 
-new BuildStack(app, `LemmyExplorer-Build-${config.environment}`, {
+new BuildStack(app, `LemmyExplorerUS-Build-${config.environment}`, {
   env: { region: "us-east-1", account: config.account },
 });
 
-const frontendStack = new FrontendStack(app, `LemmyExplorer-Frontend-${config.environment}`, {
+const frontendStack = new FrontendStack(app, `LemmyExplorerUS-Frontend-${config.environment}`, {
   env: { region: "us-east-1", account: config.account },
   cert: certStack.cert,
   // crossRegionReferences: true,
 });
+
 frontendStack.addDependency(certStack);
