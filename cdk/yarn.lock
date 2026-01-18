@@ -25,12 +25,12 @@
   resolved "https://registry.yarnpkg.com/@balena/dockerignore/-/dockerignore-1.0.2.tgz#9ffe4726915251e8eb69f44ef3547e0da2c03e0d"
   integrity sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==
 
-"@types/node@^24.10.9":
-  version "24.10.9"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.10.9.tgz#1aeb5142e4a92957489cac12b07f9c7fe26057d0"
-  integrity sha512-ne4A0IpG3+2ETuREInjPNhUGis1SFjv1d5asp8MzEAGtOZeTeHVDOYqOgqfhvseqg/iXty2hjBf1zAOb7RNiNw==
+"@types/node@^22.13.5":
+  version "22.19.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.19.7.tgz#434094ee1731ae76c16083008590a5835a8c39c1"
+  integrity sha512-MciR4AKGHWl7xwxkBa6xUGxQJ4VBOmPTF7sL+iGzuahOFaO0jHCsuEfS80pan1ef4gWId1oWOweIhrDEYLuaOw==
   dependencies:
-    undici-types "~7.16.0"
+    undici-types "~6.21.0"
 
 ajv@^8.0.1:
   version "8.17.1"
@@ -59,7 +59,7 @@ astral-regex@^2.0.0:
   resolved "https://registry.yarnpkg.com/astral-regex/-/astral-regex-2.0.0.tgz#483143c567aeed4785759c0865786dc77d7d2e31"
   integrity sha512-Z7tMw1ytTXt5jqMcOP+OQteU1VuNK9Y02uuJtKQ1Sv69jXQKKg5cibLwGJow8yzZP+eAc18EmLGPal0bp36rvQ==
 
-aws-cdk-lib@^2.235.0:
+aws-cdk-lib@^2.181.0:
   version "2.235.0"
   resolved "https://registry.yarnpkg.com/aws-cdk-lib/-/aws-cdk-lib-2.235.0.tgz#962277bb271847c1bb149a1f8960a3d029bf0bbb"
   integrity sha512-zoTa+fw4J0sjYrn4LJcWAKxQ8i9DMqWdLo7MkP6nNgtqEaypajF9t6Ucasx93/pAQ2bmGV61EM2oVEOtVnpenA==
@@ -79,10 +79,10 @@ aws-cdk-lib@^2.235.0:
     table "^6.9.0"
     yaml "1.10.2"
 
-aws-cdk@2.1101.0:
-  version "2.1101.0"
-  resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-2.1101.0.tgz#ae407986bf8d8002dbe6916ced4bb70ab0b47ecf"
-  integrity sha512-5EP+t13OFzE0SaK+KY/di9ZcXQYwnhDtM8kqEMjEvqhj+K3eqtV0DDI1YjthOoVMBAHgZK9juKPqxfwwRprBPQ==
+aws-cdk@2.1000.3:
+  version "2.1000.3"
+  resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-2.1000.3.tgz#48997f6b07c37d1aa43865162724dcad60f8cfca"
+  integrity sha512-y0sU603gGWpVTwqDw9MKVHg3e1t49Mvve6t3YDOvjeKY195Vu6dgHlHjW4h8n1vX04r49NKfpoApG60V8sMbdw==
   optionalDependencies:
     fsevents "2.3.2"
 
@@ -121,7 +121,7 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
 
-constructs@^10.4.5:
+constructs@^10.2.35:
   version "10.4.5"
   resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.4.5.tgz#d06c9b33f8d1668ed36036c62e2e98dadfa1ed31"
   integrity sha512-fOoP70YLevMZr5avJHx2DU3LNYmC6wM8OwdrNewMZou1kZnPGOeVzBrRjZNgFDHUlulYUjkpFRSpTE3D+n+ZSg==
@@ -269,15 +269,15 @@ table@^6.9.0:
     string-width "^4.2.3"
     strip-ansi "^6.0.1"
 
-typescript@^5.9.3:
+typescript@^5.7.3:
   version "5.9.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.9.3.tgz#5b4f59e15310ab17a216f5d6cf53ee476ede670f"
   integrity sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
 
-undici-types@~7.16.0:
-  version "7.16.0"
-  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.16.0.tgz#ffccdff36aea4884cbfce9a750a0580224f58a46"
-  integrity sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==
+undici-types@~6.21.0:
+  version "6.21.0"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.21.0.tgz#691d00af3909be93a7faa13be61b3a5b50ef12cb"
+  integrity sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
 
 universalify@^2.0.0:
   version "2.0.1"
