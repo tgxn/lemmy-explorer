@@ -27,7 +27,7 @@ const rolesStack = new RolesStack(app, `cdk-usea1-${config.environment}-LemmyExp
 
 rolesStack.addDependency(dataStack);
 
-const frontendStack = new FrontendStack(app, `cdk-${config.environment}-LemmyExplorerUS-Frontend`, {
+const frontendStack = new FrontendStack(app, `cdk-${config.environment}-LemmyExplorer-Frontend`, {
   env: { region: "us-east-1", account: config.account },
   cert: certStack.cert,
 });
