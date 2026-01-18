@@ -13,13 +13,13 @@
     "deploy:ci": "cdk deploy --all --require-approval never"
   },
   "dependencies": {
-    "aws-cdk": "2.1000.3",
+    "aws-cdk": "2.1101.0",
     "aws-cdk-lib": "^2.181.0",
     "constructs": "^10.2.35"
   },
   "devDependencies": {
     "@types/node": "^22.13.5",
-    "aws-cdk": "2.1000.3",
+    "aws-cdk": "2.1101.0",
     "aws-cdk-lib": "^2.181.0",
     "typescript": "^5.7.3"
   }
