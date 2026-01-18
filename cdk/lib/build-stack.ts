@@ -5,33 +5,33 @@ import { Construct } from "constructs";
 
 import { AnyPrincipal, Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
-interface DataStackProps extends StackProps {
+interface BuildStackProps extends StackProps {
   environment: string;
 }
 
-export class DataStack extends Stack {
-  public readonly dataBucket: s3.Bucket;
+export class BuildStack extends Stack {
+  public readonly buildBucket: s3.Bucket;
 
-  constructor(scope: Construct, id: string, props: DataStackProps) {
+  constructor(scope: Construct, id: string, props: BuildStackProps) {
     super(scope, id, props);
 
     const { environment } = props;
 
-    // Data Bucket
-    this.dataBucket = new s3.Bucket(this, "DataBucket", {
-      bucketName: `s3-${this.account}-usea1-${environment}-data`.toLowerCase(),
+    // Build Bucket
+    this.buildBucket = new s3.Bucket(this, "BuildBucket", {
+      bucketName: `s3-${this.account}-usea1-${environment}-build`.toLowerCase(),
       publicReadAccess: false,
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
     // Policy to deny access to the bucket via unencrypted connections
-    this.dataBucket.addToResourcePolicy(
+    this.buildBucket.addToResourcePolicy(
       new PolicyStatement({
         effect: Effect.DENY,
         principals: [new AnyPrincipal()],
         actions: ["s3:*"],
-        resources: [this.dataBucket.bucketArn],
+        resources: [this.buildBucket.bucketArn],
         conditions: {
           Bool: { "aws:SecureTransport": "false" },
         },

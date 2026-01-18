@@ -6,13 +6,14 @@ import { Construct } from "constructs";
 
 interface RolesStackProps extends StackProps {
   dataBucket: s3.Bucket;
+  environment: string;
 }
 
 export class RolesStack extends Stack {
   constructor(scope: Construct, id: string, props: RolesStackProps) {
     super(scope, id, props);
 
-    const { dataBucket } = props;
+    const { dataBucket, environment } = props;
 
     // Role for writing to the Data bucket
     const dataBucketWriterRole = new iam.Role(this, "DataBucketWriterRole", {
