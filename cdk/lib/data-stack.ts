@@ -19,7 +19,7 @@ export class DataStack extends Stack {
 
     // Data Bucket
     this.dataBucket = new s3.Bucket(this, "DataBucket", {
-      bucketName: `s3-${this.account}-usea1-${environment}-data`.toLowerCase(),
+      bucketName: `s3-${this.account}-usea1-lemmyverse-${environment}-data`.toLowerCase(),
       publicReadAccess: false,
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,

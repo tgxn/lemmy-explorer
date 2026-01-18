@@ -19,7 +19,7 @@ export class BuildStack extends Stack {
 
     // Build Bucket
     this.buildBucket = new s3.Bucket(this, "BuildBucket", {
-      bucketName: `s3-${this.account}-usea1-${environment}-build`.toLowerCase(),
+      bucketName: `s3-${this.account}-usea1-lemmyverse-${environment}-build`.toLowerCase(),
       publicReadAccess: false,
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
