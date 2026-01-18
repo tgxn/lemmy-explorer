@@ -4,28 +4,28 @@ import * as cdk from "aws-cdk-lib";
 
 import { CertStack } from "../lib/cert-stack";
 import { FrontendStack } from "../lib/frontend-stack";
-import { BuildStack } from "../lib/build-stack";
+import { DataStack } from "../lib/data-stack";
 import { RolesStack } from "../lib/roles-stack";
 
 import config from "../config.json";
 
 const app = new cdk.App();
 
-const certStack = new CertStack(app, `cdk-${config.environment}-LemmyExplorer-Cert`, {
+const certStack = new CertStack(app, `cdk-usea1-${config.environment}-LemmyExplorer-Cert`, {
   env: { region: "us-east-1", account: config.account },
   crossRegionReferences: true,
 });
 
-const buildStack = new BuildStack(app, `cdk-${config.environment}-LemmyExplorer-Build`, {
+const dataStack = new DataStack(app, `cdk-usea1-${config.environment}-LemmyExplorer-Data`, {
   env: { region: "us-east-1", account: config.account },
 });
 
-const rolesStack = new RolesStack(app, `cdk-${config.environment}-LemmyExplorer-Roles`, {
+const rolesStack = new RolesStack(app, `cdk-usea1-${config.environment}-LemmyExplorer-Roles`, {
   env: { region: "us-east-1", account: config.account },
-  buildBucket: buildStack.buildBucket,
+  dataBucket: dataStack.dataBucket,
 });
 
-rolesStack.addDependency(buildStack);
+rolesStack.addDependency(dataStack);
 
 const frontendStack = new FrontendStack(app, `cdk-${config.environment}-LemmyExplorerUS-Frontend`, {
   env: { region: "us-east-1", account: config.account },

@@ -5,42 +5,42 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
 interface RolesStackProps extends StackProps {
-  buildBucket: s3.Bucket;
+  dataBucket: s3.Bucket;
 }
 
 export class RolesStack extends Stack {
   constructor(scope: Construct, id: string, props: RolesStackProps) {
     super(scope, id, props);
 
-    const { buildBucket } = props;
+    const { dataBucket } = props;
 
-    // Role for writing to the build bucket
-    const buildBucketWriterRole = new iam.Role(this, "BuildBucketWriterRole", {
-      roleName: "buildbucketwriter",
+    // Role for writing to the Data bucket
+    const dataBucketWriterRole = new iam.Role(this, "DataBucketWriterRole", {
+      roleName: "role-usea1-data-bucket-writer",
       assumedBy: new iam.AccountPrincipal(this.account),
-      description: "Role for GitHub Actions to upload artifacts to the build bucket",
+      description: "Role for GitHub Actions to upload artifacts to the data bucket",
     });
 
-    buildBucketWriterRole.addToPrincipalPolicy(
+    dataBucketWriterRole.addToPrincipalPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:ListBucket"],
-        resources: [buildBucket.bucketArn, `${buildBucket.bucketArn}/*`],
+        resources: [dataBucket.bucketArn, `${dataBucket.bucketArn}/*`],
       }),
     );
 
-    // Role for reading from the build bucket
-    const buildBucketReaderRole = new iam.Role(this, "BuildBucketReaderRole", {
-      roleName: "buildbucketreader",
+    // Role for reading from the data bucket
+    const dataBucketReaderRole = new iam.Role(this, "DataBucketReaderRole", {
+      roleName: "role-usea1-data-bucket-reader",
       assumedBy: new iam.AccountPrincipal(this.account),
-      description: "Role for reading artifacts from the build bucket",
+      description: "Role for reading artifacts from the data bucket",
     });
 
-    buildBucketReaderRole.addToPrincipalPolicy(
+    dataBucketReaderRole.addToPrincipalPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["s3:GetObject", "s3:ListBucket"],
-        resources: [buildBucket.bucketArn, `${buildBucket.bucketArn}/*`],
+        resources: [dataBucket.bucketArn, `${dataBucket.bucketArn}/*`],
       }),
     );
   }
