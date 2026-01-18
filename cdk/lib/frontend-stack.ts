@@ -22,14 +22,18 @@ import config from "../config.json";
 
 type FrontendStackProps = StackProps & {
   cert: acm.Certificate;
+  environment: string;
 };
 
 export class FrontendStack extends Stack {
   constructor(scope: Construct, id: string, props: FrontendStackProps) {
     super(scope, id, props);
 
+    const { environment } = props;
+
     // Content Bucket
     const siteBucket = new s3.Bucket(this, "SiteBucket", {
+      bucketName: `s3-${this.account}-usea1-lemmyverse-${environment}-build`.toLowerCase(),
       publicReadAccess: false,
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
