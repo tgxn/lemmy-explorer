@@ -33,7 +33,6 @@ export class FrontendStack extends Stack {
 
     // Content Bucket
     const siteBucket = new s3.Bucket(this, "SiteBucket", {
-      bucketName: `s3-${this.account}-usea1-lemmyverse-${environment}-frontend`.toLowerCase(),
       publicReadAccess: false,
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
