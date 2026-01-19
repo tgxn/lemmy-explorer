@@ -5,7 +5,7 @@ import * as cdk from "aws-cdk-lib";
 import { CertStack } from "../lib/cert-stack";
 import { FrontendStack } from "../lib/frontend-stack";
 import { DataStack } from "../lib/data-stack";
-import { RolesStack } from "../lib/roles-stack";
+import { AccessStack } from "../lib/access-stack";
 
 import config from "../config.json";
 
@@ -21,13 +21,13 @@ const dataStack = new DataStack(app, `cdk-${config.environment}-LemmyExplorer-Da
   environment: config.environment,
 });
 
-const rolesStack = new RolesStack(app, `cdk-${config.environment}-LemmyExplorer-Roles`, {
+const accessStack = new AccessStack(app, `cdk-${config.environment}-LemmyExplorer-Access`, {
   env: { region: "us-east-1", account: config.account },
   dataBucket: dataStack.dataBucket,
   environment: config.environment,
 });
 
-rolesStack.addDependency(dataStack);
+accessStack.addDependency(dataStack);
 
 const frontendStack = new FrontendStack(app, `cdk-${config.environment}-LemmyExplorer-Frontend`, {
   env: { region: "us-east-1", account: config.account },
