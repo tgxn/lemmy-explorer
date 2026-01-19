@@ -15,8 +15,6 @@ export class DataStack extends Stack {
   constructor(scope: Construct, id: string, props: DataStackProps) {
     super(scope, id, props);
 
-    const { environment } = props;
-
     // Data Bucket
     this.dataBucket = new s3.Bucket(this, "DataBucket", {
       publicReadAccess: false,
