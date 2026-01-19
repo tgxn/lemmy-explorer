@@ -10,6 +10,9 @@ interface RolesStackProps extends StackProps {
 }
 
 export class RolesStack extends Stack {
+  public readonly dataBucketWriterGroup: iam.Group;
+  public readonly dataBucketReaderGroup: iam.Group;
+
   constructor(scope: Construct, id: string, props: RolesStackProps) {
     super(scope, id, props);
 
@@ -25,7 +28,7 @@ export class RolesStack extends Stack {
     dataBucketWriterRole.addToPrincipalPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:ListBucket"],
+        actions: ["s3:PutObject", "s3:PutObjectAcl"],
         resources: [dataBucket.bucketArn, `${dataBucket.bucketArn}/*`],
       }),
     );
@@ -43,6 +46,24 @@ export class RolesStack extends Stack {
         actions: ["s3:GetObject", "s3:ListBucket"],
         resources: [dataBucket.bucketArn, `${dataBucket.bucketArn}/*`],
       }),
+    );
+
+    // Group for users who need write access
+    this.dataBucketWriterGroup = new iam.Group(this, "DataBucketWriterGroup", {
+      groupName: `group-lemmyexplorer-${environment}-data-bucket-writer`,
+    });
+
+    this.dataBucketWriterGroup.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName("AssumeRolePolicy"),
+    );
+
+    // Group for users who need read access
+    this.dataBucketReaderGroup = new iam.Group(this, "DataBucketReaderGroup", {
+      groupName: `group-lemmyexplorer-${environment}-data-bucket-reader`,
+    });
+
+    this.dataBucketReaderGroup.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName("AssumeRolePolicy"),
     );
   }
 }
