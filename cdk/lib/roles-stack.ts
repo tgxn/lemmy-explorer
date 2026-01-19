@@ -17,7 +17,7 @@ export class RolesStack extends Stack {
 
     // Role for writing to the Data bucket
     const dataBucketWriterRole = new iam.Role(this, "DataBucketWriterRole", {
-      roleName: `role-usea1-${environment}-lemmyverse-data-bucket-writer`,
+      roleName: `role-lemmyexplorer-${environment}-data-bucket-writer`,
       assumedBy: new iam.AccountPrincipal(this.account),
       description: "Role for GitHub Actions to upload artifacts to the data bucket",
     });
@@ -32,7 +32,7 @@ export class RolesStack extends Stack {
 
     // Role for reading from the data bucket
     const dataBucketReaderRole = new iam.Role(this, "DataBucketReaderRole", {
-      roleName: `role-usea1-${environment}-lemmyverse-data-bucket-reader`,
+      roleName: `role-lemmyexplorer-${environment}-data-bucket-reader`,
       assumedBy: new iam.AccountPrincipal(this.account),
       description: "Role for reading artifacts from the data bucket",
     });
