@@ -10,6 +10,9 @@ interface RolesStackProps extends StackProps {
 }
 
 export class RolesStack extends Stack {
+  public readonly dataBucketWriterGroup: iam.Group;
+  public readonly dataBucketReaderGroup: iam.Group;
+
   constructor(scope: Construct, id: string, props: RolesStackProps) {
     super(scope, id, props);
 
@@ -17,7 +20,7 @@ export class RolesStack extends Stack {
 
     // Role for writing to the Data bucket
     const dataBucketWriterRole = new iam.Role(this, "DataBucketWriterRole", {
-      roleName: `role-usea1-${environment}-lemmyverse-data-bucket-writer`,
+      roleName: `role-lemmyexplorer-${environment}-data-bucket-writer`,
       assumedBy: new iam.AccountPrincipal(this.account),
       description: "Role for GitHub Actions to upload artifacts to the data bucket",
     });
@@ -25,14 +28,14 @@ export class RolesStack extends Stack {
     dataBucketWriterRole.addToPrincipalPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:ListBucket"],
+        actions: ["s3:PutObject", "s3:PutObjectAcl"],
         resources: [dataBucket.bucketArn, `${dataBucket.bucketArn}/*`],
       }),
     );
 
     // Role for reading from the data bucket
     const dataBucketReaderRole = new iam.Role(this, "DataBucketReaderRole", {
-      roleName: `role-usea1-${environment}-lemmyverse-data-bucket-reader`,
+      roleName: `role-lemmyexplorer-${environment}-data-bucket-reader`,
       assumedBy: new iam.AccountPrincipal(this.account),
       description: "Role for reading artifacts from the data bucket",
     });
