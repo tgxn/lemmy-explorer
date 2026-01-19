@@ -25,6 +25,7 @@ concurrency:
 
 env:
   NODE_VERSION: 22.17.0
+  CDK_DISABLE_CLI_TELEMETRY: true
 
 jobs:
   aws_deploy_dev:

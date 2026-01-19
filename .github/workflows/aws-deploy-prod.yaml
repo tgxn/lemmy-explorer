@@ -14,9 +14,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-  # run every 6 hours
+  # run every 12 hours
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */12 * * *"
 
 concurrency:
   group: production
@@ -24,6 +24,7 @@ concurrency:
 
 env:
   NODE_VERSION: 22.17.0
+  CDK_DISABLE_CLI_TELEMETRY: true
 
 jobs:
   aws_deploy_prod:
