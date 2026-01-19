@@ -11,17 +11,17 @@ import config from "../config.json";
 
 const app = new cdk.App();
 
-const certStack = new CertStack(app, `cdk-usea1-${config.environment}-LemmyExplorer-Cert`, {
+const certStack = new CertStack(app, `cdk-${config.environment}-LemmyExplorer-Cert`, {
   env: { region: "us-east-1", account: config.account },
   crossRegionReferences: true,
 });
 
-const dataStack = new DataStack(app, `cdk-usea1-${config.environment}-LemmyExplorer-Data`, {
+const dataStack = new DataStack(app, `cdk-${config.environment}-LemmyExplorer-Data`, {
   env: { region: "us-east-1", account: config.account },
   environment: config.environment,
 });
 
-const rolesStack = new RolesStack(app, `cdk-usea1-${config.environment}-LemmyExplorer-Roles`, {
+const rolesStack = new RolesStack(app, `cdk-${config.environment}-LemmyExplorer-Roles`, {
   env: { region: "us-east-1", account: config.account },
   dataBucket: dataStack.dataBucket,
   environment: config.environment,
