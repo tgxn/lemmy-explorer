@@ -9,7 +9,14 @@ import logging from "../lib/logging";
 // upload a copy of the file in REDIS_DUMP_FILE to S3
 export async function syncCheckpoint() {
   try {
-    const checkpointName = `checkpoint-${Date.now()}.rdb`;
+    const timestamp = Date.now();
+    const now = new Date(timestamp);
+
+    // Format date as YYYY-MM-DD
+    const dateFolder = now.toISOString().split("T")[0];
+
+    // Create filename with timestamp
+    const checkpointName = `checkpoint-${timestamp}.rdb`;
     const checkpointPath = join(resolve(CHECKPOINT_DIR), checkpointName);
     logging.info("checkpointPath", checkpointPath);
 
@@ -25,16 +32,33 @@ export async function syncCheckpoint() {
       throw new Error("PUBLISH_S3_BUCKET is not defined");
     }
 
+    // Upload to date-based folder with timestamp in filename
+    const s3Key = `checkpoint/${dateFolder}/dump.${timestamp}.rdb`;
+
     const input: PutObjectCommandInput = {
       Body: fileData,
       Bucket: PUBLISH_S3_BUCKET,
-      Key: "checkpoint/dump.rdb",
+      Key: s3Key,
       Metadata: {
         checkpoint: checkpointName,
       },
     };
     const command = new PutObjectCommand(input);
     const response = await client.send(command);
+
+    logging.info("syncCheckpoint uploaded to", s3Key);
+
+    // Upload latest.txt with the path to the latest checkpoint
+    const latestInput: PutObjectCommandInput = {
+      Body: s3Key,
+      Bucket: PUBLISH_S3_BUCKET,
+      Key: "latest.txt",
+      ContentType: "text/plain",
+    };
+    const latestCommand = new PutObjectCommand(latestInput);
+    await client.send(latestCommand);
+
+    logging.info("latest.txt updated with", s3Key);
 
     // delete checkpointPath
     await rm(checkpointPath, { force: true });
