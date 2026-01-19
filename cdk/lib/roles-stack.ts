@@ -47,23 +47,5 @@ export class RolesStack extends Stack {
         resources: [dataBucket.bucketArn, `${dataBucket.bucketArn}/*`],
       }),
     );
-
-    // Group for users who need write access
-    this.dataBucketWriterGroup = new iam.Group(this, "DataBucketWriterGroup", {
-      groupName: `group-lemmyexplorer-${environment}-data-bucket-writer`,
-    });
-
-    this.dataBucketWriterGroup.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName("AssumeRolePolicy"),
-    );
-
-    // Group for users who need read access
-    this.dataBucketReaderGroup = new iam.Group(this, "DataBucketReaderGroup", {
-      groupName: `group-lemmyexplorer-${environment}-data-bucket-reader`,
-    });
-
-    this.dataBucketReaderGroup.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName("AssumeRolePolicy"),
-    );
   }
 }
