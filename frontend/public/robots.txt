@@ -8,15 +8,6 @@ Allow: /
 User-agent: DuckDuckBot
 Allow: /
 
-User-agent: YandexBot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 # Block AI/ML bots
 User-agent: GPTBot
 Disallow: /
