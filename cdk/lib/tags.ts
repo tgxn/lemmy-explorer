@@ -10,10 +10,9 @@ export interface ResourceTagsConfig {
 }
 
 const baseTags = {
-  Solution: "LemmyExplorer",
+  Project: "LemmyExplorer",
   Environment: config.environment,
   ManagedBy: "CDK",
-  Project: "lemmy-scraper",
 };
 
 export function applyTags(construct: Construct, tagsConfig: ResourceTagsConfig): void {
