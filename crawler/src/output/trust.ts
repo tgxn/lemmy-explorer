@@ -11,6 +11,8 @@ import type {
   IFediseerTag,
 } from "../../../types/storage";
 
+// import type { IInstanceTrust, ITrustMetrics } from "../../../types/output";
+
 // import {
 //   IErrorData,
 //   IErrorDataKeyValue,
@@ -43,27 +45,29 @@ import type {
  * - "tags" - ["cloudflare"]
  */
 
+export interface ITrustMetrics {
+  usersTotal: number;
+  usersMonth: number;
+  usersWeek: number;
+
+  totalActivity: number;
+  localPosts: number;
+  localComments: number;
+
+  averageUsers?: number; // average users per scan
+  biggestJump?: number; // biggest jump in users per scan
+  averagePerMinute?: number; // average users per minute
+  userActivityScore?: number; // total users / total activity
+  activityUserScore?: number; // total activity / total users
+  userActiveMonthScore?: number; // total users / active month users
+}
+
 type IInstanceMetrics = {
   baseurl: BaseURL;
   base: BaseURL;
   actor_id: ActorID;
 
-  metrics: {
-    usersTotal: number;
-    usersMonth: number;
-    usersWeek: number;
-
-    totalActivity: number;
-    localPosts: number;
-    localComments: number;
-
-    averageUsers?: number; // average users per scan
-    biggestJump?: number; // biggest jump in users per scan
-    averagePerMinute?: number; // average users per minute
-    userActivityScore?: number; // total users / total activity
-    activityUserScore?: number; // total activity / total users
-    userActiveMonthScore?: number; // total users / active month users
-  };
+  metrics: ITrustMetrics;
 
   users: number;
   name: string;
