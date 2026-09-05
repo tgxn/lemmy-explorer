@@ -21,6 +21,23 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+interface RawDataPoint {
+  time: number;
+  [version: string]: number;
+}
+
+interface MetricsSeries {
+  versions: RawDataPoint[];
+  versionKeys: string[];
+}
+
+interface VersionStat {
+  version: string;
+  firstSeen: number | null;
+  currentCount: number;
+  sharePct: number;
+}
+
 // ---------------------------------------------------------------------------
 // Version normalization: strips anything that isn't a real, tracked release -
 // git-describe build hashes ("-9-gc55dd700c"), custom build tags
@@ -28,7 +45,7 @@ import {
 // "-alpha.2", "-rc.0", "-n.1") - collapsing them all down to their base
 // semver. Runs in a loop since some strings chain multiple suffixes.
 // ---------------------------------------------------------------------------
-function normalizeVersion(raw) {
+function normalizeVersion(raw: string): string {
   let v = String(raw).trim();
   let changed = true;
 
@@ -43,14 +60,16 @@ function normalizeVersion(raw) {
   return v;
 }
 
-function compareVersions(a, b) {
-  const partsA = String(a)
-    .split(/[.\-]/)
-    .map((p) => (isNaN(p) ? p : Number(p)));
-  const partsB = String(b)
-    .split(/[.\-]/)
-    .map((p) => (isNaN(p) ? p : Number(p)));
+function compareVersions(a: string, b: string): number {
+  const toParts = (v: string): (string | number)[] =>
+    String(v)
+      .split(/[.-]/)
+      .map((p) => (isNaN(Number(p)) ? p : Number(p)));
+
+  const partsA = toParts(a);
+  const partsB = toParts(b);
   const len = Math.max(partsA.length, partsB.length);
+
   for (let i = 0; i < len; i++) {
     const x = partsA[i] ?? 0;
     const y = partsB[i] ?? 0;
@@ -62,9 +81,9 @@ function compareVersions(a, b) {
 }
 
 // Continuous cool -> warm flow (blue -> violet -> magenta), driven by
-// chronological rank (oldest -> newest), NOT by stacking position. Green is
-// reserved exclusively for "latest".
-function versionColor(chronologicalRank, total, isLatest) {
+// chronological rank (oldest -> newest), NOT by stacking position.
+// Green is reserved exclusively for "latest".
+function versionColor(chronologicalRank: number, total: number, isLatest: boolean): string {
   if (isLatest) return "#16a34a";
   if (total <= 1) return "#94a3b8";
 
@@ -81,9 +100,13 @@ function versionColor(chronologicalRank, total, isLatest) {
 
 // Rotated (vertical) label so closely-spaced rollout markers stack along the
 // y-axis instead of colliding horizontally. Uses Joy UI's own text-color CSS
-// variable (via style, not the fill attribute) so it automatically flips
-// between light/dark mode instead of being hardcoded to one theme.
-const RotatedMarkerLabel = ({ viewBox, value }) => {
+// variable so it automatically flips between light/dark mode.
+interface RotatedMarkerLabelProps {
+  viewBox?: { x: number; y: number; width?: number; height?: number };
+  value: string;
+}
+
+const RotatedMarkerLabel: React.FC<RotatedMarkerLabelProps> = ({ viewBox, value }) => {
   if (!viewBox) return null;
   const { x, y } = viewBox;
   return (
@@ -102,7 +125,13 @@ const RotatedMarkerLabel = ({ viewBox, value }) => {
   );
 };
 
-const CustomTooltip = ({ active, payload, label }) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ dataKey: string; value: number; color: string }>;
+  label?: string | number;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
 
   const total = payload.reduce((sum, p) => sum + (p.value || 0), 0);
@@ -112,7 +141,7 @@ const CustomTooltip = ({ active, payload, label }) => {
       variant="outlined"
       sx={{ p: 1.5, borderRadius: "md", boxShadow: "md", minWidth: 220, bgcolor: "background.surface" }}
     >
-      <Typography level="body-sm" fontWeight="lg" sx={{ mb: 0.5 }}>
+      <Typography level={"body-sm" as any} fontWeight="lg" sx={{ mb: 0.5 }}>
         {moment(Number(label)).format("DD MMM YYYY")}
       </Typography>
       {payload
@@ -123,11 +152,11 @@ const CustomTooltip = ({ active, payload, label }) => {
           <Box key={p.dataKey} sx={{ display: "flex", justifyContent: "space-between", gap: 2, py: 0.25 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: p.color }} />
-              <Typography level="body-xs">{p.dataKey}</Typography>
+              <Typography level={"body-xs" as any}>{p.dataKey}</Typography>
             </Box>
-            <Typography level="body-xs" fontWeight="md">
+            <Typography level={"body-xs" as any} fontWeight="md">
               {total ? `${((p.value / total) * 100).toFixed(1)}%` : p.value}
-              <Typography level="body-xs" sx={{ color: "text.tertiary", ml: 0.5 }}>
+              <Typography level={"body-xs" as any} sx={{ color: "text.tertiary", ml: 0.5 }}>
                 ({p.value})
               </Typography>
             </Typography>
@@ -144,45 +173,57 @@ export default function VersionChart() {
     isError,
     error,
     data: metricsData,
-  } = useQueryCache("metrics.series", "metrics.series");
+  } = useQueryCache("metrics.series", "metrics.series") as {
+    isLoading: boolean;
+    isSuccess: boolean;
+    isError: boolean;
+    error: Error | null;
+    data: MetricsSeries | undefined;
+  };
 
-  const dataset = useMemo(() => {
+  const dataset = useMemo<RawDataPoint[]>(() => {
     if (!metricsData) return [];
     return [...metricsData.versions].sort((a, b) => a.time - b.time);
   }, [metricsData]);
 
-  const rawVersionKeys = useMemo(() => {
+  const rawVersionKeys = useMemo<string[]>(() => {
     if (!metricsData) return [];
     return metricsData.versionKeys;
   }, [metricsData]);
 
   const { normalizedDataset, versionKeys, chronoRank } = useMemo(() => {
     if (!dataset.length || !rawVersionKeys.length) {
-      return { normalizedDataset: [], versionKeys: [], chronoRank: new Map() };
+      return {
+        normalizedDataset: [] as RawDataPoint[],
+        versionKeys: [] as string[],
+        chronoRank: new Map<string, number>(),
+      };
     }
 
-    const keyMap = new Map(rawVersionKeys.map((k) => [k, normalizeVersion(k)]));
+    const keyMap = new Map<string, string>(rawVersionKeys.map((k) => [k, normalizeVersion(k)]));
     const normalizedKeys = [...new Set(keyMap.values())];
 
-    const rows = dataset.map((row) => {
-      const out = { time: row.time };
-      normalizedKeys.forEach((nk) => (out[nk] = 0));
+    const rows: RawDataPoint[] = dataset.map((row) => {
+      const out: RawDataPoint = { time: row.time };
+      normalizedKeys.forEach((nk) => {
+        out[nk] = 0;
+      });
       rawVersionKeys.forEach((rk) => {
-        const nk = keyMap.get(rk);
-        out[nk] += row[rk] || 0;
+        const nk = keyMap.get(rk) as string;
+        out[nk] = (out[nk] || 0) + (row[rk] || 0);
       });
       return out;
     });
 
     const chronological = [...normalizedKeys].sort(compareVersions);
-    const rankMap = new Map(chronological.map((v, i) => [v, i]));
+    const rankMap = new Map<string, number>(chronological.map((v, i) => [v, i]));
 
     const stackOrder = [...normalizedKeys].sort((a, b) => compareVersions(b, a));
 
     return { normalizedDataset: rows, versionKeys: stackOrder, chronoRank: rankMap };
   }, [dataset, rawVersionKeys]);
 
-  const versionStats = useMemo(() => {
+  const versionStats = useMemo<VersionStat[]>(() => {
     if (!normalizedDataset.length || !versionKeys.length) return [];
 
     const latestRow = normalizedDataset[normalizedDataset.length - 1];
@@ -203,24 +244,26 @@ export default function VersionChart() {
       .sort((a, b) => b.currentCount - a.currentCount);
   }, [normalizedDataset, versionKeys]);
 
-  const latestVersionName = versionKeys.length ? [...versionKeys].sort(compareVersions).pop() : null;
+  const latestVersionName = versionKeys.length
+    ? ([...versionKeys].sort(compareVersions).pop() ?? null)
+    : null;
 
   const latestOverallDate = normalizedDataset.length
     ? normalizedDataset[normalizedDataset.length - 1].time
     : null;
 
-  const newVersionEvents = useMemo(() => {
+  const newVersionEvents = useMemo<VersionStat[]>(() => {
     if (!normalizedDataset.length || !versionStats.length) return [];
 
     const earliestDate = normalizedDataset[0].time;
 
     return versionStats
-      .filter((v) => v.firstSeen && v.firstSeen > earliestDate)
-      .sort((a, b) => a.firstSeen - b.firstSeen);
+      .filter((v): v is VersionStat & { firstSeen: number } => !!v.firstSeen && v.firstSeen > earliestDate)
+      .sort((a, b) => (a.firstSeen as number) - (b.firstSeen as number));
   }, [normalizedDataset, versionStats]);
 
-  if (isLoading) return "Loading...";
-  if (isError || !isSuccess) return "An error has occurred: " + error.message;
+  if (isLoading) return <>Loading...</>;
+  if (isError || !isSuccess) return <>An error has occurred: {error?.message}</>;
 
   return (
     <Box>
@@ -252,7 +295,7 @@ export default function VersionChart() {
             dataKey="time"
             domain={["dataMin", "dataMax"]}
             name="Time"
-            tickFormatter={(unixTime) => moment(unixTime).format("DD MMM YYYY")}
+            tickFormatter={(unixTime: number) => moment(unixTime).format("DD MMM YYYY")}
             type="number"
             padding={{ left: 20, right: 20 }}
             tick={{ fontSize: 11 }}
@@ -261,7 +304,7 @@ export default function VersionChart() {
           />
 
           <YAxis
-            tickFormatter={(v) => `${Math.round(v * 100)}%`}
+            tickFormatter={(v: number) => `${Math.round(v * 100)}%`}
             domain={[0, 1]}
             tick={{ fontSize: 12 }}
             axisLine={false}
@@ -296,7 +339,7 @@ export default function VersionChart() {
           {newVersionEvents.map((event) => (
             <ReferenceLine
               key={event.version}
-              x={event.firstSeen}
+              x={event.firstSeen as number}
               stroke="#94a3b8"
               strokeDasharray="3 3"
               strokeWidth={1}
@@ -308,7 +351,7 @@ export default function VersionChart() {
       </ResponsiveContainer>
 
       <Box sx={{ mt: 3 }}>
-        <Typography level="title-sm" sx={{ mb: 1 }}>
+        <Typography level={"title-sm" as any} sx={{ mb: 1 }}>
           Version Breakdown
         </Typography>
 
@@ -316,9 +359,9 @@ export default function VersionChart() {
           <thead>
             <tr>
               <th>Version</th>
-              <th>Current count</th>
-              <th>Share of fleet</th>
-              <th>First seen</th>
+              <th>Current Count</th>
+              <th>Current Percentage</th>
+              <th>First Seen</th>
             </tr>
           </thead>
           <tbody>
