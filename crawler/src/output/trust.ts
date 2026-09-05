@@ -10,6 +10,11 @@ import type {
   IFediseerInstanceDataTagsObject,
   IFediseerTag,
 } from "../../../types/storage";
+import type {
+  IFederationGraphEdge,
+  IFederationGraphOutput,
+  IInstanceDataOutput,
+} from "../../../types/output";
 
 // import type { IInstanceTrust, ITrustMetrics } from "../../../types/output";
 
@@ -142,6 +147,94 @@ export default class OutputTrust {
     });
 
     return endorsements;
+  }
+
+  getFederationGraph(instances: IInstanceDataOutput[]): IFederationGraphOutput {
+    if (!this.instanceList || !this.fediseerData) {
+      throw new Error("trust sources not loaded in getFederationGraph");
+    }
+
+    const outputById = new Map(instances.map((instance) => [instance.baseurl, instance]));
+    type GraphEdge = {
+      source: string;
+      target: string;
+      type: IFederationGraphEdge[2];
+      weight: number;
+    };
+    const edgeById = new Map<string, GraphEdge>();
+
+    const addEdge = (source: string, target: string, type: GraphEdge["type"], count = 1) => {
+      source = source.trim().toLowerCase();
+      target = target.trim().toLowerCase();
+      if (!source || !target || source === target) return;
+
+      const edgeId = `${source}\n${target}\n${type}`;
+      const existing = edgeById.get(edgeId);
+      if (existing) {
+        existing.weight += count;
+        return;
+      }
+
+      edgeById.set(edgeId, { source, target, type, weight: count });
+    };
+
+    for (const instance of this.instanceList) {
+      const source = instance.siteData?.site?.actor_id?.split("/")[2];
+      if (!source || !outputById.has(source)) continue;
+
+      for (const target of instance.siteData.federated?.allowed || []) {
+        addEdge(source, target, "trust");
+      }
+      for (const target of instance.siteData.federated?.blocked || []) {
+        addEdge(source, target, "defederate");
+      }
+    }
+
+    for (const instance of this.fediseerData) {
+      if (instance.guarantor) {
+        addEdge(instance.guarantor, instance.domain, "fediseer", Math.max(instance.endorsements || 0, 1));
+      }
+    }
+
+    const graphEdges = [...edgeById.values()];
+    const nodeWeights = new Map<string, number>();
+    for (const edge of graphEdges) {
+      nodeWeights.set(edge.source, (nodeWeights.get(edge.source) || 0) + edge.weight);
+      nodeWeights.set(edge.target, (nodeWeights.get(edge.target) || 0) + edge.weight);
+    }
+
+    // only include lemmy instances (from the output)
+    const lemmyNodeIds = new Set(instances.map((instance) => instance.baseurl));
+
+    // filter edges to only include lemmy-to-lemmy relationships
+    const lemmyEdges = graphEdges.filter(
+      (edge) => lemmyNodeIds.has(edge.source) && lemmyNodeIds.has(edge.target),
+    );
+
+    // recalculate weights with filtered edges
+    const lemmyNodeWeights = new Map<string, number>();
+    for (const edge of lemmyEdges) {
+      lemmyNodeWeights.set(edge.source, (lemmyNodeWeights.get(edge.source) || 0) + edge.weight);
+      lemmyNodeWeights.set(edge.target, (lemmyNodeWeights.get(edge.target) || 0) + edge.weight);
+    }
+
+    const nodeIdList = [...lemmyNodeIds];
+    const nodeIndexes = new Map(nodeIdList.map((id, index) => [id, index]));
+    const nodes = nodeIdList.map((id): IFederationGraphOutput["nodes"][number] => [
+      id,
+      outputById.get(id)?.score || 0,
+      lemmyNodeWeights.get(id) || 0,
+    ]);
+    const edges = lemmyEdges.map(
+      (edge): IFederationGraphEdge => [
+        nodeIndexes.get(edge.source)!,
+        nodeIndexes.get(edge.target)!,
+        edge.type,
+        edge.weight,
+      ],
+    );
+
+    return { nodes, edges };
   }
 
   async getInstancesWithMetrics() {
