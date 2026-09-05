@@ -38,28 +38,6 @@ interface VersionStat {
   sharePct: number;
 }
 
-// ---------------------------------------------------------------------------
-// Version normalization: strips anything that isn't a real, tracked release -
-// git-describe build hashes ("-9-gc55dd700c"), custom build tags
-// ("-jemalloc", "-modified"), AND pre-release/channel tags ("-beta.1",
-// "-alpha.2", "-rc.0", "-n.1") - collapsing them all down to their base
-// semver. Runs in a loop since some strings chain multiple suffixes.
-// ---------------------------------------------------------------------------
-function normalizeVersion(raw: string): string {
-  let v = String(raw).trim();
-  let changed = true;
-
-  while (changed) {
-    const stripped = v
-      .replace(/-\d+-g[0-9a-f]{6,}$/i, "") // git describe: -<N>-g<hash>
-      .replace(/-(beta|alpha|rc|pre|nightly|n|snapshot|dev|debug|dirty|jemalloc|modified)(\.\d+)?$/i, "");
-    changed = stripped !== v;
-    v = stripped;
-  }
-
-  return v;
-}
-
 function compareVersions(a: string, b: string): number {
   const toParts = (v: string): (string | number)[] =>
     String(v)
@@ -200,25 +178,26 @@ export default function VersionChart() {
       };
     }
 
-    const keyMap = new Map<string, string>(rawVersionKeys.map((k) => [k, normalizeVersion(k)]));
-    const normalizedKeys = [...new Set(keyMap.values())];
+    // Only keep keys that are pure semver ("1.2.3"). Anything with a
+    // build hash, pre-release tag, or other custom suffix is dropped
+    // completely - it is never summed into another series.
+
+    const validKeys = rawVersionKeys.filter((raw: string): boolean => {
+      return /^\d+\.\d+\.\d+$/.test(String(raw).trim());
+    });
 
     const rows: RawDataPoint[] = dataset.map((row) => {
       const out: RawDataPoint = { time: row.time };
-      normalizedKeys.forEach((nk) => {
-        out[nk] = 0;
-      });
-      rawVersionKeys.forEach((rk) => {
-        const nk = keyMap.get(rk) as string;
-        out[nk] = (out[nk] || 0) + (row[rk] || 0);
+      validKeys.forEach((k) => {
+        out[k] = row[k] || 0;
       });
       return out;
     });
 
-    const chronological = [...normalizedKeys].sort(compareVersions);
+    const chronological = [...validKeys].sort(compareVersions);
     const rankMap = new Map<string, number>(chronological.map((v, i) => [v, i]));
 
-    const stackOrder = [...normalizedKeys].sort((a, b) => compareVersions(b, a));
+    const stackOrder = [...validKeys].sort((a, b) => compareVersions(b, a));
 
     return { normalizedDataset: rows, versionKeys: stackOrder, chronoRank: rankMap };
   }, [dataset, rawVersionKeys]);
