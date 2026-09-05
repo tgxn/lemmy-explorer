@@ -1,6 +1,5 @@
 {
   "account": "ACCOUNT_ID",
   "environment": "ENVIRONMENT",
-  "base_zone": "R53_DOMAIN",
   "domain": "SITE_(SUB)DOMAIN"
 }

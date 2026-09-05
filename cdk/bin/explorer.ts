@@ -4,24 +4,62 @@ import * as cdk from "aws-cdk-lib";
 
 import { CertStack } from "../lib/cert-stack";
 import { FrontendStack } from "../lib/frontend-stack";
-import { BuildStack } from "../lib/build-stack";
+import { DataStack } from "../lib/data-stack";
+import { AccessStack } from "../lib/access-stack";
+import { applyTags } from "../lib/tags";
 
 import config from "../config.json";
 
 const app = new cdk.App();
 
-const certStack = new CertStack(app, `LemmyExplorer-Cert-${config.environment}`, {
+const certStackName = `cdk-${config.environment}-LemmyExplorer-Cert`;
+const certStack = new CertStack(app, certStackName, {
   env: { region: "us-east-1", account: config.account },
   crossRegionReferences: true,
 });
-
-const buildStack = new BuildStack(app, `LemmyExplorer-Build-${config.environment}`, {
-  env: { region: "ap-southeast-2", account: config.account },
+applyTags(certStack, {
+  stackName: certStackName,
+  purpose: "certificate",
+  billingCategory: "certificate",
+  service: "acm",
 });
 
-const frontendStack = new FrontendStack(app, `LemmyExplorer-Frontend-${config.environment}`, {
-  env: { region: "ap-southeast-2", account: config.account },
+const dataStackName = `cdk-${config.environment}-LemmyExplorer-Data`;
+const dataStack = new DataStack(app, dataStackName, {
+  env: { region: "us-east-1", account: config.account },
+  environment: config.environment,
+});
+applyTags(dataStack, {
+  stackName: dataStackName,
+  purpose: "storage",
+  billingCategory: "storage",
+  service: "s3",
+});
+
+const accessStackName = `cdk-${config.environment}-LemmyExplorer-Access`;
+const accessStack = new AccessStack(app, accessStackName, {
+  env: { region: "us-east-1", account: config.account },
+  dataBucket: dataStack.dataBucket,
+  environment: config.environment,
+});
+applyTags(accessStack, {
+  stackName: accessStackName,
+  purpose: "access",
+  billingCategory: "iam",
+  service: "iam",
+});
+accessStack.addDependency(dataStack);
+
+const frontendStackName = `cdk-${config.environment}-LemmyExplorer-Frontend`;
+const frontendStack = new FrontendStack(app, frontendStackName, {
+  env: { region: "us-east-1", account: config.account },
   cert: certStack.cert,
-  crossRegionReferences: true,
+  environment: config.environment,
+});
+applyTags(frontendStack, {
+  stackName: frontendStackName,
+  purpose: "distribution",
+  billingCategory: "cdn",
+  service: "cloudfront",
 });
 frontendStack.addDependency(certStack);

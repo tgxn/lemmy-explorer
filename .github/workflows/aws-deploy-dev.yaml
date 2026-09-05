@@ -25,6 +25,7 @@ concurrency:
 
 env:
   NODE_VERSION: 22.17.0
+  CDK_DISABLE_CLI_TELEMETRY: true
 
 jobs:
   aws_deploy_dev:
@@ -52,7 +53,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          s3-bucket: ${{ vars.BUILD_S3_BUCKET }}
+          s3-bucket: ${{ vars.DATA_S3_BUCKET }}
 
       # Yarn Install ./crawler
       - name: Yarn Install ./crawler

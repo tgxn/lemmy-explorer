@@ -2,6 +2,8 @@
 
 # Lemmy Explorer https://lemmyverse.net/
 
+<!-- > Note: Deployment has been moved to [GitHub pages](https://github.com/tgxn/lemmyverse.net), as S3 charges were coming up on USD $20/mo. -->
+
 Data Dumps: https://data.lemmyverse.net/
 
 This project provides a simple way to explore Lemmy Instances and Communities.
