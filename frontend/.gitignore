@@ -4,3 +4,5 @@ public/*.zip
 .env
 output/
 coverage/
+
+public/data/

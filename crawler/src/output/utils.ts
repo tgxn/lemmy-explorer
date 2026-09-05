@@ -167,18 +167,20 @@ export default class OutputUtils {
       old: previousRun.fediverse,
     });
 
-    data.push({
-      type: "magazines",
-      new: mbinMagazineArray.length,
-      old: previousRun.magazines,
-      pct: 30,
-    });
+    // TEMP disabled: https://github.com/tgxn/lemmy-explorer/issues/298
 
-    data.push({
-      type: "mbin_instances",
-      new: mbinInstanceArray.length,
-      old: previousRun.mbin_instances,
-    });
+    // data.push({
+    //   type: "magazines",
+    //   new: mbinMagazineArray.length,
+    //   old: previousRun.magazines,
+    //   pct: 30,
+    // });
+
+    // data.push({
+    //   type: "mbin_instances",
+    //   new: mbinInstanceArray.length,
+    //   old: previousRun.mbin_instances,
+    // });
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];

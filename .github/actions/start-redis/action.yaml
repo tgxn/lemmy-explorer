@@ -38,12 +38,29 @@ runs:
         path: ./.redis/dump.rdb
         key: cache-redis-${{ steps.cache-hour.outputs.hour }}
 
+    - name: Download latest.txt
+      if: steps.cache-redis.outputs.cache-hit != 'true'
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        source: s3://${{ inputs.s3-bucket }}/latest.txt
+        destination: ./latest.txt
+        aws_access_key_id: ${{ inputs.aws-access-key-id }}
+        aws_secret_access_key: ${{ inputs.aws-secret-access-key }}
+        aws_region: ${{ inputs.aws-region }}
+
+    - name: Read latest checkpoint path
+      if: steps.cache-redis.outputs.cache-hit != 'true'
+      id: latest-checkpoint
+      shell: bash
+      run: echo "path=$(cat ./latest.txt)" >>$GITHUB_OUTPUT
+
     - name: Download Redis Dump
       if: steps.cache-redis.outputs.cache-hit != 'true'
       uses: keithweaver/aws-s3-github-action@v1.0.0
       with:
         command: cp
-        source: s3://${{ inputs.s3-bucket }}/${{ inputs.checkpoint-s3-path }}
+        source: s3://${{ inputs.s3-bucket }}/${{ steps.latest-checkpoint.outputs.path }}
         destination: ./.redis/dump.rdb
         aws_access_key_id: ${{ inputs.aws-access-key-id }}
         aws_secret_access_key: ${{ inputs.aws-secret-access-key }}

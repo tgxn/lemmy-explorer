@@ -9,6 +9,11 @@ There is a `npx tsx index.js --out` script to output the instances and communiti
 There is a data dump available to use with the Output script, containing All data from the crawler.
 Download it from the [Data Dumps Site](https://data.lemmyverse.net/), and save it in `/crawler/.data/redis/dump.rdb`.
 
+```sh
+# from ./crawler  directory
+wget -O .data/redis/dump.rdb https://data.lemmyverse.net/data/lemmyverse.rdb
+```
+
 ## Basic usage
 
 ### How to start crawling
