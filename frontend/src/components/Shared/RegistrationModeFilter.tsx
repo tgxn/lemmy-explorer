@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-import ListItemDecorator from "@mui/joy/ListItemDecorator";
-import ListDivider from "@mui/joy/ListDivider";
-
-import Select, { selectClasses } from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
 import Box from "@mui/joy/Box";
-import Chip from "@mui/joy/Chip";
+import Button from "@mui/joy/Button";
+import Sheet from "@mui/joy/Sheet";
+import Typography from "@mui/joy/Typography";
 
 import Checkbox from "@mui/joy/Checkbox";
 
@@ -18,11 +15,22 @@ type IRegistrationModeProps = {
 };
 
 const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistrationModeProps) => {
-  // string array of selected options
-  // const [selRegMode, setSelRegMode] = useState<string[]>(regMode);
-  // console.log("regMode", regMode);
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  const handleChange = (event: React.SyntheticEvent | null, newValue: string | null) => {
+  // close the dropdown when clicking outside of it
+  useEffect(() => {
+    if (!open) return;
+    const handleClickAway = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickAway);
+    return () => document.removeEventListener("mousedown", handleClickAway);
+  }, [open]);
+
+  const handleChange = (newValue: IRegModes) => {
     console.log(`regMode chose "${newValue}"`);
 
     // click all directly
@@ -42,10 +50,10 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
     let newArray = [...regMode];
 
     // Toggle the selected option in the array
-    if (newValue && regMode.includes(newValue as IRegModes)) {
+    if (regMode.includes(newValue)) {
       newArray = newArray.filter((item) => item !== newValue);
-    } else if (newValue) {
-      newArray = [...newArray, newValue as IRegModes];
+    } else {
+      newArray = [...newArray, newValue];
     }
 
     // if the new array is empty, set it to all
@@ -61,44 +69,6 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
     }
 
     setRegMode(newArray);
-
-    // otherwise, update the new value into the aarry
-    // const newAr
-
-    // if (newValue === "all") {
-    //   setRegMode(["all"]);
-    //   return;
-    // } else {
-    //   // if we have all selected, and we select another option, remove all from the array
-    //   if (regMode.length === 1 && regMode[0] === "all") {
-    //     setRegMode([newValue]);
-    //     return;
-    //   }
-    //   if (regMode.length === 3 && !regMode.includes("all")) {
-    //     setRegMode(["all"]);
-    //     return;
-    //   } else {
-    //     const index = regMode.indexOf(newValue);
-    //     if (index === -1) {
-    //       setRegMode([...regMode, newValue]);
-    //       return;
-    //     } else {
-    //       setRegMode(regMode.filter((item) => item !== newValue));
-    //       return;
-    //     }
-    //   }
-    // }
-  };
-
-  const ITEM_HEIGHT = 48;
-  const ITEM_PADDING_TOP = 8;
-  const MenuProps = {
-    PaperProps: {
-      style: {
-        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-        width: 250,
-      },
-    },
   };
 
   const menuOptions = [
@@ -112,7 +82,7 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
     },
     {
       name: "By Application",
-      value: "application",
+      value: "registration",
     },
     {
       name: "Closed",
@@ -120,78 +90,131 @@ const RegistrationModeFilter = React.memo(({ regMode, setRegMode }: IRegistratio
     },
   ];
 
+  const valueLabel = regMode.map((v) => menuOptions.find((o) => o.value === v)?.name ?? v).join(", ");
+
+  // only collapse to a single line when "all" is the sole selection; any
+  // customized selection should stay on two lines to draw attention
+  const isAllOnly = regMode.length === 1 && regMode[0] === "all";
+
   return (
-    // @ts-ignore this component is missing definition for `multiple`
-    <Select
-      // placeholder="Registration Modes"
-      // startDecorator={<SortIcon />}
-      // indicator={<KeyboardArrowDown />}
-      // value={orderBy}
-      // onChange={(event, newValue) => {
-      // ListItemText/   width: { xs: "100%", sm: 240 },
-      //   flexShrink: 0,
-      //   [`& .${selectClasses.indicator}`]: {
-      //     transition: "0.2s",
-      //     [`&.${selectClasses.expanded}`]: {
-      //       transform: "rotate(-180deg)",
-      //     },
-      //   },
-      // }}
-
-      // labelId="demo-multiple-checkbox-label"
-      // id="demo-multiple-checkbox"
-      // multiple
-      // // value={regMode}
-      // value={regMode}
-      // defaultValue={regMode}
-      // onChange={handleChange}
-      // variant="outlined"
-      // slotProps={{
-      //   listbox: {
-      //     sx: {
-      //       width: "100%",
-      //     },
-      //   },
-      // }}
-      // // input={<OutlinedInput label="Tag" />}
-      // renderValue={(selected) => {
-      //   console.log("regMode render", selected);
-      //   return selected.map((x: any) => x.name).join(", ");
-      // }}
-
-      multiple={true}
-      onChange={handleChange}
-      // @ts-ignore
-      value={regMode}
-      // placeholder="Registration Modes"
-      // defaultValue={regMode}
-      // renderValue={(selected) => {
-      //   console.log("regMode render selected", selected);
-      //   return selected.join(", ");
-      // }}
-      sx={{ minWidth: "15rem" }}
-      slotProps={{
-        listbox: {
-          sx: {
-            width: "100%",
-          },
-        },
-      }}
-      MenuProps={MenuProps}
-    >
-      {menuOptions.map((option, index) => (
-        <Option value={option.value}>
-          <ListItemDecorator>
-            {/* <Avatar size="sm" src={option.src} /> */}
-            <Checkbox
-              checked={regMode.findIndex((item) => item === option.value) >= 0}
-              value={option.value}
-            />
-          </ListItemDecorator>
-          {option.name}
-        </Option>
-      ))}
-    </Select>
+    <Box ref={rootRef} sx={{ position: "relative", minWidth: "15rem" }}>
+      <Button
+        variant="outlined"
+        color="neutral"
+        onClick={() => setOpen((o) => !o)}
+        sx={{
+          width: "100%",
+          // fixed height so the button never resizes between the
+          // single-line "all" state and the two-line customized state
+          height: "2.6rem",
+          justifyContent: "flex-start",
+          fontWeight: "normal",
+          backgroundColor: "background.surface",
+          color: "text.primary",
+          "&:hover": { backgroundColor: "background.level1" },
+          "--Button-paddingInline": "0.75rem",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            height: "100%",
+            overflow: "hidden",
+          }}
+        >
+          {isAllOnly ? (
+            <Typography
+              sx={{
+                color: "neutral.600",
+                fontWeight: "normal",
+                fontSize: "0.85rem",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "13rem",
+              }}
+            >
+              Registration Mode: {valueLabel}
+            </Typography>
+          ) : (
+            <>
+              <Typography
+                sx={{
+                  color: "neutral.500",
+                  fontWeight: "normal",
+                  fontSize: "0.65rem",
+                  lineHeight: 1.1,
+                }}
+              >
+                Registration Mode
+              </Typography>
+              <Typography
+                sx={{
+                  color: "neutral.600",
+                  fontWeight: "normal",
+                  fontSize: "0.85rem",
+                  lineHeight: 1.2,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "13rem",
+                }}
+              >
+                {valueLabel}
+              </Typography>
+            </>
+          )}
+        </Box>
+      </Button>
+      {open && (
+        <Sheet
+          variant="outlined"
+          color="neutral"
+          sx={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            mt: 0.5,
+            borderRadius: "sm",
+            boxShadow: "md",
+            py: 0.5,
+            backgroundColor: "background.surface",
+          }}
+        >
+          {menuOptions.map((option) => (
+            <Box
+              key={option.value}
+              onClick={() => handleChange(option.value as IRegModes)}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                px: 1.5,
+                py: 0.75,
+                cursor: "pointer",
+                color: "text.primary",
+                "&:hover": { backgroundColor: "background.level1" },
+              }}
+            >
+              <Checkbox
+                checked={regMode.findIndex((item) => item === option.value) >= 0}
+                value={option.value}
+                readOnly
+                tabIndex={-1}
+                sx={{ pointerEvents: "none", flexShrink: 0 }}
+              />
+              {option.name}
+            </Box>
+          ))}
+        </Sheet>
+      )}
+    </Box>
   );
 });
+
 export default RegistrationModeFilter;

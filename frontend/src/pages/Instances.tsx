@@ -282,18 +282,11 @@ export default function Instances() {
 
         <TagFilter />
 
-        <Box sx={{ display: "flex", gap: 3 }}>
-          {/* <Checkbox
-            label="Open Only"
-            checked={showOpenOnly}
-            onChange={(event) => setShowOpenOnly(event.target.checked)}
-          /> */}
+        <RegistrationModeFilter
+          regMode={filterRegMode}
+          setRegMode={(regModeList) => setFilterRegMode(regModeList)}
+        />
 
-          <RegistrationModeFilter
-            regMode={filterRegMode}
-            setRegMode={(regModeList) => setFilterRegMode(regModeList)}
-          />
-        </Box>
         <Box
           sx={{
             display: "flex",
