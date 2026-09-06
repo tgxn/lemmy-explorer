@@ -11,72 +11,15 @@ import type {
   IFediseerTag,
 } from "../../../types/storage";
 
-// import {
-//   IErrorData,
-//   IErrorDataKeyValue,
-//   ILastCrawlData,
-//   ILastCrawlDataKeyValue,
-// } from "../../../types/storage";
-// import { IUptimeNodeData, IFullUptimeData } from "../../../types/storage";
-
-// import { OUTPUT_MAX_AGE } from "../lib/const";
-
-// used to calculate instance overall rating, as well as several instance and community metrics
-// it is meant to take some of the trust assertion logic out of the main output script
+import type { IInstanceMetrics, ITrustMetrics } from "../../../types/output";
 
 /**
- * this class is instanciated with a insdtance data and optionally community data
+ * Calculates trust and activity-based metrics for instances (and optionally communities),
+ * including score, suspicion flags, trusted guarantors, tags, and supporting metric values.
  *
- * we have multiple methods to check metrics and return a suspicion level
- *
- * the initial check for total users vs. instance activity is from db0's work on the overseer
+ * Some suspicion heuristics are based on db0's Lemmy Overseer logic:
  * https://github.com/db0/lemmy-overseer/blob/main/overseer/observer.py#L56
  */
-
-/**
- * this library is used to calculate various metrics for an instance
- *
- * - "score" - from activityscore (federated instances vs. instancezs that defederated with)
- * - "suspicious" boolean - if the site has odd posts/user activity, and if not guarantored on fediseer
- * - "trusted" string || null - if there is a guarantor for this instance, who is it?
- * - "metrics" object - various metrics for the instance
- * - "tags" - ["cloudflare"]
- */
-
-type IInstanceMetrics = {
-  baseurl: BaseURL;
-  base: BaseURL;
-  actor_id: ActorID;
-
-  metrics: {
-    usersTotal: number;
-    usersMonth: number;
-    usersWeek: number;
-
-    totalActivity: number;
-    localPosts: number;
-    localComments: number;
-
-    averageUsers?: number; // average users per scan
-    biggestJump?: number; // biggest jump in users per scan
-    averagePerMinute?: number; // average users per minute
-    userActivityScore?: number; // total users / total activity
-    activityUserScore?: number; // total activity / total users
-    userActiveMonthScore?: number; // total users / active month users
-  };
-
-  users: number;
-  name: string;
-
-  tags: string[];
-  guarantor?: string; // if this instance is guaranteed by a fediseer instance, who is it?
-  endorsements: number; // how many endorsements does this instance have?
-
-  score?: number; // overall score for the instance, used for sorting
-  reasons?: string[]; // reasons why this instance is suspicious
-
-  lastCrawled: number;
-};
 
 type IAllInstanceMetrics = {
   userActivityScores: number[];
@@ -653,7 +596,7 @@ export default class OutputTrust {
       "lemmy.world",
       "hexbear.net",
       "lemmy.ml",
-      "lemmysfw.com",
+      "lemmy.tgxn.net",
       "lemmygrad.ml",
       "literature.cafe",
       "enterprise.lemmy.ml",

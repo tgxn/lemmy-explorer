@@ -1,4 +1,5 @@
-import { IUptimeNodeData } from "./storage";
+import type { BaseURL, ActorID } from "./basic";
+import type { IUptimeNodeData } from "./storage";
 
 export type IMetaDataOutput = {
   instances: number;
@@ -23,6 +24,43 @@ export type IMetaDataOutput = {
 export interface IMultiPartMetadata {
   count: number;
 }
+
+export interface ITrustMetrics {
+  usersTotal: number;
+  usersMonth: number;
+  usersWeek: number;
+
+  totalActivity: number;
+  localPosts: number;
+  localComments: number;
+
+  averageUsers?: number; // average users per scan
+  biggestJump?: number; // biggest jump in users per scan
+  averagePerMinute?: number; // average users per minute
+  userActivityScore?: number; // total users / total activity
+  activityUserScore?: number; // total activity / total users
+  userActiveMonthScore?: number; // total users / active month users
+}
+
+export type IInstanceMetrics = {
+  baseurl: BaseURL;
+  base: BaseURL;
+  actor_id: ActorID;
+
+  metrics: ITrustMetrics;
+
+  users: number;
+  name: string;
+
+  tags: string[];
+  guarantor?: string; // if this instance is guaranteed by a fediseer instance, who is it?
+  endorsements: number; // how many endorsements does this instance have?
+
+  score?: number; // overall score for the instance, used for sorting
+  reasons?: string[]; // reasons why this instance is suspicious
+
+  lastCrawled: number;
+};
 
 // -1: Unknown, 0: Closed, 1: RequireApplication, 2: Open
 export type IRegistrationMode = -1 | 0 | 1 | 2;

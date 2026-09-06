@@ -316,6 +316,14 @@ export default class CommunityCrawler {
 
       return communities;
     } catch (e) {
+      logging.error(`${this.logPrefix} Failed to get community page ${pageNumber}: `, e.message, e.code);
+      /// log out the first 100 characters of the response data if it exists for debugging
+      if (e.response?.data) {
+        logging.error(
+          `${this.logPrefix} Failed page response data: `,
+          typeof e.response.data === "string" ? e.response.data.substr(0, 100) : e.response.data,
+        );
+      }
       // throw new CrawlError("Failed to get community page");
       throw new CrawlError(e.message, e);
     }
