@@ -136,6 +136,20 @@ export type IFediverseDataOutput = {
   version: string;
 };
 
+export type IFederationGraphNode = [id: string, score: number, weight: number];
+
+export type IFederationGraphEdge = [
+  source: number,
+  target: number,
+  type: "trust" | "defederate" | "fediseer",
+  weight: number,
+];
+
+export type IFederationGraphOutput = {
+  nodes: IFederationGraphNode[];
+  edges: IFederationGraphEdge[];
+};
+
 export type IClassifiedErrorOutput = {
   baseurl: string;
   time: number;

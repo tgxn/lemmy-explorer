@@ -140,6 +140,7 @@ export default class CrawlOutput {
 
     const returnInstanceArray = await this.getInstanceArray();
     await this.fileWriter.storeInstanceData(returnInstanceArray);
+    await this.fileWriter.storeFederationGraph(this.trust.getFederationGraph(returnInstanceArray));
 
     // VERSIONS DATA
     await this.outputAttributeHistory(
