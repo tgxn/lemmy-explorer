@@ -105,12 +105,13 @@ export default function FederationGraph() {
   };
 
   const nodeStats = useMemo(() => {
-    const stats = graphData?.nodes.map<NodeStats>(() => ({
-      connections: 0,
-      incomingDefederations: 0,
-      outgoingDefederations: 0,
-      endorsements: 0,
-    })) ?? [];
+    const stats =
+      graphData?.nodes.map<NodeStats>(() => ({
+        connections: 0,
+        incomingDefederations: 0,
+        outgoingDefederations: 0,
+        endorsements: 0,
+      })) ?? [];
 
     graphData?.edges.forEach((edge) => {
       const [sourceId, targetId, type, weight] = edge;
@@ -131,10 +132,7 @@ export default function FederationGraph() {
     return stats;
   }, [graphData]);
 
-  const graphEdges = useMemo(
-    () => graphData?.edges.filter((edge) => edge[2] !== "trust") ?? [],
-    [graphData],
-  );
+  const graphEdges = useMemo(() => graphData?.edges.filter((edge) => edge[2] !== "trust") ?? [], [graphData]);
 
   const overviewEdges = useMemo(
     () => graphEdges.filter((edge) => isRelationshipTypeEnabled(edge, directionFilters)),
@@ -152,20 +150,12 @@ export default function FederationGraph() {
       graphEdges.forEach((edge, index) => {
         const sourceDistance = distances.get(edge[0]);
         const targetDistance = distances.get(edge[1]);
-        if (
-          directionFilters[edge[2]].outgoing &&
-          sourceDistance === depth &&
-          targetDistance === undefined
-        ) {
+        if (directionFilters[edge[2]].outgoing && sourceDistance === depth && targetDistance === undefined) {
           distances.set(edge[1], depth + 1);
           edgeIndexes.add(index);
           foundNextDegree = true;
         }
-        if (
-          directionFilters[edge[2]].incoming &&
-          targetDistance === depth &&
-          sourceDistance === undefined
-        ) {
+        if (directionFilters[edge[2]].incoming && targetDistance === depth && sourceDistance === undefined) {
           distances.set(edge[0], depth + 1);
           edgeIndexes.add(index);
           foundNextDegree = true;
@@ -191,11 +181,7 @@ export default function FederationGraph() {
     if (selectedNodeId !== null) {
       return graphEdges.filter((_, index) => focusedGraph.edgeIndexes.has(index));
     }
-    return overviewEdges.filter(
-      (edge) =>
-        visibleNodeIdSet.has(edge[0]) &&
-        visibleNodeIdSet.has(edge[1]),
-    );
+    return overviewEdges.filter((edge) => visibleNodeIdSet.has(edge[0]) && visibleNodeIdSet.has(edge[1]));
   }, [focusedGraph.edgeIndexes, graphData, graphEdges, overviewEdges, selectedNodeId, visibleNodeIdSet]);
 
   const directNodeTypes = useMemo(() => {
@@ -322,7 +308,10 @@ export default function FederationGraph() {
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
     const renderedRingCount = 5;
     const getRingSpacing = () =>
-      Math.max(38, Math.min(105, Math.min(dimensions.width, dimensions.height) / (renderedRingCount * 2 + 1)));
+      Math.max(
+        38,
+        Math.min(105, Math.min(dimensions.width, dimensions.height) / (renderedRingCount * 2 + 1)),
+      );
     const draw = (time = performance.now()) => {
       ctx.save();
       ctx.setTransform(dimensions.pixelRatio, 0, 0, dimensions.pixelRatio, 0, 0);
@@ -338,7 +327,9 @@ export default function FederationGraph() {
 
         const isFocusedView = selectedNodeId !== null;
         ctx.strokeStyle = palette.edgeColors[edge[2]];
-        ctx.lineWidth = Math.max(isFocusedView ? 1.5 : 0.8, Math.min(isFocusedView ? 5 : 3, edge[3] / 2)) / transformRef.current.k;
+        ctx.lineWidth =
+          Math.max(isFocusedView ? 1.5 : 0.8, Math.min(isFocusedView ? 5 : 3, edge[3] / 2)) /
+          transformRef.current.k;
         ctx.globalAlpha = isFocusedView ? 0.8 : 0.45;
         ctx.beginPath();
         ctx.moveTo(source.x, source.y);
@@ -355,17 +346,14 @@ export default function FederationGraph() {
           ctx.fillStyle = palette.edgeColors[edge[2]];
           ctx.globalAlpha = 1;
           ctx.beginPath();
-          ctx.moveTo(
-            markerX + Math.cos(angle) * markerSize,
-            markerY + Math.sin(angle) * markerSize,
+          ctx.moveTo(markerX + Math.cos(angle) * markerSize, markerY + Math.sin(angle) * markerSize);
+          ctx.lineTo(
+            markerX + Math.cos(angle + Math.PI * 0.75) * markerSize,
+            markerY + Math.sin(angle + Math.PI * 0.75) * markerSize,
           );
           ctx.lineTo(
-            markerX + Math.cos(angle + (Math.PI * 0.75)) * markerSize,
-            markerY + Math.sin(angle + (Math.PI * 0.75)) * markerSize,
-          );
-          ctx.lineTo(
-            markerX + Math.cos(angle - (Math.PI * 0.75)) * markerSize,
-            markerY + Math.sin(angle - (Math.PI * 0.75)) * markerSize,
+            markerX + Math.cos(angle - Math.PI * 0.75) * markerSize,
+            markerY + Math.sin(angle - Math.PI * 0.75) * markerSize,
           );
           ctx.closePath();
           ctx.fill();
@@ -416,7 +404,7 @@ export default function FederationGraph() {
         d3
           .forceLink(links as any)
           .id((node: any) => node.id)
-            .distance(45),
+          .distance(45),
       )
       .force("charge", d3.forceManyBody().strength(selectedNodeId === null ? -70 : -120))
       .force("collide", d3.forceCollide(14))
@@ -572,7 +560,15 @@ export default function FederationGraph() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2, height: "100%" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
         <Typography level="body3">
           {selectedNodeId === null
             ? `${visibleNodeIds.length} instances and ${visibleEdges.length} of ${graphEdges.length} relationships`
@@ -664,7 +660,10 @@ export default function FederationGraph() {
             height: { xs: "360px", md: "500px", lg: "min(65vh, 760px)" },
           }}
         >
-          <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", cursor: "grab", touchAction: "none" }} />
+          <canvas
+            ref={canvasRef}
+            style={{ width: "100%", height: "100%", display: "block", cursor: "grab", touchAction: "none" }}
+          />
 
           {hoveredNode && (
             <Box
@@ -705,7 +704,9 @@ export default function FederationGraph() {
           }}
         >
           {selectedNodeId === null ? (
-            <Typography level="body3">Select an instance to inspect its incoming and outgoing relationships.</Typography>
+            <Typography level="body3">
+              Select an instance to inspect its incoming and outgoing relationships.
+            </Typography>
           ) : (
             <Stack spacing={1.25} sx={{ minHeight: 0, height: "100%" }}>
               <Box>
@@ -713,7 +714,8 @@ export default function FederationGraph() {
                   {graphData.nodes[selectedNodeId][0]}
                 </Typography>
                 <Typography level="body3">
-                  Score {graphData.nodes[selectedNodeId][1]} | {nodeStats[selectedNodeId].connections} weighted connections
+                  Score {graphData.nodes[selectedNodeId][1]} | {nodeStats[selectedNodeId].connections}{" "}
+                  weighted connections
                 </Typography>
               </Box>
               <Button size="sm" variant="outlined" onClick={() => setSelectedNodeId(null)}>
@@ -729,7 +731,9 @@ export default function FederationGraph() {
                     .map((group) => (
                       <Stack key={group.id} spacing={0.5}>
                         <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: group.color }} />
+                          <Box
+                            sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: group.color }}
+                          />
                           <Typography level="body3" sx={{ fontWeight: 600 }}>
                             {group.label} ({group.relationships.length})
                           </Typography>
