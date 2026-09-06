@@ -40,6 +40,8 @@ import type { IInstanceDataOutput } from "../../../types/output";
 export default function Instances() {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
   const filteredTags = useSelector((state: any) => state.configReducer.filteredTags);
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+  const filterDefederated = useSelector((state: any) => state.configReducer.filterDefederated);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -138,6 +140,15 @@ export default function Instances() {
       instances = instances.filter((instance) => !instance.isSuspicious);
     }
 
+    // filter defederated instances
+    if (filterDefederated && homeBaseUrl && instances) {
+      const homeInstance = instances.find((inst) => inst.baseurl === homeBaseUrl);
+      if (homeInstance && homeInstance.blocked && Array.isArray(homeInstance.blocked)) {
+        console.log(`Filtering instances defederated by home instance:`, homeInstance.blocked);
+        instances = instances.filter((instance) => !homeInstance.blocked.includes(instance.baseurl));
+      }
+    }
+
     // filter lang codes
     if (filterLangCodes.length > 0) {
       console.log(`Filtering instances by ${filterLangCodes}`);
@@ -206,7 +217,17 @@ export default function Instances() {
 
     // return a clone so that it triggers a re-render  on sort
     return [...instances];
-  }, [data, orderBy, showOpenOnly, debounceFilterText, filterLangCodes, filterSuspicious, filteredTags]);
+  }, [
+    data,
+    orderBy,
+    showOpenOnly,
+    debounceFilterText,
+    filterLangCodes,
+    filterSuspicious,
+    filteredTags,
+    filterDefederated,
+    homeBaseUrl,
+  ]);
 
   return (
     <Container
