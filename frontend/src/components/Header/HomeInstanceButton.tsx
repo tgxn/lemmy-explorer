@@ -16,11 +16,12 @@ import Typography from "@mui/joy/Typography";
 import FormControl from "@mui/joy/FormControl";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
+import Switch from "@mui/joy/Switch";
 
 import CottageIcon from "@mui/icons-material/Cottage";
 import HomeIcon from "@mui/icons-material/Home";
 
-import { changeInstanceType } from "../../reducers/configReducer";
+import { changeInstanceType, setFilterDefederated } from "../../reducers/configReducer";
 
 import SelectHomeInstance from "./SelectHomeInstance";
 import InstanceTypeIcon from "../Shared/InstanceTypeIcon";
@@ -28,6 +29,7 @@ import InstanceTypeIcon from "../Shared/InstanceTypeIcon";
 export default function HomeInstanceButton() {
   const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
   const instanceType = useSelector((state: any) => state.configReducer.instanceType);
+  const filterDefederated = useSelector((state: any) => state.configReducer.filterDefederated);
   const dispatch = useDispatch();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -143,6 +145,20 @@ export default function HomeInstanceButton() {
                 <FormHelperText sx={{ mt: 0 }}>Instance links use /m/</FormHelperText>
               )}
             </FormControl>
+
+            {instanceType === "lemmy" && (
+              <>
+                <ListDivider sx={{ my: 1 }} />
+                <FormControl size="sm">
+                  <Switch
+                    checked={filterDefederated}
+                    onChange={(event) => dispatch(setFilterDefederated(event.target.checked))}
+                    endDecorator="Filter defederated sites"
+                    sx={{ width: "100%" }}
+                  />
+                </FormControl>
+              </>
+            )}
           </Box>
         )}
       </Menu>
