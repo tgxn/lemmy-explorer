@@ -337,7 +337,7 @@ const TagFilter = React.memo(() => {
         sx={{
           px: 1,
           py: 0,
-          mr: 1,
+          // mr: 1,
           // borderRadius: "8px 0 0 8px",
         }}
       >
