@@ -154,7 +154,9 @@ export default class OutputTrust {
       throw new Error("trust sources not loaded in getFederationGraph");
     }
 
-    const outputById = new Map(instances.map((instance) => [instance.baseurl, instance]));
+    const outputById = new Map(
+      instances.map((instance) => [instance.baseurl.trim().toLowerCase(), instance]),
+    );
     type GraphEdge = {
       source: string;
       target: string;
@@ -197,35 +199,32 @@ export default class OutputTrust {
     }
 
     const graphEdges = [...edgeById.values()];
+    const outputNodeIds = new Set(outputById.keys());
+    const instanceEdges = graphEdges.filter(
+      (edge) => outputNodeIds.has(edge.source) || outputNodeIds.has(edge.target),
+    );
+
+    // include output instances and the endpoints required to inspect their relationships
+    const nodeIds = new Set(outputNodeIds);
+    for (const edge of instanceEdges) {
+      nodeIds.add(edge.source);
+      nodeIds.add(edge.target);
+    }
+
     const nodeWeights = new Map<string, number>();
-    for (const edge of graphEdges) {
+    for (const edge of instanceEdges) {
       nodeWeights.set(edge.source, (nodeWeights.get(edge.source) || 0) + edge.weight);
       nodeWeights.set(edge.target, (nodeWeights.get(edge.target) || 0) + edge.weight);
     }
 
-    // only include lemmy instances (from the output)
-    const lemmyNodeIds = new Set(instances.map((instance) => instance.baseurl));
-
-    // filter edges to only include lemmy-to-lemmy relationships
-    const lemmyEdges = graphEdges.filter(
-      (edge) => lemmyNodeIds.has(edge.source) && lemmyNodeIds.has(edge.target),
-    );
-
-    // recalculate weights with filtered edges
-    const lemmyNodeWeights = new Map<string, number>();
-    for (const edge of lemmyEdges) {
-      lemmyNodeWeights.set(edge.source, (lemmyNodeWeights.get(edge.source) || 0) + edge.weight);
-      lemmyNodeWeights.set(edge.target, (lemmyNodeWeights.get(edge.target) || 0) + edge.weight);
-    }
-
-    const nodeIdList = [...lemmyNodeIds];
+    const nodeIdList = [...nodeIds];
     const nodeIndexes = new Map(nodeIdList.map((id, index) => [id, index]));
     const nodes = nodeIdList.map((id): IFederationGraphOutput["nodes"][number] => [
       id,
       outputById.get(id)?.score || 0,
-      lemmyNodeWeights.get(id) || 0,
+      nodeWeights.get(id) || 0,
     ]);
-    const edges = lemmyEdges.map(
+    const edges = instanceEdges.map(
       (edge): IFederationGraphEdge => [
         nodeIndexes.get(edge.source)!,
         nodeIndexes.get(edge.target)!,

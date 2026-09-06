@@ -4,17 +4,8 @@ import * as d3 from "d3";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Checkbox from "@mui/joy/Checkbox";
-import Chip from "@mui/joy/Chip";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel from "@mui/joy/FormLabel";
-import Option from "@mui/joy/Option";
 import Sheet from "@mui/joy/Sheet";
-import Select from "@mui/joy/Select";
-import Slider from "@mui/joy/Slider";
 import Stack from "@mui/joy/Stack";
-import Tab from "@mui/joy/Tab";
-import TabList from "@mui/joy/TabList";
-import Tabs from "@mui/joy/Tabs";
 import Typography from "@mui/joy/Typography";
 
 import useQueryCache from "../../hooks/useQueryCache";
@@ -28,9 +19,6 @@ interface FederationGraphData {
   nodes: RawFederationNode[];
   edges: RawFederationEdge[];
 }
-
-type GraphMode = "overview" | "full";
-type RankCriterion = "connections" | "score" | "incomingDefederations" | "outgoingDefederations" | "endorsements";
 
 type NodeStats = {
   connections: number;
@@ -56,19 +44,38 @@ const edgeColors: Record<EdgeType, string> = {
   fediseer: "#2563eb",
 };
 
-const edgeNames: Record<EdgeType, string> = {
-  trust: "Federates",
-  defederate: "Defederates",
-  fediseer: "Vouches",
+const focusedNodeColors = {
+  selected: "#0f766e",
+  indirect: "#94a3b8",
 };
 
-function matchesEdgeFilters(edge: RawFederationEdge, filters: Record<EdgeType, boolean>) {
-  return filters[edge[2]];
+function matchesDirectionFilter(
+  edge: RawFederationEdge,
+  selectedNodeId: number,
+  filters: Record<"defederate" | "fediseer", { incoming: boolean; outgoing: boolean }>,
+) {
+  if (edge[2] === "trust") return false;
+
+  return (
+    (filters[edge[2]].outgoing && edge[0] === selectedNodeId) ||
+    (filters[edge[2]].incoming && edge[1] === selectedNodeId)
+  );
 }
 
-function getRankValue(node: RawFederationNode, stats: NodeStats, criterion: RankCriterion) {
-  if (criterion === "score") return node[1];
-  return stats[criterion];
+function isRelationshipTypeEnabled(
+  edge: RawFederationEdge,
+  filters: Record<"defederate" | "fediseer", { incoming: boolean; outgoing: boolean }>,
+) {
+  return edge[2] !== "trust" && (filters[edge[2]].incoming || filters[edge[2]].outgoing);
+}
+
+function formatNodeLabel(label: string) {
+  const hostname = label
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .replace(/\/$/, "");
+
+  return hostname.length > 30 ? `${hostname.slice(0, 29)}...` : hostname;
 }
 
 export default function FederationGraph() {
@@ -81,12 +88,11 @@ export default function FederationGraph() {
   const hoveredNodeIdRef = useRef<number | null>(null);
   const [hoveredNode, setHoveredNode] = useState<{ id: number; label: string } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [edgeFilters, setEdgeFilters] = useState({ trust: true, defederate: true, fediseer: true });
-  const [graphMode, setGraphMode] = useState<GraphMode>("overview");
-  const [rankCriterion, setRankCriterion] = useState<RankCriterion>("connections");
-  const [nodeLimit, setNodeLimit] = useState(40);
+  const [directionFilters, setDirectionFilters] = useState({
+    defederate: { incoming: true, outgoing: true },
+    fediseer: { incoming: true, outgoing: true },
+  });
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
-  const [isCompact, setIsCompact] = useState(false);
 
   const {
     isLoading,
@@ -98,14 +104,6 @@ export default function FederationGraph() {
     data: FederationGraphData | undefined;
   };
 
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 599px)");
-    const updateCompactMode = () => setIsCompact(query.matches);
-    updateCompactMode();
-    query.addEventListener("change", updateCompactMode);
-    return () => query.removeEventListener("change", updateCompactMode);
-  }, []);
-
   const nodeStats = useMemo(() => {
     const stats = graphData?.nodes.map<NodeStats>(() => ({
       connections: 0,
@@ -116,6 +114,8 @@ export default function FederationGraph() {
 
     graphData?.edges.forEach((edge) => {
       const [sourceId, targetId, type, weight] = edge;
+      if (type === "trust") return;
+
       stats[sourceId].connections += weight;
       stats[targetId].connections += weight;
 
@@ -131,56 +131,92 @@ export default function FederationGraph() {
     return stats;
   }, [graphData]);
 
-  const rankedNodeIds = useMemo(() => {
-    if (!graphData) return [];
-    return graphData.nodes
-      .map((node, id) => ({ id, value: getRankValue(node, nodeStats[id], rankCriterion) }))
-      .sort((first, second) => second.value - first.value || first.id - second.id)
-      .map(({ id }) => id);
-  }, [graphData, nodeStats, rankCriterion]);
+  const graphEdges = useMemo(
+    () => graphData?.edges.filter((edge) => edge[2] !== "trust") ?? [],
+    [graphData],
+  );
+
+  const overviewEdges = useMemo(
+    () => graphEdges.filter((edge) => isRelationshipTypeEnabled(edge, directionFilters)),
+    [directionFilters, graphEdges],
+  );
+
+  const focusedGraph = useMemo(() => {
+    const distances = new Map<number, number>();
+    const edgeIndexes = new Set<number>();
+    if (!graphData || selectedNodeId === null) return { distances, edgeIndexes };
+
+    distances.set(selectedNodeId, 0);
+    for (let depth = 0; ; depth += 1) {
+      let foundNextDegree = false;
+      graphEdges.forEach((edge, index) => {
+        const sourceDistance = distances.get(edge[0]);
+        const targetDistance = distances.get(edge[1]);
+        if (
+          directionFilters[edge[2]].outgoing &&
+          sourceDistance === depth &&
+          targetDistance === undefined
+        ) {
+          distances.set(edge[1], depth + 1);
+          edgeIndexes.add(index);
+          foundNextDegree = true;
+        }
+        if (
+          directionFilters[edge[2]].incoming &&
+          targetDistance === depth &&
+          sourceDistance === undefined
+        ) {
+          distances.set(edge[0], depth + 1);
+          edgeIndexes.add(index);
+          foundNextDegree = true;
+        }
+      });
+      if (!foundNextDegree) break;
+    }
+
+    return { distances, edgeIndexes };
+  }, [directionFilters, graphEdges, graphData, selectedNodeId]);
+
+  const nodeDistances = focusedGraph.distances;
 
   const visibleNodeIds = useMemo(() => {
     if (!graphData) return [];
-    if (graphMode === "full") return graphData.nodes.map((_, id) => id);
-
-    const maxNodeCount = isCompact ? Math.min(nodeLimit, 30) : nodeLimit;
-    if (selectedNodeId === null) return rankedNodeIds.slice(0, maxNodeCount);
-
-    const selectedNeighbors = graphData.edges
-      .filter((edge) => edge[0] === selectedNodeId || edge[1] === selectedNodeId)
-      .map((edge) => (edge[0] === selectedNodeId ? edge[1] : edge[0]));
-    const ranking = new Map(rankedNodeIds.map((id, index) => [id, index]));
-    selectedNeighbors.sort((first, second) => ranking.get(first)! - ranking.get(second)!);
-
-    const visibleIds = new Set<number>([selectedNodeId]);
-    for (const neighborId of selectedNeighbors) {
-      if (visibleIds.size >= maxNodeCount) break;
-      visibleIds.add(neighborId);
-    }
-    for (const nodeId of rankedNodeIds) {
-      if (visibleIds.size >= maxNodeCount) break;
-      visibleIds.add(nodeId);
-    }
-    return [...visibleIds];
-  }, [graphData, graphMode, isCompact, nodeLimit, rankedNodeIds, selectedNodeId]);
+    if (selectedNodeId !== null) return [...nodeDistances.keys()];
+    return [...new Set(overviewEdges.flatMap((edge) => [edge[0], edge[1]]))];
+  }, [graphData, nodeDistances, overviewEdges, selectedNodeId]);
 
   const visibleNodeIdSet = useMemo(() => new Set(visibleNodeIds), [visibleNodeIds]);
-  const visibleEdges = useMemo(
-    () =>
-      graphData?.edges.filter(
-        (edge) =>
-          visibleNodeIdSet.has(edge[0]) &&
-          visibleNodeIdSet.has(edge[1]) &&
-          matchesEdgeFilters(edge, edgeFilters),
-      ) ?? [],
-    [edgeFilters, graphData, visibleNodeIdSet],
-  );
+  const visibleEdges = useMemo(() => {
+    if (!graphData) return [];
+    if (selectedNodeId !== null) {
+      return graphEdges.filter((_, index) => focusedGraph.edgeIndexes.has(index));
+    }
+    return overviewEdges.filter(
+      (edge) =>
+        visibleNodeIdSet.has(edge[0]) &&
+        visibleNodeIdSet.has(edge[1]),
+    );
+  }, [focusedGraph.edgeIndexes, graphData, graphEdges, overviewEdges, selectedNodeId, visibleNodeIdSet]);
+
+  const directNodeTypes = useMemo(() => {
+    const types = new Map<number, EdgeType>();
+    if (selectedNodeId === null) return types;
+
+    visibleEdges.forEach((edge) => {
+      if (edge[0] === selectedNodeId) types.set(edge[1], edge[2]);
+      if (edge[1] === selectedNodeId) types.set(edge[0], edge[2]);
+    });
+    return types;
+  }, [selectedNodeId, visibleEdges]);
 
   const selectedRelationships = useMemo(() => {
     if (!graphData || selectedNodeId === null) return [];
-    return graphData.edges
-      .filter((edge) => edge[0] === selectedNodeId || edge[1] === selectedNodeId)
-      .filter((edge) => matchesEdgeFilters(edge, edgeFilters))
+    return graphEdges
+      .filter(
+        (edge) =>
+          (edge[0] === selectedNodeId || edge[1] === selectedNodeId) &&
+          matchesDirectionFilter(edge, selectedNodeId, directionFilters),
+      )
       .map((edge) => ({
         direction: edge[0] === selectedNodeId ? "outgoing" : "incoming",
         instance: graphData.nodes[edge[0] === selectedNodeId ? edge[1] : edge[0]][0],
@@ -188,7 +224,45 @@ export default function FederationGraph() {
         weight: edge[3],
       }))
       .sort((first, second) => second.weight - first.weight || first.instance.localeCompare(second.instance));
-  }, [edgeFilters, graphData, selectedNodeId]);
+  }, [directionFilters, graphData, graphEdges, selectedNodeId]);
+
+  const relationshipGroups = useMemo(
+    () => [
+      {
+        id: "outgoing",
+        label: "Outgoing defederations",
+        color: edgeColors.defederate,
+        relationships: selectedRelationships.filter(
+          (relationship) => relationship.type === "defederate" && relationship.direction === "outgoing",
+        ),
+      },
+      {
+        id: "incoming",
+        label: "Incoming defederations",
+        color: edgeColors.defederate,
+        relationships: selectedRelationships.filter(
+          (relationship) => relationship.type === "defederate" && relationship.direction === "incoming",
+        ),
+      },
+      {
+        id: "vouches",
+        label: "Outgoing Fediseer vouches",
+        color: edgeColors.fediseer,
+        relationships: selectedRelationships.filter(
+          (relationship) => relationship.type === "fediseer" && relationship.direction === "outgoing",
+        ),
+      },
+      {
+        id: "vouched-by",
+        label: "Incoming Fediseer vouches",
+        color: edgeColors.fediseer,
+        relationships: selectedRelationships.filter(
+          (relationship) => relationship.type === "fediseer" && relationship.direction === "incoming",
+        ),
+      },
+    ],
+    [selectedRelationships],
+  );
 
   useEffect(() => {
     if (!canvasRef.current || !graphData || visibleNodeIds.length === 0) return;
@@ -196,6 +270,20 @@ export default function FederationGraph() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const getCanvasPalette = () => {
+      const styles = getComputedStyle(canvas);
+      return {
+        background: styles.getPropertyValue("--joy-palette-background-surface").trim() || "#ffffff",
+        foreground: styles.getPropertyValue("--joy-palette-text-primary").trim() || "#111827",
+        edgeColors: {
+          trust: styles.getPropertyValue("--joy-palette-success-500").trim() || edgeColors.trust,
+          defederate: styles.getPropertyValue("--joy-palette-danger-500").trim() || edgeColors.defederate,
+          fediseer: styles.getPropertyValue("--joy-palette-primary-500").trim() || edgeColors.fediseer,
+        },
+      };
+    };
+    let palette = getCanvasPalette();
 
     const resizeCanvas = () => {
       const pixelRatio = window.devicePixelRatio || 1;
@@ -205,7 +293,7 @@ export default function FederationGraph() {
       canvas.height = Math.round(height * pixelRatio);
       return { width, height, pixelRatio };
     };
-    const dimensions = resizeCanvas();
+    let dimensions = resizeCanvas();
     transformRef.current = { x: 0, y: 0, k: 1 };
 
     const nodes = visibleNodeIds.map((id) => {
@@ -232,47 +320,89 @@ export default function FederationGraph() {
     }));
 
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
-    const draw = () => {
+    const renderedRingCount = 5;
+    const getRingSpacing = () =>
+      Math.max(38, Math.min(105, Math.min(dimensions.width, dimensions.height) / (renderedRingCount * 2 + 1)));
+    const draw = (time = performance.now()) => {
       ctx.save();
       ctx.setTransform(dimensions.pixelRatio, 0, 0, dimensions.pixelRatio, 0, 0);
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = palette.background;
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
       ctx.translate(transformRef.current.x, transformRef.current.y);
       ctx.scale(transformRef.current.k, transformRef.current.k);
 
-      visibleEdges.forEach((edge) => {
+      visibleEdges.forEach((edge, index) => {
         const source = nodeById.get(edge[0]);
         const target = nodeById.get(edge[1]);
         if (!source || !target) return;
 
-        ctx.strokeStyle = edgeColors[edge[2]];
-        ctx.lineWidth = Math.max(0.8, Math.min(3, edge[3] / 2)) / transformRef.current.k;
-        ctx.globalAlpha = 0.45;
+        const isFocusedView = selectedNodeId !== null;
+        ctx.strokeStyle = palette.edgeColors[edge[2]];
+        ctx.lineWidth = Math.max(isFocusedView ? 1.5 : 0.8, Math.min(isFocusedView ? 5 : 3, edge[3] / 2)) / transformRef.current.k;
+        ctx.globalAlpha = isFocusedView ? 0.8 : 0.45;
         ctx.beginPath();
         ctx.moveTo(source.x, source.y);
         ctx.lineTo(target.x, target.y);
         ctx.stroke();
+
+        if (isFocusedView) {
+          const progress = 0.15 + ((time / 1500 + index * 0.19) % 1) * 0.7;
+          const markerX = source.x + (target.x - source.x) * progress;
+          const markerY = source.y + (target.y - source.y) * progress;
+          const angle = Math.atan2(target.y - source.y, target.x - source.x);
+          const markerSize = 5 / transformRef.current.k;
+
+          ctx.fillStyle = palette.edgeColors[edge[2]];
+          ctx.globalAlpha = 1;
+          ctx.beginPath();
+          ctx.moveTo(
+            markerX + Math.cos(angle) * markerSize,
+            markerY + Math.sin(angle) * markerSize,
+          );
+          ctx.lineTo(
+            markerX + Math.cos(angle + (Math.PI * 0.75)) * markerSize,
+            markerY + Math.sin(angle + (Math.PI * 0.75)) * markerSize,
+          );
+          ctx.lineTo(
+            markerX + Math.cos(angle - (Math.PI * 0.75)) * markerSize,
+            markerY + Math.sin(angle - (Math.PI * 0.75)) * markerSize,
+          );
+          ctx.closePath();
+          ctx.fill();
+        }
       });
 
       nodes.forEach((node) => {
         const colorIntensity = Math.min(1, Math.max(0, node.score) / 80);
         const nodeRadius = Math.max(3, Math.min(10, 3 + Math.sqrt(node.weight)));
         ctx.globalAlpha = 1;
-        ctx.fillStyle = d3.interpolateViridis(colorIntensity);
+        const nodeDistance = nodeDistances.get(node.id);
+        ctx.fillStyle =
+          node.id === selectedNodeId
+            ? focusedNodeColors.selected
+            : nodeDistance === 1
+              ? palette.edgeColors[directNodeTypes.get(node.id) ?? "trust"]
+              : nodeDistance !== undefined && nodeDistance > 1
+                ? focusedNodeColors.indirect
+                : d3.interpolateViridis(colorIntensity);
         ctx.beginPath();
         ctx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
         ctx.fill();
 
         if (node.id === selectedNodeId || node.id === hoveredNodeIdRef.current) {
-          ctx.strokeStyle = node.id === selectedNodeId ? "#111827" : "#f59e0b";
+          ctx.strokeStyle = node.id === selectedNodeId ? palette.foreground : "#f59e0b";
           ctx.lineWidth = 2 / transformRef.current.k;
           ctx.stroke();
         }
 
-        if (graphMode === "overview" && nodes.length <= 30) {
-          ctx.fillStyle = "#111827";
-          ctx.font = `${11 / transformRef.current.k}px sans-serif`;
-          ctx.fillText(node.label, node.x + nodeRadius + 4, node.y + 3);
+        const shouldLabelNode =
+          node.id === selectedNodeId ||
+          nodeDistances.get(node.id) === 1 ||
+          node.id === hoveredNodeIdRef.current;
+        if (shouldLabelNode) {
+          ctx.fillStyle = palette.foreground;
+          ctx.font = `500 ${10 / transformRef.current.k}px sans-serif`;
+          ctx.fillText(formatNodeLabel(node.label), node.x + nodeRadius + 4, node.y + 3);
         }
       });
       ctx.restore();
@@ -286,21 +416,52 @@ export default function FederationGraph() {
         d3
           .forceLink(links as any)
           .id((node: any) => node.id)
-          .distance(graphMode === "full" ? 45 : 80),
+            .distance(45),
       )
-      .force("charge", d3.forceManyBody().strength(graphMode === "full" ? -70 : -220))
+      .force("charge", d3.forceManyBody().strength(selectedNodeId === null ? -70 : -120))
       .force("collide", d3.forceCollide(14))
+      .force(
+        "radial",
+        selectedNodeId === null
+          ? null
+          : d3
+              .forceRadial<GraphNode>(
+                (node) => Math.min(nodeDistances.get(node.id) ?? 0, renderedRingCount) * getRingSpacing(),
+              )
+              .x(dimensions.width / 2)
+              .y(dimensions.height / 2)
+              .strength(0.8),
+      )
       .force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
       .alphaDecay(0.05)
       .alphaMin(0.05)
       .on("tick", draw);
 
+    let animationFrame = 0;
+    const animate = (time: number) => {
+      draw(time);
+      animationFrame = window.requestAnimationFrame(animate);
+    };
+    if (selectedNodeId !== null) animationFrame = window.requestAnimationFrame(animate);
+
     const resizeObserver = new ResizeObserver(() => {
-      const resizedDimensions = resizeCanvas();
-      simulation.force("center", d3.forceCenter(resizedDimensions.width / 2, resizedDimensions.height / 2));
+      dimensions = resizeCanvas();
+      simulation.force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2));
+      simulation
+        .force("radial")
+        ?.x(dimensions.width / 2)
+        .y(dimensions.height / 2);
       simulation.alpha(0.5).restart();
     });
     resizeObserver.observe(canvas);
+    const themeObserver = new MutationObserver(() => {
+      palette = getCanvasPalette();
+      draw();
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-joy-color-scheme", "data-mui-color-scheme"],
+    });
 
     const getMouseInGraphSpace = (clientX: number, clientY: number) => {
       const rect = canvas.getBoundingClientRect();
@@ -390,7 +551,9 @@ export default function FederationGraph() {
 
     return () => {
       simulation.stop();
+      window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
+      themeObserver.disconnect();
       drawRef.current = null;
       canvas.removeEventListener("pointerdown", handlePointerDown);
       canvas.removeEventListener("pointermove", handlePointerMove);
@@ -398,7 +561,7 @@ export default function FederationGraph() {
       canvas.removeEventListener("pointerleave", handlePointerLeave);
       canvas.removeEventListener("wheel", handleWheel);
     };
-  }, [graphData, graphMode, selectedNodeId, visibleEdges, visibleNodeIds]);
+  }, [graphData, nodeDistances, selectedNodeId, visibleEdges, visibleNodeIds]);
 
   useEffect(() => {
     drawRef.current?.();
@@ -411,70 +574,94 @@ export default function FederationGraph() {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2, height: "100%" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
         <Typography level="body3">
-          Showing {visibleNodeIds.length} of {graphData.nodes.length} instances and {visibleEdges.length} of {graphData.edges.length} relationships
+          {selectedNodeId === null
+            ? `${visibleNodeIds.length} instances and ${visibleEdges.length} of ${graphEdges.length} relationships`
+            : `Focused view: ${visibleNodeIds.length} reachable instances and ${visibleEdges.length} relationships`}
         </Typography>
-        <Tabs value={graphMode} onChange={(_, value) => setGraphMode(value as GraphMode)} size="sm">
-          <TabList>
-            <Tab value="overview">Explorer</Tab>
-            <Tab value="full">Full network</Tab>
-          </TabList>
-        </Tabs>
-      </Box>
-
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" }, gap: 1.5 }}>
-        <FormControl size="sm">
-          <FormLabel>Prioritize instances by</FormLabel>
-          <Select value={rankCriterion} onChange={(_, value) => value && setRankCriterion(value)} disabled={graphMode === "full"}>
-            <Option value="connections">Connections</Option>
-            <Option value="incomingDefederations">Incoming defederations</Option>
-            <Option value="outgoingDefederations">Outgoing defederations</Option>
-            <Option value="endorsements">Fediseer vouches</Option>
-            <Option value="score">Instance score</Option>
-          </Select>
-        </FormControl>
-        <FormControl size="sm" disabled={graphMode === "full"}>
-          <FormLabel>Instances in explorer: {isCompact ? Math.min(nodeLimit, 30) : nodeLimit}</FormLabel>
-          <Slider
-            value={nodeLimit}
-            min={10}
-            max={60}
-            step={10}
-            marks
-            onChange={(_, value) => setNodeLimit(value as number)}
-          />
-        </FormControl>
       </Box>
 
       <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
         <Checkbox
-          label="Federates"
-          checked={edgeFilters.trust}
-          onChange={(event) => setEdgeFilters({ ...edgeFilters, trust: event.target.checked })}
+          label="Outgoing defederations"
+          checked={directionFilters.defederate.outgoing}
+          onChange={(event) =>
+            setDirectionFilters({
+              ...directionFilters,
+              defederate: { ...directionFilters.defederate, outgoing: event.target.checked },
+            })
+          }
           slotProps={{ label: { sx: { fontSize: "sm" } } }}
         />
         <Checkbox
-          label="Defederates"
-          checked={edgeFilters.defederate}
-          onChange={(event) => setEdgeFilters({ ...edgeFilters, defederate: event.target.checked })}
+          label="Incoming defederations"
+          checked={directionFilters.defederate.incoming}
+          onChange={(event) =>
+            setDirectionFilters({
+              ...directionFilters,
+              defederate: { ...directionFilters.defederate, incoming: event.target.checked },
+            })
+          }
           slotProps={{ label: { sx: { fontSize: "sm" } } }}
         />
         <Checkbox
-          label="Fediseer vouches"
-          checked={edgeFilters.fediseer}
-          onChange={(event) => setEdgeFilters({ ...edgeFilters, fediseer: event.target.checked })}
+          label="Outgoing Fediseer vouches"
+          checked={directionFilters.fediseer.outgoing}
+          onChange={(event) =>
+            setDirectionFilters({
+              ...directionFilters,
+              fediseer: { ...directionFilters.fediseer, outgoing: event.target.checked },
+            })
+          }
+          slotProps={{ label: { sx: { fontSize: "sm" } } }}
+        />
+        <Checkbox
+          label="Incoming Fediseer vouches"
+          checked={directionFilters.fediseer.incoming}
+          onChange={(event) =>
+            setDirectionFilters({
+              ...directionFilters,
+              fediseer: { ...directionFilters.fediseer, incoming: event.target.checked },
+            })
+          }
           slotProps={{ label: { sx: { fontSize: "sm" } } }}
         />
       </Stack>
 
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 280px" }, gap: 2, minHeight: 0, flex: 1 }}>
+      {selectedNodeId !== null && (
+        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap alignItems="center">
+          {[
+            ["Selected", focusedNodeColors.selected],
+            ["Defederates", edgeColors.defederate],
+            ["Vouches", edgeColors.fediseer],
+            ["Two degrees away", focusedNodeColors.indirect],
+          ].map(([label, color]) => (
+            <Stack key={label} direction="row" spacing={0.5} alignItems="center">
+              <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: color }} />
+              <Typography level="body3">{label}</Typography>
+            </Stack>
+          ))}
+        </Stack>
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", lg: "row" },
+          alignItems: "stretch",
+          gap: 2,
+          minHeight: 0,
+          flex: 1,
+        }}
+      >
         <Sheet
           variant="outlined"
           sx={{
+            flex: "1 1 0",
+            minWidth: 0,
             position: "relative",
             overflow: "hidden",
             borderRadius: "sm",
-            minHeight: { xs: "360px", md: "500px" },
-            maxHeight: "760px",
+            height: { xs: "360px", md: "500px", lg: "min(65vh, 760px)" },
           }}
         >
           <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", cursor: "grab", touchAction: "none" }} />
@@ -485,8 +672,9 @@ export default function FederationGraph() {
                 position: "fixed",
                 left: `${mousePos.x + 10}px`,
                 top: `${mousePos.y + 10}px`,
-                backgroundColor: "#ffffff",
-                border: "1px solid #d1d5db",
+                backgroundColor: "background.surface",
+                border: "1px solid",
+                borderColor: "divider",
                 borderRadius: "sm",
                 p: 1,
                 fontSize: "sm",
@@ -504,11 +692,22 @@ export default function FederationGraph() {
           )}
         </Sheet>
 
-        <Sheet variant="outlined" sx={{ borderRadius: "sm", p: 1.5, minHeight: "200px", overflow: "auto" }}>
+        <Sheet
+          variant="outlined"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: { xs: "0 0 auto", lg: "0 0 280px" },
+            minWidth: 0,
+            maxHeight: { xs: "360px", lg: "min(65vh, 760px)" },
+            borderRadius: "sm",
+            p: 1.5,
+          }}
+        >
           {selectedNodeId === null ? (
             <Typography level="body3">Select an instance to inspect its incoming and outgoing relationships.</Typography>
           ) : (
-            <Stack spacing={1.25}>
+            <Stack spacing={1.25} sx={{ minHeight: 0, height: "100%" }}>
               <Box>
                 <Typography level="body2" sx={{ fontWeight: 600, overflowWrap: "anywhere" }}>
                   {graphData.nodes[selectedNodeId][0]}
@@ -520,20 +719,33 @@ export default function FederationGraph() {
               <Button size="sm" variant="outlined" onClick={() => setSelectedNodeId(null)}>
                 Clear selection
               </Button>
-              <Stack spacing={0.75}>
+              <Typography level="body3">{selectedRelationships.length} direct relationships</Typography>
+              <Stack spacing={0.75} sx={{ minHeight: 0, overflowY: "auto", pr: 0.5 }}>
                 {selectedRelationships.length === 0 ? (
-                  <Typography level="body3">No relationships match the active filters.</Typography>
+                  <Typography level="body3">No relationships match the selected filters.</Typography>
                 ) : (
-                  selectedRelationships.map((relationship) => (
-                    <Box key={`${relationship.direction}-${relationship.type}-${relationship.instance}`} sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                      <Chip size="sm" variant="soft" sx={{ color: edgeColors[relationship.type] }}>
-                        {edgeNames[relationship.type]}
-                      </Chip>
-                      <Typography level="body3" sx={{ minWidth: 0, overflowWrap: "anywhere" }}>
-                        {relationship.direction} {relationship.instance}{relationship.weight > 1 ? ` (${relationship.weight})` : ""}
-                      </Typography>
-                    </Box>
-                  ))
+                  relationshipGroups
+                    .filter((group) => group.relationships.length > 0)
+                    .map((group) => (
+                      <Stack key={group.id} spacing={0.5}>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: group.color }} />
+                          <Typography level="body3" sx={{ fontWeight: 600 }}>
+                            {group.label} ({group.relationships.length})
+                          </Typography>
+                        </Stack>
+                        {group.relationships.map((relationship) => (
+                          <Typography
+                            key={`${relationship.direction}-${relationship.type}-${relationship.instance}`}
+                            level="body3"
+                            sx={{ minWidth: 0, overflowWrap: "anywhere", pl: 1.75 }}
+                          >
+                            {relationship.instance}
+                            {relationship.weight > 1 ? ` (${relationship.weight})` : ""}
+                          </Typography>
+                        ))}
+                      </Stack>
+                    ))
                 )}
               </Stack>
             </Stack>
