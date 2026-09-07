@@ -15,6 +15,7 @@ import Versions from "../components/Inspector/Versions";
 
 import Sus from "../components/Inspector/Sus";
 import VersionChart from "../components/Inspector/VersionChart";
+import FedGraph from "../components/Inspector/FedGraph";
 
 export default function Inspector() {
   const navigate = useNavigate();
@@ -36,6 +37,11 @@ export default function Inspector() {
       label: "Version Chart",
       nav: "/inspect/version-chart",
       component: <VersionChart />,
+    },
+    {
+      label: "Federation Graph",
+      nav: "/inspect/fed-graph",
+      component: <FedGraph />,
     },
     {
       label: "Suspicious Instances",

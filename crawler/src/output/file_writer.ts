@@ -11,6 +11,7 @@ import type {
   IMBinInstanceOutput,
   IMBinMagazineOutput,
   IFediverseDataOutput,
+  IFederationGraphOutput,
   IClassifiedErrorOutput,
 } from "../../../types/output";
 
@@ -126,6 +127,10 @@ export default class OutputFileWriter {
     });
 
     await this.writeJsonFile(`${this.publicDataFolder}/instance.min.json`, JSON.stringify(minInstanceArray));
+  }
+
+  async storeFederationGraph(data: IFederationGraphOutput): Promise<void> {
+    await this.writeJsonFile(`${this.publicDataFolder}/federation.graph.json`, JSON.stringify(data));
   }
 
   async storeCommunityData(communityArray: ICommunityDataOutput[]): Promise<void> {
