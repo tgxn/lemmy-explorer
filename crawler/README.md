@@ -10,7 +10,7 @@ There is a data dump available to use with the Output script, containing All dat
 Download it from the [Data Dumps Site](https://data.lemmyverse.net/), and save it in `/crawler/.data/redis/dump.rdb`.
 
 ```sh
-# from ./crawler  directory
+# from ./crawler  directory. use this to refresh the local redis from a new dump
 wget -O .data/redis/dump.rdb https://data.lemmyverse.net/data/lemmyverse.rdb
 ```
 
