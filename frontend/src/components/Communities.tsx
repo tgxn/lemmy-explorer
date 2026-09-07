@@ -40,11 +40,15 @@ type ICommunitiesProps = {
 function Communities({ filterBaseUrl }: ICommunitiesProps) {
   const filterSuspicious = useSelector((state: any) => state.configReducer.filterSuspicious);
   const filteredInstances = useSelector((state: any) => state.configReducer.filteredInstances);
+  const homeBaseUrl = useSelector((state: any) => state.configReducer.homeBaseUrl);
+  const filterDefederated = useSelector((state: any) => state.configReducer.filterDefederated);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { isLoading, loadingPercent, isSuccess, isError, error, data } =
     useCachedMultipart<ICommunityDataOutput>("communityData", "community");
+
+  const { isSuccess: instSuccess, data: instanceData } = useCachedMultipart<any>("instanceData", "instance");
 
   const [viewType, setViewType] = useStorage<string>("community.viewType", "grid");
   const [orderBy, setOrderBy] = React.useState<string>("smart");
@@ -111,6 +115,15 @@ function Communities({ filterBaseUrl }: ICommunitiesProps) {
       communties = communties.filter((community) => !filteredInstances.includes(community.baseurl));
     }
 
+    // filter defederated instances from home instance
+    if (filterDefederated && homeBaseUrl && instSuccess && instanceData) {
+      const homeInstance = instanceData.find((inst) => inst.baseurl === homeBaseUrl);
+      if (homeInstance && homeInstance.blocked && Array.isArray(homeInstance.blocked)) {
+        console.log(`Filtering communities from defederated instances:`, homeInstance.blocked);
+        communties = communties.filter((community) => !homeInstance.blocked.includes(community.baseurl));
+      }
+    }
+
     // Variable "ShowNSFW" is used to drive this
     //  Default:    Hide NSFW     false
     if (showNSFW == false) {
@@ -165,7 +178,18 @@ function Communities({ filterBaseUrl }: ICommunitiesProps) {
 
     // return a clone so that it triggers a re-render  on sort
     return [...communties];
-  }, [data, showNSFW, orderBy, debounceFilterText, filterSuspicious, filteredInstances]);
+  }, [
+    data,
+    showNSFW,
+    orderBy,
+    debounceFilterText,
+    filterSuspicious,
+    filteredInstances,
+    filterDefederated,
+    homeBaseUrl,
+    instSuccess,
+    instanceData,
+  ]);
 
   return (
     <Box>

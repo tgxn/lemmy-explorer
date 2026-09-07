@@ -36,12 +36,20 @@ export function setFilterSuspicious(filterSuspicious) {
   };
 }
 
+export function setFilterDefederated(filterDefederated) {
+  return {
+    type: "setFilterDefederated",
+    payload: { filterDefederated },
+  };
+}
+
 const initialState = {
   homeBaseUrl: storage.get("instance"),
   instanceType: storage.get("type", "lemmy"),
   filteredInstances: storage.get("filteredInstances", []),
   filteredTags: storage.get("filteredTags", []),
   filterSuspicious: storage.get("config.filterSuspicious", true),
+  filterDefederated: storage.get("config.filterDefederated", false),
 };
 
 const configReducer = (state = initialState, action: any = {}) => {
@@ -87,6 +95,13 @@ const configReducer = (state = initialState, action: any = {}) => {
       return {
         ...state,
         filterSuspicious: action.payload.filterSuspicious,
+      };
+
+    case "setFilterDefederated":
+      storage.set("config.filterDefederated", action.payload.filterDefederated);
+      return {
+        ...state,
+        filterDefederated: action.payload.filterDefederated,
       };
 
     default:
