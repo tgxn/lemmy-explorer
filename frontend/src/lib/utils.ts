@@ -84,6 +84,30 @@ function splitTerms(filterText: string): IFilterStringTerms {
 }
 
 /**
+ * Generate search variants for a term to match pluralization patterns:
+ * - consonant+y → ies (e.g., community → communities)
+ * - f → ves (e.g., staff → staves)
+ */
+function generateSearchVariants(term: string): string[] {
+  const variants = [term];
+
+  // consonant+y → ies plural (e.g., community → communities)
+  if (term.endsWith("y") && term.length > 1) {
+    const beforeY = term[term.length - 2];
+    if (!"aeiou".includes(beforeY)) {
+      variants.push(term.slice(0, -1) + "ies");
+    }
+  }
+
+  // f → ves variant (e.g., staff → staves)
+  if (term.endsWith("f")) {
+    variants.push(term.slice(0, -1) + "ves");
+  }
+
+  return variants;
+}
+
+/**
  * Filter out every excluded term and search for any included terms.
  *
  *
@@ -105,8 +129,11 @@ export function filterByText<T>(
   // search for any included terms
   if (include.length > 0) {
     include.forEach((term) => {
+      const variants = generateSearchVariants(term);
       items = items.filter((item) =>
-        fields(item).some((field) => field && field.toLowerCase().includes(term)),
+        fields(item).some(
+          (field) => field && variants.some((variant) => field.toLowerCase().includes(variant)),
+        ),
       );
     });
   }
@@ -114,8 +141,12 @@ export function filterByText<T>(
   // filter out every excluded term
   if (exclude.length > 0) {
     exclude.forEach((term) => {
+      const variants = generateSearchVariants(term);
       items = items.filter(
-        (item) => !fields(item).some((field) => field && field.toLowerCase().includes(term)),
+        (item) =>
+          !fields(item).some(
+            (field) => field && variants.some((variant) => field.toLowerCase().includes(variant)),
+          ),
       );
     });
   }
