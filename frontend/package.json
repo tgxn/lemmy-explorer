@@ -1,6 +1,6 @@
 {
   "name": "lemmy-explorer-frontend",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "",
   "author": "tgxn",
   "license": "MIT",
@@ -11,10 +11,10 @@
     "build:dev": "webpack --config webpack.dev.config.js",
     "build": "webpack --config webpack.prod.config.js",
     "test": "playwright test",
+    "test:unit": "jest --coverage",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
-    "check:ts": "tsc --noEmit",
-    "test:unit": "jest --coverage"
+    "check:ts": "tsc --noEmit"
   },
   "dependencies": {
     "@babel/core": "^7.26.9",

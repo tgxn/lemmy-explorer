@@ -41,7 +41,7 @@ jobs:
         working-directory: ./crawler
 
       - name: Check Style | Crawler
-        run: yarn format
+        run: yarn format:check
         working-directory: ./crawler
 
   crawler-checks-types:

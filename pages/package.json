@@ -1,6 +1,6 @@
 {
   "name": "lemmy-explorer-pages",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "",
   "author": "tgxn",
   "license": "MIT",
@@ -9,8 +9,6 @@
     "start": "webpack serve --config webpack.dev.config.js",
     "build:dev": "webpack --config webpack.dev.config.js",
     "build": "webpack --config webpack.prod.config.js",
-    "fcheck": "prettier --check .",
-    "fwrite": "prettier --write .",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
     "check:ts": "tsc --noEmit"
